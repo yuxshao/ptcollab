@@ -1,4 +1,4 @@
-﻿
+
 #include "./pxtn.h"
 
 #ifdef pxINCLUDE_OGGVORBIS

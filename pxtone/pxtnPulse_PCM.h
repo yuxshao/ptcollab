@@ -1,4 +1,4 @@
-﻿#ifndef pxtnPulse_PCM_H
+#ifndef pxtnPulse_PCM_H
 #define pxtnPulse_PCM_H
 
 #include "./pxtn.h"
@@ -8,8 +8,8 @@
 class pxtnPulse_PCM
 {
 private:
-	void operator = (const pxtnPulse_PCM& src){}
-	pxtnPulse_PCM   (const pxtnPulse_PCM& src){}
+	void operator = (const pxtnPulse_PCM& src) = delete;
+	pxtnPulse_PCM   (const pxtnPulse_PCM& src) = delete;
 
 	int32_t _ch      ;
 	int32_t _sps     ;

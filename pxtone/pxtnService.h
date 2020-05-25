@@ -1,4 +1,4 @@
-﻿#ifndef pxtnService_H
+#ifndef pxtnService_H
 #define pxtnService_H
 
 #include "./pxtn.h"
@@ -42,8 +42,8 @@ typedef bool (* pxtnSampledCallback)( void* user, const pxtnService* pxtn );
 class pxtnService
 {
 private:
-	void operator = (const pxtnService& src){}
-	pxtnService     (const pxtnService& src){}
+	void operator = (const pxtnService& src) = delete;
+	pxtnService     (const pxtnService& src) = delete;
 
 	enum _enum_FMTVER
 	{

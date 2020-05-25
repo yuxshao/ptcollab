@@ -1,4 +1,4 @@
-﻿// '12/03/05
+// '12/03/05
 
 #define pxtnMAX_CHANNEL             2
 

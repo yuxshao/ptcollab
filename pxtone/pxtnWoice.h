@@ -1,4 +1,4 @@
-﻿// '12/03/03 pxtnWoice.
+// '12/03/03 pxtnWoice.
 
 #ifndef pxtnWoice_H
 #define pxtnWoice_H
@@ -121,8 +121,8 @@ pxtnVOICETONE;
 class pxtnWoice
 {
 private:
-	void operator = (const pxtnWoice& src){}
-	pxtnWoice       (const pxtnWoice& src){}
+	void operator = (const pxtnWoice& src) = delete;
+	pxtnWoice       (const pxtnWoice& src) = delete;
 
 	int32_t            _voice_num;
 

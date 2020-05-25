@@ -1,4 +1,4 @@
-﻿// '12/03/03
+// '12/03/03
 
 #ifndef pxtnText_H
 #define pxtnText_H
@@ -10,8 +10,8 @@
 class pxtnText
 {
 private:
-	void operator = (const pxtnText& src){}
-	pxtnText        (const pxtnText& src){}
+	void operator = (const pxtnText& src) = delete;
+	pxtnText        (const pxtnText& src) = delete;
 
 	char*   _p_comment_buf;
 	int32_t _comment_size ;

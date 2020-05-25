@@ -1,4 +1,4 @@
-﻿#include "./pxtnError.h"
+#include "./pxtnError.h"
 
 static const char* _err_msg_tbl[ pxtnERR_num + 1 ] =
 {

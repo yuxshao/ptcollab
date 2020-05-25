@@ -1,4 +1,4 @@
-﻿// 12/03/29
+// 12/03/29
 
 #ifndef pxtoneNoise_H
 #define pxtoneNoise_H
@@ -10,8 +10,8 @@
 class pxtoneNoise
 {
 private:
-	void operator = (const pxtoneNoise& src){}
-	pxtoneNoise     (const pxtoneNoise& src){}
+	void operator = (const pxtoneNoise& src) = delete;
+	pxtoneNoise     (const pxtoneNoise& src) = delete;
 
 	void *_bldr ;
 	int32_t  _ch_num;

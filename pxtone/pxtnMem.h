@@ -1,4 +1,4 @@
-﻿// '16/12/16 pxtnMem.
+// '16/12/16 pxtnMem.
 
 #ifndef pxtnMem_H
 #define pxtnMem_H

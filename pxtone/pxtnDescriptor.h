@@ -1,4 +1,4 @@
-﻿// '11/08/12 pxFile.h 
+// '11/08/12 pxFile.h 
 // '16/01/22 pxFile.h 
 // '16/04/27 pxtnFile. (int32_t)
 // '16/09/09 pxtnDescriptor.
@@ -22,8 +22,8 @@ class pxtnDescriptor
 {
 private:
 
-	void operator = (const pxtnDescriptor& src){}
-	pxtnDescriptor  (const pxtnDescriptor& src){}
+	void operator = (const pxtnDescriptor& src) = delete;
+	pxtnDescriptor  (const pxtnDescriptor& src) = delete;
 
 	enum
 	{

@@ -1,4 +1,4 @@
-﻿// '12/03/03
+// '12/03/03
 
 #ifndef pxtnUnit_H
 #define pxtnUnit_H
@@ -12,8 +12,8 @@
 class pxtnUnit
 {
 private:
-	void operator = (const pxtnUnit& src){}
-	pxtnUnit        (const pxtnUnit& src){}
+	void operator = (const pxtnUnit& src) = delete;
+	pxtnUnit        (const pxtnUnit& src) = delete;
 
 	bool     _bOperated;
 	bool     _bPlayed;

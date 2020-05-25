@@ -1,4 +1,4 @@
-﻿//
+//
 // x1x : v.0.1.2.8 (-2005/06/03) project-info has quality, tempo, clock.
 // x2x : v.0.6.N.N (-2006/01/15) no exe version.
 // x3x : v.0.7.N.N (-2006/09/30) unit includes voice / basic-key use for only

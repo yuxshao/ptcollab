@@ -1,4 +1,4 @@
-﻿#ifndef pxtnPulse_NoiseBuilder_H
+#ifndef pxtnPulse_NoiseBuilder_H
 #define pxtnPulse_NoiseBuilder_H
 
 #include "./pxtn.h"
@@ -8,8 +8,8 @@
 class pxtnPulse_NoiseBuilder
 {
 private:
-	void operator =       (const pxtnPulse_NoiseBuilder& src){}
-	pxtnPulse_NoiseBuilder(const pxtnPulse_NoiseBuilder& src){}
+	void operator =       (const pxtnPulse_NoiseBuilder& src) = delete;
+	pxtnPulse_NoiseBuilder(const pxtnPulse_NoiseBuilder& src) = delete;
 
 	bool    _b_init;
 	short*  _p_tables[ pxWAVETYPE_num ];

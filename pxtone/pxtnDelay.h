@@ -1,4 +1,4 @@
-﻿// '12/03/03
+// '12/03/03
 
 #ifndef pxtnDelay_H
 #define pxtnDelay_H
@@ -20,8 +20,8 @@ class pxtnDelay
 {
 private:
 
-	void operator = (const pxtnDelay& src){}
-	pxtnDelay       (const pxtnDelay& src){}
+	void operator = (const pxtnDelay& src) = delete;
+	pxtnDelay       (const pxtnDelay& src) = delete;
 
 	bool      _b_played  ;
 	DELAYUNIT _unit      ;

@@ -1,4 +1,4 @@
-﻿// '12/03/03
+// '12/03/03
 
 #include "./pxtn.h"
 
@@ -127,7 +127,6 @@ bool pxtnMaster::io_w_v5(pxtnDescriptor *p_doc, int32_t rough) const {
 }
 
 pxtnERR pxtnMaster::io_r_v5(pxtnDescriptor *p_doc) {
-  pxtnERR res = pxtnERR_VOID;
   int16_t beat_clock = 0;
   int8_t beat_num = 0;
   float beat_tempo = 0;
@@ -188,9 +187,9 @@ typedef struct {
 
 // read( project )
 pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
-  _x4x_MASTER mast = {0};
+  _x4x_MASTER mast{};
   int32_t size = 0;
-  int32_t e = 0;
+  uint32_t e = 0;
   int32_t status = 0;
   int32_t clock = 0;
   int32_t volume = 0;
@@ -218,7 +217,7 @@ pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
 
   absolute = 0;
 
-  for (e = 0; e < (int32_t)mast.event_num; e++) {
+  for (e = 0; e < mast.event_num; e++) {
     if (!p_doc->v_r(&status))
       break;
     if (!p_doc->v_r(&clock))

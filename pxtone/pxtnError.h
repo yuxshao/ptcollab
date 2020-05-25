@@ -1,4 +1,4 @@
-﻿// '16/12/16 pxtnError.
+// '16/12/16 pxtnError.
 
 #ifndef pxtnError_H
 #define pxtnError_H

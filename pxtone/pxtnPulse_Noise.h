@@ -1,4 +1,4 @@
-﻿#ifndef pxtnPulse_Noise_H
+#ifndef pxtnPulse_Noise_H
 #define pxtnPulse_Noise_H
 
 #include "./pxtn.h"
@@ -58,8 +58,8 @@ pxNOISEDESIGN_UNIT;
 class pxtnPulse_Noise
 {
 private:
-	void operator = (const pxtnPulse_Noise& src){}
-	pxtnPulse_Noise (const pxtnPulse_Noise& src){}
+	void operator = (const pxtnPulse_Noise& src) = delete;
+	pxtnPulse_Noise (const pxtnPulse_Noise& src) = delete;
 
 	int32_t             _smp_num_44k;
 	int32_t             _unit_num   ;

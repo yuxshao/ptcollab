@@ -1,4 +1,4 @@
-﻿// '12/03/03
+// '12/03/03
 
 #ifndef pxtnOverDrive_H
 #define pxtnOverDrive_H
@@ -17,8 +17,8 @@
 class pxtnOverDrive
 {
 private:
-	void operator = (const pxtnOverDrive& src){}
-	pxtnOverDrive   (const pxtnOverDrive& src){}
+	void operator = (const pxtnOverDrive& src) = delete;
+	pxtnOverDrive   (const pxtnOverDrive& src) = delete;
 
 	bool  _b_played;
 

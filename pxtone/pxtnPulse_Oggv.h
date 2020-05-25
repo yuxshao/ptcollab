@@ -1,4 +1,4 @@
-﻿#ifndef pxtnPulse_Oggv_H
+#ifndef pxtnPulse_Oggv_H
 #define pxtnPulse_Oggv_H
 
 #ifdef  pxINCLUDE_OGGVORBIS
@@ -11,8 +11,8 @@
 class pxtnPulse_Oggv
 {
 private:
-	void operator = (const pxtnPulse_Oggv& src){}
-	pxtnPulse_Oggv  (const pxtnPulse_Oggv& src){}
+	void operator = (const pxtnPulse_Oggv& src) = delete;
+	pxtnPulse_Oggv  (const pxtnPulse_Oggv& src) = delete;
 
 	int32_t _ch     ;
 	int32_t _sps2   ;
