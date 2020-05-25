@@ -2,8 +2,8 @@
 
 #define pxtnMAX_CHANNEL             2
 
-#define pxtnMAX_TUNEUNITSTRUCT	   50 //    32
-#define pxtnMAX_TUNEWOICESTRUCT	  100 //    32
+#define pxtnMAX_TUNEUNITSTRUCT       50 //    32
+#define pxtnMAX_TUNEWOICESTRUCT      100 //    32
 #define pxtnMAX_EVENTNUM       500000 // 65536
 #define pxtnMAX_TUNEGROUPNUM        7
 #define pxtnMAX_TUNEDELAYSTRUCT     4

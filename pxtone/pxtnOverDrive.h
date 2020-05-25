@@ -17,37 +17,37 @@
 class pxtnOverDrive
 {
 private:
-	void operator = (const pxtnOverDrive& src) = delete;
-	pxtnOverDrive   (const pxtnOverDrive& src) = delete;
+    void operator = (const pxtnOverDrive& src) = delete;
+    pxtnOverDrive   (const pxtnOverDrive& src) = delete;
 
-	bool  _b_played;
+    bool  _b_played;
 
-	int32_t   _group   ;
-	float _cut_f   ;
-	float _amp_f   ;
+    int32_t   _group   ;
+    float _cut_f   ;
+    float _amp_f   ;
 
-	int32_t   _cut_16bit_top;
+    int32_t   _cut_16bit_top;
 public :
 
-	 pxtnOverDrive();
-	~pxtnOverDrive();
+     pxtnOverDrive();
+    ~pxtnOverDrive();
 
-	void Tone_Ready();
-	void Tone_Supple( int32_t *group_smps ) const;
+    void Tone_Ready();
+    void Tone_Supple( int32_t *group_smps ) const;
 
-	bool    Write( pxtnDescriptor *p_doc ) const;
-	pxtnERR Read ( pxtnDescriptor *p_doc );
+    bool    Write( pxtnDescriptor *p_doc ) const;
+    pxtnERR Read ( pxtnDescriptor *p_doc );
 
 
-	float   get_cut  ()const;
-	float   get_amp  ()const;
-	int32_t get_group()const;
+    float   get_cut  ()const;
+    float   get_amp  ()const;
+    int32_t get_group()const;
 
-	void    Set( float cut, float amp, int32_t group );
+    void    Set( float cut, float amp, int32_t group );
 
-	bool    get_played()const;
-	void    set_played( bool b );
-	bool    switch_played();
+    bool    get_played()const;
+    void    set_played( bool b );
+    bool    switch_played();
 };
 
 #endif
