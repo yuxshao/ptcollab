@@ -319,8 +319,10 @@ bool pxtnService::moo_set_fade( int32_t  fade, float sec )
 ////////////////////////////
 
 // preparation
+#include <QDebug>
 bool pxtnService::moo_preparation( const pxtnVOMITPREPARATION *p_prep )
 {
+    qDebug() << _moo_b_init << _moo_b_valid_data << _dst_ch_num << _dst_sps << _dst_byte_per_smp;
 	if( !_moo_b_init || !_moo_b_valid_data || !_dst_ch_num || !_dst_sps || !_dst_byte_per_smp )
 	{
 		 _moo_b_end_vomit = true ;
@@ -433,8 +435,9 @@ bool pxtnService::moo_set_master_volume( float v )
 // Moo ...
 ////////////////////
 
-bool pxtnService::Moo( void* p_buf, int32_t  size )
+bool pxtnService::Moo( void* p_buf, int32_t  size, int32_t *filled_size )
 {
+
 	if( !_moo_b_init       ) return false;
 	if( !_moo_b_valid_data ) return false;
 	if(  _moo_b_end_vomit  ) return false;
@@ -443,19 +446,22 @@ bool pxtnService::Moo( void* p_buf, int32_t  size )
 
 	int32_t  smp_w = 0;
 
-	if( size % _dst_byte_per_smp ) return false;
+    /* No longer failing on remainder - we just return the filled size */
+    // if( size % _dst_byte_per_smp ) return false;
 
-  /* Size/smp_num probably is used to sync the playback with the position */
+    /* Size/smp_num probably is used to sync the playback with the position */
 	int32_t  smp_num = size / _dst_byte_per_smp;
 
 	{
-    /* Buffer is renamed here */
+        /* Buffer is renamed here */
 		int16_t  *p16 = (int16_t*)p_buf;
 		int16_t  sample[ 2 ]; /* for left and right? */
 
-    /* Iterate thru samples [smp_num] times, fill buffer with this sample */
+        /* Iterate thru samples [smp_num] times, fill buffer with this sample */
+        if (filled_size) *filled_size = 0;
 		for( smp_w = 0; smp_w < smp_num; smp_w++ )
 		{
+            if (filled_size) *filled_size += _dst_byte_per_smp;
 			if( !_moo_PXTONE_SAMPLE( sample ) ){ _moo_b_end_vomit = true; break; }
 			for( int ch = 0; ch < _dst_ch_num; ch++, p16++ ) *p16 = sample[ ch ];
 		}

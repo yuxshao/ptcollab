@@ -215,6 +215,7 @@ public :
 	// q
 	bool set_destination_quality( int32_t    ch_num, int32_t    sps );
 	bool get_destination_quality( int32_t *p_ch_num, int32_t *p_sps ) const;
+        bool get_byte_per_smp(int32_t *p_byte_per_smp) const;
 	bool set_sampled_callback   ( pxtnSampledCallback proc, void* user );
 
 	//////////////
@@ -238,7 +239,7 @@ public :
 
 	bool    moo_preparation( const pxtnVOMITPREPARATION *p_build );
 
-	bool    Moo( void* p_buf, int32_t size );
+        bool    Moo( void* p_buf, int32_t  size, int32_t *filled_size = nullptr );
 };
 
 int32_t pxtnService_moo_CalcSampleNum( int32_t meas_num, int32_t beat_num, int32_t sps, float beat_tempo );

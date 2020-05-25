@@ -626,6 +626,12 @@ bool pxtnService::get_destination_quality(int32_t *p_ch_num,
   return true;
 }
 
+bool pxtnService::get_byte_per_smp(int32_t *p_byte_per_smp) const {
+    if (!_b_init) return false;
+    *p_byte_per_smp = _dst_byte_per_smp;
+    return true;
+}
+
 bool pxtnService::set_sampled_callback(pxtnSampledCallback proc, void *user) {
   if (!_b_init)
     return false;

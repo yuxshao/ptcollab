@@ -45,7 +45,8 @@ HEADERS += mainwindow.h \
            pxtone/pxtnText.h \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
-           pxtone/pxtoneNoise.h
+           pxtone/pxtoneNoise.h \
+           pxtoneiodevice.h
 FORMS += mainwindow.ui
 SOURCES += main.cpp \
            mainwindow.cpp \
@@ -69,7 +70,8 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
-           pxtone/pxtoneNoise.cpp
+           pxtone/pxtoneNoise.cpp \
+           pxtoneiodevice.cpp
 
 LIBS += -logg -lvorbisfile
 # Default rules for deployment.
