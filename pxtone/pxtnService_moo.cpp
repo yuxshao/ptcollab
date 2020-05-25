@@ -31,7 +31,8 @@ bool pxtnService::_moo_release()
 	if( !_moo_b_init ) return false;
 	_moo_b_init = false;
 	SAFE_DELETE( _moo_freq );
-	if( _moo_group_smps ) free( _moo_group_smps ); _moo_group_smps = NULL;
+    if( _moo_group_smps ) free( _moo_group_smps );
+    _moo_group_smps = NULL;
 	return true;
 }
 
@@ -471,7 +472,7 @@ bool pxtnService::Moo( void* p_buf, int32_t  size, int32_t *filled_size )
 
 	if( _sampled_proc )
 	{
-		int32_t clock = (int32_t)( _moo_smp_count / _moo_clock_rate );
+        // int32_t clock = (int32_t)( _moo_smp_count / _moo_clock_rate );
 		if( !_sampled_proc( _sampled_user, this ) ){ _moo_b_end_vomit = true; goto term; }
 	}
 

@@ -15,7 +15,7 @@ enum pxtnSEEK
 	pxtnSEEK_set = 0,
 	pxtnSEEK_cur,
 	pxtnSEEK_end,
-	pxtnSEEK_num
+    pxtnSEEK_max = pxtnSEEK_end
 };
 
 class pxtnDescriptor

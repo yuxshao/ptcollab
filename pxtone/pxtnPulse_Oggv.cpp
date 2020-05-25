@@ -148,7 +148,8 @@ pxtnPulse_Oggv::~pxtnPulse_Oggv()
 
 void pxtnPulse_Oggv::Release()
 {
-	if( _p_data ) free( _p_data ); _p_data = NULL;
+    if( _p_data ) free( _p_data );
+    _p_data = NULL;
 	_ch      = 0;
 	_sps2    = 0;
 	_smp_num = 0;
@@ -169,7 +170,8 @@ End:
 
 	if( res != pxtnOK )
 	{
-		if( _p_data ) free( _p_data ); _p_data = NULL; _size = 0;
+        if( _p_data ) free( _p_data );
+        _p_data = NULL; _size = 0;
 	}
 	return res;
 }
@@ -208,12 +210,12 @@ pxtnERR pxtnPulse_Oggv::Decode( pxtnPulse_PCM * p_pcm ) const
 	
 	int32_t current_section;
     {
-        char    pcmout[ 4096 ] = {0}; //take 4k out of the data segment, not the stack
+        char    pcmout[ 4096 ]{}; //take 4k out of the data segment, not the stack
         {
             int32_t smp_num = (int32_t)ov_pcm_total( &vf, -1 );
-            uint32_t bytes;
+            /*uint32_t bytes;
 
-            bytes = vi->channels * 2 * smp_num;
+            bytes = vi->channels * 2 * smp_num;*/
 
             res = p_pcm->Create( vi->channels, vi->rate, 16, smp_num );
             if( res != pxtnOK ) goto term;
@@ -303,7 +305,8 @@ End:
 
 	if( !b_ret )
 	{
-		if( _p_data ) free( _p_data ); _p_data = NULL; _size = 0;
+        if( _p_data ) free( _p_data );
+        _p_data = NULL; _size = 0;
 	}
 
 	return b_ret;

@@ -25,7 +25,9 @@ DEFINES += pxINCLUDE_OGGVORBIS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += mainwindow.h \
+HEADERS += \
+           MainWindow.h \
+           PxtoneIODevice.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -45,11 +47,12 @@ HEADERS += mainwindow.h \
            pxtone/pxtnText.h \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
-           pxtone/pxtoneNoise.h \
-           pxtoneiodevice.h
-FORMS += mainwindow.ui
+           pxtone/pxtoneNoise.h
+FORMS += \
+    MainWindow.ui
 SOURCES += main.cpp \
-           mainwindow.cpp \
+           MainWindow.cpp \
+           PxtoneIODevice.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \
@@ -70,8 +73,7 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
-           pxtone/pxtoneNoise.cpp \
-           pxtoneiodevice.cpp
+           pxtone/pxtoneNoise.cpp
 
 LIBS += -logg -lvorbisfile
 # Default rules for deployment.

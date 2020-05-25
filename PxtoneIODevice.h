@@ -4,6 +4,9 @@
 #include <QIODevice>
 #include "pxtone/pxtnService.h"
 
+/**
+ * @brief A pxtnService wrapper for QTAudioOutput.
+ */
 class PxtoneIODevice : public QIODevice
 {
 public:

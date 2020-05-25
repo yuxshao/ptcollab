@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioDeviceInfo>
@@ -54,7 +54,7 @@ void MainWindow::loadFile() {
     desc.set_file_r(f);
     if (m_pxtn.read(&desc) != pxtnOK) { qWarning() << "Error reading file"; }
     if (m_pxtn.tones_ready() != pxtnOK) { qWarning() << "Error getting tones ready"; }
-    pxtnVOMITPREPARATION prep{0};
+    pxtnVOMITPREPARATION prep{};
     prep.flags          |= pxtnVOMITPREPFLAG_loop;
     prep.start_pos_float =     0;
     prep.master_volume   = 0.80f;

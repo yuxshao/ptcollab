@@ -56,7 +56,7 @@ bool pxtnDescriptor::seek( pxtnSEEK mode, int val )
 {
 	if( _b_file )
 	{
-		int seek_tbl[ pxtnSEEK_num ] = {SEEK_SET, SEEK_CUR, SEEK_END};
+        int seek_tbl[ pxtnSEEK_max + 1 ] = {SEEK_SET, SEEK_CUR, SEEK_END};
 		if( fseek( (FILE*)_p_desc, val, seek_tbl[ mode ] ) ) return false;
 	}
 	else
@@ -89,7 +89,7 @@ bool pxtnDescriptor::w_asfile( const void *p, int size, int num )
 
 	if( !_p_desc || !_b_file || _b_read ) goto End;
 	
-	if( fwrite( p, size, num, (FILE*)_p_desc ) != num ) goto End;
+    if( int(fwrite( p, size, num, (FILE*)_p_desc )) != num ) goto End;
 	_size += size * num;
 	
 	b_ret = true;
@@ -106,7 +106,7 @@ bool pxtnDescriptor::r(       void *p, int size, int num )
 
 	if( _b_file )
 	{
-		if( fread( p, size, num, (FILE*)_p_desc ) != num ) goto End;
+        if( int(fread( p, size, num, (FILE*)_p_desc )) != num ) goto End;
 	}
 	else
 	{
@@ -148,8 +148,8 @@ int  pxtnDescriptor::v_w_asfile( int val, int *p_add )
 	if( !_b_file ) return 0;
 	if(  _b_read ) return 0;
 
-	uint8_t  a[ 5 ] = {0};
-	uint8_t  b[ 5 ] = {0};
+	uint8_t  a[ 5 ]{};
+	uint8_t  b[ 5 ]{};
 	uint32_t us     = (uint32_t )val;
 	int32_t  bytes  = 0;
 	
@@ -203,7 +203,7 @@ int  pxtnDescriptor::v_w_asfile( int val, int *p_add )
 		b[3] = (a[2]>>5) | ((a[3]<<3)&0x7F) | 0x80;
 		b[4] = (a[3]>>4) | ((a[4]<<4)&0x7F);
 	}
-	if( fwrite( b, 1, bytes, (FILE*)_p_desc )     != bytes ) return false;
+    if( int32_t(fwrite( b, 1, bytes, (FILE*)_p_desc )) != bytes ) return false;
 	if( p_add ) *p_add += bytes;
 	_size += bytes;
 	return true;
@@ -218,8 +218,8 @@ bool pxtnDescriptor::v_r  ( int32_t *p  )
 	if( !_b_read ) return false;
 
 	int          i;
-	uint8_t a[ 5 ] = {0};
-	uint8_t b[ 5 ] = {0};
+	uint8_t a[ 5 ]{};
+	uint8_t b[ 5 ]{};
 
 	for( i = 0; i < 5; i++ )
 	{

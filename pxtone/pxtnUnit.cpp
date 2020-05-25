@@ -349,7 +349,7 @@ _x3x_UNIT;
 
 pxtnERR pxtnUnit::Read_v3x( pxtnDescriptor *p_doc, int32_t *p_group )
 {
-	_x3x_UNIT unit = {0};
+	_x3x_UNIT unit{};
 	int32_t   size =  0 ;
 
 	if( !p_doc->r( &size, 4,                   1 ) ) return pxtnERR_desc_r;

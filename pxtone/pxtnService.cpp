@@ -890,7 +890,7 @@ bool pxtnService::_io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const {
   if (!_b_init)
     return false;
 
-  _ASSIST_WOICE assi = {0};
+  _ASSIST_WOICE assi{};
   int32_t size;
   int32_t name_size = 0;
   const char *p_name = _woices[idx]->get_name_buf(&name_size);
@@ -914,7 +914,7 @@ pxtnERR pxtnService::_io_assiWOIC_r(pxtnDescriptor *p_doc) {
   if (!_b_init)
     return pxtnERR_INIT;
 
-  _ASSIST_WOICE assi = {0};
+  _ASSIST_WOICE assi{};
   int32_t size = 0;
 
   if (!p_doc->r(&size, 4, 1))
@@ -949,7 +949,7 @@ bool pxtnService::_io_assiUNIT_w(pxtnDescriptor *p_doc, int32_t idx) const {
   if (!_b_init)
     return false;
 
-  _ASSIST_UNIT assi = {0};
+  _ASSIST_UNIT assi{};
   int32_t size;
   int32_t name_size;
   const char *p_name = _units[idx]->get_name_buf(&name_size);
@@ -970,7 +970,7 @@ pxtnERR pxtnService::_io_assiUNIT_r(pxtnDescriptor *p_doc) {
   if (!_b_init)
     return pxtnERR_INIT;
 
-  _ASSIST_UNIT assi = {0};
+  _ASSIST_UNIT assi{};
   int32_t size;
 
   if (!p_doc->r(&size, 4, 1))
@@ -1022,7 +1022,7 @@ pxtnERR pxtnService::_io_UNIT_num_r(pxtnDescriptor *p_doc, int32_t *p_num) {
   if (!_b_init)
     return pxtnERR_INIT;
 
-  _NUM_UNIT data = {0};
+  _NUM_UNIT data{};
   int32_t size = 0;
 
   if (!p_doc->r(&size, 4, 1))
@@ -1051,7 +1051,6 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
   if (!_b_init)
     return pxtnERR_INIT;
 
-  bool b_ret = false;
   int32_t rough = b_tune ? 10 : 1;
   uint16_t rrr = 0;
   pxtnERR res = pxtnERR_VOID;
@@ -1746,7 +1745,7 @@ bool pxtnService::_x1x_Project_Read(pxtnDescriptor *p_doc) {
   if (!_b_init)
     return false;
 
-  _x1x_PROJECT prjc = {0};
+  _x1x_PROJECT prjc{};
   int32_t beat_num, beat_clock;
   int32_t size;
   float beat_tempo;
@@ -1761,7 +1760,7 @@ bool pxtnService::_x1x_Project_Read(pxtnDescriptor *p_doc) {
   beat_clock = prjc.x1x_beat_clock;
 
   int32_t ns = 0;
-  for (ns; ns < _MAX_PROJECTNAME_x1x; ns++) {
+  for (; ns < _MAX_PROJECTNAME_x1x; ns++) {
     if (!prjc.x1x_name[ns])
       break;
   }

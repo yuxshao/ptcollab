@@ -13,7 +13,7 @@ enum DELAYUNIT
 	DELAYUNIT_Beat = 0,
 	DELAYUNIT_Meas    ,
 	DELAYUNIT_Second  ,
-	DELAYUNIT_num     ,
+    DELAYUNIT_max = DELAYUNIT_Second,
 };
 
 class pxtnDelay

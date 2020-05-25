@@ -62,6 +62,8 @@ static bool _Write_Wave( pxtnDescriptor *p_doc, const pxtnVOICEUNIT *p_vc, int32
 		break;
 			
 		case pxtnVOICE_OggVorbis: goto End; // not support.
+        case pxtnVOICE_Noise: /* Unsupported? */ goto End;
+
 	}
 
 	b_ret = true;
@@ -114,8 +116,11 @@ static pxtnERR _Read_Wave( pxtnDescriptor *p_doc, pxtnVOICEUNIT *p_vc )
 		if( !pxtnMem_zero_alloc( (void **)&p_vc->wave.points, sizeof(pxtnPOINT) * num ) ) return pxtnERR_memory;
 		for( i = 0; i < num; i++ )
 		{
-			if( !p_doc->r( &uc, 1, 1 ) ) return pxtnERR_desc_r; p_vc->wave.points[ i ].x = uc;
-			if( !p_doc->r( &sc, 1, 1 ) ) return pxtnERR_desc_r; p_vc->wave.points[ i ].y = sc;
+            if( !p_doc->r( &uc, 1, 1 ) ) return pxtnERR_desc_r;
+            p_vc->wave.points[ i ].x = uc;
+
+            if( !p_doc->r( &sc, 1, 1 ) ) return pxtnERR_desc_r;
+            p_vc->wave.points[ i ].y = sc;
 		}
 		num = p_vc->wave.num;
 		break;
@@ -241,7 +246,7 @@ pxtnERR pxtnWoice::PTV_Read( pxtnDescriptor *p_doc )
 {
 	pxtnERR        res       = pxtnERR_VOID;
 	pxtnVOICEUNIT* p_vc      = NULL ;
-	uint8_t        code[ 8 ] = { 0 };
+	uint8_t        code[ 8 ]{};
 	int32_t        version   =     0;
 	int32_t        work1     =     0;
 	int32_t        work2     =     0;

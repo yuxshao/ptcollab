@@ -269,6 +269,7 @@ term:
 
 static void _UpdateWavePTV( pxtnVOICEUNIT* p_vc, pxtnVOICEINSTANCE* p_vi, int32_t  ch, int32_t  sps, int32_t  bps )
 {
+    (void)sps;
 	double  work, osc;
 	int32_t long_;
 	int32_t pan_volume[ 2 ] = {64, 64};

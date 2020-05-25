@@ -828,11 +828,11 @@ _x4x_EVENTSTRUCT;
 // write event.
 pxtnERR pxtnEvelist::io_Unit_Read_x4x_EVENT( pxtnDescriptor *p_doc, bool bTailAbsolute, bool bCheckRRR )
 {
-	_x4x_EVENTSTRUCT evnt     ={0};
+	_x4x_EVENTSTRUCT evnt{};
 	int32_t          clock    = 0;
 	int32_t          value    = 0;
 	int32_t          absolute = 0;
-	int32_t          e        = 0;
+    uint32_t          e        = 0;
 	int32_t          size     = 0;
 
 	if( !p_doc->r( &size, 4,                          1 ) ) return pxtnERR_desc_r;
@@ -843,7 +843,7 @@ pxtnERR pxtnEvelist::io_Unit_Read_x4x_EVENT( pxtnDescriptor *p_doc, bool bTailAb
 	if( bCheckRRR && evnt.rrr            ) return pxtnERR_fmt_unknown;
 
 	absolute = 0;
-	for( e = 0; e < (int32_t)evnt.event_num; e++ )
+    for( e = 0; e < evnt.event_num; e++ )
 	{
 		if( !p_doc->v_r( &clock ) ) break;
 		if( !p_doc->v_r( &value ) ) break;
@@ -863,9 +863,9 @@ pxtnERR pxtnEvelist::io_Read_x4x_EventNum( pxtnDescriptor *p_doc, int32_t* p_num
 {
 	if( !p_doc || !p_num ) return pxtnERR_param;
 
-	_x4x_EVENTSTRUCT evnt = {0};
+	_x4x_EVENTSTRUCT evnt{};
 	int32_t          work =  0 ;
-	int32_t          e    =  0 ;
+    uint32_t          e    =  0 ;
 	int32_t          size =  0 ;
 
 	if( !p_doc->r( &size, 4,                          1 ) ) return pxtnERR_desc_r;
@@ -874,7 +874,7 @@ pxtnERR pxtnEvelist::io_Read_x4x_EventNum( pxtnDescriptor *p_doc, int32_t* p_num
 	// support only 2
 	if( evnt.data_num != 2 ) return pxtnERR_fmt_unknown;
 
-	for( e = 0; e < (int32_t)evnt.event_num; e++ )
+    for( e = 0; e < evnt.event_num; e++ )
 	{
 		if( !p_doc->v_r( &work ) ) break;
 		if( !p_doc->v_r( &work ) ) break;

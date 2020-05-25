@@ -1,4 +1,4 @@
-#include "pxtoneiodevice.h"
+#include "PxtoneIODevice.h"
 #include <QDebug>
 
 PxtoneIODevice::PxtoneIODevice(pxtnService *pxtn) : QIODevice(), pxtn(pxtn)
@@ -13,6 +13,6 @@ qint64 PxtoneIODevice::readData(char *data, qint64 maxlen) {
     return filled_len;
 }
 qint64 PxtoneIODevice::writeData(const char *data, qint64 len) {
-    // do nothing
+    (void)data;
     return len;
 }

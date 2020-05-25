@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QtMultimedia/QAudioOutput>
 #include "pxtone/pxtnService.h"
-#include "pxtoneiodevice.h"
+#include "PxtoneIODevice.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,11 +23,11 @@ private slots:
     void loadFile();
 
 private:
-    Ui::MainWindow *ui;
-
-    QFile sourceFile;   // class member.
-    QAudioOutput* audio; // class member.
+    QFile sourceFile;
+    QAudioOutput* audio;
     pxtnService m_pxtn;
     PxtoneIODevice m_pxtn_device;
+
+    Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
