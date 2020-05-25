@@ -319,11 +319,9 @@ bool pxtnService::moo_set_fade( int32_t  fade, float sec )
 ////////////////////////////
 
 // preparation
-#include <QDebug>
 bool pxtnService::moo_preparation( const pxtnVOMITPREPARATION *p_prep )
 {
-    qDebug() << _moo_b_init << _moo_b_valid_data << _dst_ch_num << _dst_sps << _dst_byte_per_smp;
-	if( !_moo_b_init || !_moo_b_valid_data || !_dst_ch_num || !_dst_sps || !_dst_byte_per_smp )
+    if( !_moo_b_init || !_moo_b_valid_data || !_dst_ch_num || !_dst_sps || !_dst_byte_per_smp )
 	{
 		 _moo_b_end_vomit = true ;
 		 return false;

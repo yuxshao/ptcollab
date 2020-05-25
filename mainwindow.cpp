@@ -26,10 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     // Set up the format, eg.
     format.setSampleRate(sample_rate);
     format.setChannelCount(channel_num);
-    format.setSampleSize(8);
+    format.setSampleSize(16);
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::UnSignedInt);
+    format.setSampleType(QAudioFormat::SignedInt);
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
     if (!info.isFormatSupported(format)) {
