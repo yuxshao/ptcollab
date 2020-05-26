@@ -2,10 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QScrollArea>
 #include <QFile>
 #include <QtMultimedia/QAudioOutput>
 #include "pxtone/pxtnService.h"
 #include "PxtoneIODevice.h"
+#include "KeyboardEditor.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,12 +22,14 @@ public:
     ~MainWindow();
 
 private slots:
-    void loadFile();
+    void selectAndLoadFile();
 
 private:
-    QFile sourceFile;
-    QAudioOutput* audio;
+    void loadFile(QString filename);
+    QAudioOutput* m_audio;
+    KeyboardEditor* m_keyboard_editor;
     pxtnService m_pxtn;
+    QScrollArea* m_scroll_area;
     PxtoneIODevice m_pxtn_device;
 
     Ui::MainWindow *ui;

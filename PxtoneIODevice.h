@@ -9,8 +9,14 @@
  */
 class PxtoneIODevice : public QIODevice
 {
+    Q_OBJECT
 public:
-    PxtoneIODevice(pxtnService *pxtn);
+    PxtoneIODevice(QObject *parent, pxtnService *pxtn);
+    virtual ~PxtoneIODevice() {};
+
+signals:
+    void MooError();
+
 private:
     pxtnService *pxtn;
     qint64 readData(char *data, qint64 maxlen);

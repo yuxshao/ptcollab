@@ -26,6 +26,8 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
+           Animation.h \
+           KeyboardEditor.h \
            MainWindow.h \
            PxtoneIODevice.h \
            pxtone/pxtn.h \
@@ -51,6 +53,8 @@ HEADERS += \
 FORMS += \
     MainWindow.ui
 SOURCES += main.cpp \
+           Animation.cpp \
+           KeyboardEditor.cpp \
            MainWindow.cpp \
            PxtoneIODevice.cpp \
            pxtone/pxtnDelay.cpp \

@@ -287,6 +287,7 @@ bool pxtnService::moo_is_end_vomit() const
     return _moo_b_end_vomit ;
 }
 
+/* This place might be a chance to allow variable tempo songs */
 int32_t pxtnService::moo_get_now_clock() const
 {
     if( !_moo_b_init ) return 0;
