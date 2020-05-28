@@ -17,6 +17,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output, QW
     m_anim->start();
 
     connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
+    //connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
 }
 
 struct KeyBlock {
@@ -24,16 +25,26 @@ struct KeyBlock {
     int start;
     int end;
 };
-int xscale = 20;
-int yscale = 128;
+
+int clockPerPx = 20;
+int pitchPerPx = 128;
+int pitchOffset = 300;
 int height = 3;
+static qreal pitchToY(qreal pitch) {
+    return pitchOffset - pitch / pitchPerPx;
+}
+static qreal pitchOfY(qreal y) {
+    return (pitchOffset - y) * pitchPerPx;
+}
+
 static void paintBlock(const KeyBlock &block, QPainter &painter, const QBrush &brush) {
 
-    painter.fillRect(block.start/xscale, 300-block.pitch/yscale, (block.end - block.start)/xscale, height, brush);
+    painter.fillRect(block.start/clockPerPx, pitchOffset-block.pitch/pitchPerPx,
+                     (block.end - block.start)/clockPerPx, height, brush);
 }
 
 static void paintPlayhead(QPainter &painter, QBrush &brush, int clock) {
-    painter.fillRect(clock/xscale, 0, 1, 10000, brush);
+    painter.fillRect(clock/clockPerPx, 0, 1, 10000, brush);
 }
 
 static bool blockIsActive(const KeyBlock &block, int clock) {
@@ -41,23 +52,19 @@ static bool blockIsActive(const KeyBlock &block, int clock) {
 }
 
 
-static qreal m_elapsed = 1000000000;
-static qreal iFps, m_fps;
+static qreal iFps;
 void KeyboardEditor::paintEvent(QPaintEvent *) {
     ++painted;
     //if (painted > 10) return;
     QPainter painter(this);
     {
-        int interval = 60;
+        int interval = 20;
         if (!(painted % interval)) {
-            const qreal t = 0.4;
             qint64 elapsed = m_timer->nsecsElapsed();
             m_timer->restart();
-            m_elapsed = (1.0-t)*m_elapsed + t*elapsed;
             iFps = 1E9/elapsed*interval;
-            m_fps = 1E9/m_elapsed*interval;
         }
-        painter.drawText(rect(), QString("%1,%2 FPS %3").arg(m_fps, 0, 'f', 0).arg(iFps, 0, 'f', 0).arg(m_elapsed, 0, 'i', 0));
+        painter.drawText(rect(), QString("%1 FPS").arg(iFps, 0, 'f', 0));
     }
     std::vector<KeyBlock> blocks;
     std::vector<QBrush> brushes;
@@ -68,7 +75,15 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
         activeBrushes.push_back(QBrush(QColor::fromHsl((360*i*3/7) % 360, 255, 240)));
     }
     painter.setPen(Qt::blue);
-    int clock = m_audio_output->processedUSecs() * m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() / 60 / 1000000;
+    // TODO: usecs is choppy - it's an upper bound that gets worse with buffer size incrase.
+    // for longer songs though and lower end comps we probably do want a bigger buffer.
+    // The formula fixes the upper bound issue, but perhaps we can do some smoothing with a linear thing too.
+    //int bytes_per_second = 4 /* bytes in sample */ * 44100 /* samples per second */;
+    //long usecs = m_audio_output->processedUSecs() - long(m_audio_output->bufferSize()) * 10E5 / bytes_per_second;
+
+    long usecs = m_audio_output->processedUSecs();
+    int clock = usecs * m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() / 60 / 1000000;
+    //clock = m_pxtn->moo_get_now_clock();
     int i = 0;
     for (const EVERECORD* e = m_pxtn->evels->get_Records(); e != nullptr; e = e->next) {
         int i = e->unit_no;
@@ -97,4 +112,11 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     painter.setFont(QFont("Arial", 30));
     painter.drawText(rect(), Qt::AlignCenter, "Qst");
 
+}
+
+void KeyboardEditor::mousePressEvent ( QMouseEvent * event ) {
+    int clock = event->localPos().x()*clockPerPx;
+    int pitch = int(round(pitchOfY(event->localPos().y())));
+    if (!m_pxtn->evels->Record_Add_i(clock, 0, EVENTKIND_KEY, pitch)) { qWarning() << "Cannot edit"; }
+    qDebug() << clock << " " << pitch;
 }

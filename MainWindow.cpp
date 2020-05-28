@@ -8,12 +8,15 @@
 #include "pxtone/pxtnDescriptor.h"
 #include <cstdio>
 
+// TODO: Maybe we could not hard-code this and change the engine to be dynamic w/ smart pointers.
+static constexpr int EVENT_MAX = 1000000;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_pxtn_device(this, &m_pxtn)
     , ui(new Ui::MainWindow)
 {
-    m_pxtn.init();
+    m_pxtn.init_collage(EVENT_MAX);
     int channel_num = 2;
     int sample_rate = 44100;
     m_pxtn.set_destination_quality(channel_num, sample_rate);
@@ -37,6 +40,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     m_audio = new QAudioOutput(format, this);
+
+
+    //m_audio->setBufferSize(441000);
+    m_audio->setCategory("game"); // Apparently this reduces latency in pulseaudio, but also makes some sounds choppier
     m_audio->setVolume(0.1);
     loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
     m_scroll_area = new QScrollArea();

@@ -16,6 +16,7 @@ public:
 signals:
 
 private:
+    void mousePressEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event) override;
     pxtnService *m_pxtn;
     QElapsedTimer *m_timer;

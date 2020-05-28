@@ -437,7 +437,6 @@ bool pxtnService::moo_set_master_volume( float v )
 
 bool pxtnService::Moo( void* p_buf, int32_t  size, int32_t *filled_size )
 {
-
     if( !_moo_b_init       ) return false;
     if( !_moo_b_valid_data ) return false;
     if(  _moo_b_end_vomit  ) return false;
