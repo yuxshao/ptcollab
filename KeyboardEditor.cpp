@@ -3,10 +3,10 @@
 #include <QDebug>
 #include <QTime>
 #include <QPaintEvent>
-
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output, QWidget *parent) :
     QWidget(parent), m_pxtn(pxtn), painted(0), m_timer(new QElapsedTimer), m_audio_output(audio_output), m_anim(new Animation(this))
 {
+
     m_audio_output->setNotifyInterval(10);
     qDebug() << m_audio_output->notifyInterval();
     m_anim->setDuration(100);
@@ -26,20 +26,20 @@ struct KeyBlock {
     int end;
 };
 
-int clockPerPx = 20;
-int pitchPerPx = 128;
-int pitchOffset = 300;
-int height = 3;
+int clockPerPx = 10;
+int pitchPerPx = 32;
+int pitchOffset = 38400;
+int height = 5;
 static qreal pitchToY(qreal pitch) {
-    return pitchOffset - pitch / pitchPerPx;
+    return (pitchOffset - pitch) / pitchPerPx;
 }
 static qreal pitchOfY(qreal y) {
-    return (pitchOffset - y) * pitchPerPx;
+    return pitchOffset - y * pitchPerPx;
 }
 
 static void paintBlock(const KeyBlock &block, QPainter &painter, const QBrush &brush) {
 
-    painter.fillRect(block.start/clockPerPx, pitchOffset-block.pitch/pitchPerPx,
+    painter.fillRect(block.start/clockPerPx, pitchToY(block.pitch),
                      (block.end - block.start)/clockPerPx, height, brush);
 }
 
@@ -96,13 +96,19 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
             blocks[i].start = e->clock; blocks[i].end = e->clock + e->value;
             break;
         case EVENTKIND_KEY:
-            blocks[i].end = e->clock;
+            // TODO: This rendering is weird
+            blocks[i].end = std::min(e->clock, blocks[i].end);
             paintBlock(blocks[i], painter, blockIsActive(blocks[i], clock) ? activeBrushes[i] : brushes[i]);
             blocks[i].pitch = e->value;
             blocks[i].start = e->clock;
             break;
         default: break;
         }
+    }
+
+    if (m_mouse_edit_state != nullptr) {
+        KeyBlock b{m_mouse_edit_state->start_pitch, m_mouse_edit_state->start_clock, m_mouse_edit_state->current_clock};
+        paintBlock(b, painter, brushes[0]);
     }
 
     QBrush b(QColor::fromRgb(255,255,255));
@@ -117,6 +123,58 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 void KeyboardEditor::mousePressEvent ( QMouseEvent * event ) {
     int clock = event->localPos().x()*clockPerPx;
     int pitch = int(round(pitchOfY(event->localPos().y())));
-    if (!m_pxtn->evels->Record_Add_i(clock, 0, EVENTKIND_KEY, pitch)) { qWarning() << "Cannot edit"; }
-    qDebug() << clock << " " << pitch;
+    MouseEditState::Type type;
+    if (event->modifiers() & Qt::ControlModifier) {
+        if (event->button() == Qt::RightButton)
+            type = MouseEditState::Type::DeleteNote;
+        else type = MouseEditState::Type::SetNote;
+    }
+    else {
+        if (event->button() == Qt::RightButton)
+            type = MouseEditState::Type::DeleteOn;
+        else type = MouseEditState::Type::SetOn;
+    }
+
+    m_mouse_edit_state.reset(new MouseEditState{type, clock, pitch, clock, pitch});
 }
+
+void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
+    if (m_mouse_edit_state == nullptr) return;
+    m_mouse_edit_state->current_pitch = int(round(pitchOfY(event->localPos().y())));
+    m_mouse_edit_state->current_clock = event->localPos().x()*clockPerPx;
+}
+
+void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
+    if (m_mouse_edit_state == nullptr) return;
+
+    int start_clock = m_mouse_edit_state->start_clock;
+    int end_clock = event->localPos().x()*clockPerPx;
+    int start_pitch = m_mouse_edit_state->start_pitch;
+    int end_pitch = int(round(pitchOfY(event->localPos().y())));
+    if (end_pitch < start_pitch) std::swap(end_pitch, start_pitch);
+    qDebug() << m_mouse_edit_state->type;
+
+    switch (m_mouse_edit_state->type) {
+    case MouseEditState::SetOn:
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_VELOCITY);
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
+        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_ON, end_clock-start_clock);
+        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_VELOCITY, EVENTDEFAULT_VELOCITY);
+        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, end_clock-start_clock);
+        break;
+    case MouseEditState::DeleteOn:
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_VELOCITY);
+        break;
+    case MouseEditState::SetNote:
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
+        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
+        break;
+    case MouseEditState::DeleteNote:
+        m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
+        break;
+    }
+    m_mouse_edit_state.reset();
+}
+

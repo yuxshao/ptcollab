@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //m_audio->setBufferSize(441000);
     m_audio->setCategory("game"); // Apparently this reduces latency in pulseaudio, but also makes some sounds choppier
-    m_audio->setVolume(0.1);
+    m_audio->setVolume(0.5);
     loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
     m_scroll_area = new QScrollArea();
     m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio);

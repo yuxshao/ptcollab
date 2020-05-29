@@ -6,6 +6,22 @@
 #include "Animation.h"
 #include <QAudioOutput>
 #include <QElapsedTimer>
+#include <optional>
+
+struct MouseEditState {
+    enum Type {
+        SetNote,
+        SetOn,
+        DeleteNote,
+        DeleteOn
+    };
+    Type type;
+    int start_clock;
+    int start_pitch;
+    int current_clock;
+    int current_pitch;
+};
+
 
 class KeyboardEditor : public QWidget
 {
@@ -16,11 +32,14 @@ public:
 signals:
 
 private:
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     pxtnService *m_pxtn;
     QElapsedTimer *m_timer;
     int painted;
+    std::unique_ptr<MouseEditState> m_mouse_edit_state;
     QAudioOutput *m_audio_output;
     Animation *m_anim;
 };

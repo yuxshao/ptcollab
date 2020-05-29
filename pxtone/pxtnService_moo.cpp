@@ -119,6 +119,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE( void *p_data )
   /* Notify all the units of events that occurred since the last time increment
      and adjust sampling parameters accordingly */
     // events..
+    // TODO: Be able to handle changes while playing.
+    // 1. Adding between last and current event for this unit, or deleting the next event, or changing note length.
     for( ; _moo_p_eve && _moo_p_eve->clock <= clock; _moo_p_eve = _moo_p_eve->next )
     {
         int32_t                  u   = _moo_p_eve->unit_no;
@@ -445,6 +447,10 @@ bool pxtnService::Moo( void* p_buf, int32_t  size, int32_t *filled_size )
 
     int32_t  smp_w = 0;
 
+    int j = 0;
+    for (int i = 0; i < 100000000*0; ++i) {
+        j += i*i;
+    }
     /* No longer failing on remainder - we just return the filled size */
     // if( size % _dst_byte_per_smp ) return false;
 
