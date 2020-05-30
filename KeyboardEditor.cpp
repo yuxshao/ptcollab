@@ -20,10 +20,27 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output, QW
     //connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
 }
 
-struct KeyBlock {
-    int pitch;
+struct Interval {
     int start;
     int end;
+
+    bool contains(int x) const {
+        return (start <= x && x < end);
+    }
+
+    int length() const { return end - start; }
+};
+
+struct DrawState {
+    int pitch;
+    int lastPitchTime;
+    std::optional<Interval> ongoingOnEvent;
+};
+
+struct KeyBlock {
+    int pitch;
+    Interval segment;
+    Interval onEvent;
 };
 
 int clockPerPx = 10;
@@ -37,20 +54,15 @@ static qreal pitchOfY(qreal y) {
     return pitchOffset - y * pitchPerPx;
 }
 
-static void paintBlock(const KeyBlock &block, QPainter &painter, const QBrush &brush) {
+static void paintBlock(int pitch, const Interval &segment, QPainter &painter, const QBrush &brush) {
 
-    painter.fillRect(block.start/clockPerPx, pitchToY(block.pitch),
-                     (block.end - block.start)/clockPerPx, height, brush);
+    painter.fillRect(segment.start/clockPerPx, pitchToY(pitch),
+                     segment.length()/clockPerPx, height, brush);
 }
 
 static void paintPlayhead(QPainter &painter, QBrush &brush, int clock) {
     painter.fillRect(clock/clockPerPx, 0, 1, 10000, brush);
 }
-
-static bool blockIsActive(const KeyBlock &block, int clock) {
-    return (clock >= block.start && clock < block.end);
-}
-
 
 static qreal iFps;
 void KeyboardEditor::paintEvent(QPaintEvent *) {
@@ -66,11 +78,11 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
         }
         painter.drawText(rect(), QString("%1 FPS").arg(iFps, 0, 'f', 0));
     }
-    std::vector<KeyBlock> blocks;
+    std::vector<DrawState> drawStates;
     std::vector<QBrush> brushes;
     std::vector<QBrush> activeBrushes;
     for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
-        blocks.push_back(KeyBlock{EVENTDEFAULT_KEY, 0, 0});
+        drawStates.push_back({EVENTDEFAULT_KEY, 0, std::nullopt});
         brushes.push_back(QBrush(QColor::fromHsl((360*i*3/7) % 360, 255, 128)));
         activeBrushes.push_back(QBrush(QColor::fromHsl((360*i*3/7) % 360, 255, 240)));
     }
@@ -84,31 +96,43 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     long usecs = m_audio_output->processedUSecs();
     int clock = usecs * m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() / 60 / 1000000;
     //clock = m_pxtn->moo_get_now_clock();
-    int i = 0;
     for (const EVERECORD* e = m_pxtn->evels->get_Records(); e != nullptr; e = e->next) {
         int i = e->unit_no;
-        if (i >= brushes.size()) continue;
         switch (e->kind) {
         case EVENTKIND_ON:
-            if (e->clock < blocks[i].end) blocks[i].end = e->clock;
-            // qDebug() << block.pitch << " " << block.start << " " << block.end;
-            paintBlock(blocks[i], painter, blockIsActive(blocks[i], clock) ? activeBrushes[i] : brushes[i]);
-            blocks[i].start = e->clock; blocks[i].end = e->clock + e->value;
+            if (drawStates[i].ongoingOnEvent.has_value()) {
+                Interval on = drawStates[i].ongoingOnEvent.value();
+                int start = std::max(drawStates[i].lastPitchTime, on.start);
+                int end = std::min(e->clock, on.end);
+                Interval interval{start, end};
+                paintBlock(drawStates[i].pitch, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
+                if (start == on.start)
+                    paintBlock(drawStates[i].pitch, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
+            }
+            drawStates[i].ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
             break;
         case EVENTKIND_KEY:
-            // TODO: This rendering is weird
-            blocks[i].end = std::min(e->clock, blocks[i].end);
-            paintBlock(blocks[i], painter, blockIsActive(blocks[i], clock) ? activeBrushes[i] : brushes[i]);
-            blocks[i].pitch = e->value;
-            blocks[i].start = e->clock;
+            if (drawStates[i].ongoingOnEvent.has_value()) {
+                Interval on = drawStates[i].ongoingOnEvent.value();
+                int start = std::max(drawStates[i].lastPitchTime, on.start);
+                int end = std::min(e->clock, on.end);
+                Interval interval{start, end};
+                paintBlock(drawStates[i].pitch, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
+                if (start == on.start)
+                    paintBlock(drawStates[i].pitch, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
+                if (e->clock > on.end) drawStates[i].ongoingOnEvent.reset();
+            }
+            drawStates[i].pitch = e->value;
+            drawStates[i].lastPitchTime = e->clock;
             break;
         default: break;
         }
     }
 
     if (m_mouse_edit_state != nullptr) {
-        KeyBlock b{m_mouse_edit_state->start_pitch, m_mouse_edit_state->start_clock, m_mouse_edit_state->current_clock};
-        paintBlock(b, painter, brushes[0]);
+        paintBlock(m_mouse_edit_state->start_pitch,
+                   Interval{m_mouse_edit_state->start_clock, m_mouse_edit_state->current_clock},
+                   painter, brushes[0]);
     }
 
     QBrush b(QColor::fromRgb(255,255,255));
