@@ -4,7 +4,7 @@
 #include <QTime>
 #include <QPaintEvent>
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output, QWidget *parent) :
-    QWidget(parent), m_pxtn(pxtn), painted(0), m_timer(new QElapsedTimer), m_audio_output(audio_output), m_anim(new Animation(this))
+    QWidget(parent), m_pxtn(pxtn), m_timer(new QElapsedTimer), painted(0), m_audio_output(audio_output), m_anim(new Animation(this))
 {
 
     m_audio_output->setNotifyInterval(10);
@@ -110,6 +110,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
         int i = e->unit_no;
         switch (e->kind) {
         case EVENTKIND_ON:
+            // TODO: This 'draw previous note block' is duplicated quite a bit.
+            // Maybe draw the last block of the previous on event.
             if (drawStates[i].ongoingOnEvent.has_value()) {
                 Interval on = drawStates[i].ongoingOnEvent.value();
                 int start = std::max(drawStates[i].lastPitchTime, on.start);
@@ -122,6 +124,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
             drawStates[i].ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
             break;
         case EVENTKIND_KEY:
+            // Maybe draw the previosu segment of the current on event.
             if (drawStates[i].ongoingOnEvent.has_value()) {
                 Interval on = drawStates[i].ongoingOnEvent.value();
                 int start = std::max(drawStates[i].lastPitchTime, on.start);
@@ -139,8 +142,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
         }
     }
 
-    // After all the events there might be some blocks that are pending a draw
-    for (int i = 0; i < drawStates.size(); ++i) {
+    // After all the events there might be some blocks that are pending a draw.
+    for (uint i = 0; i < drawStates.size(); ++i) {
         if (drawStates[i].ongoingOnEvent.has_value()) {
             Interval on = drawStates[i].ongoingOnEvent.value();
             int start = std::max(drawStates[i].lastPitchTime, on.start);
@@ -197,7 +200,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     if (end_clock < start_clock) std::swap(start_clock, end_clock);
 
     int start_pitch = m_mouse_edit_state->start_pitch;
-    int end_pitch = int(round(pitchOfY(event->localPos().y())));
+    //int end_pitch = int(round(pitchOfY(event->localPos().y())));
     int start_measure = start_clock / m_pxtn->master->get_beat_clock() / m_pxtn->master->get_beat_num();
     int end_measure = end_clock / m_pxtn->master->get_beat_clock() / m_pxtn->master->get_beat_num();
 
