@@ -4,6 +4,16 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QTime>
+int one_over_last_clock(pxtnService const *pxtn) {
+  return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
+         pxtn->master->get_beat_num();
+}
+
+QSize KeyboardEditor::sizeHint() const {
+  qDebug() << m_pxtn->moo_get_now_clock();
+  return QSize(one_over_last_clock(m_pxtn) / scale.clockPerPx,
+               scale.pitchToY(EVENTMIN_KEY));
+}
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                                QWidget *parent)
     : QWidget(parent),
@@ -14,13 +24,14 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_audio_output(audio_output),
       m_anim(new Animation(this)) {
   m_audio_output->setNotifyInterval(10);
-  qDebug() << m_audio_output->notifyInterval();
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
   m_anim->setEndValue(360);
   m_anim->setEasingCurve(QEasingCurve::Linear);
   m_anim->setLoopCount(-1);
   m_anim->start();
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  updateGeometry();
 
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
@@ -65,7 +76,6 @@ struct KeyBlock {
 };
 
 constexpr int EVENTMAX_VELOCITY = 128;
-constexpr int PITCH_PER_KEY = 256;
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
                        const QBrush &brush, const Scale &scale) {
   painter.fillRect(segment.start / scale.clockPerPx, scale.pitchToY(pitch),
@@ -83,7 +93,7 @@ static int lerp(double r, int a, int b) {
   if (r < 0) r = 0;
   return a + r * (b - a);
 }
-static int clamp(int lo, int x, int hi) {
+static int clamp(int x, int lo, int hi) {
   if (x < lo) return lo;
   if (x > hi) return hi;
   return x;
@@ -243,7 +253,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     paintBlock(m_mouse_edit_state->start_pitch, interval, painter,
                brushes[0].toQBrush(velocity, false), scale);
     painter.drawText(m_mouse_edit_state->start_clock / scale.clockPerPx,
-                     scale.pitchToY(m_mouse_edit_state->start_clock),
+                     scale.pitchToY(m_mouse_edit_state->start_pitch),
                      QString("(%1, %2, %3, %4)")
                          .arg(m_mouse_edit_state->start_clock)
                          .arg(m_mouse_edit_state->current_clock)
@@ -293,6 +303,8 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
       scale.clockPerPx *= pow(2, delta.y() / 240.0);
       if (scale.clockPerPx < 0.5) scale.clockPerPx = 0.5;
     }
+
+    updateGeometry();
   }
 }
 
@@ -330,8 +342,10 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_VELOCITY,
                                   impliedVelocity(*m_mouse_edit_state, scale));
       m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
-      if (end_measure >= m_pxtn->master->get_meas_num())
+      if (end_measure >= m_pxtn->master->get_meas_num()) {
         m_pxtn->master->set_meas_num(end_measure + 1);
+        updateGeometry();
+      }
       break;
     case MouseEditState::DeleteOn:
       m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);

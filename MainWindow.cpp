@@ -52,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
   loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
   m_scroll_area = new EditorScrollArea(this);
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio);
-  m_keyboard_editor->resize(10000, 1000);
 
   m_scroll_area->setWidget(m_keyboard_editor);
   m_scroll_area->setBackgroundRole(QPalette::Dark);

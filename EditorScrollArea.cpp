@@ -10,7 +10,9 @@ class TransposableWheelEvent : QWheelEvent {
   }
 };
 
-EditorScrollArea::EditorScrollArea(QWidget *parent) : QScrollArea(parent) {}
+EditorScrollArea::EditorScrollArea(QWidget *parent) : QScrollArea(parent) {
+  setWidgetResizable(true);
+}
 
 // TODO: Maybe a class that converts wheel event to action
 void EditorScrollArea::wheelEvent(QWheelEvent *event) {
