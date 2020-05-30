@@ -16,12 +16,12 @@ EditorScrollArea::EditorScrollArea(QWidget *parent) : QScrollArea(parent) {
 
 // TODO: Maybe a class that converts wheel event to action
 void EditorScrollArea::wheelEvent(QWheelEvent *event) {
-  if (event->modifiers() & Qt::ControlModifier)
-    return;  // This changes zoom in the child
-
-  // Maybe scroll the other dimension
-  if (event->modifiers() & Qt::ShiftModifier)
+  // Maybe scroll the other dimension.
+  if (event->modifiers() & Qt::ShiftModifier) {
     ((TransposableWheelEvent *)(event))->transpose();
+    // Disable modifier because QScrollArea takes it to mean scroll by a page
+    event->setModifiers(event->modifiers() & ~Qt::ShiftModifier);
+  }
 
   QScrollArea::wheelEvent(event);
 }

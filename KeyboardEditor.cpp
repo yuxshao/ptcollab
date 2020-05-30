@@ -304,6 +304,7 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
     }
 
     updateGeometry();
+    event->accept();
   }
 }
 
