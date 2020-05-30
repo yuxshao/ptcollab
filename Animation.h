@@ -3,14 +3,12 @@
 
 #include <QVariantAnimation>
 
-class Animation : public QVariantAnimation
-{
-    Q_OBJECT
-public:
-    explicit Animation(QObject *parent = nullptr);
-    void updateCurrentValue(const QVariant &) {}
-signals:
-
+class Animation : public QVariantAnimation {
+  Q_OBJECT
+ public:
+  explicit Animation(QObject *parent = nullptr);
+  void updateCurrentValue(const QVariant &) {}
+ signals:
 };
 
-#endif // ANIMATION_H
+#endif  // ANIMATION_H
