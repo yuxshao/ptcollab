@@ -95,6 +95,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
     long usecs = m_audio_output->processedUSecs();
     int clock = usecs * m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() / 60 / 1000000;
+    int repeat_clock = m_pxtn->master->get_repeat_meas() * m_pxtn->master->get_beat_num() * m_pxtn->master->get_beat_clock();
+    int last_clock = m_pxtn->master->get_beat_clock() * m_pxtn->master->get_play_meas() * m_pxtn->master->get_beat_num();
+    if (clock > repeat_clock) clock = (clock - repeat_clock) % last_clock + repeat_clock;
     //clock = m_pxtn->moo_get_now_clock();
     for (const EVERECORD* e = m_pxtn->evels->get_Records(); e != nullptr; e = e->next) {
         int i = e->unit_no;
@@ -173,19 +176,21 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
 
     int start_clock = m_mouse_edit_state->start_clock;
     int end_clock = event->localPos().x()*clockPerPx;
+    if (end_clock < start_clock) std::swap(start_clock, end_clock);
+
     int start_pitch = m_mouse_edit_state->start_pitch;
     int end_pitch = int(round(pitchOfY(event->localPos().y())));
-    if (end_pitch < start_pitch) std::swap(end_pitch, start_pitch);
     qDebug() << m_mouse_edit_state->type;
 
     switch (m_mouse_edit_state->type) {
     case MouseEditState::SetOn:
+        qDebug() << start_clock << " " << end_clock - start_clock;
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_VELOCITY);
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_ON, end_clock-start_clock);
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_VELOCITY, EVENTDEFAULT_VELOCITY);
-        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, end_clock-start_clock);
+        m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
         break;
     case MouseEditState::DeleteOn:
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);
