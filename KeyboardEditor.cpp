@@ -35,6 +35,8 @@ struct LastEvent {
     int clock;
     int value;
 
+    LastEvent(int value) : clock(0), value(value) { }
+
     void set(EVERECORD const *e) {
         clock = e->clock;
         value = e->value;
@@ -42,9 +44,11 @@ struct LastEvent {
 };
 
 struct DrawState {
-    int pitch;
-    int lastPitchTime;
+    LastEvent pitch;
+    LastEvent velocity;
     std::optional<Interval> ongoingOnEvent;
+
+    DrawState() : pitch(EVENTDEFAULT_KEY), velocity(EVENTDEFAULT_VELOCITY), ongoingOnEvent(std::nullopt) { }
 };
 
 struct KeyBlock {
@@ -108,7 +112,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     std::vector<QBrush> brushes;
     std::vector<QBrush> activeBrushes;
     for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
-        drawStates.push_back({EVENTDEFAULT_KEY, 0, std::nullopt});
+        drawStates.emplace_back();
         brushes.push_back(QBrush(QColor::fromHsl((360*i*3/7) % 360, 255, 128)));
         activeBrushes.push_back(QBrush(QColor::fromHsl((360*i*3/7) % 360, 255, 240)));
     }
@@ -136,29 +140,31 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
             // Maybe draw the last block of the previous on event.
             if (drawStates[i].ongoingOnEvent.has_value()) {
                 Interval on = drawStates[i].ongoingOnEvent.value();
-                int start = std::max(drawStates[i].lastPitchTime, on.start);
+                int start = std::max(drawStates[i].pitch.clock, on.start);
                 int end = std::min(e->clock, on.end);
                 Interval interval{start, end};
-                paintBlock(drawStates[i].pitch, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
+                paintBlock(drawStates[i].pitch.value, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
                 if (start == on.start)
-                    paintBlock(drawStates[i].pitch, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
+                    paintBlock(drawStates[i].pitch.value, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
             }
             drawStates[i].ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
+            break;
+        case EVENTKIND_VELOCITY:
+            drawStates[i].velocity.set(e);
             break;
         case EVENTKIND_KEY:
             // Maybe draw the previosu segment of the current on event.
             if (drawStates[i].ongoingOnEvent.has_value()) {
                 Interval on = drawStates[i].ongoingOnEvent.value();
-                int start = std::max(drawStates[i].lastPitchTime, on.start);
+                int start = std::max(drawStates[i].pitch.clock, on.start);
                 int end = std::min(e->clock, on.end);
                 Interval interval{start, end};
-                paintBlock(drawStates[i].pitch, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
+                paintBlock(drawStates[i].pitch.value, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
                 if (start == on.start)
-                    paintBlock(drawStates[i].pitch, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
+                    paintBlock(drawStates[i].pitch.value, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
                 if (e->clock > on.end) drawStates[i].ongoingOnEvent.reset();
             }
-            drawStates[i].pitch = e->value;
-            drawStates[i].lastPitchTime = e->clock;
+            drawStates[i].pitch.set(e);
             break;
         default: break;
         }
@@ -168,11 +174,11 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     for (uint i = 0; i < drawStates.size(); ++i) {
         if (drawStates[i].ongoingOnEvent.has_value()) {
             Interval on = drawStates[i].ongoingOnEvent.value();
-            int start = std::max(drawStates[i].lastPitchTime, on.start);
+            int start = std::max(drawStates[i].pitch.clock, on.start);
             Interval interval{start, on.end};
-            paintBlock(drawStates[i].pitch, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
+            paintBlock(drawStates[i].pitch.value, interval, painter, on.contains(clock) ? activeBrushes[i] : brushes[i]);
             if (start == on.start)
-                paintBlock(drawStates[i].pitch, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
+                paintBlock(drawStates[i].pitch.value, {start, start + 2*clockPerPx}, painter, activeBrushes[i]);
             drawStates[i].ongoingOnEvent.reset();
         }
     }
