@@ -31,6 +31,16 @@ struct Interval {
     int length() const { return end - start; }
 };
 
+struct LastEvent {
+    int clock;
+    int value;
+
+    void set(EVERECORD const *e) {
+        clock = e->clock;
+        value = e->value;
+    }
+};
+
 struct DrawState {
     int pitch;
     int lastPitchTime;
@@ -63,6 +73,18 @@ static void paintBlock(int pitch, const Interval &segment, QPainter &painter, co
 static void paintVerticalLine(QPainter &painter, QBrush const &brush, int clock) {
     painter.fillRect(clock/clockPerPx, 0, 1, 10000, brush);
 }
+
+struct Brush {
+    int hue;
+    int saturation;
+    int muted_brightness;
+    int base_brightness;
+    int on_brightness;
+
+//    QBrush toQBrush(int velocity, bool on) {
+//        return;
+//    }
+};
 
 static qreal iFps;
 void KeyboardEditor::paintEvent(QPaintEvent *) {
@@ -212,8 +234,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_ON, end_clock-start_clock);
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_VELOCITY, EVENTDEFAULT_VELOCITY);
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
-        if (end_measure >= m_pxtn->master->get_last_meas())
-            m_pxtn->master->set_last_meas(end_measure + 1);
+        if (end_measure >= m_pxtn->master->get_meas_num())
+            m_pxtn->master->set_meas_num(end_measure + 1);
         break;
     case MouseEditState::DeleteOn:
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_ON);
@@ -222,8 +244,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     case MouseEditState::SetNote:
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
         m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
-        if (start_measure >= m_pxtn->master->get_last_meas())
-            m_pxtn->master->set_last_meas(start_measure + 1);
+        if (start_measure >= m_pxtn->master->get_meas_num())
+            m_pxtn->master->set_meas_num(start_measure + 1);
         break;
     case MouseEditState::DeleteNote:
         m_pxtn->evels->Record_Delete(start_clock, end_clock, 0, EVENTKIND_KEY);
