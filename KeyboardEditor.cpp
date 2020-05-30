@@ -10,7 +10,6 @@ int one_over_last_clock(pxtnService const *pxtn) {
 }
 
 QSize KeyboardEditor::sizeHint() const {
-  qDebug() << m_pxtn->moo_get_now_clock();
   return QSize(one_over_last_clock(m_pxtn) / scale.clockPerPx,
                scale.pitchToY(EVENTMIN_KEY));
 }
