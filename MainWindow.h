@@ -6,6 +6,7 @@
 #include <QScrollArea>
 #include <QtMultimedia/QAudioOutput>
 
+#include "EditorScrollArea.h"
 #include "KeyboardEditor.h"
 #include "PxtoneIODevice.h"
 #include "pxtone/pxtnService.h"
@@ -31,7 +32,7 @@ class MainWindow : public QMainWindow {
   QAudioOutput* m_audio;
   KeyboardEditor* m_keyboard_editor;
   pxtnService m_pxtn;
-  QScrollArea* m_scroll_area;
+  EditorScrollArea* m_scroll_area;
   PxtoneIODevice m_pxtn_device;
 
   Ui::MainWindow* ui;

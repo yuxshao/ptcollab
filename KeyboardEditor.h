@@ -18,6 +18,19 @@ struct MouseEditState {
   int current_pitch;
 };
 
+struct Scale {
+  double clockPerPx;
+  double pitchPerPx;
+  int pitchOffset;
+  int noteHeight;
+
+  Scale() : clockPerPx(10), pitchPerPx(32), pitchOffset(38400), noteHeight(5) {}
+  qreal pitchToY(qreal pitch) const {
+    return (pitchOffset - pitch) / pitchPerPx;
+  }
+  qreal pitchOfY(qreal y) const { return pitchOffset - y * pitchPerPx; }
+};
+
 class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
@@ -31,6 +44,8 @@ class KeyboardEditor : public QWidget {
   void mouseReleaseEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void paintEvent(QPaintEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
+  Scale scale;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
   int painted;

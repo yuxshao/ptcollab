@@ -7,6 +7,7 @@
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                                QWidget *parent)
     : QWidget(parent),
+      scale(),
       m_pxtn(pxtn),
       m_timer(new QElapsedTimer),
       painted(0),
@@ -63,24 +64,18 @@ struct KeyBlock {
   Interval onEvent;
 };
 
-int clockPerPx = 10;
-int pitchPerPx = 32;
-int pitchOffset = 38400;
-int height = 5;
-static qreal pitchToY(qreal pitch) {
-  return (pitchOffset - pitch) / pitchPerPx;
-}
-static qreal pitchOfY(qreal y) { return pitchOffset - y * pitchPerPx; }
-
+constexpr int EVENTMAX_VELOCITY = 128;
+constexpr int PITCH_PER_KEY = 256;
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
-                       const QBrush &brush) {
-  painter.fillRect(segment.start / clockPerPx, pitchToY(pitch),
-                   segment.length() / clockPerPx, height, brush);
+                       const QBrush &brush, const Scale &scale) {
+  painter.fillRect(segment.start / scale.clockPerPx, scale.pitchToY(pitch),
+                   segment.length() / scale.clockPerPx,
+                   PITCH_PER_KEY / scale.pitchPerPx - 2, brush);
 }
 
-static void paintVerticalLine(QPainter &painter, QBrush const &brush,
-                              int clock) {
-  painter.fillRect(clock / clockPerPx, 0, 1, 10000, brush);
+static void paintVerticalLine(QPainter &painter, QBrush const &brush, int clock,
+                              const Scale &scale) {
+  painter.fillRect(clock / scale.clockPerPx, 0, 1, 10000, brush);
 }
 
 static int lerp(double r, int a, int b) {
@@ -93,7 +88,6 @@ static int clamp(int lo, int x, int hi) {
   if (x > hi) return hi;
   return x;
 }
-constexpr int EVENTMAX_VELOCITY = 128;
 struct Brush {
   int hue;
   int saturation;
@@ -102,7 +96,7 @@ struct Brush {
   int on_brightness;
 
   Brush(int hue, int saturation = 255, int muted_brightness = 20,
-        int base_brightness = 220, int on_brightness = 255)
+        int base_brightness = 204, int on_brightness = 255)
       : hue(hue),
         saturation(saturation),
         muted_brightness(muted_brightness),
@@ -118,10 +112,10 @@ struct Brush {
 };
 
 int pixelsPerVelocity = 3;
-int impliedVelocity(MouseEditState state) {
+int impliedVelocity(MouseEditState state, const Scale &scale) {
   return clamp(
       EVENTDEFAULT_VELOCITY + (state.current_pitch - state.start_pitch) /
-                                  pitchPerPx / pixelsPerVelocity,
+                                  scale.pitchPerPx / pixelsPerVelocity,
       0, EVENTMAX_VELOCITY);
 }
 // TODO: Make an FPS tracker singleton
@@ -169,8 +163,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   int last_clock = m_pxtn->master->get_beat_clock() *
                    m_pxtn->master->get_play_meas() *
                    m_pxtn->master->get_beat_num();
-  if (clock > repeat_clock)
-    clock = (clock - repeat_clock) % last_clock + repeat_clock;
+  clock = (clock - repeat_clock) % last_clock + repeat_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
@@ -188,11 +181,12 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           Interval interval{start, end};
           QBrush brush = brushes[i].toQBrush(drawStates[i].velocity.value,
                                              on.contains(clock));
-          paintBlock(drawStates[i].pitch.value, interval, painter, brush);
+          paintBlock(drawStates[i].pitch.value, interval, painter, brush,
+                     scale);
           if (start == on.start)
             paintBlock(drawStates[i].pitch.value,
-                       {start, start + 2 * clockPerPx}, painter,
-                       brushes[i].toQBrush(255, true));
+                       {start, start + int(2 * scale.clockPerPx)}, painter,
+                       brushes[i].toQBrush(255, true), scale);
         }
         drawStates[i].ongoingOnEvent.emplace(
             Interval{e->clock, e->value + e->clock});
@@ -209,11 +203,12 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           Interval interval{start, end};
           QBrush brush = brushes[i].toQBrush(drawStates[i].velocity.value,
                                              on.contains(clock));
-          paintBlock(drawStates[i].pitch.value, interval, painter, brush);
+          paintBlock(drawStates[i].pitch.value, interval, painter, brush,
+                     scale);
           if (start == on.start)
             paintBlock(drawStates[i].pitch.value,
-                       {start, start + 2 * clockPerPx}, painter,
-                       brushes[i].toQBrush(255, true));
+                       {start, start + 2 * int(scale.clockPerPx)}, painter,
+                       brushes[i].toQBrush(255, true), scale);
           if (e->clock > on.end) drawStates[i].ongoingOnEvent.reset();
         }
         drawStates[i].pitch.set(e);
@@ -231,34 +226,44 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       Interval interval{start, on.end};
       QBrush brush =
           brushes[i].toQBrush(drawStates[i].velocity.value, on.contains(clock));
-      paintBlock(drawStates[i].pitch.value, interval, painter, brush);
+      paintBlock(drawStates[i].pitch.value, interval, painter, brush, scale);
       if (start == on.start)
-        paintBlock(drawStates[i].pitch.value, {start, start + 2 * clockPerPx},
-                   painter, brushes[i].toQBrush(255, true));
+        paintBlock(drawStates[i].pitch.value,
+                   {start, start + 2 * int(scale.clockPerPx)}, painter,
+                   brushes[i].toQBrush(255, true), scale);
       drawStates[i].ongoingOnEvent.reset();
     }
   }
 
   // Draw an ongoing edit
   if (m_mouse_edit_state != nullptr) {
-    int velocity = impliedVelocity(*m_mouse_edit_state);
+    int velocity = impliedVelocity(*m_mouse_edit_state, scale);
     Interval interval{m_mouse_edit_state->start_clock,
                       m_mouse_edit_state->current_clock};
     paintBlock(m_mouse_edit_state->start_pitch, interval, painter,
-               brushes[0].toQBrush(velocity, false));
+               brushes[0].toQBrush(velocity, false), scale);
+    painter.drawText(m_mouse_edit_state->start_clock / scale.clockPerPx,
+                     scale.pitchToY(m_mouse_edit_state->start_clock),
+                     QString("(%1, %2, %3, %4)")
+                         .arg(m_mouse_edit_state->start_clock)
+                         .arg(m_mouse_edit_state->current_clock)
+                         .arg(m_mouse_edit_state->start_pitch)
+                         .arg(velocity));
   }
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
-  paintVerticalLine(painter, QBrush(QColor::fromRgb(255, 255, 255)), clock);
+  paintVerticalLine(painter, QBrush(QColor::fromRgb(255, 255, 255)), clock,
+                    scale);
   paintVerticalLine(painter, QBrush(QColor::fromRgb(255, 255, 255, 128)),
-                    last_clock);
+                    last_clock, scale);
   paintVerticalLine(painter, QBrush(QColor::fromRgb(255, 255, 255, 128)),
-                    m_pxtn->moo_get_end_clock());
+                    m_pxtn->moo_get_end_clock(), scale);
 }
 
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
-  int clock = event->localPos().x() * clockPerPx;
-  int pitch = int(round(pitchOfY(event->localPos().y())));
+  int clock = event->localPos().x() * scale.clockPerPx;
+  int pitch = int(round(scale.pitchOfY(event->localPos().y())));
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->button() == Qt::RightButton)
@@ -276,18 +281,35 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       new MouseEditState{type, clock, pitch, clock, pitch});
 }
 
+void KeyboardEditor::wheelEvent(QWheelEvent *event) {
+  QPoint delta = event->angleDelta();
+  if (event->modifiers() & Qt::ControlModifier) {
+    if (event->modifiers() & Qt::ShiftModifier) {
+      // scale Y
+      scale.pitchPerPx *= pow(2, delta.y() / 240.0);
+      if (scale.pitchPerPx < 0.5) scale.pitchPerPx = 0.5;
+    } else {
+      // scale X
+      scale.clockPerPx *= pow(2, delta.y() / 240.0);
+      if (scale.clockPerPx < 0.5) scale.clockPerPx = 0.5;
+    }
+  }
+}
+
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
   if (m_mouse_edit_state == nullptr) return;
+  // TODO: Perhaps the edit state should just work in pixel coords. Enough
+  // places don't really care about the coord in pitch / clock scale.
   m_mouse_edit_state->current_pitch =
-      int(round(pitchOfY(event->localPos().y())));
-  m_mouse_edit_state->current_clock = event->localPos().x() * clockPerPx;
+      int(round(scale.pitchOfY(event->localPos().y())));
+  m_mouse_edit_state->current_clock = event->localPos().x() * scale.clockPerPx;
 }
 
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   if (m_mouse_edit_state == nullptr) return;
 
   int start_clock = m_mouse_edit_state->start_clock;
-  int end_clock = event->localPos().x() * clockPerPx;
+  int end_clock = event->localPos().x() * scale.clockPerPx;
   if (end_clock < start_clock) std::swap(start_clock, end_clock);
 
   int start_pitch = m_mouse_edit_state->start_pitch;
@@ -306,7 +328,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_ON,
                                   end_clock - start_clock);
       m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_VELOCITY,
-                                  impliedVelocity(*m_mouse_edit_state));
+                                  impliedVelocity(*m_mouse_edit_state, scale));
       m_pxtn->evels->Record_Add_i(start_clock, 0, EVENTKIND_KEY, start_pitch);
       if (end_measure >= m_pxtn->master->get_meas_num())
         m_pxtn->master->set_meas_num(end_measure + 1);
