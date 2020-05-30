@@ -75,11 +75,24 @@ struct KeyBlock {
 };
 
 constexpr int EVENTMAX_VELOCITY = 128;
+static void paintAtClockPitch(int clock, int pitch, int widthInPx,
+                              QPainter &painter, const QBrush &brush,
+                              const Scale &scale) {
+  int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
+  painter.fillRect(clock / scale.clockPerPx,
+                   scale.pitchToY(pitch) + rowHeight / 6, widthInPx,
+                   rowHeight * 2 / 3, brush);
+}
+
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
                        const QBrush &brush, const Scale &scale) {
-  painter.fillRect(segment.start / scale.clockPerPx, scale.pitchToY(pitch),
-                   segment.length() / scale.clockPerPx,
-                   PITCH_PER_KEY / scale.pitchPerPx - 2, brush);
+  paintAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
+                    painter, brush, scale);
+}
+
+static void paintHighlight(int pitch, int clock, QPainter &painter,
+                           const QBrush &brush, const Scale &scale) {
+  paintAtClockPitch(clock, pitch, 2, painter, brush, scale);
 }
 
 static void paintVerticalLine(QPainter &painter, QBrush const &brush, int clock,
@@ -134,7 +147,46 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   // if (painted > 10) return;
   QPainter painter(this);
 
+  painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
+  // Draw white lines under background
+  QBrush beatBrush(QColor::fromRgb(128, 128, 128));
+  QBrush measureBrush(Qt::white);
+  for (int beat = 0; true; ++beat) {
+    bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
+    int x = m_pxtn->master->get_beat_clock() * beat / scale.clockPerPx;
+    if (x > size().width()) break;
+    painter.fillRect(x, 0, 1, size().height(),
+                     (isMeasureLine ? measureBrush : beatBrush));
+  }
+  // Draw key background
+  QBrush whiteNoteBrush(QColor::fromRgb(64, 64, 64));
+  QBrush blackNoteBrush(QColor::fromRgb(32, 32, 32));
+  for (int row = 0; true; ++row) {
+    QBrush *brush;
+    switch (row % 12) {
+      case 2:
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+        brush = &blackNoteBrush;
+        break;
+      default:
+        brush = &whiteNoteBrush;
+    }
+
+    if (row * PITCH_PER_KEY / scale.pitchPerPx > size().height()) break;
+    int this_y = row * PITCH_PER_KEY / scale.pitchPerPx;
+    // Because of rounding error, calculate height by subbing next from this
+    // TODO: change scale so that pitchPerPx is necessarily an int
+    int next_y = (row + 1) * PITCH_PER_KEY / scale.pitchPerPx;
+    painter.fillRect(0, this_y, size().width(), next_y - this_y - 1, *brush);
+  }
+
   // Draw FPS
+  QPen pen;
+  pen.setBrush(Qt::white);
+  painter.setPen(pen);
   {
     int interval = 20;
     if (!(painted % interval)) {
@@ -161,10 +213,10 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   // second */; long usecs = m_audio_output->processedUSecs() -
   // long(m_audio_output->bufferSize()) * 10E5 / bytes_per_second;
 
-  long usecs = m_audio_output->processedUSecs();
+  /*long usecs = m_audio_output->processedUSecs();
   int clock = usecs * m_pxtn->master->get_beat_tempo() *
-              m_pxtn->master->get_beat_clock() / 60 / 1000000;
-  // clock = m_pxtn->moo_get_now_clock();
+              m_pxtn->master->get_beat_clock() / 60 / 1000000;*/
+  int clock = m_pxtn->moo_get_now_clock();
 
   int repeat_clock = m_pxtn->master->get_repeat_meas() *
                      m_pxtn->master->get_beat_num() *
@@ -193,9 +245,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           paintBlock(drawStates[i].pitch.value, interval, painter, brush,
                      scale);
           if (start == on.start)
-            paintBlock(drawStates[i].pitch.value,
-                       {start, start + int(2 * scale.clockPerPx)}, painter,
-                       brushes[i].toQBrush(255, true), scale);
+            paintHighlight(drawStates[i].pitch.value, start, painter,
+                           brushes[i].toQBrush(255, true), scale);
         }
         drawStates[i].ongoingOnEvent.emplace(
             Interval{e->clock, e->value + e->clock});
@@ -215,9 +266,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           paintBlock(drawStates[i].pitch.value, interval, painter, brush,
                      scale);
           if (start == on.start)
-            paintBlock(drawStates[i].pitch.value,
-                       {start, start + 2 * int(scale.clockPerPx)}, painter,
-                       brushes[i].toQBrush(255, true), scale);
+            paintHighlight(drawStates[i].pitch.value, start, painter,
+                           brushes[i].toQBrush(255, true), scale);
           if (e->clock > on.end) drawStates[i].ongoingOnEvent.reset();
         }
         drawStates[i].pitch.set(e);
@@ -251,6 +301,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
                       m_mouse_edit_state->current_clock};
     paintBlock(m_mouse_edit_state->start_pitch, interval, painter,
                brushes[0].toQBrush(velocity, false), scale);
+
+    painter.setPen(pen);
     painter.drawText(m_mouse_edit_state->start_clock / scale.clockPerPx,
                      scale.pitchToY(m_mouse_edit_state->start_pitch),
                      QString("(%1, %2, %3, %4)")
@@ -269,38 +321,23 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
                     m_pxtn->moo_get_end_clock(), scale);
 }
 
-void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
-  int clock = event->localPos().x() * scale.clockPerPx;
-  int pitch = int(round(scale.pitchOfY(event->localPos().y())));
-  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
-  MouseEditState::Type type;
-  if (event->modifiers() & Qt::ControlModifier) {
-    if (event->button() == Qt::RightButton)
-      type = MouseEditState::Type::DeleteNote;
-    else
-      type = MouseEditState::Type::SetNote;
-  } else {
-    if (event->button() == Qt::RightButton)
-      type = MouseEditState::Type::DeleteOn;
-    else
-      type = MouseEditState::Type::SetOn;
-  }
-
-  m_mouse_edit_state.reset(
-      new MouseEditState{type, clock, pitch, clock, pitch});
-}
-
 void KeyboardEditor::wheelEvent(QWheelEvent *event) {
+  // TODO: Unfortunately, it's hard to when scaling preserve the time/pitch
+  // position of the mouse or playhead or whatever else. There isn't a really
+  // good hook for controlling the scroll bar positions - the fact that they're
+  // in the parent makes this harder too.
   QPoint delta = event->angleDelta();
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {
       // scale Y
       scale.pitchPerPx *= pow(2, delta.y() / 240.0);
       if (scale.pitchPerPx < 0.5) scale.pitchPerPx = 0.5;
+      if (scale.pitchPerPx > PITCH_PER_KEY) scale.pitchPerPx = PITCH_PER_KEY;
     } else {
       // scale X
       scale.clockPerPx *= pow(2, delta.y() / 240.0);
       if (scale.clockPerPx < 0.5) scale.clockPerPx = 0.5;
+      if (scale.clockPerPx > 128) scale.clockPerPx = 128;
     }
 
     updateGeometry();
@@ -308,9 +345,40 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
   }
 }
 
+void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
+  int clock = event->localPos().x() * scale.clockPerPx;
+  int pitch = int(round(scale.pitchOfY(event->localPos().y())));
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
+  MouseEditState::Type type;
+  if (event->modifiers() & Qt::ShiftModifier) {
+    pxtnVOMITPREPARATION prep{};
+    prep.flags |= pxtnVOMITPREPFLAG_loop;
+    prep.start_pos_sample = long(clock) * 60 * 44100 /
+                            m_pxtn->master->get_beat_clock() /
+                            m_pxtn->master->get_beat_tempo();
+    prep.master_volume = 0.80f;
+    m_pxtn->moo_preparation(&prep);
+  } else {
+    if (event->modifiers() & Qt::ControlModifier) {
+      if (event->button() == Qt::RightButton)
+        type = MouseEditState::Type::DeleteNote;
+      else
+        type = MouseEditState::Type::SetNote;
+    } else {
+      if (event->button() == Qt::RightButton)
+        type = MouseEditState::Type::DeleteOn;
+      else
+        type = MouseEditState::Type::SetOn;
+    }
+
+    m_mouse_edit_state.reset(
+        new MouseEditState{type, clock, pitch, clock, pitch});
+  }
+}
+
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
   if (m_mouse_edit_state == nullptr) return;
-  // TODO: Perhaps the edit state should just work in pixel coords. Enough
+  // TODO: The edit state should just work in pixel coords. Enough
   // places don't really care about the coord in pitch / clock scale.
   m_mouse_edit_state->current_pitch =
       int(round(scale.pitchOfY(event->localPos().y())));

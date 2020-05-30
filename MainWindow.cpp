@@ -61,6 +61,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() { delete ui; }
 
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+  if (event->key() == Qt::Key_Space) {
+    if (m_audio->state() == QAudio::SuspendedState)
+      m_audio->resume();
+    else
+      m_audio->suspend();
+  }
+}
+
 void MainWindow::loadFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
       fopen(filename.toStdString().c_str(), "r"), &fclose);
@@ -92,6 +101,7 @@ void MainWindow::loadFile(QString filename) {
 
   m_pxtn_device.open(QIODevice::ReadOnly);
   m_audio->start(&m_pxtn_device);
+  m_audio->suspend();
 }
 
 void MainWindow::selectAndLoadFile() {

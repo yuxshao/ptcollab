@@ -23,5 +23,8 @@ void EditorScrollArea::wheelEvent(QWheelEvent *event) {
     event->setModifiers(event->modifiers() & ~Qt::ShiftModifier);
   }
 
+  // QT by default has alt scroll horizontally, but pxtone uses shift.
+  event->setModifiers(event->modifiers() & ~Qt::AltModifier);
+
   QScrollArea::wheelEvent(event);
 }

@@ -18,9 +18,9 @@ struct MouseEditState {
   int current_pitch;
 };
 
-constexpr int EVENTMAX_KEY = 35560;
-constexpr int EVENTMIN_KEY = 12288;
 constexpr int PITCH_PER_KEY = 256;
+constexpr int EVENTMAX_KEY = 135 * PITCH_PER_KEY;
+constexpr int EVENTMIN_KEY = 46 * PITCH_PER_KEY;
 struct Scale {
   double clockPerPx;
   double pitchPerPx;
