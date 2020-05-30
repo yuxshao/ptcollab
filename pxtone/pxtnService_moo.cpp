@@ -12,16 +12,16 @@ void pxtnService::_moo_constructor()
     _moo_b_end_vomit    = true ;
     _moo_b_mute_by_unit = false;
     _moo_b_loop         = true ;
-    
+
     _moo_fade_fade      =     0;
     _moo_master_vol     =  1.0f;
     _moo_bt_clock       =     0;
     _moo_bt_num         =     0;
-                        
+
     _moo_freq           = NULL ;
     _moo_group_smps     = NULL ;
     _moo_p_eve          = NULL ;
-                        
+
     _moo_smp_count      =     0;
     _moo_smp_end        =     0;
 }
@@ -116,6 +116,9 @@ bool pxtnService::_moo_PXTONE_SAMPLE( void *p_data )
 
     int32_t  clock = (int32_t)( _moo_smp_count / _moo_clock_rate );
 
+    /* Adding constant update to moo_smp_end since we might be editing while playing */
+    _moo_smp_end = (int32_t)( (double)master->get_play_meas() * _moo_bt_num * _moo_bt_clock * _moo_clock_rate );
+
   /* Notify all the units of events that occurred since the last time increment
      and adjust sampling parameters accordingly */
     // events..
@@ -131,7 +134,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE( void *p_data )
 
         switch( _moo_p_eve->kind )
         {
-        case EVENTKIND_ON       : 
+        case EVENTKIND_ON       :
             {
                 int32_t on_count = (int32_t)( (_moo_p_eve->clock + _moo_p_eve->value - clock) * _moo_clock_rate );
                 if( on_count <= 0 ){ p_u->Tone_ZeroLives(); break; }
@@ -273,7 +276,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE( void *p_data )
 
 
 ///////////////////////
-// get / set 
+// get / set
 ///////////////////////
 
 bool pxtnService::moo_is_valid_data() const
