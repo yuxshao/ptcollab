@@ -62,11 +62,22 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-  if (event->key() == Qt::Key_Space) {
-    if (m_audio->state() == QAudio::SuspendedState)
-      m_audio->resume();
-    else
-      m_audio->suspend();
+  switch (event->key()) {
+    case Qt::Key_Space:
+      if (m_audio->state() == QAudio::SuspendedState)
+        m_audio->resume();
+      else
+        m_audio->suspend();
+      break;
+    case Qt::Key_W:
+      m_keyboard_editor->cycleCurrentUnit(-1);
+      break;
+    case Qt::Key_S:
+      m_keyboard_editor->cycleCurrentUnit(1);
+      break;
+    case Qt::Key_A:
+      m_keyboard_editor->toggleShowAllUnits();
+      break;
   }
 }
 

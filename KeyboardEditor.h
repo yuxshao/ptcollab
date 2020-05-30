@@ -43,6 +43,8 @@ class KeyboardEditor : public QWidget {
  public:
   explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                           QWidget *parent = nullptr);
+  void cycleCurrentUnit(int offset);
+  void toggleShowAllUnits();
 
  signals:
 
@@ -57,6 +59,8 @@ class KeyboardEditor : public QWidget {
   Scale scale;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
+  int m_current_unit;
+  bool m_show_all_units;
   int painted;
   MouseEditState m_mouse_edit_state;
   QAudioOutput *m_audio_output;
