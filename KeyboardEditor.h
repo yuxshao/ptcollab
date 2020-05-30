@@ -10,7 +10,7 @@
 #include "pxtone/pxtnService.h"
 
 struct MouseEditState {
-  enum Type { SetNote, SetOn, DeleteNote, DeleteOn };
+  enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn };
   Type type;
   int start_clock;
   int start_pitch;
@@ -58,7 +58,7 @@ class KeyboardEditor : public QWidget {
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
   int painted;
-  std::unique_ptr<MouseEditState> m_mouse_edit_state;
+  MouseEditState m_mouse_edit_state;
   QAudioOutput *m_audio_output;
   Animation *m_anim;
 };
