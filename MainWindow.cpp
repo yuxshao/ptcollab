@@ -183,6 +183,7 @@ void MainWindow::loadFile(QString filename) {
     units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
   m_side_menu->setUnits(units);
   m_filename = filename;
+  m_keyboard_editor->updateGeometry();
 }
 
 void MainWindow::selectAndLoadFile() {
