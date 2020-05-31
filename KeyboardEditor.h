@@ -47,6 +47,13 @@ class KeyboardEditor : public QWidget {
   void toggleShowAllUnits();
 
  signals:
+  void currentUnitChanged(int);
+  void showAllChanged(bool);
+
+ public slots:
+  void setQuantX(int);
+  void setQuantY(int);
+  void setCurrentUnit(int);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -65,6 +72,8 @@ class KeyboardEditor : public QWidget {
   MouseEditState m_mouse_edit_state;
   QAudioOutput *m_audio_output;
   Animation *m_anim;
+  int m_quantize_clock;
+  int m_quantize_pitch;
 };
 
 #endif  // KEYBOARDEDITOR_H

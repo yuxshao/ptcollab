@@ -4,11 +4,13 @@
 #include <QFile>
 #include <QMainWindow>
 #include <QScrollArea>
+#include <QSplitter>
 #include <QtMultimedia/QAudioOutput>
 
 #include "EditorScrollArea.h"
 #include "KeyboardEditor.h"
 #include "PxtoneIODevice.h"
+#include "SideMenu.h"
 #include "pxtone/pxtnService.h"
 
 QT_BEGIN_NAMESPACE
@@ -35,6 +37,8 @@ class MainWindow : public QMainWindow {
   pxtnService m_pxtn;
   EditorScrollArea* m_scroll_area;
   PxtoneIODevice m_pxtn_device;
+  QSplitter* m_splitter;
+  SideMenu* m_side_menu;
 
   Ui::MainWindow* ui;
 };

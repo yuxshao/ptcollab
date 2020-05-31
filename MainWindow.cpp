@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QSplitter>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
@@ -49,14 +50,34 @@ MainWindow::MainWindow(QWidget *parent)
       "game");  // Apparently this reduces latency in pulseaudio, but also makes
                 // some sounds choppier
   m_audio->setVolume(0.5);
-  loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
-  m_scroll_area = new EditorScrollArea(this);
+
+  m_splitter = new QSplitter(Qt::Horizontal, this);
+  setCentralWidget(m_splitter);
+
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio);
 
+  m_scroll_area = new EditorScrollArea(m_splitter);
   m_scroll_area->setWidget(m_keyboard_editor);
   m_scroll_area->setBackgroundRole(QPalette::Dark);
-  setCentralWidget(m_scroll_area);
   m_scroll_area->setVisible(true);
+
+  m_side_menu = new SideMenu;
+  m_splitter->addWidget(m_side_menu);
+  m_splitter->addWidget(m_scroll_area);
+  m_splitter->setSizes(QList{10, 10000});
+
+  connect(m_side_menu, &SideMenu::quantXUpdated, m_keyboard_editor,
+          &KeyboardEditor::setQuantX);
+  connect(m_side_menu, &SideMenu::quantYUpdated, m_keyboard_editor,
+          &KeyboardEditor::setQuantY);
+  connect(m_side_menu, &SideMenu::selectedUnitChanged, m_keyboard_editor,
+          &KeyboardEditor::setCurrentUnit);
+  connect(m_keyboard_editor, &KeyboardEditor::currentUnitChanged, m_side_menu,
+          &SideMenu::setSelectedUnit);
+  connect(m_keyboard_editor, &KeyboardEditor::showAllChanged, m_side_menu,
+          &SideMenu::setShowAll);
+
+  loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -69,6 +90,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
       else
         m_audio->suspend();
       break;
+    case Qt::Key_Escape: {
+      m_audio->suspend();
+      // TODO: Don't duplicate this stop
+      pxtnVOMITPREPARATION prep{};
+      prep.flags |= pxtnVOMITPREPFLAG_loop;
+      prep.start_pos_float = 0;
+      prep.master_volume = 0.80f;
+      m_pxtn.moo_preparation(&prep);
+    } break;
     case Qt::Key_W:
       m_keyboard_editor->cycleCurrentUnit(-1);
       break;
@@ -113,6 +143,10 @@ void MainWindow::loadFile(QString filename) {
   m_pxtn_device.open(QIODevice::ReadOnly);
   m_audio->start(&m_pxtn_device);
   m_audio->suspend();
+  std::vector<QString> units;
+  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
+    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
+  m_side_menu->setUnits(units);
 }
 
 void MainWindow::selectAndLoadFile() {

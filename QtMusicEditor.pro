@@ -31,6 +31,7 @@ HEADERS += \
            KeyboardEditor.h \
            MainWindow.h \
            PxtoneIODevice.h \
+           SideMenu.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -52,13 +53,15 @@ HEADERS += \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h
 FORMS += \
-    MainWindow.ui
+    MainWindow.ui \
+    SideMenu.ui
 SOURCES += main.cpp \
            Animation.cpp \
            EditorScrollArea.cpp \
            KeyboardEditor.cpp \
            MainWindow.cpp \
            PxtoneIODevice.cpp \
+           SideMenu.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \
