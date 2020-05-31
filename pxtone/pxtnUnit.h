@@ -26,7 +26,9 @@ class pxtnUnit {
   int32_t _portament_sample_num;
   int32_t _pan_vols[pxtnMAX_CHANNEL];
   int32_t _pan_times[pxtnMAX_CHANNEL];
-  int32_t _pan_time_bufs[pxtnMAX_CHANNEL][pxtnBUFSIZE_TIMEPAN];
+
+  /* Flipped the row-col order here so that Tone_Sample_Custom is easier */
+  int32_t _pan_time_bufs[pxtnBUFSIZE_TIMEPAN][pxtnMAX_CHANNEL];
   int32_t _v_VOLUME;
   int32_t _v_VELOCITY;
   int32_t _v_GROUPNO;
@@ -59,6 +61,8 @@ class pxtnUnit {
   void Tone_GroupNo(int32_t val);
   void Tone_Tuning(float val);
 
+  void Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
+                          pxtnVOICETONE *vts, int32_t *bufs);
   void Tone_Sample(bool b_mute_by_unit, int32_t ch_num, int32_t time_pan_index,
                    int32_t smooth_smp);
   void Tone_Supple(int32_t *group_smps, int32_t ch_num,
