@@ -368,9 +368,9 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
     if (event->modifiers() & Qt::ShiftModifier) {
       // scale Y
       scale.pitchPerPx *= pow(2, delta.y() / 240.0);
-      if (scale.pitchPerPx < 4) scale.pitchPerPx = 4;
-      if (scale.pitchPerPx > PITCH_PER_KEY / 4)
-        scale.pitchPerPx = PITCH_PER_KEY / 4;
+      if (scale.pitchPerPx < 8) scale.pitchPerPx = 8;
+      if (scale.pitchPerPx > PITCH_PER_KEY / 8)
+        scale.pitchPerPx = PITCH_PER_KEY / 8;
     } else {
       // scale X
       scale.clockPerPx *= pow(2, delta.y() / 240.0);
