@@ -3,6 +3,7 @@
 
 #include "./pxtn.h"
 
+/* TODO: This should really just be a few functions. No need to malloc. */
 class pxtnPulse_Frequency {
  private:
   void operator=(const pxtnPulse_Frequency& src) = delete;

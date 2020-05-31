@@ -89,20 +89,33 @@ typedef struct {
 
 /* A dynamic structure during playback that tracks offset into the sampling
  * data, remaining duration fo the note, etc. */
-typedef struct {
+
+struct pxtnVOICETONE {
   double smp_pos;
   float offset_freq;
   int32_t env_volume;
   int32_t life_count;
   int32_t on_count;
 
-  int32_t smp_count;
+  // int32_t smp_count; /* Looks unused, so commented. */
   int32_t env_start;
   int32_t env_pos;
   int32_t env_release_clock;
 
-  int32_t smooth_volume;
-} pxtnVOICETONE;
+  // int32_t smooth_volume; /* Likewise, seems unused. So commented. */
+
+  pxtnVOICETONE() {}
+  pxtnVOICETONE(int32_t env_release_clock, float offset_freq,
+                bool woice_has_envelope)
+      : smp_pos(0),
+        offset_freq(offset_freq),
+        env_volume(woice_has_envelope ? 128 : 0),
+        life_count(0),
+        on_count(0),
+        env_start(woice_has_envelope ? 128 : 0),
+        env_pos(0),
+        env_release_clock(env_release_clock) {}
+};
 
 class pxtnWoice {
  private:

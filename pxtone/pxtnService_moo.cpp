@@ -58,29 +58,13 @@ term:
 bool pxtnService::_moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const {
   if (!_moo_b_init) return false;
 
-  const pxtnVOICEINSTANCE* p_inst;
-  const pxtnVOICEUNIT* p_vc;
   const pxtnWoice* p_wc = Woice_Get(w);
 
   if (!p_wc) return false;
 
   p_u->set_woice(p_wc);
+  p_u->Tone_Reset(_moo_bt_tempo, _moo_freq, _moo_clock_rate);
 
-  for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
-    p_inst = p_wc->get_instance(v);
-    p_vc = p_wc->get_voice(v);
-
-    float ofs_freq = 0;
-    if (p_vc->voice_flags & PTV_VOICEFLAG_BEATFIT) {
-      ofs_freq =
-          (p_inst->smp_body_w * _moo_bt_tempo) / (44100 * 60 * p_vc->tuning);
-    } else {
-      ofs_freq = _moo_freq->Get(EVENTDEFAULT_BASICKEY - p_vc->basic_key) *
-                 p_vc->tuning;
-    }
-    p_u->Tone_Reset_and_2prm(
-        v, (int32_t)(p_inst->env_release / _moo_clock_rate), ofs_freq);
-  }
   return true;
 }
 

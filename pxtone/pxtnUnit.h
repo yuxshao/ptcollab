@@ -48,6 +48,11 @@ class pxtnUnit {
 
   void Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
                            float offset_freq);
+  void Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
+                         float clock_rate, pxtnVOICETONE *vts);
+  void Tone_Reset(float tempo, pxtnPulse_Frequency *frequencies,
+                  float clock_rate);
+  void Tone_Envelope_Custom(pxtnVOICETONE *vts);
   void Tone_Envelope();
   void Tone_KeyOn();
   void Tone_ZeroLives();
@@ -68,6 +73,7 @@ class pxtnUnit {
   void Tone_Supple(int32_t *group_smps, int32_t ch_num,
                    int32_t time_pan_index) const;
   int32_t Tone_Increment_Key();
+  void Tone_Increment_Sample_Custom(float freq, pxtnVOICETONE *vts);
   void Tone_Increment_Sample(float freq);
 
   bool set_woice(const pxtnWoice *p_woice);

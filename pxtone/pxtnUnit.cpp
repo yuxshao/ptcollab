@@ -39,9 +39,37 @@ void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
   p_tone->life_count = 0;
   p_tone->on_count = 0;
   p_tone->smp_pos = 0;
-  p_tone->smooth_volume = 0;
+  // p_tone->smooth_volume = 0;
   p_tone->env_release_clock = env_rls_clock;
   p_tone->offset_freq = offset_freq;
+}
+
+/* A custom way to initialize a pxtnVOICETONE for separate playing. */
+void pxtnUnit::Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
+                                 float clock_rate, pxtnVOICETONE *vts) {
+  if (!_p_woice) return;
+  const pxtnVOICEINSTANCE *p_inst;
+  const pxtnVOICEUNIT *p_vc;
+  const pxtnWoice *p_wc = _p_woice;
+  for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
+    p_inst = p_wc->get_instance(v);
+    p_vc = p_wc->get_voice(v);
+
+    float ofs_freq = 0;
+    if (p_vc->voice_flags & PTV_VOICEFLAG_BEATFIT) {
+      ofs_freq = (p_inst->smp_body_w * tempo) / (44100 * 60 * p_vc->tuning);
+    } else {
+      ofs_freq = frequencies->Get(EVENTDEFAULT_BASICKEY - p_vc->basic_key) *
+                 p_vc->tuning;
+    }
+    vts[v] = pxtnVOICETONE((int32_t)(p_inst->env_release / clock_rate),
+                           ofs_freq, p_inst->env_size != 0);
+  }
+}
+
+void pxtnUnit::Tone_Reset(float tempo, pxtnPulse_Frequency *frequencies,
+                          float clock_rate) {
+  Tone_Reset_Custom(tempo, frequencies, clock_rate, _vts);
 }
 
 bool pxtnUnit::set_woice(const pxtnWoice *p_woice) {
@@ -127,14 +155,13 @@ void pxtnUnit::Tone_Volume(int32_t val) { _v_VOLUME = val; }
 void pxtnUnit::Tone_Portament(int32_t val) { _portament_sample_num = val; }
 void pxtnUnit::Tone_GroupNo(int32_t val) { _v_GROUPNO = val; }
 void pxtnUnit::Tone_Tuning(float val) { _v_TUNING = val; }
-
-void pxtnUnit::Tone_Envelope() {
+void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) {
   if (!_p_woice) return;
 
   /* In practice there are at most 2 voice nums */
   for (int32_t v = 0; v < _p_woice->get_voice_num(); v++) {
     const pxtnVOICEINSTANCE *p_vi = _p_woice->get_instance(v);
-    pxtnVOICETONE *p_vt = &_vts[v];
+    pxtnVOICETONE *p_vt = &vts[v];
 
     if (p_vt->life_count > 0 && p_vi->env_size) {
       if (p_vt->on_count > 0) {
@@ -153,6 +180,7 @@ void pxtnUnit::Tone_Envelope() {
     }
   }
 }
+void pxtnUnit::Tone_Envelope() { Tone_Envelope_Custom(_vts); }
 
 /* This sets up the buffers local to the unit for time pans (_pan_time_bufs) */
 /* added [Tone_sample_custom] because [Tone_sample] by default modifies the
@@ -244,13 +272,13 @@ int pxtnUnit::Tone_Increment_Key() {
   return _key_now;
 }
 
-void pxtnUnit::Tone_Increment_Sample(float freq) {
+void pxtnUnit::Tone_Increment_Sample_Custom(float freq, pxtnVOICETONE *vts) {
   if (!_p_woice) return;
 
-  /* I guess each voice corresponds to like each note... */
+  /* Up to two voices (the ones you see in ptvoice) */
   for (int32_t v = 0; v < _p_woice->get_voice_num(); v++) {
     const pxtnVOICEINSTANCE *p_vi = _p_woice->get_instance(v);
-    pxtnVOICETONE *p_vt = &_vts[v];
+    pxtnVOICETONE *p_vt = &vts[v];
 
     if (p_vt->life_count > 0) p_vt->life_count--;
     if (p_vt->life_count > 0) {
@@ -275,6 +303,10 @@ void pxtnUnit::Tone_Increment_Sample(float freq) {
       }
     }
   }
+}
+
+void pxtnUnit::Tone_Increment_Sample(float freq) {
+  Tone_Increment_Sample_Custom(freq, _vts);
 }
 
 const pxtnWoice *pxtnUnit::get_woice() const { return _p_woice; }
