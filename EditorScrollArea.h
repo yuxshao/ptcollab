@@ -14,6 +14,7 @@ class EditorScrollArea : public QScrollArea {
  private:
   bool middleDown;
   QPoint lastPos;
+  bool event(QEvent *e) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;

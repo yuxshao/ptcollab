@@ -362,10 +362,6 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 }
 
 void KeyboardEditor::wheelEvent(QWheelEvent *event) {
-  // TODO: Unfortunately, it's hard to when scaling preserve the time/pitch
-  // position of the mouse or playhead or whatever else. There isn't a really
-  // good hook for controlling the scroll bar positions - the fact that they're
-  // in the parent makes this harder too.
   QPoint delta = event->angleDelta();
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {

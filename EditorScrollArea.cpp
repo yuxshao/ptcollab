@@ -18,6 +18,11 @@ EditorScrollArea::EditorScrollArea(QWidget *parent)
 }
 
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
+  double ratioH = double(lastPos.x()) / viewport()->width();
+
+  qDebug() << horizontalScrollBar()->pageStep()
+           << horizontalScrollBar()->value() << horizontalScrollBar()->maximum()
+           << ratioH;
   if (event->button() & Qt::MiddleButton) {
     middleDown = true;
     viewport()->setCursor(Qt::ClosedHandCursor);
@@ -26,6 +31,37 @@ void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
   lastPos = event->pos();
 }
 
+static int newPos(double oldMax, int oldWidth, int oldPos, double newMax,
+                  int newWidth, double ratio) {
+  double newMaxToOldMax = (newMax + newWidth) / double(oldMax + oldWidth);
+  return newMaxToOldMax * oldPos +
+         (newMaxToOldMax * oldWidth - newWidth) * ratio;
+}
+
+bool EditorScrollArea::event(QEvent *e) {
+  // Capture the old scrollbar positions and manually reconfigure the new ones
+  // so that a certain position on the screen is preserved in case of resize.
+  int oldMaxH = horizontalScrollBar()->maximum();
+  int oldWidthH = horizontalScrollBar()->pageStep();
+  int oldH = horizontalScrollBar()->value();
+  double ratioH = double(lastPos.x()) / viewport()->width();
+
+  int oldMaxV = verticalScrollBar()->maximum();
+  int oldWidthV = verticalScrollBar()->pageStep();
+  int oldV = verticalScrollBar()->value();
+  double ratioV = double(lastPos.y()) / viewport()->height();
+
+  bool result = QScrollArea::event(e);
+  int newMaxH = horizontalScrollBar()->maximum();
+  int newWidthH = horizontalScrollBar()->pageStep();
+  int newH = newPos(oldMaxH, oldWidthH, oldH, newMaxH, newWidthH, ratioH);
+  int newMaxV = verticalScrollBar()->maximum();
+  int newWidthV = verticalScrollBar()->pageStep();
+  int newV = newPos(oldMaxV, oldWidthV, oldV, newMaxV, newWidthV, ratioV);
+  if (newH != oldH) horizontalScrollBar()->setValue(newH);
+  if (newV != oldV) verticalScrollBar()->setValue(newV);
+  return result;
+}
 void EditorScrollArea::mouseReleaseEvent(QMouseEvent *event) {
   event->ignore();
   if (event->button() & Qt::MiddleButton) {
