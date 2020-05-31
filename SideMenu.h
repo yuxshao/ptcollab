@@ -25,6 +25,8 @@ class SideMenu : public QWidget {
   void quantXUpdated(int);
   void quantYUpdated(int);
   void selectedUnitChanged(int);
+  void playButtonPressed();
+  void stopButtonPressed();
 
  public slots:
   void setQuantX(int);
@@ -32,6 +34,7 @@ class SideMenu : public QWidget {
   void setShowAll(bool);
   void setUnits(std::vector<QString> const &units);
   void setSelectedUnit(int);
+  void setPlay(bool);
 
  private:
   Ui::SideMenu *ui;

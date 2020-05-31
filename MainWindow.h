@@ -41,5 +41,7 @@ class MainWindow : public QMainWindow {
   SideMenu* m_side_menu;
 
   Ui::MainWindow* ui;
+  void togglePlayState();
+  void resetAndSuspendAudio();
 };
 #endif  // MAINWINDOW_H

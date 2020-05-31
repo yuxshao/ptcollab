@@ -78,27 +78,44 @@ MainWindow::MainWindow(QWidget *parent)
           &SideMenu::setShowAll);
 
   loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
+  connect(m_side_menu, &SideMenu::playButtonPressed, this,
+          &MainWindow::togglePlayState);
+  connect(m_side_menu, &SideMenu::stopButtonPressed, this,
+          &MainWindow::resetAndSuspendAudio);
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
+void MainWindow::togglePlayState() {
+  if (m_audio->state() == QAudio::SuspendedState) {
+    m_audio->resume();
+    m_side_menu->setPlay(true);
+  } else {
+    m_audio->suspend();
+    m_side_menu->setPlay(false);
+  }
+}
+
+void MainWindow::resetAndSuspendAudio() {
+  pxtnVOMITPREPARATION prep{};
+  prep.flags |= pxtnVOMITPREPFLAG_loop;
+  prep.start_pos_float = 0;
+  prep.master_volume = 0.80f;
+  bool success = m_pxtn.moo_preparation(&prep);
+  if (!success) qWarning() << "Moo preparation error";
+  m_audio->suspend();
+  // This reset should really also clear the buffers in the audio output, but
+  // [reset] unfortunately also disconnects from moo.
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event) {
   switch (event->key()) {
     case Qt::Key_Space:
-      if (m_audio->state() == QAudio::SuspendedState)
-        m_audio->resume();
-      else
-        m_audio->suspend();
+      togglePlayState();
       break;
-    case Qt::Key_Escape: {
-      m_audio->suspend();
-      // TODO: Don't duplicate this stop
-      pxtnVOMITPREPARATION prep{};
-      prep.flags |= pxtnVOMITPREPFLAG_loop;
-      prep.start_pos_float = 0;
-      prep.master_volume = 0.80f;
-      m_pxtn.moo_preparation(&prep);
-    } break;
+    case Qt::Key_Escape:
+      resetAndSuspendAudio();
+      break;
     case Qt::Key_W:
       m_keyboard_editor->cycleCurrentUnit(-1);
       break;
@@ -128,17 +145,7 @@ void MainWindow::loadFile(QString filename) {
     qWarning() << "Error getting tones ready";
     return;
   }
-  pxtnVOMITPREPARATION prep{};
-  prep.flags |= pxtnVOMITPREPFLAG_loop;
-  prep.start_pos_float = 0;
-  prep.master_volume = 0.80f;
-
-  qDebug() << "Preparing moo for " << filename;
-  bool success = m_pxtn.moo_preparation(&prep);
-  if (!success) {
-    qWarning() << "Moo preparation error";
-    return;
-  }
+  resetAndSuspendAudio();
 
   m_pxtn_device.open(QIODevice::ReadOnly);
   m_audio->start(&m_pxtn_device);

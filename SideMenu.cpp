@@ -18,6 +18,10 @@ SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
   connect(ui->quantY, signal, [=](int index) {
     emit quantYUpdated(ui->quantY->itemData(index).toInt());
   });
+  connect(ui->playBtn, &QPushButton::clicked, this,
+          &SideMenu::playButtonPressed);
+  connect(ui->stopBtn, &QPushButton::clicked, this,
+          &SideMenu::stopButtonPressed);
   connect(ui->units, signal, this, &SideMenu::selectedUnitChanged);
 }
 
@@ -37,3 +41,9 @@ void SideMenu::setUnits(std::vector<QString> const& units) {
   for (auto& u : units) ui->units->addItem(u);
 };
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
+void SideMenu::setPlay(bool playing) {
+  if (playing)
+    ui->playBtn->setText("Pause (SPC)");
+  else
+    ui->playBtn->setText("Play (SPC)");
+}

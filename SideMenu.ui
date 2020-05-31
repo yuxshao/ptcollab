@@ -22,7 +22,10 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Play (Space)</string>
+        <string>Play (SPC)</string>
+       </property>
+       <property name="icon">
+        <iconset theme="play"/>
        </property>
       </widget>
      </item>
@@ -32,7 +35,7 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Stop</string>
+        <string>Stop (ESC)</string>
        </property>
       </widget>
      </item>
