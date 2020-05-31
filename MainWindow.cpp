@@ -2,11 +2,11 @@
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QSplitter>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
-#include <cstdio>
 
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_MainWindow.h"
@@ -92,6 +92,13 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::selectAndLoadFile);
   connect(ui->actionSaveAs, &QAction::triggered, this,
           &MainWindow::selectAndSaveFile);
+  connect(ui->actionAbout, &QAction::triggered, [=]() {
+    QMessageBox::about(
+        this, "About",
+        "Experimental editor for pxtone files in Qt. Some goals: "
+        "faster workflow with more shortcuts, (not yet) collaborative "
+        "editing.");
+  });
 }
 
 MainWindow::~MainWindow() { delete ui; }

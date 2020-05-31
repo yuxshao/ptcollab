@@ -1,3 +1,2 @@
 # pxtone-qt
-experiment for opening pxtone files in qt
-(super WIP)
+Experimental pxtone editor in QT (super wip)
