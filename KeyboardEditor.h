@@ -17,6 +17,7 @@ struct MouseEditState {
   int start_pitch;
   int current_clock;
   int current_pitch;
+  QAudioOutput *audio;
 };
 
 constexpr int PITCH_PER_KEY = 256;
@@ -76,6 +77,7 @@ class KeyboardEditor : public QWidget {
   Animation *m_anim;
   int m_quantize_clock;
   int m_quantize_pitch;
+  QAudioOutput *make_audio(int pitch);
 };
 
 #endif  // KEYBOARDEDITOR_H

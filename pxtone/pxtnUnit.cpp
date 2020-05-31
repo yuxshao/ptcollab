@@ -46,7 +46,7 @@ void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
 
 /* A custom way to initialize a pxtnVOICETONE for separate playing. */
 void pxtnUnit::Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
-                                 float clock_rate, pxtnVOICETONE *vts) {
+                                 float clock_rate, pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
   const pxtnVOICEINSTANCE *p_inst;
   const pxtnVOICEUNIT *p_vc;
@@ -155,7 +155,7 @@ void pxtnUnit::Tone_Volume(int32_t val) { _v_VOLUME = val; }
 void pxtnUnit::Tone_Portament(int32_t val) { _portament_sample_num = val; }
 void pxtnUnit::Tone_GroupNo(int32_t val) { _v_GROUPNO = val; }
 void pxtnUnit::Tone_Tuning(float val) { _v_TUNING = val; }
-void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) {
+void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
 
   /* In practice there are at most 2 voice nums */
@@ -186,7 +186,7 @@ void pxtnUnit::Tone_Envelope() { Tone_Envelope_Custom(_vts); }
 /* added [Tone_sample_custom] because [Tone_sample] by default modifies the
  * pxtnVOICETONE associated with the actual unit during playback. */
 void pxtnUnit::Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
-                                  pxtnVOICETONE *vts, int32_t *bufs) {
+                                  pxtnVOICETONE *vts, int32_t *bufs) const {
   for (int32_t ch = 0; ch < pxtnMAX_CHANNEL; ch++) {
     int32_t time_pan_buf = 0;
 
@@ -272,7 +272,8 @@ int pxtnUnit::Tone_Increment_Key() {
   return _key_now;
 }
 
-void pxtnUnit::Tone_Increment_Sample_Custom(float freq, pxtnVOICETONE *vts) {
+void pxtnUnit::Tone_Increment_Sample_Custom(float freq,
+                                            pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
 
   /* Up to two voices (the ones you see in ptvoice) */

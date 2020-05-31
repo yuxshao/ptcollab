@@ -6,6 +6,8 @@
 #include <QScrollArea>
 #include <QTime>
 
+#include "PxtoneUnitIODevice.h"
+
 int quantize(int v, int q) { return (v / q) * q; }
 int one_over_last_clock(pxtnService const *pxtn) {
   return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
@@ -25,7 +27,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_current_unit(0),
       m_show_all_units(false),
       painted(0),
-      m_mouse_edit_state{MouseEditState::Type::Nothing, 0, 0, 0, 0},
+      m_mouse_edit_state{MouseEditState::Type::Nothing, 0, 0, 0, 0, nullptr},
       m_audio_output(audio_output),
       m_anim(new Animation(this)),
       m_quantize_clock(pxtn->master->get_beat_clock()),
@@ -383,6 +385,26 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
   }
 }
 
+QAudioOutput *KeyboardEditor::make_audio(int pitch) {
+  // TODO: Deduplicate this sample setup
+  QAudioFormat format;
+  int channel_num = 2;
+  int sample_rate = 44100;
+  format.setSampleRate(sample_rate);
+  format.setChannelCount(channel_num);
+  format.setSampleSize(16);
+  format.setCodec("audio/pcm");
+  format.setByteOrder(QAudioFormat::LittleEndian);
+  format.setSampleType(QAudioFormat::SignedInt);
+  QAudioOutput *audio = new QAudioOutput(format, this);
+  PxtoneUnitIODevice *m_pxtn_device =
+      new PxtoneUnitIODevice(audio, m_pxtn, m_current_unit, pitch);
+  m_pxtn_device->open(QIODevice::ReadOnly);
+
+  audio->setVolume(1.0);
+  audio->start(m_pxtn_device);
+  return audio;
+}
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
@@ -391,6 +413,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   if (m_pxtn->Unit_Num() == 0) return;
   int clock = event->localPos().x() * scale.clockPerPx;
   int pitch = scale.pitchOfY(event->localPos().y());
+  QAudioOutput *audio = nullptr;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
     type = MouseEditState::Type::Seek;
@@ -398,16 +421,20 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
     if (event->modifiers() & Qt::ControlModifier) {
       if (event->button() == Qt::RightButton)
         type = MouseEditState::Type::DeleteNote;
-      else
+      else {
         type = MouseEditState::Type::SetNote;
+        audio = make_audio(quantize(pitch, m_quantize_pitch));
+      }
     } else {
       if (event->button() == Qt::RightButton)
         type = MouseEditState::Type::DeleteOn;
-      else
+      else {
         type = MouseEditState::Type::SetOn;
+        audio = make_audio(pitch);
+      }
     }
   }
-  m_mouse_edit_state = MouseEditState{type, clock, pitch, clock, pitch};
+  m_mouse_edit_state = MouseEditState{type, clock, pitch, clock, pitch, audio};
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
@@ -472,6 +499,11 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
+  }
+  if (m_mouse_edit_state.audio) {
+    m_mouse_edit_state.audio->suspend();
+    m_mouse_edit_state.audio->deleteLater();
+    m_mouse_edit_state.audio = nullptr;
   }
   Interval interval{
       quantize(m_mouse_edit_state.start_clock, m_quantize_clock),

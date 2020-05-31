@@ -26,10 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
 
   QAudioFormat format;
-  // Set up the format, eg.
   format.setSampleRate(sample_rate);
   format.setChannelCount(channel_num);
-  format.setSampleSize(16);
+  format.setSampleSize(16);  // fixed in pxtone
   format.setCodec("audio/pcm");
   format.setByteOrder(QAudioFormat::LittleEndian);
   format.setSampleType(QAudioFormat::SignedInt);
@@ -44,10 +43,11 @@ MainWindow::MainWindow(QWidget *parent)
   m_audio = new QAudioOutput(format, this);
 
   // m_audio->setBufferSize(441000);
-  m_audio->setCategory(
-      "game");  // Apparently this reduces latency in pulseaudio, but also makes
-                // some sounds choppier
-  m_audio->setVolume(0.5);
+
+  // Apparently this reduces latency in pulseaudio, but also makes
+  // some sounds choppier
+  m_audio->setCategory("game");
+  m_audio->setVolume(1.0);
 
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);

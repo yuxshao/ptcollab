@@ -31,6 +31,7 @@ HEADERS += \
            KeyboardEditor.h \
            MainWindow.h \
            PxtoneIODevice.h \
+           PxtoneUnitIODevice.h \
            SideMenu.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
@@ -61,6 +62,7 @@ SOURCES += main.cpp \
            KeyboardEditor.cpp \
            MainWindow.cpp \
            PxtoneIODevice.cpp \
+           PxtoneUnitIODevice.cpp \
            SideMenu.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \

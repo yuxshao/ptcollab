@@ -93,7 +93,7 @@ End:
   return b_ret;
 }
 
-float pxtnPulse_Frequency::Get(int32_t key) {
+float pxtnPulse_Frequency::Get(int32_t key) const {
   int32_t i;
 
   i = (key + 0x6000) * _FREQUENCY_PER_KEY / 0x100;
@@ -104,7 +104,7 @@ float pxtnPulse_Frequency::Get(int32_t key) {
   return _freq_table[i];
 }
 
-float pxtnPulse_Frequency::Get2(int32_t key) {
+float pxtnPulse_Frequency::Get2(int32_t key) const {
   int32_t i = key >> 4;
   if (i < 0)
     i = 0;

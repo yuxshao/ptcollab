@@ -18,8 +18,8 @@ class pxtnPulse_Frequency {
 
   bool Init();
 
-  float Get(int32_t key);
-  float Get2(int32_t key);
+  float Get(int32_t key) const;
+  float Get2(int32_t key) const;
   const float* GetDirect(int32_t* p_size);
 };
 

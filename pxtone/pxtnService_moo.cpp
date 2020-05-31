@@ -292,6 +292,35 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 // get / set
 ///////////////////////
 
+bool pxtnService::moo_get_pxtnVOICETONE(const pxtnUnit* p_u,
+                                        pxtnVOICETONE* vts) const {
+  if (!_moo_b_init) return false;
+  if (!p_u) return false;
+  p_u->Tone_Reset_Custom(_moo_bt_tempo, _moo_freq, _moo_clock_rate, vts);
+
+  return true;
+}
+#include <QDebug>
+int32_t pxtnService::moo_tone_sample_custom(const pxtnUnit* p_u,
+                                            pxtnVOICETONE* vts, void* data,
+                                            int32_t buf_size,
+                                            int32_t key) const {
+  if (!p_u) return 0;
+  if (buf_size < _dst_ch_num) return 0;
+  int32_t* bufs = new int32_t[_dst_ch_num];
+  p_u->Tone_Sample_Custom(_dst_ch_num, _moo_smp_smooth, vts, bufs);
+  p_u->Tone_Increment_Sample_Custom(_moo_freq->Get2(key) * _moo_smp_stride,
+                                    vts);
+  for (int ch = 0; ch < _dst_ch_num; ++ch) {
+    int32_t work = bufs[ch];
+    if (work > _moo_top) work = _moo_top;
+    if (work < -_moo_top) work = -_moo_top;
+    *((int16_t*)data + ch) = (int16_t)(work);
+  }
+  delete[] bufs;
+  return _dst_ch_num * sizeof(int16_t);
+}
+
 bool pxtnService::moo_is_valid_data() const {
   if (!_moo_b_init) return false;
   return _moo_b_valid_data;
@@ -473,6 +502,7 @@ bool pxtnService::moo_set_master_volume(float v) {
 ////////////////////
 
 bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
+  if (filled_size) *filled_size = 0;
   if (!_moo_b_init) return false;
   if (!_moo_b_valid_data) return false;
   if (_moo_b_end_vomit) return false;
@@ -481,10 +511,11 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
 
   int32_t smp_w = 0;
 
-  int j = 0;
+  /*Testing what happens if mooing takes a long time
+   * int j = 0;
   for (int i = 0; i < 100000000 * 0; ++i) {
     j += i * i;
-  }
+  }*/
   /* No longer failing on remainder - we just return the filled size */
   // if( size % _dst_byte_per_smp ) return false;
 
@@ -497,9 +528,7 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
     int16_t sample[2]; /* for left and right? */
 
     /* Iterate thru samples [smp_num] times, fill buffer with this sample */
-    if (filled_size) *filled_size = 0;
     for (smp_w = 0; smp_w < smp_num; smp_w++) {
-      if (filled_size) *filled_size += _dst_byte_per_smp;
       if (!_moo_PXTONE_SAMPLE(sample)) {
         _moo_b_end_vomit = true;
         break;
@@ -509,6 +538,8 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
     for (; smp_w < smp_num; smp_w++) {
       for (int ch = 0; ch < _dst_ch_num; ch++, p16++) *p16 = 0;
     }
+
+    if (filled_size) *filled_size = smp_num * _dst_byte_per_smp;
   }
 
   if (_sampled_proc) {
