@@ -323,7 +323,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
             quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
             quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +
                 m_quantize_clock};
-        int pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch);
+        int pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch) +
+                    m_quantize_pitch;
         int alpha =
             (m_mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
         paintBlock(pitch, interval, painter,
@@ -368,16 +369,16 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
   QPoint delta = event->angleDelta();
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {
+      // scale X
+      scale.clockPerPx *= pow(2, delta.y() / 240.0);
+      if (scale.clockPerPx < 0.5) scale.clockPerPx = 0.5;
+      if (scale.clockPerPx > 128) scale.clockPerPx = 128;
+    } else {
       // scale Y
       scale.pitchPerPx *= pow(2, delta.y() / 240.0);
       if (scale.pitchPerPx < 8) scale.pitchPerPx = 8;
       if (scale.pitchPerPx > PITCH_PER_KEY / 8)
         scale.pitchPerPx = PITCH_PER_KEY / 8;
-    } else {
-      // scale X
-      scale.clockPerPx *= pow(2, delta.y() / 240.0);
-      if (scale.clockPerPx < 0.5) scale.clockPerPx = 0.5;
-      if (scale.clockPerPx > 128) scale.clockPerPx = 128;
     }
 
     updateGeometry();
@@ -423,7 +424,8 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         type = MouseEditState::Type::DeleteNote;
       else {
         type = MouseEditState::Type::SetNote;
-        audio = make_audio(quantize(pitch, m_quantize_pitch));
+        audio =
+            make_audio(quantize(pitch, m_quantize_pitch) + m_quantize_pitch);
       }
     } else {
       if (event->button() == Qt::RightButton)
@@ -511,7 +513,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
           m_quantize_clock};
   Interval clock_int{std::min(interval.start, interval.end),
                      std::max(interval.start, interval.end)};
-  int start_pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch);
+  int start_pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch) +
+                    m_quantize_pitch;
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
   int clockPerMeas =
       m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num();
