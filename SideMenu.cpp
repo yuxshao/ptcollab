@@ -23,6 +23,10 @@ SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
   connect(ui->stopBtn, &QPushButton::clicked, this,
           &SideMenu::stopButtonPressed);
   connect(ui->units, signal, this, &SideMenu::selectedUnitChanged);
+  connect(ui->saveBtn, &QPushButton::clicked, this,
+          &SideMenu::saveButtonPressed);
+  connect(ui->openBtn, &QPushButton::clicked, this,
+          &SideMenu::openButtonPressed);
 }
 
 SideMenu::~SideMenu() { delete ui; }
@@ -40,6 +44,12 @@ void SideMenu::setUnits(std::vector<QString> const& units) {
   ui->units->clear();
   for (auto& u : units) ui->units->addItem(u);
 };
+void SideMenu::setModified(bool modified) {
+  if (modified)
+    ui->saveBtn->setText("Save* (C-s)");
+  else
+    ui->saveBtn->setText("Save (C-s)");
+}
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)

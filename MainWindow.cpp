@@ -24,8 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
   int sample_rate = 44100;
   m_pxtn.set_destination_quality(channel_num, sample_rate);
   ui->setupUi(this);
-  connect(ui->actionOpen, &QAction::triggered, this,
-          &MainWindow::selectAndLoadFile);
 
   QAudioFormat format;
   // Set up the format, eg.
@@ -76,12 +74,24 @@ MainWindow::MainWindow(QWidget *parent)
           &SideMenu::setSelectedUnit);
   connect(m_keyboard_editor, &KeyboardEditor::showAllChanged, m_side_menu,
           &SideMenu::setShowAll);
+  connect(m_keyboard_editor, &KeyboardEditor::onEdit,
+          [=]() { m_side_menu->setModified(true); });
 
-  loadFile("/home/steven/Projects/Music/pxtone/my_project/1353.ptcop");
+  loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/min-max.ptcop");
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &MainWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
           &MainWindow::resetAndSuspendAudio);
+
+  connect(m_side_menu, &SideMenu::saveButtonPressed,
+          [=]() { saveFile(m_filename); });
+  connect(ui->actionSave, &QAction::triggered, [=]() { saveFile(m_filename); });
+  connect(m_side_menu, &SideMenu::openButtonPressed, this,
+          &MainWindow::selectAndLoadFile);
+  connect(ui->actionOpen, &QAction::triggered, this,
+          &MainWindow::selectAndLoadFile);
+  connect(ui->actionSaveAs, &QAction::triggered, this,
+          &MainWindow::selectAndSaveFile);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -104,6 +114,8 @@ void MainWindow::resetAndSuspendAudio() {
   bool success = m_pxtn.moo_preparation(&prep);
   if (!success) qWarning() << "Moo preparation error";
   m_audio->suspend();
+
+  m_side_menu->setPlay(false);
   // This reset should really also clear the buffers in the audio output, but
   // [reset] unfortunately also disconnects from moo.
 }
@@ -120,10 +132,19 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_editor->cycleCurrentUnit(-1);
       break;
     case Qt::Key_S:
-      m_keyboard_editor->cycleCurrentUnit(1);
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier)
+          selectAndSaveFile();
+        else
+          saveFile(m_filename);
+      } else
+        m_keyboard_editor->cycleCurrentUnit(1);
       break;
     case Qt::Key_A:
       m_keyboard_editor->toggleShowAllUnits();
+      break;
+    case Qt::Key_O:
+      if (event->modifiers() & Qt::ControlModifier) selectAndLoadFile();
       break;
   }
 }
@@ -154,11 +175,31 @@ void MainWindow::loadFile(QString filename) {
   for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
     units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
   m_side_menu->setUnits(units);
+  m_filename = filename;
 }
 
 void MainWindow::selectAndLoadFile() {
-  QString filename = QFileDialog::getOpenFileName(
-      this, "Open file", "/home/steven/Projects/Music/pxtone/Examples/for-web",
-      "pxtone projects (*.ptcop)");
+  QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
+                                                  "pxtone projects (*.ptcop)");
   loadFile(filename);
+}
+
+void MainWindow::saveFile(QString filename) {
+  std::unique_ptr<std::FILE, decltype(&fclose)> f(
+      fopen(filename.toStdString().c_str(), "w"), &fclose);
+  if (!f) {
+    qWarning() << "Could not open file";
+    return;
+  }
+  pxtnDescriptor desc;
+  desc.set_file_w(f.get());
+  int version_from_pxtn_service = 5;
+  m_pxtn.write(&desc, false, version_from_pxtn_service);
+  m_side_menu->setModified(false);
+  m_filename = filename;
+}
+void MainWindow::selectAndSaveFile() {
+  QString filename = QFileDialog::getSaveFileName(this, "Open file", m_filename,
+                                                  "pxtone projects (*.ptcop)");
+  saveFile(filename);
 }

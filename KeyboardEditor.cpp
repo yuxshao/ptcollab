@@ -307,43 +307,46 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
   QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
   // Draw an ongoing edit or seek
-  switch (m_mouse_edit_state.type) {
-    case MouseEditState::Type::Nothing:
-    case MouseEditState::Type::SetOn:
-    case MouseEditState::Type::DeleteOn:
-    case MouseEditState::Type::SetNote:
-    case MouseEditState::Type::DeleteNote: {
-      int velocity = impliedVelocity(m_mouse_edit_state, scale);
-      // TODO: maybe factor out this quantization logic
-      Interval interval{
-          quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
-          quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +
-              m_quantize_clock};
-      int pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch);
-      int alpha =
-          (m_mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
-      paintBlock(pitch, interval, painter,
-                 brushes[m_current_unit].toQBrush(velocity, false, alpha),
-                 scale);
+  if (uint(m_current_unit) < brushes.size()) {  // In case nothing's loaded
+    switch (m_mouse_edit_state.type) {
+      case MouseEditState::Type::Nothing:
+      case MouseEditState::Type::SetOn:
+      case MouseEditState::Type::DeleteOn:
+      case MouseEditState::Type::SetNote:
+      case MouseEditState::Type::DeleteNote: {
+        int velocity = impliedVelocity(m_mouse_edit_state, scale);
+        // TODO: maybe factor out this quantization logic
+        Interval interval{
+            quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
+            quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +
+                m_quantize_clock};
+        int pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch);
+        int alpha =
+            (m_mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
+        paintBlock(pitch, interval, painter,
+                   brushes[m_current_unit].toQBrush(velocity, false, alpha),
+                   scale);
 
-      paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                     brushes[m_current_unit].toQBrush(255, true, alpha), scale);
+        paintHighlight(pitch, std::min(interval.start, interval.end), painter,
+                       brushes[m_current_unit].toQBrush(255, true, alpha),
+                       scale);
 
-      if (m_mouse_edit_state.type != MouseEditState::Nothing) {
-        painter.setPen(pen);
-        painter.drawText(interval.start / scale.clockPerPx,
-                         scale.pitchToY(pitch),
-                         QString("(%1, %2, %3, %4)")
-                             .arg(interval.start)
-                             .arg(interval.end)
-                             .arg(pitch)
-                             .arg(velocity));
-      }
-    } break;
-    case MouseEditState::Type::Seek:
-      painter.fillRect(m_mouse_edit_state.current_clock / scale.clockPerPx, 0,
-                       1, size().height(), halfWhite);
-      break;
+        if (m_mouse_edit_state.type != MouseEditState::Nothing) {
+          painter.setPen(pen);
+          painter.drawText(interval.start / scale.clockPerPx,
+                           scale.pitchToY(pitch),
+                           QString("(%1, %2, %3, %4)")
+                               .arg(interval.start)
+                               .arg(interval.end)
+                               .arg(pitch)
+                               .arg(velocity));
+        }
+      } break;
+      case MouseEditState::Type::Seek:
+        painter.fillRect(m_mouse_edit_state.current_clock / scale.clockPerPx, 0,
+                         1, size().height(), halfWhite);
+        break;
+    }
   }
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
@@ -379,9 +382,10 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
 }
 
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
+  if (m_pxtn->Unit_Num() == 0) return;
   int clock = event->localPos().x() * scale.clockPerPx;
   int pitch = scale.pitchOfY(event->localPos().y());
-  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
     type = MouseEditState::Type::Seek;
@@ -423,7 +427,10 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
   }
 }
 
-int nonnegative_modulo(int x, int m) { return ((x % m) + m) % m; }
+int nonnegative_modulo(int x, int m) {
+  if (m == 0) return 0;
+  return ((x % m) + m) % m;
+}
 void KeyboardEditor::cycleCurrentUnit(int offset) {
   switch (m_mouse_edit_state.type) {
     case MouseEditState::Type::SetOn:
@@ -469,56 +476,60 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   Interval meas_int{clock_int.start / clockPerMeas,
                     clock_int.end / clockPerMeas};
 
-  switch (m_mouse_edit_state.type) {
-    case MouseEditState::SetOn:
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_ON);
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_VELOCITY);
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_KEY);
-      m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit, EVENTKIND_ON,
-                                  clock_int.length());
-      m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                  EVENTKIND_VELOCITY,
-                                  impliedVelocity(m_mouse_edit_state, scale));
-      m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                  EVENTKIND_KEY, start_pitch);
-      if (meas_int.end >= m_pxtn->master->get_meas_num()) {
-        m_pxtn->master->set_meas_num(meas_int.end + 1);
-        updateGeometry();
-      }
-      break;
-    case MouseEditState::DeleteOn:
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_ON);
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_VELOCITY);
-      break;
-    case MouseEditState::SetNote:
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_KEY);
-      m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                  EVENTKIND_KEY, start_pitch);
-      if (meas_int.start >= m_pxtn->master->get_meas_num())
-        m_pxtn->master->set_meas_num(meas_int.start + 1);
-      break;
-    case MouseEditState::DeleteNote:
-      m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                   m_current_unit, EVENTKIND_KEY);
-      break;
-    case MouseEditState::Seek: {
-      pxtnVOMITPREPARATION prep{};
-      prep.flags |= pxtnVOMITPREPFLAG_loop;
-      prep.start_pos_sample = long(m_mouse_edit_state.current_clock) * 60 *
-                              44100 / m_pxtn->master->get_beat_clock() /
-                              m_pxtn->master->get_beat_tempo();
-      prep.master_volume = 0.80f;
-      m_pxtn->moo_preparation(&prep);
-    } break;
-    case MouseEditState::Nothing:
-      break;
-  }
+  if (m_pxtn->Unit_Num() > 0) switch (m_mouse_edit_state.type) {
+      case MouseEditState::SetOn:
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_ON);
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_VELOCITY);
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_KEY);
+        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
+                                    EVENTKIND_ON, clock_int.length());
+        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
+                                    EVENTKIND_VELOCITY,
+                                    impliedVelocity(m_mouse_edit_state, scale));
+        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
+                                    EVENTKIND_KEY, start_pitch);
+        if (meas_int.end >= m_pxtn->master->get_meas_num()) {
+          m_pxtn->master->set_meas_num(meas_int.end + 1);
+          updateGeometry();
+        }
+        emit onEdit();
+        break;
+      case MouseEditState::DeleteOn:
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_ON);
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_VELOCITY);
+        emit onEdit();
+        break;
+      case MouseEditState::SetNote:
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_KEY);
+        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
+                                    EVENTKIND_KEY, start_pitch);
+        if (meas_int.start >= m_pxtn->master->get_meas_num())
+          m_pxtn->master->set_meas_num(meas_int.start + 1);
+        emit onEdit();
+        break;
+      case MouseEditState::DeleteNote:
+        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
+                                     m_current_unit, EVENTKIND_KEY);
+        emit onEdit();
+        break;
+      case MouseEditState::Seek: {
+        pxtnVOMITPREPARATION prep{};
+        prep.flags |= pxtnVOMITPREPFLAG_loop;
+        prep.start_pos_sample = long(m_mouse_edit_state.current_clock) * 60 *
+                                44100 / m_pxtn->master->get_beat_clock() /
+                                m_pxtn->master->get_beat_tempo();
+        prep.master_volume = 0.80f;
+        m_pxtn->moo_preparation(&prep);
+      } break;
+      case MouseEditState::Nothing:
+        break;
+    }
   m_mouse_edit_state.type =
       (event->modifiers() & Qt::ShiftModifier ? MouseEditState::Type::Seek
                                               : MouseEditState::Type::Nothing);

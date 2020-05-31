@@ -39,9 +39,12 @@ class MainWindow : public QMainWindow {
   PxtoneIODevice m_pxtn_device;
   QSplitter* m_splitter;
   SideMenu* m_side_menu;
+  QString m_filename;
 
   Ui::MainWindow* ui;
   void togglePlayState();
   void resetAndSuspendAudio();
+  void saveFile(QString filename);
+  void selectAndSaveFile();
 };
 #endif  // MAINWINDOW_H

@@ -49,6 +49,7 @@ class KeyboardEditor : public QWidget {
  signals:
   void currentUnitChanged(int);
   void showAllChanged(bool);
+  void onEdit();
 
  public slots:
   void setQuantX(int);
