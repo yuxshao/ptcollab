@@ -2,246 +2,249 @@
 #define pxtnService_H
 
 #include "./pxtn.h"
-
-#include "./pxtnDescriptor.h"
-#include "./pxtnPulse_NoiseBuilder.h"
-
-#include "./pxtnMax.h"
-#include "./pxtnText.h"
 #include "./pxtnDelay.h"
-#include "./pxtnOverDrive.h"
-#include "./pxtnMaster.h"
-#include "./pxtnWoice.h"
-#include "./pxtnUnit.h"
+#include "./pxtnDescriptor.h"
 #include "./pxtnEvelist.h"
+#include "./pxtnMaster.h"
+#include "./pxtnMax.h"
+#include "./pxtnOverDrive.h"
+#include "./pxtnPulse_NoiseBuilder.h"
+#include "./pxtnText.h"
+#include "./pxtnUnit.h"
+#include "./pxtnWoice.h"
 
 #define PXTONEERRORSIZE 64
 
-#define pxtnVOMITPREPFLAG_loop      0x01
+#define pxtnVOMITPREPFLAG_loop 0x01
 #define pxtnVOMITPREPFLAG_unit_mute 0x02
 
-typedef struct
-{
-    int32_t   start_pos_meas  ;
-    int32_t   start_pos_sample;
-    float     start_pos_float ;
+typedef struct {
+  int32_t start_pos_meas;
+  int32_t start_pos_sample;
+  float start_pos_float;
 
-    int32_t   meas_end        ;
-    int32_t   meas_repeat     ;
-    float     fadein_sec      ;
+  int32_t meas_end;
+  int32_t meas_repeat;
+  float fadein_sec;
 
-    uint32_t  flags           ;
-    float     master_volume   ;
-}
-pxtnVOMITPREPARATION;
+  uint32_t flags;
+  float master_volume;
+} pxtnVOMITPREPARATION;
 
 class pxtnService;
 
-typedef bool (* pxtnSampledCallback)( void* user, const pxtnService* pxtn );
+typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
 
-class pxtnService
-{
-private:
-    void operator = (const pxtnService& src) = delete;
-    pxtnService     (const pxtnService& src) = delete;
+class pxtnService {
+ private:
+  void operator=(const pxtnService &src) = delete;
+  pxtnService(const pxtnService &src) = delete;
 
-    enum _enum_FMTVER
-    {
-        _enum_FMTVER_unknown = 0,
-        _enum_FMTVER_x1x, // fix event num = 10000
-        _enum_FMTVER_x2x, // no version of exe
-        _enum_FMTVER_x3x, // unit has voice / basic-key for only view
-        _enum_FMTVER_x4x, // unit has event
-        _enum_FMTVER_v5 ,
-    };
-    
-    bool _b_init;
-    bool _b_edit;
-    bool _b_fix_evels_num;
+  enum _enum_FMTVER {
+    _enum_FMTVER_unknown = 0,
+    _enum_FMTVER_x1x,  // fix event num = 10000
+    _enum_FMTVER_x2x,  // no version of exe
+    _enum_FMTVER_x3x,  // unit has voice / basic-key for only view
+    _enum_FMTVER_x4x,  // unit has event
+    _enum_FMTVER_v5,
+  };
 
-    int32_t _dst_ch_num, _dst_sps, _dst_byte_per_smp;
+  bool _b_init;
+  bool _b_edit;
+  bool _b_fix_evels_num;
 
-    pxtnPulse_NoiseBuilder *_ptn_bldr;
+  int32_t _dst_ch_num, _dst_sps, _dst_byte_per_smp;
 
-    int32_t _delay_max;    int32_t _delay_num;    pxtnDelay     **_delays;
-    int32_t _ovdrv_max;    int32_t _ovdrv_num;    pxtnOverDrive **_ovdrvs;
-    int32_t _woice_max;    int32_t _woice_num;    pxtnWoice     **_woices;
-    int32_t _unit_max ;    int32_t _unit_num ;    pxtnUnit      **_units ;
+  pxtnPulse_NoiseBuilder *_ptn_bldr;
 
-    int32_t _group_num;
+  int32_t _delay_max;
+  int32_t _delay_num;
+  pxtnDelay **_delays;
+  int32_t _ovdrv_max;
+  int32_t _ovdrv_num;
+  pxtnOverDrive **_ovdrvs;
+  int32_t _woice_max;
+  int32_t _woice_num;
+  pxtnWoice **_woices;
+  int32_t _unit_max;
+  int32_t _unit_num;
+  pxtnUnit **_units;
 
-    pxtnERR _ReadVersion      ( pxtnDescriptor *p_doc, _enum_FMTVER *p_fmt_ver, uint16_t *p_exe_ver );
-    pxtnERR _ReadTuneItems    ( pxtnDescriptor *p_doc );
-    bool    _x1x_Project_Read ( pxtnDescriptor *p_doc );
+  int32_t _group_num;
 
-    pxtnERR _io_Read_Delay    ( pxtnDescriptor *p_doc );
-    pxtnERR _io_Read_OverDrive( pxtnDescriptor *p_doc );
-    pxtnERR _io_Read_Woice    ( pxtnDescriptor *p_doc, pxtnWOICETYPE type );
-    pxtnERR _io_Read_OldUnit  ( pxtnDescriptor *p_doc, int32_t ver        );
+  pxtnERR _ReadVersion(pxtnDescriptor *p_doc, _enum_FMTVER *p_fmt_ver,
+                       uint16_t *p_exe_ver);
+  pxtnERR _ReadTuneItems(pxtnDescriptor *p_doc);
+  bool _x1x_Project_Read(pxtnDescriptor *p_doc);
 
-    bool    _io_assiWOIC_w    ( pxtnDescriptor *p_doc, int32_t idx          ) const;
-    pxtnERR _io_assiWOIC_r    ( pxtnDescriptor *p_doc );
-    bool    _io_assiUNIT_w    ( pxtnDescriptor *p_doc, int32_t idx          ) const;
-    pxtnERR _io_assiUNIT_r    ( pxtnDescriptor *p_doc );
+  pxtnERR _io_Read_Delay(pxtnDescriptor *p_doc);
+  pxtnERR _io_Read_OverDrive(pxtnDescriptor *p_doc);
+  pxtnERR _io_Read_Woice(pxtnDescriptor *p_doc, pxtnWOICETYPE type);
+  pxtnERR _io_Read_OldUnit(pxtnDescriptor *p_doc, int32_t ver);
 
-    bool    _io_UNIT_num_w    ( pxtnDescriptor *p_doc ) const;
-    pxtnERR _io_UNIT_num_r    ( pxtnDescriptor *p_doc, int32_t* p_num );
+  bool _io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const;
+  pxtnERR _io_assiWOIC_r(pxtnDescriptor *p_doc);
+  bool _io_assiUNIT_w(pxtnDescriptor *p_doc, int32_t idx) const;
+  pxtnERR _io_assiUNIT_r(pxtnDescriptor *p_doc);
 
-    bool _x3x_TuningKeyEvent  ();
-    bool _x3x_AddTuningEvent  ();
-    bool _x3x_SetVoiceNames   ();
+  bool _io_UNIT_num_w(pxtnDescriptor *p_doc) const;
+  pxtnERR _io_UNIT_num_r(pxtnDescriptor *p_doc, int32_t *p_num);
 
-    //////////////
-    // vomit..
-    //////////////
-    bool     _moo_b_valid_data;
-    bool     _moo_b_end_vomit ;
-    bool     _moo_b_init      ;
-            
-    bool     _moo_b_mute_by_unit;
-    bool     _moo_b_loop      ;
+  bool _x3x_TuningKeyEvent();
+  bool _x3x_AddTuningEvent();
+  bool _x3x_SetVoiceNames();
 
-    int32_t  _moo_smp_smooth  ;
-    float    _moo_clock_rate  ; // as the sample
-    int32_t  _moo_smp_count   ;
-    int32_t  _moo_smp_start   ;
-    int32_t  _moo_smp_end     ;
-    int32_t  _moo_smp_repeat  ;
-        
-    int32_t  _moo_fade_count  ;
-    int32_t  _moo_fade_max    ;
-    int32_t  _moo_fade_fade   ;
-    float    _moo_master_vol  ;
-        
-    int32_t  _moo_top;
-    float    _moo_smp_stride  ;
-    int32_t  _moo_time_pan_index;
+  //////////////
+  // vomit..
+  //////////////
+  bool _moo_b_valid_data;
+  bool _moo_b_end_vomit;
+  bool _moo_b_init;
 
-    float    _moo_bt_tempo    ;
+  bool _moo_b_mute_by_unit;
+  bool _moo_b_loop;
 
-    // for make now-meas
-    int32_t  _moo_bt_clock    ;
-    int32_t  _moo_bt_num      ;
+  int32_t _moo_smp_smooth;
+  float _moo_clock_rate;  // as the sample
+  int32_t _moo_smp_count;
+  int32_t _moo_smp_start;
+  int32_t _moo_smp_end;
+  int32_t _moo_smp_repeat;
 
-    int32_t* _moo_group_smps  ;
+  int32_t _moo_fade_count;
+  int32_t _moo_fade_max;
+  int32_t _moo_fade_fade;
+  float _moo_master_vol;
 
-    const EVERECORD*     _moo_p_eve;
+  int32_t _moo_top;
+  float _moo_smp_stride;
+  int32_t _moo_time_pan_index;
 
-    pxtnPulse_Frequency* _moo_freq ;
+  float _moo_bt_tempo;
 
-    pxtnERR _init           ( int32_t fix_evels_num, bool b_edit );
-    bool    _release        ();
-    pxtnERR _pre_count_event( pxtnDescriptor *p_doc, int32_t* p_count );
+  // for make now-meas
+  int32_t _moo_bt_clock;
+  int32_t _moo_bt_num;
 
+  int32_t *_moo_group_smps;
 
-    void _moo_constructor();
-    void _moo_destructer ();
-    bool _moo_init       ();
-    bool _moo_release    ();
+  const EVERECORD *_moo_p_eve;
 
-    bool _moo_ResetVoiceOn( pxtnUnit *p_u, int32_t w ) const;
-    bool _moo_InitUnitTone();
-    bool _moo_PXTONE_SAMPLE( void *p_data );
+  pxtnPulse_Frequency *_moo_freq;
 
-    pxtnSampledCallback _sampled_proc;
-    void*               _sampled_user;
+  pxtnERR _init(int32_t fix_evels_num, bool b_edit);
+  bool _release();
+  pxtnERR _pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count);
 
-public :
+  void _moo_constructor();
+  void _moo_destructer();
+  bool _moo_init();
+  bool _moo_release();
 
-     pxtnService();
-    ~pxtnService();
+  bool _moo_ResetVoiceOn(pxtnUnit *p_u, int32_t w) const;
+  bool _moo_InitUnitTone();
+  bool _moo_PXTONE_SAMPLE(void *p_data);
 
-    pxtnText    *text  ;
-    pxtnMaster  *master;
-    pxtnEvelist *evels ;
+  pxtnSampledCallback _sampled_proc;
+  void *_sampled_user;
 
-    pxtnERR init         ();
-    pxtnERR init_collage ( int32_t fix_evels_num );
-    bool    clear        ();
+ public:
+  pxtnService();
+  ~pxtnService();
 
-    pxtnERR write        ( pxtnDescriptor *p_doc, bool bTune, uint16_t exe_ver );
-    pxtnERR read         ( pxtnDescriptor *p_doc );
+  pxtnText *text;
+  pxtnMaster *master;
+  pxtnEvelist *evels;
 
-    bool    AdjustMeasNum();
+  pxtnERR init();
+  pxtnERR init_collage(int32_t fix_evels_num);
+  bool clear();
 
-    int32_t get_last_error_id() const;
+  pxtnERR write(pxtnDescriptor *p_doc, bool bTune, uint16_t exe_ver);
+  pxtnERR read(pxtnDescriptor *p_doc);
 
-    pxtnERR tones_ready();
-    bool    tones_clear();
+  bool AdjustMeasNum();
 
-    int32_t Group_Num () const;
+  int32_t get_last_error_id() const;
 
-    // delay.
-    int32_t    Delay_Num() const;
-    int32_t    Delay_Max() const;
-    bool       Delay_Set        ( int32_t idx, DELAYUNIT unit, float freq, float rate, int32_t group );
-    bool       Delay_Add        (              DELAYUNIT unit, float freq, float rate, int32_t group );
-    bool       Delay_Remove     ( int32_t idx );
-    pxtnERR    Delay_ReadyTone  ( int32_t idx );
-    pxtnDelay* Delay_Get        ( int32_t idx );
+  pxtnERR tones_ready();
+  bool tones_clear();
 
-    // over drive.
-    int32_t    OverDrive_Num       () const;
-    int32_t    OverDrive_Max       () const;
-    bool       OverDrive_Set       ( int32_t idx, float cut, float amp, int32_t group );
-    bool       OverDrive_Add       (              float cut, float amp, int32_t group );
-    bool       OverDrive_Remove    ( int32_t idx );
-    bool       OverDrive_ReadyTone ( int32_t idx );
-    pxtnOverDrive* OverDrive_Get( int32_t idx );
+  int32_t Group_Num() const;
 
-    // woice.
-    int32_t Woice_Num() const;
-    int32_t Woice_Max() const;
-    const pxtnWoice* Woice_Get         ( int32_t idx ) const;
-    pxtnWoice*       Woice_Get_variable( int32_t idx );
+  // delay.
+  int32_t Delay_Num() const;
+  int32_t Delay_Max() const;
+  bool Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
+                 int32_t group);
+  bool Delay_Add(DELAYUNIT unit, float freq, float rate, int32_t group);
+  bool Delay_Remove(int32_t idx);
+  pxtnERR Delay_ReadyTone(int32_t idx);
+  pxtnDelay *Delay_Get(int32_t idx);
 
-    pxtnERR Woice_read     ( int32_t idx, pxtnDescriptor* desc, pxtnWOICETYPE type );
-    pxtnERR Woice_ReadyTone( int32_t idx );
-    bool    Woice_Remove   ( int32_t idx );
-    bool    Woice_Replace  ( int32_t old_place, int32_t new_place );
+  // over drive.
+  int32_t OverDrive_Num() const;
+  int32_t OverDrive_Max() const;
+  bool OverDrive_Set(int32_t idx, float cut, float amp, int32_t group);
+  bool OverDrive_Add(float cut, float amp, int32_t group);
+  bool OverDrive_Remove(int32_t idx);
+  bool OverDrive_ReadyTone(int32_t idx);
+  pxtnOverDrive *OverDrive_Get(int32_t idx);
 
-    // unit.
-    int32_t         Unit_Num() const;
-    int32_t         Unit_Max() const;
-    const pxtnUnit* Unit_Get         ( int32_t idx ) const;
-    pxtnUnit*       Unit_Get_variable( int32_t idx );
+  // woice.
+  int32_t Woice_Num() const;
+  int32_t Woice_Max() const;
+  const pxtnWoice *Woice_Get(int32_t idx) const;
+  pxtnWoice *Woice_Get_variable(int32_t idx);
 
-    bool Unit_Remove   ( int32_t idx );
-    bool Unit_Replace  ( int32_t old_place, int32_t new_place );
-    bool Unit_AddNew   ();
-    bool Unit_SetOpratedAll( bool b );
-    bool Unit_Solo( int32_t idx );
+  pxtnERR Woice_read(int32_t idx, pxtnDescriptor *desc, pxtnWOICETYPE type);
+  pxtnERR Woice_ReadyTone(int32_t idx);
+  bool Woice_Remove(int32_t idx);
+  bool Woice_Replace(int32_t old_place, int32_t new_place);
 
-    // q
-    bool set_destination_quality( int32_t    ch_num, int32_t    sps );
-    bool get_destination_quality( int32_t *p_ch_num, int32_t *p_sps ) const;
-        bool get_byte_per_smp(int32_t *p_byte_per_smp) const;
-    bool set_sampled_callback   ( pxtnSampledCallback proc, void* user );
+  // unit.
+  int32_t Unit_Num() const;
+  int32_t Unit_Max() const;
+  const pxtnUnit *Unit_Get(int32_t idx) const;
+  pxtnUnit *Unit_Get_variable(int32_t idx);
 
-    //////////////
-    // Moo..
-    //////////////
+  bool Unit_Remove(int32_t idx);
+  bool Unit_Replace(int32_t old_place, int32_t new_place);
+  bool Unit_AddNew();
+  bool Unit_SetOpratedAll(bool b);
+  bool Unit_Solo(int32_t idx);
 
-    bool    moo_is_valid_data() const;
-    bool    moo_is_end_vomit () const;
-            
-    bool    moo_set_mute_by_unit( bool b );
-    bool    moo_set_loop        ( bool b );
-    bool    moo_set_fade( int32_t fade, float sec );
-    bool    moo_set_master_volume( float v );
+  // q
+  bool set_destination_quality(int32_t ch_num, int32_t sps);
+  bool get_destination_quality(int32_t *p_ch_num, int32_t *p_sps) const;
+  bool get_byte_per_smp(int32_t *p_byte_per_smp) const;
+  bool set_sampled_callback(pxtnSampledCallback proc, void *user);
 
-    int32_t moo_get_total_sample   () const;
+  //////////////
+  // Moo..
+  //////////////
 
-    int32_t moo_get_now_clock      () const;
-    int32_t moo_get_end_clock      () const;
-    int32_t moo_get_sampling_offset() const;
-    int32_t moo_get_sampling_end   () const;
+  bool moo_is_valid_data() const;
+  bool moo_is_end_vomit() const;
 
-    bool    moo_preparation( const pxtnVOMITPREPARATION *p_build );
+  bool moo_set_mute_by_unit(bool b);
+  bool moo_set_loop(bool b);
+  bool moo_set_fade(int32_t fade, float sec);
+  bool moo_set_master_volume(float v);
 
-        bool    Moo( void* p_buf, int32_t  size, int32_t *filled_size = nullptr );
+  int32_t moo_get_total_sample() const;
+
+  int32_t moo_get_now_clock() const;
+  int32_t moo_get_end_clock() const;
+  int32_t moo_get_sampling_offset() const;
+  int32_t moo_get_sampling_end() const;
+
+  bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
+
+  bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
 };
 
-int32_t pxtnService_moo_CalcSampleNum( int32_t meas_num, int32_t beat_num, int32_t sps, float beat_tempo );
+int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,
+                                      int32_t sps, float beat_tempo);
 
 #endif

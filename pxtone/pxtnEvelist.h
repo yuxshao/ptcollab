@@ -2,29 +2,28 @@
 #define pxtnEvelist_H
 
 #include "./pxtn.h"
-
 #include "./pxtnDescriptor.h"
 
 enum {
-  EVENTKIND_NULL = 0, //  0
+  EVENTKIND_NULL = 0,  //  0
 
-  EVENTKIND_ON,         //  1 - indicates a block of time a note is on
-  EVENTKIND_KEY,        //  2 - indicates a change of key
-  EVENTKIND_PAN_VOLUME, //  3
-  EVENTKIND_VELOCITY,   //  4 - indicates a change of velocity
-  EVENTKIND_VOLUME,     //  5 - indicates a change in volume
-  EVENTKIND_PORTAMENT,  //  6
-  EVENTKIND_BEATCLOCK,  //  7 - old
-  EVENTKIND_BEATTEMPO,  //  8 - old
-  EVENTKIND_BEATNUM,    //  9 - old
-  EVENTKIND_REPEAT,     // 10 - old
-  EVENTKIND_LAST,       // 11 - old
-  EVENTKIND_VOICENO,    // 12
-  EVENTKIND_GROUPNO,    // 13
-  EVENTKIND_TUNING,     // 14
-  EVENTKIND_PAN_TIME,   // 15
+  EVENTKIND_ON,          //  1 - indicates a block of time a note is on
+  EVENTKIND_KEY,         //  2 - indicates a change of key
+  EVENTKIND_PAN_VOLUME,  //  3
+  EVENTKIND_VELOCITY,    //  4 - indicates a change of velocity
+  EVENTKIND_VOLUME,      //  5 - indicates a change in volume
+  EVENTKIND_PORTAMENT,   //  6
+  EVENTKIND_BEATCLOCK,   //  7 - old
+  EVENTKIND_BEATTEMPO,   //  8 - old
+  EVENTKIND_BEATNUM,     //  9 - old
+  EVENTKIND_REPEAT,      // 10 - old
+  EVENTKIND_LAST,        // 11 - old
+  EVENTKIND_VOICENO,     // 12
+  EVENTKIND_GROUPNO,     // 13
+  EVENTKIND_TUNING,      // 14
+  EVENTKIND_PAN_TIME,    // 15
 
-  EVENTKIND_NUM, // 16
+  EVENTKIND_NUM,  // 16
 };
 
 #define EVENTDEFAULT_VOLUME 104
@@ -35,7 +34,7 @@ enum {
 #define EVENTDEFAULT_VOICENO 0
 #define EVENTDEFAULT_GROUPNO 0
 #define EVENTDEFAULT_KEY 0x6000
-#define EVENTDEFAULT_BASICKEY 0x4500 // 4A(440Hz?)
+#define EVENTDEFAULT_BASICKEY 0x4500  // 4A(440Hz?)
 #define EVENTDEFAULT_TUNING 1.0f
 
 #define EVENTDEFAULT_BEATNUM 4
@@ -56,10 +55,9 @@ typedef struct EVERECORD {
 //--------------------------------
 
 class pxtnEvelist {
-
-private:
-  pxtnEvelist(const pxtnEvelist &src) = delete; // copy
-  pxtnEvelist &operator=(const pxtnEvelist &right) = delete; // substitution
+ private:
+  pxtnEvelist(const pxtnEvelist &src) = delete;               // copy
+  pxtnEvelist &operator=(const pxtnEvelist &right) = delete;  // substitution
 
   int32_t _eve_allocated_num;
   EVERECORD *_eves;
@@ -72,7 +70,7 @@ private:
                 int32_t clock, uint8_t unit_no, uint8_t kind, int32_t value);
   void _rec_cut(EVERECORD *p_rec);
 
-public:
+ public:
   void Release();
   void Clear();
 
@@ -105,7 +103,7 @@ public:
   void Linear_End(bool b_connect);
 
   int32_t Record_Clock_Shift(int32_t clock, int32_t shift,
-                             uint8_t unit_no); // can't be under 0.
+                             uint8_t unit_no);  // can't be under 0.
   int32_t Record_Value_Set(int32_t clock1, int32_t clock2, uint8_t unit_no,
                            uint8_t kind, int32_t value);
   int32_t Record_Value_Change(int32_t clock1, int32_t clock2, uint8_t unit_no,
@@ -117,9 +115,9 @@ public:
                         uint8_t kind);
   int32_t Record_Delete(int32_t clock1, int32_t clock2, uint8_t unit_no);
 
-  int32_t Record_UnitNo_Miss(uint8_t unit_no); // delete event has the unit-no
-  int32_t Record_UnitNo_Set(uint8_t unit_no);  // set the unit-no
-  int32_t Record_UnitNo_Replace(uint8_t old_u, uint8_t new_u); // exchange unit
+  int32_t Record_UnitNo_Miss(uint8_t unit_no);  // delete event has the unit-no
+  int32_t Record_UnitNo_Set(uint8_t unit_no);   // set the unit-no
+  int32_t Record_UnitNo_Replace(uint8_t old_u, uint8_t new_u);  // exchange unit
 
   int32_t BeatClockOperation(int32_t rate);
 

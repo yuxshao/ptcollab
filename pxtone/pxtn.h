@@ -14,22 +14,26 @@
 #include <stdint.h>
 #endif
 
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <math.h>
 
-typedef struct
-{
-    int32_t x;
-    int32_t y;
-}
-pxtnPOINT;
+typedef struct {
+  int32_t x;
+  int32_t y;
+} pxtnPOINT;
 
 #include "./pxtnError.h"
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(p) { if( p ){ delete( p ); p = NULL; } }
+#define SAFE_DELETE(p) \
+  {                    \
+    if (p) {           \
+      delete (p);      \
+      p = NULL;        \
+    }                  \
+  }
 #endif
 
 #endif

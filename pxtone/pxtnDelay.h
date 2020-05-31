@@ -4,65 +4,57 @@
 #define pxtnDelay_H
 
 #include "./pxtn.h"
-
 #include "./pxtnDescriptor.h"
 #include "./pxtnMax.h"
 
-enum DELAYUNIT
-{
-    DELAYUNIT_Beat = 0,
-    DELAYUNIT_Meas    ,
-    DELAYUNIT_Second  ,
-    DELAYUNIT_max = DELAYUNIT_Second,
+enum DELAYUNIT {
+  DELAYUNIT_Beat = 0,
+  DELAYUNIT_Meas,
+  DELAYUNIT_Second,
+  DELAYUNIT_max = DELAYUNIT_Second,
 };
 
-class pxtnDelay
-{
-private:
+class pxtnDelay {
+ private:
+  void operator=(const pxtnDelay& src) = delete;
+  pxtnDelay(const pxtnDelay& src) = delete;
 
-    void operator = (const pxtnDelay& src) = delete;
-    pxtnDelay       (const pxtnDelay& src) = delete;
+  bool _b_played;
+  DELAYUNIT _unit;
+  int32_t _group;
+  float _rate;
+  float _freq;
 
-    bool      _b_played  ;
-    DELAYUNIT _unit      ;
-    int32_t   _group     ;
-    float     _rate      ;
-    float     _freq      ;
+  int32_t _smp_num;
+  int32_t _offset;
+  int32_t* _bufs[pxtnMAX_CHANNEL];
+  int32_t _rate_s32;
 
-    int32_t   _smp_num   ;
-    int32_t   _offset    ;
-    int32_t*  _bufs[ pxtnMAX_CHANNEL ];
-    int32_t   _rate_s32  ;
+ public:
+  pxtnDelay();
+  ~pxtnDelay();
 
-public :
+  pxtnERR Tone_Ready(int32_t beat_num, float beat_tempo, int32_t sps);
+  void Tone_Supple(int32_t ch_num, int32_t* group_smps);
+  void Tone_Increment();
+  void Tone_Release();
+  void Tone_Clear();
 
-     pxtnDelay();
-    ~pxtnDelay();
+  bool Add_New(DELAYUNIT scale, float freq, float rate, int32_t group);
 
-    pxtnERR Tone_Ready    ( int32_t beat_num, float beat_tempo, int32_t sps );
-    void    Tone_Supple   ( int32_t ch_num  , int32_t *group_smps );
-    void    Tone_Increment();
-    void    Tone_Release  ();
-    void    Tone_Clear    ();
+  bool Write(pxtnDescriptor* p_doc) const;
+  pxtnERR Read(pxtnDescriptor* p_doc);
 
-    bool Add_New    ( DELAYUNIT scale, float freq, float rate, int32_t group );
+  DELAYUNIT get_unit() const;
+  float get_freq() const;
+  float get_rate() const;
+  int32_t get_group() const;
 
-    bool    Write( pxtnDescriptor *p_doc ) const;
-    pxtnERR Read ( pxtnDescriptor *p_doc );
+  void Set(DELAYUNIT unit, float freq, float rate, int32_t group);
 
-
-    DELAYUNIT get_unit ()const;
-    float     get_freq ()const;
-    float     get_rate ()const;
-    int32_t   get_group()const;
-
-    void      Set( DELAYUNIT unit, float freq, float rate, int32_t group );
-
-    bool      get_played()const;
-    void      set_played( bool b );
-    bool      switch_played();
+  bool get_played() const;
+  void set_played(bool b);
+  bool switch_played();
 };
-
-
 
 #endif
