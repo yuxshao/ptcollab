@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_keyboard_editor, &KeyboardEditor::onEdit,
           [=]() { m_side_menu->setModified(true); });
 
-  loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/min-max.ptcop");
+  loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop");
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &MainWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,

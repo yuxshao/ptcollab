@@ -98,7 +98,8 @@
     <widget class="QLabel" name="label_4">
      <property name="text">
       <string>Ctrl+(Shift)+scroll to zoom.
-Shift+scroll to scroll horizontally.</string>
+Shift+scroll to scroll horizontally.
+Middle-click drag also scrolls.</string>
      </property>
     </widget>
    </item>

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QScrollArea>
 #include <QTime>
 
 int quantize(int v, int q) { return (v / q) * q; }
@@ -16,7 +17,7 @@ QSize KeyboardEditor::sizeHint() const {
                scale.pitchToY(EVENTMIN_KEY));
 }
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                               QWidget *parent)
+                               QScrollArea *parent)
     : QWidget(parent),
       scale(),
       m_pxtn(pxtn),
@@ -382,7 +383,10 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
 }
 
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
-  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) return;
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
+    event->ignore();
+    return;
+  }
   if (m_pxtn->Unit_Num() == 0) return;
   int clock = event->localPos().x() * scale.clockPerPx;
   int pitch = scale.pitchOfY(event->localPos().y());
@@ -425,6 +429,7 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
     m_mouse_edit_state.start_clock = m_mouse_edit_state.current_clock;
     m_mouse_edit_state.start_pitch = m_mouse_edit_state.current_pitch;
   }
+  event->ignore();
 }
 
 int nonnegative_modulo(int x, int m) {
@@ -463,6 +468,10 @@ void KeyboardEditor::setQuantY(int q) {
 }
 
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
+    event->ignore();
+    return;
+  }
   Interval interval{
       quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
       quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +

@@ -3,6 +3,7 @@
 
 #include <QAudioOutput>
 #include <QElapsedTimer>
+#include <QScrollArea>
 #include <QWidget>
 #include <optional>
 
@@ -42,7 +43,7 @@ class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
   explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                          QWidget *parent = nullptr);
+                          QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
 

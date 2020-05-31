@@ -10,6 +10,13 @@ class EditorScrollArea : public QScrollArea {
  public:
   EditorScrollArea(QWidget *parent);
   void wheelEvent(QWheelEvent *event) override;
+
+ private:
+  bool middleDown;
+  QPoint lastPos;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
 };
 
 #endif  // EDITORSCROLLAREA_H
