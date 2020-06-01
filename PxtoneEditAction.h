@@ -13,6 +13,7 @@ struct Action {
   int start_clock;
   int end_clock_or_value;  // depending on type
   void perform(pxtnEvelist *evels) const;
+  void print() const;
 };
 
 class PxtoneEditAction {

@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-void Action::perform(pxtnEvelist *evels) const {
+void Action::print() const {
   std::string k;
   switch (kind) {
     case EVENTKIND_ON:
@@ -20,6 +20,8 @@ void Action::perform(pxtnEvelist *evels) const {
 
   qDebug() << "ACTION(" << (type == Action::ADD ? "ADD" : "DELETE") << k.c_str()
            << unit_no << start_clock << end_clock_or_value << ")";
+}
+void Action::perform(pxtnEvelist *evels) const {
   switch (type) {
     case Action::ADD:
       evels->Record_Add_i(start_clock, unit_no, kind, end_clock_or_value);
