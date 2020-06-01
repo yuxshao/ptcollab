@@ -373,8 +373,8 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
       // scale Y
       scale.pitchPerPx *= pow(2, delta.y() / 240.0);
       if (scale.pitchPerPx < 8) scale.pitchPerPx = 8;
-      if (scale.pitchPerPx > PITCH_PER_KEY / 8)
-        scale.pitchPerPx = PITCH_PER_KEY / 8;
+      if (scale.pitchPerPx > PITCH_PER_KEY / 4)
+        scale.pitchPerPx = PITCH_PER_KEY / 4;
     }
 
     updateGeometry();
@@ -428,7 +428,8 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         type = MouseEditState::Type::DeleteOn;
       else {
         type = MouseEditState::Type::SetOn;
-        audio = make_audio(pitch);
+        audio =
+            make_audio(quantize(pitch, m_quantize_pitch) + m_quantize_pitch);
       }
     }
   }
