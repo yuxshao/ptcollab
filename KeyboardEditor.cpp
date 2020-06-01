@@ -6,6 +6,7 @@
 #include <QScrollArea>
 #include <QTime>
 
+#include "PxtoneEditAction.h"
 #include "PxtoneUnitIODevice.h"
 
 int quantize(int v, int q) { return (v / q) * q; }
@@ -31,7 +32,9 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_audio_output(audio_output),
       m_anim(new Animation(this)),
       m_quantize_clock(pxtn->master->get_beat_clock()),
-      m_quantize_pitch(PITCH_PER_KEY) {
+      m_quantize_pitch(PITCH_PER_KEY),
+      actionHistory(),
+      actionHistoryPosition(0) {
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
@@ -518,47 +521,42 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   Interval meas_int{clock_int.start / clockPerMeas,
                     clock_int.end / clockPerMeas};
 
-  if (m_pxtn->Unit_Num() > 0) switch (m_mouse_edit_state.type) {
+  if (m_pxtn->Unit_Num() > 0) {
+    std::vector<Action> actions;
+    switch (m_mouse_edit_state.type) {
       case MouseEditState::SetOn:
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_ON);
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_VELOCITY);
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_KEY);
-        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                    EVENTKIND_ON, clock_int.length());
-        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                    EVENTKIND_VELOCITY,
-                                    impliedVelocity(m_mouse_edit_state, scale));
-        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                    EVENTKIND_KEY, start_pitch);
-        if (meas_int.end >= m_pxtn->master->get_meas_num()) {
-          m_pxtn->master->set_meas_num(meas_int.end + 1);
-          updateGeometry();
-        }
-        emit onEdit();
+        actions.push_back({Action::DELETE, EVENTKIND_ON, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::DELETE, EVENTKIND_VELOCITY, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::DELETE, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::ADD, EVENTKIND_ON, m_current_unit,
+                           clock_int.start, clock_int.length()});
+        actions.push_back({Action::ADD, EVENTKIND_VELOCITY, m_current_unit,
+                           clock_int.start,
+                           impliedVelocity(m_mouse_edit_state, scale)});
+        actions.push_back({Action::ADD, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, start_pitch});
+
         break;
       case MouseEditState::DeleteOn:
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_ON);
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_VELOCITY);
-        emit onEdit();
+        actions.push_back({Action::DELETE, EVENTKIND_ON, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::DELETE, EVENTKIND_VELOCITY, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::DELETE, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, clock_int.end});
         break;
       case MouseEditState::SetNote:
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_KEY);
-        m_pxtn->evels->Record_Add_i(clock_int.start, m_current_unit,
-                                    EVENTKIND_KEY, start_pitch);
-        if (meas_int.start >= m_pxtn->master->get_meas_num())
-          m_pxtn->master->set_meas_num(meas_int.start + 1);
-        emit onEdit();
+        actions.push_back({Action::DELETE, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, clock_int.end});
+        actions.push_back({Action::ADD, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, start_pitch});
         break;
       case MouseEditState::DeleteNote:
-        m_pxtn->evels->Record_Delete(clock_int.start, clock_int.end,
-                                     m_current_unit, EVENTKIND_KEY);
-        emit onEdit();
+        actions.push_back({Action::DELETE, EVENTKIND_KEY, m_current_unit,
+                           clock_int.start, clock_int.end});
         break;
       case MouseEditState::Seek: {
         pxtnVOMITPREPARATION prep{};
@@ -572,7 +570,38 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       case MouseEditState::Nothing:
         break;
     }
-  m_mouse_edit_state.type =
-      (event->modifiers() & Qt::ShiftModifier ? MouseEditState::Type::Seek
-                                              : MouseEditState::Type::Nothing);
+    if (actions.size() > 0) {
+      PxtoneEditAction editActions(std::move(actions), m_pxtn->evels);
+      editActions.toggle();
+      if (meas_int.end >= m_pxtn->master->get_meas_num()) {
+        m_pxtn->master->set_meas_num(meas_int.end + 1);
+        updateGeometry();
+      }
+      emit onEdit();
+      const auto &eraseAt = actionHistory.begin() + actionHistoryPosition;
+      if (eraseAt != actionHistory.end()) actionHistory.erase(eraseAt);
+      actionHistory.push_back(editActions);
+      actionHistoryPosition = actionHistory.size();
+      qDebug() << actionHistoryPosition;
+    }
+    m_mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier
+                                   ? MouseEditState::Type::Seek
+                                   : MouseEditState::Type::Nothing);
+  }
+}
+
+void KeyboardEditor::undo() {
+  if (actionHistoryPosition > 0) {
+    actionHistory[actionHistoryPosition - 1].toggle();
+    --actionHistoryPosition;
+  }
+  qDebug() << actionHistoryPosition;
+}
+
+void KeyboardEditor::redo() {
+  if (uint(actionHistoryPosition) < actionHistory.size()) {
+    actionHistory[actionHistoryPosition].toggle();
+    ++actionHistoryPosition;
+  }
+  qDebug() << actionHistoryPosition;
 }

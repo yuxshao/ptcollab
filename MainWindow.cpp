@@ -153,6 +153,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_O:
       if (event->modifiers() & Qt::ControlModifier) selectAndLoadFile();
       break;
+    case Qt::Key_Z:
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier)
+          m_keyboard_editor->redo();
+        else
+          m_keyboard_editor->undo();
+      }
+      break;
+    case Qt::Key_Y:
+      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->redo();
+      break;
   }
 }
 

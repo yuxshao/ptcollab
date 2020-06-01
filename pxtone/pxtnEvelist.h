@@ -4,7 +4,7 @@
 #include "./pxtn.h"
 #include "./pxtnDescriptor.h"
 
-enum {
+typedef enum {
   EVENTKIND_NULL = 0,  //  0
 
   EVENTKIND_ON,          //  1 - indicates a block of time a note is on
@@ -24,7 +24,7 @@ enum {
   EVENTKIND_PAN_TIME,    // 15
 
   EVENTKIND_NUM,  // 16
-};
+} EVENTKIND;
 
 #define EVENTDEFAULT_VOLUME 104
 #define EVENTDEFAULT_VELOCITY 104

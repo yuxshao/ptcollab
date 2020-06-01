@@ -31,6 +31,7 @@ HEADERS += \
            KeyboardEditor.h \
            LinearSmoother.h \
            MainWindow.h \
+           PxtoneEditAction.h \
            PxtoneIODevice.h \
            PxtoneUnitIODevice.h \
            SideMenu.h \
@@ -63,6 +64,7 @@ SOURCES += main.cpp \
            KeyboardEditor.cpp \
            LinearSmoother.cpp \
            MainWindow.cpp \
+           PxtoneEditAction.cpp \
            PxtoneIODevice.cpp \
            PxtoneUnitIODevice.cpp \
            SideMenu.cpp \

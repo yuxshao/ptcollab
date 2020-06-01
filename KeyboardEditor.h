@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "Animation.h"
+#include "PxtoneEditAction.h"
 #include "pxtone/pxtnService.h"
 
 struct MouseEditState {
@@ -57,6 +58,8 @@ class KeyboardEditor : public QWidget {
   void setQuantX(int);
   void setQuantY(int);
   void setCurrentUnit(int);
+  void undo();
+  void redo();
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -66,6 +69,7 @@ class KeyboardEditor : public QWidget {
   void wheelEvent(QWheelEvent *event) override;
   void refreshSize();
   QSize sizeHint() const override;
+  QAudioOutput *make_audio(int pitch);
   Scale scale;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
@@ -77,7 +81,9 @@ class KeyboardEditor : public QWidget {
   Animation *m_anim;
   int m_quantize_clock;
   int m_quantize_pitch;
-  QAudioOutput *make_audio(int pitch);
+  // TODO: How to represent it when undos are interleaved?
+  std::vector<PxtoneEditAction> actionHistory;
+  int actionHistoryPosition;
 };
 
 #endif  // KEYBOARDEDITOR_H
