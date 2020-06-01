@@ -222,10 +222,10 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   // want a bigger buffer. The formula fixes the upper bound issue, but perhaps
   // we can do some smoothing with a linear thing too.
   // int bytes_per_second = 4 /* bytes in sample */ * 44100 /* samples per
-  // second */; long usecs = m_audio_output->processedUSecs() -
-  // long(m_audio_output->bufferSize()) * 10E5 / bytes_per_second;
+  // second */; int64_t usecs = m_audio_output->processedUSecs() -
+  // int64_t(m_audio_output->bufferSize()) * 10E5 / bytes_per_second;
 
-  /*long usecs = m_audio_output->processedUSecs();
+  /*int64_t usecs = m_audio_output->processedUSecs();
   int clock = usecs * m_pxtn->master->get_beat_tempo() *
               m_pxtn->master->get_beat_clock() / 60 / 1000000;*/
   int clock = m_pxtn->moo_get_now_clock();
@@ -562,7 +562,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       case MouseEditState::Seek: {
         pxtnVOMITPREPARATION prep{};
         prep.flags |= pxtnVOMITPREPFLAG_loop;
-        prep.start_pos_sample = long(m_mouse_edit_state.current_clock) * 60 *
+        prep.start_pos_sample = int64_t(m_mouse_edit_state.current_clock) * 60 *
                                 44100 / m_pxtn->master->get_beat_clock() /
                                 m_pxtn->master->get_beat_tempo();
         prep.master_volume = 0.80f;
