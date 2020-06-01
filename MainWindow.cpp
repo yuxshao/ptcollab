@@ -158,7 +158,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
 void MainWindow::loadFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
-      fopen(filename.toStdString().c_str(), "r"), &fclose);
+      fopen(filename.toStdString().c_str(), "rb"), &fclose);
   if (!f) {
     qWarning() << "Could not open file";
     return;
@@ -166,7 +166,7 @@ void MainWindow::loadFile(QString filename) {
   pxtnDescriptor desc;
   desc.set_file_r(f.get());
   if (m_pxtn.read(&desc) != pxtnOK) {
-    qWarning() << "Error reading file";
+    qWarning() << "Error reading file" << filename;
     return;
   }
   if (m_pxtn.tones_ready() != pxtnOK) {
