@@ -35,6 +35,9 @@ void Action::perform(pxtnEvelist *evels) const {
 PxtoneEditAction::PxtoneEditAction(std::vector<Action> &&actions,
                                    pxtnEvelist *evels)
     : m_redo(actions), m_is_done(false), m_evels(evels) {
+  // TODO: This setup is actually really slow. You have to iterate through all events 6 times to do this?
+  // Sort of crazy. Probably instead have the actual op tell you how to undo esp. since we do that anyway.
+  // When collab starts up you can't just use the precomputed undo / redo when other people are interfering.
   for (auto a = m_redo.rbegin(); a != m_redo.rend(); ++a) {
     switch (a->type) {
       case Action::ADD: {
