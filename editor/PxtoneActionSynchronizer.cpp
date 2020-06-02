@@ -35,6 +35,8 @@ void PxtoneActionSynchronizer::applyRemoteAction(
     }
   } else {
     // Undo each of the uncommitted actions
+    // TODO: This is probably where you could be smarter and avoid undoing
+    // things that don't intersect in bbox
     for (auto uncommitted = m_uncommitted.rbegin();
          uncommitted != m_uncommitted.rend(); ++uncommitted) {
       *uncommitted = apply_actions_and_get_undo(*uncommitted, m_evels);
