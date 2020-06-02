@@ -26,15 +26,15 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
-           Animation.h \
-           EditorScrollArea.h \
-           KeyboardEditor.h \
-           LinearSmoother.h \
-           MainWindow.h \
-           PxtoneEditAction.h \
-           PxtoneIODevice.h \
-           PxtoneUnitIODevice.h \
-           SideMenu.h \
+           editor/Animation.h \
+           editor/EditorScrollArea.h \
+           editor/KeyboardEditor.h \
+           editor/LinearSmoother.h \
+           editor/MainWindow.h \
+           editor/PxtoneEditAction.h \
+           editor/PxtoneIODevice.h \
+           editor/PxtoneUnitIODevice.h \
+           editor/SideMenu.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -56,18 +56,18 @@ HEADERS += \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h
 FORMS += \
-    MainWindow.ui \
-    SideMenu.ui
+    editor/MainWindow.ui \
+    editor/SideMenu.ui
 SOURCES += main.cpp \
-           Animation.cpp \
-           EditorScrollArea.cpp \
-           KeyboardEditor.cpp \
-           LinearSmoother.cpp \
-           MainWindow.cpp \
-           PxtoneEditAction.cpp \
-           PxtoneIODevice.cpp \
-           PxtoneUnitIODevice.cpp \
-           SideMenu.cpp \
+           editor/Animation.cpp \
+           editor/EditorScrollArea.cpp \
+           editor/KeyboardEditor.cpp \
+           editor/LinearSmoother.cpp \
+           editor/MainWindow.cpp \
+           editor/PxtoneEditAction.cpp \
+           editor/PxtoneIODevice.cpp \
+           editor/PxtoneUnitIODevice.cpp \
+           editor/SideMenu.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \
