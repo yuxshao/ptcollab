@@ -29,7 +29,6 @@ HEADERS += \
            editor/Animation.h \
            editor/EditorScrollArea.h \
            editor/KeyboardEditor.h \
-           editor/LinearSmoother.h \
            editor/MainWindow.h \
            editor/PxtoneEditAction.h \
            editor/PxtoneIODevice.h \
@@ -62,7 +61,6 @@ SOURCES += main.cpp \
            editor/Animation.cpp \
            editor/EditorScrollArea.cpp \
            editor/KeyboardEditor.cpp \
-           editor/LinearSmoother.cpp \
            editor/MainWindow.cpp \
            editor/PxtoneEditAction.cpp \
            editor/PxtoneIODevice.cpp \
