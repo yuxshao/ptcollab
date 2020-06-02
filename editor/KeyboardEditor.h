@@ -82,7 +82,7 @@ class KeyboardEditor : public QWidget {
   int m_quantize_clock;
   int m_quantize_pitch;
   // TODO: How to represent it when undos are interleaved?
-  std::vector<PxtoneEditAction> actionHistory;
+  std::vector<std::vector<Action>> actionHistory;
   int actionHistoryPosition;
 };
 

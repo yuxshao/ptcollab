@@ -32,19 +32,16 @@ void Action::perform(pxtnEvelist *evels) const {
   }
 }
 
-PxtoneEditAction::PxtoneEditAction(std::vector<Action> &&actions,
-                                   pxtnEvelist *evels)
-    : m_redo(actions), m_is_done(false), m_evels(evels) {
-  // TODO: This setup is actually really slow. You have to iterate through all events 6 times to do this?
-  // Sort of crazy. Probably instead have the actual op tell you how to undo esp. since we do that anyway.
-  // When collab starts up you can't just use the precomputed undo / redo when other people are interfering.
-  for (auto a = m_redo.rbegin(); a != m_redo.rend(); ++a) {
+std::vector<Action> apply_actions_and_get_undo(
+    const std::vector<Action> &actions, pxtnEvelist *evels) {
+  std::vector<Action> undo;
+  for (auto a = actions.rbegin(); a != actions.rend(); ++a) {
     switch (a->type) {
       case Action::ADD: {
         int end_clock = Evelist_Kind_IsTail(a->kind)
                             ? a->start_clock + a->end_clock_or_value
                             : a->start_clock;
-        m_undo.push_back(
+        undo.push_back(
             {Action::DELETE, a->kind, a->unit_no, a->start_clock, end_clock});
       } break;
       case Action::DELETE:
@@ -57,33 +54,27 @@ PxtoneEditAction::PxtoneEditAction(std::vector<Action> &&actions,
                 // here the original action replaces a block with a smaller
                 // block. so undo would replace the smaller block with the
                 // original.
-                m_undo.push_back({Action::DELETE, a->kind, a->unit_no, p->clock,
-                                  a->start_clock});
-                m_undo.push_back(
+                undo.push_back({Action::DELETE, a->kind, a->unit_no, p->clock,
+                                a->start_clock});
+                undo.push_back(
                     {Action::ADD, a->kind, a->unit_no, p->clock, p->value});
               }
           }
           for (; p && p->clock < a->end_clock_or_value; p = p->next)
             if (a->kind == p->kind && a->unit_no == p->unit_no)
-              m_undo.push_back(
+              undo.push_back(
                   {Action::ADD, a->kind, a->unit_no, p->clock, p->value});
         } else {
           const EVERECORD *p = evels->get_Records();
           for (; p && p->clock < a->start_clock; p = p->next) continue;
           for (; p && p->clock < a->end_clock_or_value; p = p->next)
             if (a->kind == p->kind && a->unit_no == p->unit_no)
-              m_undo.push_back(
+              undo.push_back(
                   {Action::ADD, a->kind, a->unit_no, p->clock, p->value});
         }
         break;
     }
   }
-}
-
-bool PxtoneEditAction::is_done() const { return m_is_done; }
-
-void PxtoneEditAction::toggle() {
-  const auto &actions = (is_done() ? m_undo : m_redo);
-  for (const Action &a : actions) a.perform(m_evels);
-  m_is_done = !m_is_done;
+  for (const Action &a : actions) a.perform(evels);
+  return undo;
 }

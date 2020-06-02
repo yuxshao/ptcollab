@@ -16,22 +16,14 @@ struct Action {
   void print() const;
 };
 
-class PxtoneEditAction {
- public:
-  PxtoneEditAction(std::vector<Action> &&actions, pxtnEvelist *evels);
+// You have to compute the undo at the time the original action was applied in
+// the case of collaborative editing. You can't compute it beforehand.
+//
+// I guess what I really want is a
+// std::vector<Action> pxtnEvelist::apply(const std::vector<Action> &actions)
+// That gives me the undo result.
 
-  void toggle();
-  bool is_done() const;
-  // bool intersects(PxtoneEditAction const &other) const;
-
- private:
-  std::vector<Action> m_redo;
-  std::vector<Action> m_undo;
-  bool m_is_done;
-  pxtnEvelist *m_evels;
-  //  std::set<int> unit_range;
-  //  int start_clock_range;
-  //  int end_clock_range;
-};
+std::vector<Action> apply_actions_and_get_undo(
+    const std::vector<Action> &actions, pxtnEvelist *evels);
 
 #endif  // PXTONEEDITACTION_H

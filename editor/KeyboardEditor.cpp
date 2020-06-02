@@ -571,8 +571,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      PxtoneEditAction editActions(std::move(actions), m_pxtn->evels);
-      editActions.toggle();
+      std::vector<Action> undo =
+          apply_actions_and_get_undo(actions, m_pxtn->evels);
       if (meas_int.end >= m_pxtn->master->get_meas_num()) {
         m_pxtn->master->set_meas_num(meas_int.end + 1);
         updateGeometry();
@@ -580,9 +580,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       emit onEdit();
       const auto &eraseAt = actionHistory.begin() + actionHistoryPosition;
       if (eraseAt != actionHistory.end()) actionHistory.erase(eraseAt);
-      actionHistory.push_back(editActions);
+      actionHistory.push_back(undo);
       actionHistoryPosition = actionHistory.size();
-      qDebug() << actionHistoryPosition;
     }
     m_mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier
                                    ? MouseEditState::Type::Seek
@@ -592,7 +591,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
 
 void KeyboardEditor::undo() {
   if (actionHistoryPosition > 0) {
-    actionHistory[actionHistoryPosition - 1].toggle();
+    // move actionHistoryPosition and 'flip' the action you just crossed.
+    actionHistory[actionHistoryPosition - 1] = apply_actions_and_get_undo(
+        actionHistory[actionHistoryPosition - 1], m_pxtn->evels);
     --actionHistoryPosition;
   }
   qDebug() << actionHistoryPosition;
@@ -600,7 +601,8 @@ void KeyboardEditor::undo() {
 
 void KeyboardEditor::redo() {
   if (uint(actionHistoryPosition) < actionHistory.size()) {
-    actionHistory[actionHistoryPosition].toggle();
+    actionHistory[actionHistoryPosition] = apply_actions_and_get_undo(
+        actionHistory[actionHistoryPosition], m_pxtn->evels);
     ++actionHistoryPosition;
   }
   qDebug() << actionHistoryPosition;
