@@ -27,9 +27,11 @@ DEFINES += pxINCLUDE_OGGVORBIS
 # Input
 HEADERS += \
            editor/Animation.h \
+           editor/DummySyncServer.h \
            editor/EditorScrollArea.h \
            editor/KeyboardEditor.h \
            editor/MainWindow.h \
+           editor/PxtoneActionSynchronizer.h \
            editor/PxtoneEditAction.h \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
@@ -59,9 +61,11 @@ FORMS += \
     editor/SideMenu.ui
 SOURCES += main.cpp \
            editor/Animation.cpp \
+           editor/DummySyncServer.cpp \
            editor/EditorScrollArea.cpp \
            editor/KeyboardEditor.cpp \
            editor/MainWindow.cpp \
+           editor/PxtoneActionSynchronizer.cpp \
            editor/PxtoneEditAction.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \

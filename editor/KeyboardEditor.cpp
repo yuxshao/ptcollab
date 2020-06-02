@@ -34,7 +34,10 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_quantize_clock(pxtn->master->get_beat_clock()),
       m_quantize_pitch(PITCH_PER_KEY),
       actionHistory(),
-      actionHistoryPosition(0) {
+      actionHistoryPosition(0),
+      // TODO: we probably don't want to have the editor own the client haha.
+      // this is just here for testing for now
+      server(new PxtoneActionSynchronizer(0, m_pxtn->evels), 2, 4) {
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
@@ -571,17 +574,19 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      std::vector<Action> undo =
-          apply_actions_and_get_undo(actions, m_pxtn->evels);
+      server.receiveAction(actions);
       if (meas_int.end >= m_pxtn->master->get_meas_num()) {
         m_pxtn->master->set_meas_num(meas_int.end + 1);
         updateGeometry();
       }
       emit onEdit();
-      const auto &eraseAt = actionHistory.begin() + actionHistoryPosition;
-      if (eraseAt != actionHistory.end()) actionHistory.erase(eraseAt);
-      actionHistory.push_back(undo);
-      actionHistoryPosition = actionHistory.size();
+      // TODO: uncomment below to enable undoing again. it's not going to work
+      // as-is in the collab world though.
+
+      // const auto &eraseAt = actionHistory.begin() + actionHistoryPosition;
+      // if (eraseAt != actionHistory.end()) actionHistory.erase(eraseAt);
+      // actionHistory.push_back(undo);
+      // actionHistoryPosition = actionHistory.size();
     }
     m_mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier
                                    ? MouseEditState::Type::Seek

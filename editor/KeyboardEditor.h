@@ -8,6 +8,8 @@
 #include <optional>
 
 #include "Animation.h"
+#include "DummySyncServer.h"
+#include "PxtoneActionSynchronizer.h"
 #include "PxtoneEditAction.h"
 #include "pxtone/pxtnService.h"
 
@@ -84,6 +86,8 @@ class KeyboardEditor : public QWidget {
   // TODO: How to represent it when undos are interleaved?
   std::vector<std::vector<Action>> actionHistory;
   int actionHistoryPosition;
+  // TODO: Think about how this might screw up upon file load.
+  DummySyncServer server;
 };
 
 #endif  // KEYBOARDEDITOR_H
