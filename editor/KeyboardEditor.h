@@ -13,6 +13,14 @@
 #include "PxtoneEditAction.h"
 #include "pxtone/pxtnService.h"
 
+struct Interval {
+  int start;
+  int end;
+
+  bool contains(int x) const { return (start <= x && x < end); }
+
+  int length() const { return end - start; }
+};
 struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn };
   Type type;
@@ -21,6 +29,7 @@ struct MouseEditState {
   int current_clock;
   int current_pitch;
   QAudioOutput *audio;
+  Interval clock_int(int quantize);
 };
 
 constexpr int PITCH_PER_KEY = 256;

@@ -38,9 +38,10 @@ std::vector<Action> apply_actions_and_get_undo(
   for (auto a = actions.rbegin(); a != actions.rend(); ++a) {
     switch (a->type) {
       case Action::ADD: {
-        int end_clock = Evelist_Kind_IsTail(a->kind)
-                            ? a->start_clock + a->end_clock_or_value
-                            : a->start_clock;
+        int end_clock =
+            Evelist_Kind_IsTail(a->kind)
+                ? a->start_clock + a->end_clock_or_value
+                : a->start_clock + 1;  // +1 since end-time is exclusive
         undo.push_back(
             {Action::DELETE, a->kind, a->unit_no, a->start_clock, end_clock});
       } break;

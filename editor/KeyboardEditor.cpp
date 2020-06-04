@@ -10,6 +10,7 @@
 #include "PxtoneUnitIODevice.h"
 
 int quantize(int v, int q) { return (v / q) * q; }
+
 int one_over_last_clock(pxtnService const *pxtn) {
   return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
          pxtn->master->get_beat_num();
@@ -54,14 +55,11 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
 }
 
-struct Interval {
-  int start;
-  int end;
-
-  bool contains(int x) const { return (start <= x && x < end); }
-
-  int length() const { return end - start; }
-};
+Interval MouseEditState::clock_int(int q) {
+  int begin = std::min(start_clock, current_clock);
+  int end = std::max(start_clock, current_clock);
+  return {quantize(begin, q), quantize(end, q) + q};
+}
 
 struct LastEvent {
   int clock;
@@ -325,10 +323,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       case MouseEditState::Type::DeleteNote: {
         int velocity = impliedVelocity(m_mouse_edit_state, scale);
         // TODO: maybe factor out this quantization logic
-        Interval interval{
-            quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
-            quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +
-                m_quantize_clock};
+        Interval interval(m_mouse_edit_state.clock_int(m_quantize_clock));
         int pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch) +
                     m_quantize_pitch;
         int alpha =
@@ -510,12 +505,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     m_mouse_edit_state.audio->deleteLater();
     m_mouse_edit_state.audio = nullptr;
   }
-  Interval interval{
-      quantize(m_mouse_edit_state.start_clock, m_quantize_clock),
-      quantize(m_mouse_edit_state.current_clock, m_quantize_clock) +
-          m_quantize_clock};
-  Interval clock_int{std::min(interval.start, interval.end),
-                     std::max(interval.start, interval.end)};
+  Interval clock_int(m_mouse_edit_state.clock_int(m_quantize_clock));
   int start_pitch = quantize(m_mouse_edit_state.start_pitch, m_quantize_pitch) +
                     m_quantize_pitch;
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
