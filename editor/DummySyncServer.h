@@ -15,13 +15,15 @@ class DummySyncServer {
                   float mirror_lag_s);
 
   void receiveAction(const std::vector<Action> &action);
+  void receiveUndo();
+  void receiveRedo();
 
  private:
   PxtoneActionSynchronizer *m_sync;
   float m_commit_lag_s;
   float m_mirror_lag_s;
-  std::list<std::pair<int, std::vector<Action>>> m_pending_commit;
-  std::list<std::pair<int, std::vector<Action>>> m_pending_mirror;
+  std::list<RemoteAction> m_pending_commit;
+  std::list<RemoteAction> m_pending_mirror;
 };
 
 #endif  // DUMMYSYNCSERVER_H

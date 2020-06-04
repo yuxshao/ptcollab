@@ -37,7 +37,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       actionHistoryPosition(0),
       // TODO: we probably don't want to have the editor own the client haha.
       // this is just here for testing for now
-      server(new PxtoneActionSynchronizer(0, m_pxtn->evels), 2, 4) {
+      server(new PxtoneActionSynchronizer(0, m_pxtn->evels), 0.1, 4) {
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
@@ -579,14 +579,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         m_pxtn->master->set_meas_num(meas_int.end + 1);
         updateGeometry();
       }
+      // TODO: Change this to like, when the synchronizer receives an action.
       emit onEdit();
-      // TODO: uncomment below to enable undoing again. it's not going to work
-      // as-is in the collab world though.
-
-      // const auto &eraseAt = actionHistory.begin() + actionHistoryPosition;
-      // if (eraseAt != actionHistory.end()) actionHistory.erase(eraseAt);
-      // actionHistory.push_back(undo);
-      // actionHistoryPosition = actionHistory.size();
     }
     m_mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier
                                    ? MouseEditState::Type::Seek
@@ -594,21 +588,6 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
-void KeyboardEditor::undo() {
-  if (actionHistoryPosition > 0) {
-    // move actionHistoryPosition and 'flip' the action you just crossed.
-    actionHistory[actionHistoryPosition - 1] = apply_actions_and_get_undo(
-        actionHistory[actionHistoryPosition - 1], m_pxtn->evels);
-    --actionHistoryPosition;
-  }
-  qDebug() << actionHistoryPosition;
-}
+void KeyboardEditor::undo() { server.receiveUndo(); }
 
-void KeyboardEditor::redo() {
-  if (uint(actionHistoryPosition) < actionHistory.size()) {
-    actionHistory[actionHistoryPosition] = apply_actions_and_get_undo(
-        actionHistory[actionHistoryPosition], m_pxtn->evels);
-    ++actionHistoryPosition;
-  }
-  qDebug() << actionHistoryPosition;
-}
+void KeyboardEditor::redo() { server.receiveRedo(); }

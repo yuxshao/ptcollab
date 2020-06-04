@@ -5,18 +5,47 @@
 
 #include "PxtoneEditAction.h"
 
+struct RemoteAction {
+  // TODO: Honestly UNDO REDO do not need to have an idx. the idx is just to
+  // identify when a list of local actions has been committed. And UNDO REDO are
+  // only applied from remote.
+  enum Type { ACTION, UNDO, REDO };
+  Type type;
+  int idx;
+  std::vector<Action> action;
+};
+
+// Okay, I give up on eager undo. It's just way too hard to roll back an undo
+// from the local branch.
+
+struct LoggedAction {
+  enum UndoState { DONE, UNDONE, GONE };
+  UndoState state;
+  int uid;
+  int idx;
+  std::vector<Action>
+      reverse;  // TODO: Figure out where to call sth undo vs. reverse
+  LoggedAction(int uid, int idx, const std::vector<Action> &reverse)
+      : state(DONE), uid(uid), idx(idx), reverse(reverse) {}
+};
+
 class PxtoneActionSynchronizer {
  public:
   PxtoneActionSynchronizer(int uid, pxtnEvelist *evels);
 
-  int applyLocalActionAndGetIdx(const std::vector<Action> &action);
+  RemoteAction applyLocalAction(const std::vector<Action> &action);
+  // Not a great API. One applies but the other just gets actions?
+  // And you have to make sure the caller sends them over to the server in the
+  // right order.
+  RemoteAction getUndo();
+  RemoteAction getRedo();
 
-  void applyRemoteAction(int uid, int idx, const std::vector<Action> &action);
+  void applyRemoteAction(int uid, const RemoteAction &action);
 
  private:
   int m_uid;
   pxtnEvelist *m_evels;
-  // std::vector<std::pair<int, PxtoneEditAction>> m_log;
+  std::vector<LoggedAction> m_log;
   std::list<std::vector<Action>> m_uncommitted;
   int m_local_index;
   int m_remote_index;
