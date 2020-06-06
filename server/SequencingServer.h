@@ -10,6 +10,7 @@ class SequencingServer : public QObject {
   Q_OBJECT
  public:
   SequencingServer(QString filename, int port, QObject *parent = nullptr);
+  ~SequencingServer();
   int port();
 
  private slots:

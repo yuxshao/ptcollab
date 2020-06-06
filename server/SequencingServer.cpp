@@ -23,6 +23,7 @@ SequencingServer::SequencingServer(QString filename, int port, QObject *parent)
           &SequencingServer::newClient);
 }
 
+SequencingServer::~SequencingServer() { m_server->close(); }
 int SequencingServer::port() { return m_server->serverPort(); }
 
 void SequencingServer::newClient() {

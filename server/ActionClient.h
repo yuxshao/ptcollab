@@ -15,8 +15,7 @@ class ActionClient : public QObject {
  public:
   ActionClient(QObject *parent);
 
-  // TODO: reconnecting is not set up properly. Ready is only emitted once for
-  // instance
+  HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port);
   void sendRemoteAction(const RemoteAction &action);
   qint64 uid();

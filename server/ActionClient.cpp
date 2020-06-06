@@ -1,23 +1,27 @@
 #include "ActionClient.h"
 
 #include <QAbstractSocket>
+#include <QHostAddress>
 #include <QMessageBox>
-
 ActionClient::ActionClient(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
       m_data_stream((QIODevice *)m_socket),
       m_ready(false) {
   connect(m_socket, &QTcpSocket::readyRead, this, &ActionClient::tryToRead);
-  connect(m_socket, &QTcpSocket::disconnected, this,
-          &ActionClient::disconnected);
+  connect(m_socket, &QTcpSocket::disconnected, [this]() {
+    m_ready = false;
+    emit disconnected();
+  });
   void (QTcpSocket::*errorSignal)(QAbstractSocket::SocketError) =
       &QTcpSocket::error;
   connect(m_socket, errorSignal, [this](QAbstractSocket::SocketError) {
     emit errorOccurred(m_socket->errorString());
   });
 }
-
+HostAndPort ActionClient::currentlyConnectedTo() {
+  return HostAndPort{m_socket->peerAddress().toString(), m_socket->peerPort()};
+}
 void ActionClient::connectToServer(QString hostname, quint16 port) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);

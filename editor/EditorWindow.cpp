@@ -24,6 +24,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_server(nullptr),
       m_client(new ActionClient(this)),
       m_filename(""),
+      m_server_status(new QLabel("Not hosting", this)),
+      m_client_status(new QLabel("Not connected", this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -62,18 +64,25 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_client, &ActionClient::connected,
           [this](pxtnDescriptor &desc,
                  const QList<RemoteActionWithUid> &history, qint64 uid) {
+            HostAndPort host_and_port = m_client->currentlyConnectedTo();
+            m_client_status->setText(tr("Connected to %1:%2")
+                                         .arg(host_and_port.host)
+                                         .arg(host_and_port.port));
             QMessageBox::information(this, "Connected", "Connected to server.");
             loadDescriptor(desc);
             m_keyboard_editor->setUid(uid);
             m_keyboard_editor->loadHistory(history);
           });
   connect(m_client, &ActionClient::disconnected, [this]() {
+    m_client_status->setText(tr("Not connected"));
     QMessageBox::information(this, "Disconnected", "Disconnected from server.");
   });
   connect(m_client, &ActionClient::errorOccurred, [this](QString error) {
     QMessageBox::information(this, "Connection error",
                              tr("Connection error: %1").arg(error));
   });
+  statusBar()->addPermanentWidget(m_server_status);
+  statusBar()->addPermanentWidget(m_client_status);
 
   m_scroll_area = new EditorScrollArea(m_splitter);
   m_scroll_area->setWidget(m_keyboard_editor);
@@ -240,9 +249,8 @@ void EditorWindow::loadFile(QString filename) {
 
 void EditorWindow::loadFileAndHost() {
   if (m_server) {
-    auto result = QMessageBox::question(
-        this, "Server already running",
-        "Are you sure you want to stop the server and start a new one?");
+    auto result = QMessageBox::question(this, "Server already running",
+                                        "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
   QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
@@ -262,8 +270,12 @@ void EditorWindow::loadFileAndHost() {
   if (m_server) {
     delete m_server;
     m_server = nullptr;
+    qDebug() << "Stopped old server";
   }
   m_server = new SequencingServer(filename, port, this);
+  m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
+  connect(m_server, &QObject::destroyed,
+          [this]() { m_server_status->setText("Not hosting"); });
   m_filename = filename;
 
   m_client->connectToServer("localhost", port);
@@ -296,6 +308,16 @@ void EditorWindow::save() {
     saveToFile(m_filename);
 }
 void EditorWindow::connectToHost() {
+  if (m_server) {
+    auto result =
+        QMessageBox::question(this, "Server running", "Stop the server first?");
+    if (result != QMessageBox::Yes)
+      return;
+    else {
+      delete m_server;
+      m_server = nullptr;
+    }
+  }
   bool ok;
   QString host =
       QInputDialog::getText(this, "Host", "What host should I connect to?",

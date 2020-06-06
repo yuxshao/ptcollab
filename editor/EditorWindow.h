@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QFile>
+#include <QLabel>
 #include <QMainWindow>
 #include <QScrollArea>
 #include <QSplitter>
@@ -45,6 +46,8 @@ class EditorWindow : public QMainWindow {
   SequencingServer* m_server;
   ActionClient* m_client;
   QString m_filename;
+  QLabel* m_server_status;
+  QLabel* m_client_status;
 
   Ui::EditorWindow* ui;
   void togglePlayState();
