@@ -11,16 +11,17 @@ class ActionClient : public QObject {
   ActionClient(QObject *parent, QString hostname, quint16 port);
 
   void sendRemoteAction(const RemoteAction &action);
-  int uid();
+  qint64 uid();
  signals:
-  void ready(pxtnDescriptor &desc, const QList<RemoteAction> &history);
-  void receivedRemoteAction(int uid, const RemoteAction &action);
+  void ready(pxtnDescriptor &desc, const QList<RemoteActionWithUid> &history,
+             qint64 uid);
+  void receivedRemoteAction(const RemoteActionWithUid &action);
 
  private:
   QTcpSocket *m_socket;
   QDataStream m_data_stream;
   bool m_ready;
-  int m_uid;
+  qint64 m_uid;
   void tryToRead();
   void tryToStart();
 };

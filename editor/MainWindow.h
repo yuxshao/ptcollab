@@ -35,6 +35,7 @@ class MainWindow : public QMainWindow {
   QAudioOutput* m_audio;
   KeyboardEditor* m_keyboard_editor;
   pxtnService m_pxtn;
+  std::unique_ptr<PxtoneActionSynchronizer> m_sync;
   EditorScrollArea* m_scroll_area;
   PxtoneIODevice m_pxtn_device;
   QSplitter* m_splitter;

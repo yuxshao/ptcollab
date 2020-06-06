@@ -11,7 +11,7 @@ class PxtoneUnitIODevice : public QIODevice {
   Q_OBJECT
 
  public:
-  PxtoneUnitIODevice(QObject *parent, pxtnService *pxtn, int unit_no,
+  PxtoneUnitIODevice(QObject *parent, pxtnService const *pxtn, int unit_no,
                      int pitch);
 
   virtual ~PxtoneUnitIODevice() { close(); };
@@ -22,7 +22,7 @@ class PxtoneUnitIODevice : public QIODevice {
   void MooError();
 
  private:
-  pxtnService *pxtn;
+  pxtnService const *pxtn;
   pxtnVOICETONE voice_tones[pxtnMAX_UNITCONTROLVOICE];
 
   int unit_no;

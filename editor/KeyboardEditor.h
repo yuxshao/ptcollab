@@ -59,6 +59,8 @@ class KeyboardEditor : public QWidget {
                           ActionClient *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
+  void loadHistory(const QList<RemoteActionWithUid> &history);
+  void setUid(qint64 uid);
 
  signals:
   void currentUnitChanged(int);

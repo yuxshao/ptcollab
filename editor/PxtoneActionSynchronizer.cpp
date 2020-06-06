@@ -21,8 +21,12 @@ RemoteAction PxtoneActionSynchronizer::getRedo() {
                       std::vector<Action>()};
 }
 
-void PxtoneActionSynchronizer::applyRemoteAction(int uid,
-                                                 const RemoteAction &action) {
+void PxtoneActionSynchronizer::setUid(qint64 uid) { m_uid = uid; }
+
+void PxtoneActionSynchronizer::applyRemoteAction(
+    const RemoteActionWithUid &actionWithUid) {
+  const RemoteAction &action = actionWithUid.action;
+  qint64 uid = actionWithUid.uid;
   qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   qDebug() << "Received action" << action.idx << "from user" << uid << "type"
            << action.type;

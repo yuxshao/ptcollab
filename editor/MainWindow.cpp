@@ -57,12 +57,14 @@ MainWindow::MainWindow(QWidget *parent)
   SequencingServer *server = new SequencingServer(
       "/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop", this);
   ActionClient *client = new ActionClient(this, "localhost", server->port());
-  // loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop");
-  connect(client, &ActionClient::ready,
-          [this](pxtnDescriptor &desc, const QList<RemoteAction> &history) {
-            loadDescriptor(desc);
-          });
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, client);
+  connect(client, &ActionClient::ready,
+          [this](pxtnDescriptor &desc,
+                 const QList<RemoteActionWithUid> &history, qint64 uid) {
+            loadDescriptor(desc);
+            m_keyboard_editor->setUid(uid);
+            m_keyboard_editor->loadHistory(history);
+          });
 
   m_scroll_area = new EditorScrollArea(m_splitter);
   m_scroll_area->setWidget(m_keyboard_editor);

@@ -12,10 +12,10 @@ class ServerSession : public QObject {
   ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
                 const QList<RemoteAction> &history, qint64 uid);
   bool isConnected();
-  void writeRemoteAction(const RemoteAction &action);
+  void writeRemoteAction(const RemoteActionWithUid &action);
 
  signals:
-  void newRemoteAction(const RemoteAction &action);
+  void newRemoteAction(const RemoteActionWithUid &action);
   void disconnected();
 
  private slots:

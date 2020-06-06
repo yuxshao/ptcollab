@@ -4,7 +4,7 @@
 
 constexpr int STEADY_ON_VALUE = 1000000;
 // TODO: make sure not to leak by closing at end
-PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, pxtnService *pxtn,
+PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, pxtnService const *pxtn,
                                        int unit_no, int pitch)
     : QIODevice(parent), pxtn(pxtn), unit_no(unit_no), pitch(pitch), on(true) {
   if (!pxtn->moo_get_pxtnVOICETONE(pxtn->Unit_Get(unit_no), voice_tones))

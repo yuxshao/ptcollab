@@ -16,4 +16,13 @@ class RemoteAction {
 };
 QDataStream &operator<<(QDataStream &out, const RemoteAction &r);
 QDataStream &operator>>(QDataStream &in, RemoteAction &r);
+
+class RemoteActionWithUid {
+ public:
+  RemoteAction action;
+  qint64 uid;
+};
+QDataStream &operator<<(QDataStream &out, const RemoteActionWithUid &r);
+QDataStream &operator>>(QDataStream &in, RemoteActionWithUid &r);
+
 #endif  // REMOTEACTION_H

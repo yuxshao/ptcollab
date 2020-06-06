@@ -1,4 +1,6 @@
 #include "RemoteAction.h"
+
+#include <QDebug>
 QDataStream &operator<<(QDataStream &out, const RemoteAction &r) {
   out << qint8(r.type) << r.idx << quint64(r.action.size());
   for (const Action &a : r.action) out << a;
@@ -12,4 +14,12 @@ QDataStream &operator>>(QDataStream &in, RemoteAction &r) {
   r.action.resize(size);
   for (size_t i = 0; i < size; ++i) in >> r.action[i];
   return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const RemoteActionWithUid &r) {
+  return (out << r.uid << r.action);
+  return out;
+}
+QDataStream &operator>>(QDataStream &in, RemoteActionWithUid &r) {
+  return (in >> r.uid >> r.action);
 }

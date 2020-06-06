@@ -52,8 +52,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
   connect(m_client, &ActionClient::receivedRemoteAction,
-          [this](int uid, const RemoteAction &action) {
-            m_sync.applyRemoteAction(uid, action);
+          [this](const RemoteActionWithUid &action) {
+            m_sync.applyRemoteAction(action);
           });
 }
 
@@ -488,6 +488,14 @@ void KeyboardEditor::toggleShowAllUnits() {
   m_show_all_units = !m_show_all_units;
   emit showAllChanged(m_show_all_units);
 }
+
+void KeyboardEditor::loadHistory(const QList<RemoteActionWithUid> &history) {
+  for (const RemoteActionWithUid &action : history) {
+    m_sync.applyRemoteAction(action);
+  }
+}
+
+void KeyboardEditor::setUid(qint64 uid) { m_sync.setUid(uid); }
 
 void KeyboardEditor::setQuantX(int q) {
   m_quantize_clock = m_pxtn->master->get_beat_clock() / q;

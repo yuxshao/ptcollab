@@ -16,10 +16,10 @@ class SequencingServer : public QObject {
   void newClient();
 
  private:
-  void broadcastMessage(int uid, const RemoteAction &action);
+  void broadcastMessage(const RemoteActionWithUid &action);
   QTcpServer *m_server;
   QList<RemoteAction> m_history;
-  std::list<ServerSession> m_sessions;
+  std::list<ServerSession *> m_sessions;
   QFile m_file;
   int m_next_uid;
 };

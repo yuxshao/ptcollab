@@ -29,19 +29,27 @@ void SequencingServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
   qInfo() << "New connection" << conn->peerAddress();
 
-  m_sessions.emplace_back(this, conn, m_file, m_history, m_next_uid++);
+  ServerSession *session =
+      new ServerSession(this, conn, m_file, m_history, m_next_uid++);
+  connect(session, &ServerSession::newRemoteAction, this,
+          &SequencingServer::broadcastMessage);
+  m_sessions.push_back(session);
 }
 
-void SequencingServer::broadcastMessage(int uid, const RemoteAction &action) {
+void SequencingServer::broadcastMessage(const RemoteActionWithUid &action) {
   // iterate over list of conns, prune inactive ones, and send action to active
   // ones
-  qInfo() << "Broadcasting action" << uid << action.idx;
+  qInfo() << "Broadcasting action" << action.uid << action.action.idx;
   int sent = 0;
   for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
-    while (!it->isConnected()) it = m_sessions.erase(it);
+    while (!(*it)->isConnected()) {
+      delete *it;
+      it = m_sessions.erase(it);
+    }
     if (it == m_sessions.end()) break;
-    it->writeRemoteAction(action);
+    (*it)->writeRemoteAction(action);
     ++sent;
   }
-  qInfo() << "Sent (" << uid << action.idx << ") to" << sent << "clients";
+  qInfo() << "Sent (" << action.uid << action.action.idx << ") to" << sent
+          << "clients";
 }

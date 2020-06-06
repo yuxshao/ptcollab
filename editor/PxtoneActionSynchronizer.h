@@ -30,11 +30,12 @@ class PxtoneActionSynchronizer {
   // right order.
   RemoteAction getUndo();
   RemoteAction getRedo();
+  void setUid(qint64 uid);
 
-  void applyRemoteAction(int uid, const RemoteAction &action);
+  void applyRemoteAction(const RemoteActionWithUid &);
 
  private:
-  int m_uid;
+  qint64 m_uid;
   pxtnEvelist *m_evels;
   std::vector<LoggedAction> m_log;
   std::list<std::vector<Action>> m_uncommitted;
