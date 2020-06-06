@@ -79,3 +79,13 @@ std::vector<Action> apply_actions_and_get_undo(
   for (const Action &a : actions) a.perform(evels);
   return undo;
 }
+
+QDataStream &operator<<(QDataStream &out, const Action &a) {
+  return (out << a.type << a.kind << a.unit_no << a.start_clock
+              << a.end_clock_or_value);
+}
+QDataStream &operator>>(QDataStream &in, Action &a) {
+  return (in >> a.type >> a.kind >> a.unit_no >> a.start_clock >>
+          a.end_clock_or_value);
+  return in;
+}

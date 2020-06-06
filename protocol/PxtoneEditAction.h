@@ -1,6 +1,7 @@
 #ifndef PXTONEEDITACTION_H
 #define PXTONEEDITACTION_H
 
+#include <QDataStream>
 #include <set>
 #include <vector>
 
@@ -9,12 +10,14 @@ struct Action {
   enum Type { ADD, DELETE };  // Add implicitly means add to an empty space
   Type type;
   EVENTKIND kind;
-  int unit_no;
-  int start_clock;
-  int end_clock_or_value;  // depending on type
+  qint32 unit_no;
+  qint32 start_clock;
+  qint32 end_clock_or_value;  // depending on type
   void perform(pxtnEvelist *evels) const;
   void print() const;
 };
+QDataStream &operator<<(QDataStream &out, const Action &a);
+QDataStream &operator>>(QDataStream &in, Action &a);
 
 // You have to compute the undo at the time the original action was applied in
 // the case of collaborative editing. You can't compute it beforehand.

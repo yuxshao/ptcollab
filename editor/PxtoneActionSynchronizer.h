@@ -3,17 +3,8 @@
 
 #include <list>
 
-#include "PxtoneEditAction.h"
-
-struct RemoteAction {
-  // TODO: Honestly UNDO REDO do not need to have an idx. the idx is just to
-  // identify when a list of local actions has been committed. And UNDO REDO are
-  // only applied from remote.
-  enum Type { ACTION, UNDO, REDO };
-  Type type;
-  int idx;
-  std::vector<Action> action;
-};
+#include "protocol/PxtoneEditAction.h"
+#include "protocol/RemoteAction.h"
 
 // Okay, I give up on eager undo. It's just way too hard to roll back an undo
 // from the local branch.

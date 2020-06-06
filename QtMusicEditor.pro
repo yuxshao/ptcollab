@@ -32,10 +32,11 @@ HEADERS += \
            editor/KeyboardEditor.h \
            editor/MainWindow.h \
            editor/PxtoneActionSynchronizer.h \
-           editor/PxtoneEditAction.h \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
            editor/SideMenu.h \
+           protocol/PxtoneEditAction.h \
+           protocol/RemoteAction.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -55,7 +56,10 @@ HEADERS += \
            pxtone/pxtnText.h \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
-           pxtone/pxtoneNoise.h
+           pxtone/pxtoneNoise.h \
+           server/ActionClient.h \
+           server/SequencingServer.h \
+           server/ServerSession.h
 FORMS += \
     editor/MainWindow.ui \
     editor/SideMenu.ui
@@ -66,10 +70,11 @@ SOURCES += main.cpp \
            editor/KeyboardEditor.cpp \
            editor/MainWindow.cpp \
            editor/PxtoneActionSynchronizer.cpp \
-           editor/PxtoneEditAction.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \
            editor/SideMenu.cpp \
+           protocol/PxtoneEditAction.cpp \
+           protocol/RemoteAction.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \
@@ -90,7 +95,10 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
-           pxtone/pxtoneNoise.cpp
+           pxtone/pxtoneNoise.cpp \
+           server/ActionClient.cpp \
+           server/SequencingServer.cpp \
+           server/ServerSession.cpp
 
 LIBS += -logg -lvorbisfile
 # Default rules for deployment.

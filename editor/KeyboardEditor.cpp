@@ -6,7 +6,6 @@
 #include <QScrollArea>
 #include <QTime>
 
-#include "PxtoneEditAction.h"
 #include "PxtoneUnitIODevice.h"
 
 int quantize(int v, int q) { return (v / q) * q; }

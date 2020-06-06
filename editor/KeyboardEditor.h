@@ -10,7 +10,6 @@
 #include "Animation.h"
 #include "DummySyncServer.h"
 #include "PxtoneActionSynchronizer.h"
-#include "PxtoneEditAction.h"
 #include "pxtone/pxtnService.h"
 
 struct Interval {
