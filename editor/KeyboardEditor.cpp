@@ -20,7 +20,7 @@ QSize KeyboardEditor::sizeHint() const {
                scale.pitchToY(EVENTMIN_KEY));
 }
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                               QScrollArea *parent)
+                               ActionClient *client, QScrollArea *parent)
     : QWidget(parent),
       scale(),
       m_pxtn(pxtn),
@@ -33,11 +33,10 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_anim(new Animation(this)),
       m_quantize_clock(pxtn->master->get_beat_clock()),
       m_quantize_pitch(PITCH_PER_KEY),
-      actionHistory(),
-      actionHistoryPosition(0),
       // TODO: we probably don't want to have the editor own the client haha.
-      // this is just here for testing for now
-      server(new PxtoneActionSynchronizer(0, m_pxtn->evels), 0.1, 4) {
+      // Need some loose coupling thing.
+      m_client(client),
+      m_sync(0, m_pxtn->evels) {
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
@@ -52,6 +51,10 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
 
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
+  connect(m_client, &ActionClient::receivedRemoteAction,
+          [this](int uid, const RemoteAction &action) {
+            m_sync.applyRemoteAction(uid, action);
+          });
 }
 
 Interval MouseEditState::clock_int(int q) {
@@ -563,7 +566,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      server.receiveAction(actions);
+      m_client->sendRemoteAction(m_sync.applyLocalAction(actions));
       if (meas_int.end >= m_pxtn->master->get_meas_num()) {
         m_pxtn->master->set_meas_num(meas_int.end + 1);
         updateGeometry();
@@ -577,6 +580,6 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
-void KeyboardEditor::undo() { server.receiveUndo(); }
+void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync.getUndo()); }
 
-void KeyboardEditor::redo() { server.receiveRedo(); }
+void KeyboardEditor::redo() { m_client->sendRemoteAction(m_sync.getRedo()); }

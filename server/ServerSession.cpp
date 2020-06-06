@@ -1,11 +1,19 @@
 #include "ServerSession.h"
 
+#include <QDebug>
 #include <QHostAddress>
 
 constexpr qint64 chunkSize = 8 * 1024 * 4;  // arbitrary 4KB
 ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
-                             const QList<RemoteAction> &history)
-    : QObject(parent), m_conn(conn), m_data_stream((QIODevice *)conn) {
+                             const QList<RemoteAction> &history, qint64 uid)
+    : QObject(parent),
+      m_conn(conn),
+      m_data_stream((QIODevice *)conn),
+      m_uid(uid) {
+  if (!file.isOpen()) {
+    qFatal("Server cannot open file");
+    return;
+  }
   file.seek(0);
 
   // send over the file + whole history
@@ -13,6 +21,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
   m_data_stream << (qint32)1;  // version
   m_data_stream.setVersion(QDataStream::Qt_5_14);
 
+  m_data_stream << m_uid;
   std::unique_ptr<char[]> buffer = std::make_unique<char[]>(chunkSize);
   qint64 bytesLeft = file.size();
   qInfo() << "Sending file" << conn->peerAddress();
@@ -39,7 +48,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
 bool ServerSession::isConnected() { return (m_conn != nullptr); }
 
 void ServerSession::writeRemoteAction(const RemoteAction &action) {
-  m_data_stream << action;
+  m_data_stream << m_uid << action;
 }
 
 void ServerSession::readRemoteAction() {

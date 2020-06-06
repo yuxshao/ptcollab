@@ -46,5 +46,6 @@ class MainWindow : public QMainWindow {
   void resetAndSuspendAudio();
   void saveFile(QString filename);
   void selectAndSaveFile();
+  bool loadDescriptor(pxtnDescriptor& desc);
 };
 #endif  // MAINWINDOW_H

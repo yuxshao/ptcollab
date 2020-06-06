@@ -9,6 +9,8 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "pxtone/pxtnDescriptor.h"
+#include "server/ActionClient.h"
+#include "server/SequencingServer.h"
 #include "ui_MainWindow.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
@@ -52,7 +54,15 @@ MainWindow::MainWindow(QWidget *parent)
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
-  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio);
+  SequencingServer *server = new SequencingServer(
+      "/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop", this);
+  ActionClient *client = new ActionClient(this, "localhost", server->port());
+  // loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop");
+  connect(client, &ActionClient::ready,
+          [this](pxtnDescriptor &desc, const QList<RemoteAction> &history) {
+            loadDescriptor(desc);
+          });
+  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, client);
 
   m_scroll_area = new EditorScrollArea(m_splitter);
   m_scroll_area->setWidget(m_keyboard_editor);
@@ -77,7 +87,6 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_keyboard_editor, &KeyboardEditor::onEdit,
           [=]() { m_side_menu->setModified(true); });
 
-  loadFile("/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop");
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &MainWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
@@ -167,6 +176,27 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
   }
 }
 
+bool MainWindow::loadDescriptor(pxtnDescriptor &desc) {
+  if (m_pxtn.read(&desc) != pxtnOK) {
+    qWarning() << "Error reading descriptor";
+    return false;
+  }
+  if (m_pxtn.tones_ready() != pxtnOK) {
+    qWarning() << "Error getting tones ready";
+    return false;
+  }
+  resetAndSuspendAudio();
+
+  m_pxtn_device.open(QIODevice::ReadOnly);
+  m_audio->start(&m_pxtn_device);
+  m_audio->suspend();
+  std::vector<QString> units;
+  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
+    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
+  m_side_menu->setUnits(units);
+  m_keyboard_editor->updateGeometry();
+  return true;
+}
 void MainWindow::loadFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
       fopen(filename.toStdString().c_str(), "rb"), &fclose);
@@ -186,15 +216,7 @@ void MainWindow::loadFile(QString filename) {
   }
   resetAndSuspendAudio();
 
-  m_pxtn_device.open(QIODevice::ReadOnly);
-  m_audio->start(&m_pxtn_device);
-  m_audio->suspend();
-  std::vector<QString> units;
-  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
-    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
-  m_side_menu->setUnits(units);
-  m_filename = filename;
-  m_keyboard_editor->updateGeometry();
+  if (loadDescriptor(desc)) m_filename = filename;
 }
 
 void MainWindow::selectAndLoadFile() {

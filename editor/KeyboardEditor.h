@@ -11,6 +11,7 @@
 #include "DummySyncServer.h"
 #include "PxtoneActionSynchronizer.h"
 #include "pxtone/pxtnService.h"
+#include "server/ActionClient.h"
 
 struct Interval {
   int start;
@@ -55,7 +56,7 @@ class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
   explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                          QScrollArea *parent = nullptr);
+                          ActionClient *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
 
@@ -91,11 +92,8 @@ class KeyboardEditor : public QWidget {
   Animation *m_anim;
   int m_quantize_clock;
   int m_quantize_pitch;
-  // TODO: How to represent it when undos are interleaved?
-  std::vector<std::vector<Action>> actionHistory;
-  int actionHistoryPosition;
-  // TODO: Think about how this might screw up upon file load.
-  DummySyncServer server;
+  ActionClient *m_client;
+  PxtoneActionSynchronizer m_sync;
 };
 
 #endif  // KEYBOARDEDITOR_H

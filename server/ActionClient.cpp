@@ -13,14 +13,17 @@ void ActionClient::sendRemoteAction(const RemoteAction &action) {
   m_data_stream << action;
 }
 
+int ActionClient::uid() { return m_uid; }
+
 void ActionClient::tryToRead() {
   if (!m_ready) tryToStart();
   while (!m_data_stream.atEnd()) {
     m_data_stream.startTransaction();
+    qint64 uid;
     RemoteAction action;
-    m_data_stream >> action;
+    m_data_stream >> uid >> action;
     if (!m_data_stream.commitTransaction()) return;
-    emit receivedRemoteAction(action);
+    emit receivedRemoteAction(uid, action);
   }
 }
 
@@ -34,6 +37,8 @@ void ActionClient::tryToStart() {
   if (header != "PXTONE_HISTORY") qFatal("Unexpected header");
   if (version != 1) qFatal("Unexpected version");
   m_data_stream.setVersion(QDataStream::Qt_5_14);
+
+  m_data_stream >> m_uid;
 
   qint64 size;
   m_data_stream >> size;
