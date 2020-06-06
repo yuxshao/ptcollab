@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>EditorWindow</class>
+ <widget class="QMainWindow" name="EditorWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -27,17 +27,17 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
+    <addaction name="actionHost"/>
+    <addaction name="actionConnect"/>
     <addaction name="actionSaveAs"/>
     <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpen">
+  <action name="actionHost">
    <property name="text">
-    <string>Open</string>
+    <string>Host</string>
    </property>
   </action>
   <action name="actionSave">
@@ -47,12 +47,17 @@
   </action>
   <action name="actionSaveAs">
    <property name="text">
-    <string>Save As</string>
+    <string>Save Copy</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionConnect">
+   <property name="text">
+    <string>Connect</string>
    </property>
   </action>
  </widget>

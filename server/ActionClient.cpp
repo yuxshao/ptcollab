@@ -1,12 +1,15 @@
 #include "ActionClient.h"
 
-ActionClient::ActionClient(QObject *parent, QString hostname, quint16 port)
+ActionClient::ActionClient(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
       m_data_stream((QIODevice *)m_socket),
       m_ready(false) {
-  m_socket->connectToHost(hostname, port);
   connect(m_socket, &QTcpSocket::readyRead, this, &ActionClient::tryToRead);
+}
+
+void ActionClient::connectToServer(QString hostname, quint16 port) {
+  m_socket->connectToHost(hostname, port);
 }
 
 void ActionClient::sendRemoteAction(const RemoteAction &action) {

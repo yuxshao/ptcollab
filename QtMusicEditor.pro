@@ -29,8 +29,8 @@ HEADERS += \
            editor/Animation.h \
            editor/DummySyncServer.h \
            editor/EditorScrollArea.h \
+           editor/EditorWindow.h \
            editor/KeyboardEditor.h \
-           editor/MainWindow.h \
            editor/PxtoneActionSynchronizer.h \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
@@ -61,14 +61,14 @@ HEADERS += \
            server/SequencingServer.h \
            server/ServerSession.h
 FORMS += \
-    editor/MainWindow.ui \
+    editor/EditorWindow.ui \
     editor/SideMenu.ui
 SOURCES += main.cpp \
            editor/Animation.cpp \
            editor/DummySyncServer.cpp \
            editor/EditorScrollArea.cpp \
+           editor/EditorWindow.cpp \
            editor/KeyboardEditor.cpp \
-           editor/MainWindow.cpp \
            editor/PxtoneActionSynchronizer.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \

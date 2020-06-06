@@ -3,7 +3,7 @@
 #include <QDataStream>
 #include <QMessageBox>
 #include <QTcpSocket>
-SequencingServer::SequencingServer(QString filename, QObject *parent)
+SequencingServer::SequencingServer(QString filename, int port, QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
@@ -13,7 +13,7 @@ SequencingServer::SequencingServer(QString filename, QObject *parent)
     qFatal("File cannot be opened");
     return;
   }
-  if (!m_server->listen()) {
+  if (!m_server->listen(QHostAddress::Any, port)) {
     qFatal("Unable to start TCP server");
     return;
   }

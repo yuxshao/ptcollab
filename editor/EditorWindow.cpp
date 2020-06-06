@@ -1,7 +1,8 @@
-#include "MainWindow.h"
+#include "EditorWindow.h"
 
 #include <QDebug>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QSplitter>
 #include <QtMultimedia/QAudioDeviceInfo>
@@ -11,16 +12,18 @@
 #include "pxtone/pxtnDescriptor.h"
 #include "server/ActionClient.h"
 #include "server/SequencingServer.h"
-#include "ui_MainWindow.h"
+#include "ui_EditorWindow.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
 static constexpr int EVENT_MAX = 1000000;
 
-MainWindow::MainWindow(QWidget *parent)
+EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
       m_pxtn_device(this, &m_pxtn),
-      ui(new Ui::MainWindow) {
+      m_server(nullptr),
+      m_client(new ActionClient(this)),
+      ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
   int sample_rate = 44100;
@@ -54,11 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
-  SequencingServer *server = new SequencingServer(
-      "/home/steven/Projects/Music/pxtone/Examples/for-web/basic.ptcop", this);
-  ActionClient *client = new ActionClient(this, "localhost", server->port());
-  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, client);
-  connect(client, &ActionClient::ready,
+  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client);
+  connect(m_client, &ActionClient::ready,
           [this](pxtnDescriptor &desc,
                  const QList<RemoteActionWithUid> &history, qint64 uid) {
             loadDescriptor(desc);
@@ -90,19 +90,27 @@ MainWindow::MainWindow(QWidget *parent)
           [=]() { m_side_menu->setModified(true); });
 
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
-          &MainWindow::togglePlayState);
+          &EditorWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
-          &MainWindow::resetAndSuspendAudio);
+          &EditorWindow::resetAndSuspendAudio);
 
-  connect(m_side_menu, &SideMenu::saveButtonPressed,
-          [=]() { saveFile(m_filename); });
-  connect(ui->actionSave, &QAction::triggered, [=]() { saveFile(m_filename); });
+  connect(m_side_menu, &SideMenu::saveButtonPressed, this,
+          &EditorWindow::selectAndSaveFile);
+  connect(ui->actionSave, &QAction::triggered, this,
+          &EditorWindow::selectAndSaveFile);
   connect(m_side_menu, &SideMenu::openButtonPressed, this,
-          &MainWindow::selectAndLoadFile);
-  connect(ui->actionOpen, &QAction::triggered, this,
-          &MainWindow::selectAndLoadFile);
+          &EditorWindow::loadFileAndHost);
+  connect(ui->actionHost, &QAction::triggered, this,
+          &EditorWindow::loadFileAndHost);
   connect(ui->actionSaveAs, &QAction::triggered, this,
-          &MainWindow::selectAndSaveFile);
+          &EditorWindow::selectAndSaveFile);
+  connect(ui->actionConnect, &QAction::triggered, [=]() {
+    QString host =
+        QInputDialog::getText(this, "Host", "Where should I connect to?");
+    int port = QInputDialog::getInt(this, "Port",
+                                    "What port should I connect to?", 15835);
+    m_client->connectToServer(host, port);
+  });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
@@ -112,9 +120,9 @@ MainWindow::MainWindow(QWidget *parent)
   });
 }
 
-MainWindow::~MainWindow() { delete ui; }
+EditorWindow::~EditorWindow() { delete ui; }
 
-void MainWindow::togglePlayState() {
+void EditorWindow::togglePlayState() {
   if (m_audio->state() == QAudio::SuspendedState) {
     m_audio->resume();
     m_side_menu->setPlay(true);
@@ -124,7 +132,7 @@ void MainWindow::togglePlayState() {
   }
 }
 
-void MainWindow::resetAndSuspendAudio() {
+void EditorWindow::resetAndSuspendAudio() {
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop;
   prep.start_pos_float = 0;
@@ -138,7 +146,7 @@ void MainWindow::resetAndSuspendAudio() {
   // [reset] unfortunately also disconnects from moo.
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {
+void EditorWindow::keyPressEvent(QKeyEvent *event) {
   switch (event->key()) {
     case Qt::Key_Space:
       togglePlayState();
@@ -151,10 +159,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_S:
       if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier)
-          selectAndSaveFile();
-        else
-          saveFile(m_filename);
+        selectAndSaveFile();
       } else
         m_keyboard_editor->cycleCurrentUnit(1);
       break;
@@ -162,7 +167,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_editor->toggleShowAllUnits();
       break;
     case Qt::Key_O:
-      if (event->modifiers() & Qt::ControlModifier) selectAndLoadFile();
+      if (event->modifiers() & Qt::ControlModifier) loadFileAndHost();
       break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
@@ -178,7 +183,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
   }
 }
 
-bool MainWindow::loadDescriptor(pxtnDescriptor &desc) {
+bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   if (m_pxtn.read(&desc) != pxtnOK) {
     qWarning() << "Error reading descriptor";
     return false;
@@ -199,7 +204,8 @@ bool MainWindow::loadDescriptor(pxtnDescriptor &desc) {
   m_keyboard_editor->updateGeometry();
   return true;
 }
-void MainWindow::loadFile(QString filename) {
+
+void EditorWindow::loadFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
       fopen(filename.toStdString().c_str(), "rb"), &fclose);
   if (!f) {
@@ -218,16 +224,25 @@ void MainWindow::loadFile(QString filename) {
   }
   resetAndSuspendAudio();
 
-  if (loadDescriptor(desc)) m_filename = filename;
+  loadDescriptor(desc);
 }
 
-void MainWindow::selectAndLoadFile() {
+void EditorWindow::loadFileAndHost() {
   QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
-  loadFile(filename);
+  int port = QInputDialog::getInt(
+      this, "Port", "What port should this server run on?", 15835);
+  // TODO: Dialog to select port
+  if (m_server) {
+    delete m_server;
+    m_server = nullptr;
+  }
+  m_server = new SequencingServer(filename, port, this);
+
+  m_client->connectToServer("localhost", port);
 }
 
-void MainWindow::saveFile(QString filename) {
+void EditorWindow::saveFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
       fopen(filename.toStdString().c_str(), "w"), &fclose);
   if (!f) {
@@ -239,10 +254,9 @@ void MainWindow::saveFile(QString filename) {
   int version_from_pxtn_service = 5;
   m_pxtn.write(&desc, false, version_from_pxtn_service);
   m_side_menu->setModified(false);
-  m_filename = filename;
 }
-void MainWindow::selectAndSaveFile() {
-  QString filename = QFileDialog::getSaveFileName(this, "Open file", m_filename,
+void EditorWindow::selectAndSaveFile() {
+  QString filename = QFileDialog::getSaveFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
   saveFile(filename);
 }

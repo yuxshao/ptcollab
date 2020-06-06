@@ -12,22 +12,23 @@
 #include "PxtoneIODevice.h"
 #include "SideMenu.h"
 #include "pxtone/pxtnService.h"
-
+#include "server/ActionClient.h"
+#include "server/SequencingServer.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+class EditorWindow;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow {
+class EditorWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  MainWindow(QWidget* parent = nullptr);
-  ~MainWindow();
+  EditorWindow(QWidget* parent = nullptr);
+  ~EditorWindow();
 
  private slots:
-  void selectAndLoadFile();
+  void loadFileAndHost();
 
  private:
   void loadFile(QString filename);
@@ -39,9 +40,10 @@ class MainWindow : public QMainWindow {
   PxtoneIODevice m_pxtn_device;
   QSplitter* m_splitter;
   SideMenu* m_side_menu;
-  QString m_filename;
+  SequencingServer* m_server;
+  ActionClient* m_client;
 
-  Ui::MainWindow* ui;
+  Ui::EditorWindow* ui;
   void togglePlayState();
   void resetAndSuspendAudio();
   void saveFile(QString filename);
