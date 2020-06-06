@@ -69,7 +69,7 @@
       <enum>Qt::NoFocus</enum>
      </property>
      <property name="text">
-      <string>Local Save (C-s)</string>
+      <string>Save locally (C-s)</string>
      </property>
     </widget>
    </item>

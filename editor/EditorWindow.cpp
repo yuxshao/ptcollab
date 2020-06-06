@@ -23,6 +23,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_pxtn_device(this, &m_pxtn),
       m_server(nullptr),
       m_client(new ActionClient(this)),
+      m_filename(""),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -102,18 +103,15 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
           &EditorWindow::resetAndSuspendAudio);
 
-  connect(m_side_menu, &SideMenu::saveButtonPressed, this,
-          &EditorWindow::selectAndSaveFile);
-  connect(ui->actionSave, &QAction::triggered, this,
-          &EditorWindow::selectAndSaveFile);
+  connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
+  connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);
   connect(m_side_menu, &SideMenu::hostButtonPressed, this,
           &EditorWindow::loadFileAndHost);
   connect(m_side_menu, &SideMenu::connectButtonPressed, this,
           &EditorWindow::connectToHost);
   connect(ui->actionHost, &QAction::triggered, this,
           &EditorWindow::loadFileAndHost);
-  connect(ui->actionSaveAs, &QAction::triggered, this,
-          &EditorWindow::selectAndSaveFile);
+  connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
   connect(ui->actionAbout, &QAction::triggered, [=]() {
@@ -164,7 +162,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_S:
       if (event->modifiers() & Qt::ControlModifier) {
-        selectAndSaveFile();
+        if (event->modifiers() & Qt::ShiftModifier)
+          saveAs();
+        else
+          save();
       } else
         m_keyboard_editor->cycleCurrentUnit(1);
       break;
@@ -263,27 +264,36 @@ void EditorWindow::loadFileAndHost() {
     m_server = nullptr;
   }
   m_server = new SequencingServer(filename, port, this);
+  m_filename = filename;
 
   m_client->connectToServer("localhost", port);
 }
 
-void EditorWindow::saveFile(QString filename) {
+bool EditorWindow::saveToFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
       fopen(filename.toStdString().c_str(), "w"), &fclose);
   if (!f) {
     qWarning() << "Could not open file";
-    return;
+    return false;
   }
   pxtnDescriptor desc;
-  desc.set_file_w(f.get());
+  if (!desc.set_file_w(f.get())) return false;
   int version_from_pxtn_service = 5;
-  m_pxtn.write(&desc, false, version_from_pxtn_service);
+  if (m_pxtn.write(&desc, false, version_from_pxtn_service) != pxtnOK)
+    return false;
   m_side_menu->setModified(false);
+  return true;
 }
-void EditorWindow::selectAndSaveFile() {
+void EditorWindow::saveAs() {
   QString filename = QFileDialog::getSaveFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
-  saveFile(filename);
+  if (saveToFile(filename)) m_filename = filename;
+}
+void EditorWindow::save() {
+  if (m_filename == "")
+    saveAs();
+  else
+    saveToFile(m_filename);
 }
 void EditorWindow::connectToHost() {
   bool ok;

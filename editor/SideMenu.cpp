@@ -48,9 +48,9 @@ void SideMenu::setUnits(std::vector<QString> const& units) {
 };
 void SideMenu::setModified(bool modified) {
   if (modified)
-    ui->saveBtn->setText("Save* (C-s)");
+    ui->saveBtn->setText("Save locally* (C-s)");
   else
-    ui->saveBtn->setText("Save (C-s)");
+    ui->saveBtn->setText("Save locally (C-s)");
 }
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
 void SideMenu::setPlay(bool playing) {

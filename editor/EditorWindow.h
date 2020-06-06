@@ -44,12 +44,14 @@ class EditorWindow : public QMainWindow {
   SideMenu* m_side_menu;
   SequencingServer* m_server;
   ActionClient* m_client;
+  QString m_filename;
 
   Ui::EditorWindow* ui;
   void togglePlayState();
   void resetAndSuspendAudio();
-  void saveFile(QString filename);
-  void selectAndSaveFile();
+  bool saveToFile(QString filename);
+  void save();
+  void saveAs();
   bool loadDescriptor(pxtnDescriptor& desc);
 };
 #endif  // MAINWINDOW_H
