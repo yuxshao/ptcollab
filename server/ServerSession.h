@@ -10,7 +10,7 @@ class ServerSession : public QObject {
   Q_OBJECT
  public:
   ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
-                const QList<RemoteAction> &history, qint64 uid);
+                const QList<RemoteActionWithUid> &history, qint64 uid);
   bool isConnected();
   void writeRemoteAction(const RemoteActionWithUid &action);
 

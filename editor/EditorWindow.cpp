@@ -104,14 +104,8 @@ EditorWindow::EditorWindow(QWidget *parent)
           &EditorWindow::loadFileAndHost);
   connect(ui->actionSaveAs, &QAction::triggered, this,
           &EditorWindow::selectAndSaveFile);
-  connect(ui->actionConnect, &QAction::triggered, [=]() {
-    QString host =
-        QInputDialog::getText(this, "Host", "What host should I connect to?",
-                              QLineEdit::Normal, "localhost");
-    int port = QInputDialog::getInt(this, "Port",
-                                    "What port should I connect to?", 15835);
-    m_client->connectToServer(host, port);
-  });
+  connect(ui->actionConnect, &QAction::triggered, this,
+          &EditorWindow::connectTohost);
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
@@ -168,7 +162,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_editor->toggleShowAllUnits();
       break;
     case Qt::Key_O:
-      if (event->modifiers() & Qt::ControlModifier) loadFileAndHost();
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier)
+          connectTohost();
+        else
+          loadFileAndHost();
+      }
       break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
@@ -231,8 +230,18 @@ void EditorWindow::loadFile(QString filename) {
 void EditorWindow::loadFileAndHost() {
   QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
-  int port = QInputDialog::getInt(
-      this, "Port", "What port should this server run on?", 15835);
+  if (filename.length() == 0) {
+    qDebug() << "Aborting, no file selected";
+    return;
+  }
+  bool ok;
+  int port =
+      QInputDialog::getInt(this, "Port", "What port should this server run on?",
+                           15835, 0, 65536, 1, &ok);
+  if (!ok) {
+    qDebug() << "Aborted hosting";
+    return;
+  }
   // TODO: Dialog to select port
   if (m_server) {
     delete m_server;
@@ -260,4 +269,21 @@ void EditorWindow::selectAndSaveFile() {
   QString filename = QFileDialog::getSaveFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
   saveFile(filename);
+}
+void EditorWindow::connectTohost() {
+  bool ok;
+  QString host =
+      QInputDialog::getText(this, "Host", "What host should I connect to?",
+                            QLineEdit::Normal, "localhost", &ok);
+  if (!ok) {
+    qDebug() << "Aborted connecting";
+    return;
+  }
+  int port = QInputDialog::getInt(
+      this, "Port", "What port should I connect to?", 15835, 0, 65536, 1, &ok);
+  if (!ok) {
+    qDebug() << "Aborted connecting";
+    return;
+  }
+  m_client->connectToServer(host, port);
 }

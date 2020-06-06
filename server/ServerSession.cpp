@@ -5,7 +5,8 @@
 
 constexpr qint64 chunkSize = 8 * 1024 * 4;  // arbitrary 4KB
 ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
-                             const QList<RemoteAction> &history, qint64 uid)
+                             const QList<RemoteActionWithUid> &history,
+                             qint64 uid)
     : QObject(parent),
       m_conn(conn),
       m_data_stream((QIODevice *)conn),

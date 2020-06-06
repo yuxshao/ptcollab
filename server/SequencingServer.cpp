@@ -50,6 +50,7 @@ void SequencingServer::broadcastMessage(const RemoteActionWithUid &action) {
     (*it)->writeRemoteAction(action);
     ++sent;
   }
+  m_history.push_back(action);
   qInfo() << "Sent (" << action.uid << action.action.idx << ") to" << sent
           << "clients";
 }

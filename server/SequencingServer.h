@@ -18,7 +18,7 @@ class SequencingServer : public QObject {
  private:
   void broadcastMessage(const RemoteActionWithUid &action);
   QTcpServer *m_server;
-  QList<RemoteAction> m_history;
+  QList<RemoteActionWithUid> m_history;
   std::list<ServerSession *> m_sessions;
   QFile m_file;
   int m_next_uid;

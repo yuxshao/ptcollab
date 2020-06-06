@@ -30,6 +30,8 @@ class EditorWindow : public QMainWindow {
  private slots:
   void loadFileAndHost();
 
+  void connectTohost();
+
  private:
   void loadFile(QString filename);
   void keyPressEvent(QKeyEvent* event);
