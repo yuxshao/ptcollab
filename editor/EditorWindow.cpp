@@ -106,7 +106,8 @@ EditorWindow::EditorWindow(QWidget *parent)
           &EditorWindow::selectAndSaveFile);
   connect(ui->actionConnect, &QAction::triggered, [=]() {
     QString host =
-        QInputDialog::getText(this, "Host", "Where should I connect to?");
+        QInputDialog::getText(this, "Host", "What host should I connect to?",
+                              QLineEdit::Normal, "localhost");
     int port = QInputDialog::getInt(this, "Port",
                                     "What port should I connect to?", 15835);
     m_client->connectToServer(host, port);

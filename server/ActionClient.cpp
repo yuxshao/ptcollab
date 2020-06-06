@@ -20,12 +20,15 @@ qint64 ActionClient::uid() { return m_uid; }
 
 void ActionClient::tryToRead() {
   if (!m_ready) tryToStart();
-  while (!m_data_stream.atEnd()) {
-    m_data_stream.startTransaction();
-    RemoteActionWithUid action;
-    m_data_stream >> action;
-    if (!m_data_stream.commitTransaction()) return;
-    emit receivedRemoteAction(action);
+  // This second check is not an else b/c tryToStart(); might change m_ready;
+  if (m_ready) {
+    while (!m_data_stream.atEnd()) {
+      m_data_stream.startTransaction();
+      RemoteActionWithUid action;
+      m_data_stream >> action;
+      if (!m_data_stream.commitTransaction()) return;
+      emit receivedRemoteAction(action);
+    }
   }
 }
 
@@ -48,20 +51,26 @@ void ActionClient::tryToStart() {
   m_data_stream >> size;
   qDebug() << "Expecting file of size" << size;
   char *data = new char[size];
-  if (m_data_stream.readRawData(data, size) < size) {
-    // TODO: might not be right for chunked transfer
-    qInfo() << "Not enough data has been sent yet.";
-    m_data_stream.abortTransaction();
-    delete[] data;
-    return;
+  int pos = 0;
+  while (pos < size) {
+    int read = m_data_stream.readRawData(data + pos, size - pos);
+    if (read != -1) pos += read;
+    if (read == -1 || m_data_stream.atEnd()) {
+      // TODO: might not be right for chunked transfer
+      qInfo() << "Not enough data has been sent yet." << pos;
+      m_data_stream.rollbackTransaction();
+      delete[] data;
+      return;
+    }
   }
-
+  qDebug() << "Received file";
   QList<RemoteActionWithUid> history;
   m_data_stream >> history;
   if (!m_data_stream.commitTransaction()) {
     delete[] data;
     return;
   }
+  qDebug() << "Received history of size" << history.size();
 
   pxtnDescriptor desc;
   desc.set_memory_r(data, size);

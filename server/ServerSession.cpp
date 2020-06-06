@@ -31,12 +31,13 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
     qint64 bytesRead = file.read(buffer.get(), std::min(chunkSize, bytesLeft));
     if (bytesRead == -1) return;
     bytesLeft -= bytesRead;
+    qDebug() << "Sending" << bytesRead;
     m_data_stream.writeRawData(buffer.get(), bytesRead);
   }
 
-  qInfo() << "Sending history " << conn->peerAddress();
+  qInfo() << "Sending history to" << conn->peerAddress();
   m_data_stream << history;
-  qInfo() << "Sent!" << conn->peerAddress();
+  qInfo() << "Sent to" << conn->peerAddress();
 
   connect(conn, &QIODevice::readyRead, this, &ServerSession::readRemoteAction);
   connect(conn, &QAbstractSocket::disconnected, [this]() {
