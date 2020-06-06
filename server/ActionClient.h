@@ -5,6 +5,11 @@
 
 #include "protocol/RemoteAction.h"
 #include "pxtone/pxtnDescriptor.h"
+struct HostAndPort {
+  QString host;
+  int port;
+};
+
 class ActionClient : public QObject {
   Q_OBJECT
  public:
@@ -16,9 +21,11 @@ class ActionClient : public QObject {
   void sendRemoteAction(const RemoteAction &action);
   qint64 uid();
  signals:
-  void ready(pxtnDescriptor &desc, const QList<RemoteActionWithUid> &history,
-             qint64 uid);
+  void connected(pxtnDescriptor &desc,
+                 const QList<RemoteActionWithUid> &history, qint64 uid);
+  void disconnected();
   void receivedRemoteAction(const RemoteActionWithUid &action);
+  void errorOccurred(QString error);
 
  private:
   QTcpSocket *m_socket;

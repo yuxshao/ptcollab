@@ -45,26 +45,33 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QPushButton" name="openBtn">
+      <widget class="QPushButton" name="hostBtn">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Open (C-o)</string>
+        <string>Host (C-S-o)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="saveBtn">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
+      <widget class="QPushButton" name="connectBtn">
        <property name="text">
-        <string>Save (C-s)</string>
+        <string>Connect (C-o)</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="saveBtn">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+     <property name="text">
+      <string>Local Save (C-s)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

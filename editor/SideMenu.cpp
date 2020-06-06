@@ -25,8 +25,10 @@ SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
   connect(ui->units, signal, this, &SideMenu::selectedUnitChanged);
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
-  connect(ui->openBtn, &QPushButton::clicked, this,
-          &SideMenu::openButtonPressed);
+  connect(ui->hostBtn, &QPushButton::clicked, this,
+          &SideMenu::hostButtonPressed);
+  connect(ui->connectBtn, &QPushButton::clicked, this,
+          &SideMenu::connectButtonPressed);
 }
 
 SideMenu::~SideMenu() { delete ui; }

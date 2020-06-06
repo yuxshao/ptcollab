@@ -13,6 +13,7 @@ class ServerSession : public QObject {
                 const QList<RemoteActionWithUid> &history, qint64 uid);
   bool isConnected();
   void writeRemoteAction(const RemoteActionWithUid &action);
+  qint64 uid();
 
  signals:
   void newRemoteAction(const RemoteActionWithUid &action);

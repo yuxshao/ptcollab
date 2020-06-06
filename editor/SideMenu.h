@@ -28,7 +28,8 @@ class SideMenu : public QWidget {
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();
-  void openButtonPressed();
+  void hostButtonPressed();
+  void connectButtonPressed();
 
  public slots:
   void setQuantX(int);

@@ -30,7 +30,7 @@ class EditorWindow : public QMainWindow {
  private slots:
   void loadFileAndHost();
 
-  void connectTohost();
+  void connectToHost();
 
  private:
   void loadFile(QString filename);

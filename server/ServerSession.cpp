@@ -54,6 +54,8 @@ void ServerSession::writeRemoteAction(const RemoteActionWithUid &action) {
   m_data_stream << action;
 }
 
+qint64 ServerSession::uid() { return m_uid; }
+
 void ServerSession::readRemoteAction() {
   m_data_stream.startTransaction();
   RemoteAction action;

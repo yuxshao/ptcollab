@@ -42,7 +42,10 @@ void SequencingServer::broadcastMessage(const RemoteActionWithUid &action) {
   qInfo() << "Broadcasting action" << action.uid << action.action.idx;
   int sent = 0;
   for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
-    while (!(*it)->isConnected()) {
+    // TODO: could probably make this cleaner. make sure not to accidentally
+    // access end
+    while (it != m_sessions.end() && !(*it)->isConnected()) {
+      qInfo() << "Cleared session" << (*it)->uid();
       delete *it;
       it = m_sessions.erase(it);
     }

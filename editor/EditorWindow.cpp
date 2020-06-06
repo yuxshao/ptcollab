@@ -58,13 +58,21 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client);
-  connect(m_client, &ActionClient::ready,
+  connect(m_client, &ActionClient::connected,
           [this](pxtnDescriptor &desc,
                  const QList<RemoteActionWithUid> &history, qint64 uid) {
+            QMessageBox::information(this, "Connected", "Connected to server.");
             loadDescriptor(desc);
             m_keyboard_editor->setUid(uid);
             m_keyboard_editor->loadHistory(history);
           });
+  connect(m_client, &ActionClient::disconnected, [this]() {
+    QMessageBox::information(this, "Disconnected", "Disconnected from server.");
+  });
+  connect(m_client, &ActionClient::errorOccurred, [this](QString error) {
+    QMessageBox::information(this, "Connection error",
+                             tr("Connection error: %1").arg(error));
+  });
 
   m_scroll_area = new EditorScrollArea(m_splitter);
   m_scroll_area->setWidget(m_keyboard_editor);
@@ -98,14 +106,16 @@ EditorWindow::EditorWindow(QWidget *parent)
           &EditorWindow::selectAndSaveFile);
   connect(ui->actionSave, &QAction::triggered, this,
           &EditorWindow::selectAndSaveFile);
-  connect(m_side_menu, &SideMenu::openButtonPressed, this,
+  connect(m_side_menu, &SideMenu::hostButtonPressed, this,
           &EditorWindow::loadFileAndHost);
+  connect(m_side_menu, &SideMenu::connectButtonPressed, this,
+          &EditorWindow::connectToHost);
   connect(ui->actionHost, &QAction::triggered, this,
           &EditorWindow::loadFileAndHost);
   connect(ui->actionSaveAs, &QAction::triggered, this,
           &EditorWindow::selectAndSaveFile);
   connect(ui->actionConnect, &QAction::triggered, this,
-          &EditorWindow::connectTohost);
+          &EditorWindow::connectToHost);
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
@@ -164,9 +174,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_O:
       if (event->modifiers() & Qt::ControlModifier) {
         if (event->modifiers() & Qt::ShiftModifier)
-          connectTohost();
-        else
           loadFileAndHost();
+        else
+          connectToHost();
       }
       break;
     case Qt::Key_Z:
@@ -228,6 +238,12 @@ void EditorWindow::loadFile(QString filename) {
 }
 
 void EditorWindow::loadFileAndHost() {
+  if (m_server) {
+    auto result = QMessageBox::question(
+        this, "Server already running",
+        "Are you sure you want to stop the server and start a new one?");
+    if (result != QMessageBox::Yes) return;
+  }
   QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
   if (filename.length() == 0) {
@@ -242,7 +258,6 @@ void EditorWindow::loadFileAndHost() {
     qDebug() << "Aborted hosting";
     return;
   }
-  // TODO: Dialog to select port
   if (m_server) {
     delete m_server;
     m_server = nullptr;
@@ -270,7 +285,7 @@ void EditorWindow::selectAndSaveFile() {
                                                   "pxtone projects (*.ptcop)");
   saveFile(filename);
 }
-void EditorWindow::connectTohost() {
+void EditorWindow::connectToHost() {
   bool ok;
   QString host =
       QInputDialog::getText(this, "Host", "What host should I connect to?",

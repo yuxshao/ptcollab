@@ -1,14 +1,25 @@
 #include "ActionClient.h"
 
+#include <QAbstractSocket>
+#include <QMessageBox>
+
 ActionClient::ActionClient(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
       m_data_stream((QIODevice *)m_socket),
       m_ready(false) {
   connect(m_socket, &QTcpSocket::readyRead, this, &ActionClient::tryToRead);
+  connect(m_socket, &QTcpSocket::disconnected, this,
+          &ActionClient::disconnected);
+  void (QTcpSocket::*errorSignal)(QAbstractSocket::SocketError) =
+      &QTcpSocket::error;
+  connect(m_socket, errorSignal, [this](QAbstractSocket::SocketError) {
+    emit errorOccurred(m_socket->errorString());
+  });
 }
 
 void ActionClient::connectToServer(QString hostname, quint16 port) {
+  m_socket->abort();
   m_socket->connectToHost(hostname, port);
 }
 
@@ -75,5 +86,5 @@ void ActionClient::tryToStart() {
   pxtnDescriptor desc;
   desc.set_memory_r(data, size);
   m_ready = true;
-  emit ready(desc, history, m_uid);
+  emit connected(desc, history, m_uid);
 }
