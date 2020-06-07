@@ -599,7 +599,11 @@ void KeyboardEditor::setCurrentUnit(int unit) {
 
 void KeyboardEditor::setShowAll(bool b) { m_show_all_units = b; }
 
-void KeyboardEditor::clearRemoteEditStates() { m_remote_edit_states.clear(); }
+void KeyboardEditor::clearRemoteEditStates() {
+  m_remote_edit_states.clear();
+
+  emit userListChanged(getUserList(m_remote_edit_states));
+}
 
 void KeyboardEditor::toggleShowAllUnits() {
   m_show_all_units = !m_show_all_units;

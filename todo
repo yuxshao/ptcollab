@@ -35,9 +35,9 @@
 2. Hook up show-all checkbox properly
 3. Users can specify names, show up next to cursor
 4. Cursor disappears if user leaves / disconnect from server
+5. Show list of connected users on left
 
 TODO:
- - List of connected users
  - Custom icon for people's names?
  - Unit view
  - See which unit each person is on!

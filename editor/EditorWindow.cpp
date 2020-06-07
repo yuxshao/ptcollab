@@ -267,7 +267,7 @@ void EditorWindow::loadFileAndHost() {
   if (!ok) return;
   QString username =
       QInputDialog::getText(this, "Username", "What's your display name?",
-                            QLineEdit::Normal, "", &ok);
+                            QLineEdit::Normal, "Anonymous", &ok);
   if (!ok) return;
   if (m_server) {
     delete m_server;
@@ -332,7 +332,7 @@ void EditorWindow::connectToHost() {
 
   QString username =
       QInputDialog::getText(this, "Username", "What's your display name?",
-                            QLineEdit::Normal, "", &ok);
+                            QLineEdit::Normal, "Anonymous", &ok);
   if (!ok) return;
 
   // TODO: some validation here? e.g., maybe disallow exotic chars in case type

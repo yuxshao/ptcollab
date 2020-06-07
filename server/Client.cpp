@@ -28,20 +28,20 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);
 
-  QMetaObject::Connection *const conn = new QMetaObject::Connection;
-  *conn = connect(m_socket, &QTcpSocket::connected, [this, conn, username]() {
-    qDebug() << "Sending hello to server";
-    m_data_stream << ClientHello(username);
-    delete conn;
-  });
+  // This is fine to call immediately after calling connecttohost because that
+  // fn call opens the socket.
+  qDebug() << "Sending hello to server";
+  m_data_stream << ClientHello(username);
 }
 
 void Client::sendRemoteAction(const RemoteAction &m) {
-  m_data_stream << FromClient::REMOTE_ACTION << m;
+  // These open guards might cause a desync in case the socket isn't open but
+  // the client still thinks something's up. Hopefully this i sunlikely.
+  if (m_socket->isOpen()) m_data_stream << FromClient::REMOTE_ACTION << m;
 }
 
 void Client::sendEditState(const EditState &m) {
-  m_data_stream << FromClient::EDIT_STATE << m;
+  if (m_socket->isOpen()) m_data_stream << FromClient::EDIT_STATE << m;
 }
 
 qint64 Client::uid() { return m_uid; }
