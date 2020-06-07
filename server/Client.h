@@ -9,11 +9,10 @@ struct HostAndPort {
   QString host;
   int port;
 };
-// TODO: just rename this client
-class ActionClient : public QObject {
+class Client : public QObject {
   Q_OBJECT
  public:
-  ActionClient(QObject *parent);
+  Client(QObject *parent);
 
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port);

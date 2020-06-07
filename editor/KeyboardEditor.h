@@ -12,13 +12,13 @@
 #include "EditState.h"
 #include "PxtoneActionSynchronizer.h"
 #include "pxtone/pxtnService.h"
-#include "server/ActionClient.h"
+#include "server/Client.h"
 
 class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
   explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                          ActionClient *client, QScrollArea *parent = nullptr);
+                          Client *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
   void loadHistory(const QList<RemoteActionWithUid> &history);
@@ -57,7 +57,7 @@ class KeyboardEditor : public QWidget {
   QAudioOutput *m_audio_output;
   QAudioOutput *m_audio_note_preview;
   Animation *m_anim;
-  ActionClient *m_client;
+  Client *m_client;
   PxtoneActionSynchronizer m_sync;
   std::unordered_map<int, EditState> m_remote_edit_states;
 };

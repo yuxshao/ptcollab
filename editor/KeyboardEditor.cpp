@@ -18,7 +18,7 @@ QSize KeyboardEditor::sizeHint() const {
                m_edit_state.scale.pitchToY(EVENTMIN_KEY));
 }
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                               ActionClient *client, QScrollArea *parent)
+                               Client *client, QScrollArea *parent)
     : QWidget(parent),
       m_pxtn(pxtn),
       m_timer(new QElapsedTimer),
@@ -47,14 +47,14 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
 
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
-  connect(m_client, &ActionClient::receivedRemoteAction,
+  connect(m_client, &Client::receivedRemoteAction,
           [this](const RemoteActionWithUid &action) {
             m_sync.applyRemoteAction(action);
           });
-  connect(m_client, &ActionClient::receivedEditState, this,
+  connect(m_client, &Client::receivedEditState, this,
           &KeyboardEditor::setRemoteEditState);
   connect(this, &KeyboardEditor::editStateChanged, m_client,
-          &ActionClient::sendEditState);
+          &Client::sendEditState);
 }
 
 struct LastEvent {

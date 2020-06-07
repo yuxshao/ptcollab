@@ -10,8 +10,8 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "pxtone/pxtnDescriptor.h"
-#include "server/ActionClient.h"
-#include "server/SequencingServer.h"
+#include "server/BroadcastServer.h"
+#include "server/Client.h"
 #include "ui_EditorWindow.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
@@ -22,7 +22,7 @@ EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
       m_pxtn_device(this, &m_pxtn),
       m_server(nullptr),
-      m_client(new ActionClient(this)),
+      m_client(new Client(this)),
       m_filename(""),
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
@@ -61,7 +61,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client);
-  connect(m_client, &ActionClient::connected,
+  connect(m_client, &Client::connected,
           [this](pxtnDescriptor &desc,
                  const QList<RemoteActionWithUid> &history, qint64 uid) {
             HostAndPort host_and_port = m_client->currentlyConnectedTo();
@@ -73,11 +73,11 @@ EditorWindow::EditorWindow(QWidget *parent)
             m_keyboard_editor->setUid(uid);
             m_keyboard_editor->loadHistory(history);
           });
-  connect(m_client, &ActionClient::disconnected, [this]() {
+  connect(m_client, &Client::disconnected, [this]() {
     m_client_status->setText(tr("Not connected"));
     QMessageBox::information(this, "Disconnected", "Disconnected from server.");
   });
-  connect(m_client, &ActionClient::errorOccurred, [this](QString error) {
+  connect(m_client, &Client::errorOccurred, [this](QString error) {
     QMessageBox::information(this, "Connection error",
                              tr("Connection error: %1").arg(error));
   });
@@ -272,7 +272,7 @@ void EditorWindow::loadFileAndHost() {
     m_server = nullptr;
     qDebug() << "Stopped old server";
   }
-  m_server = new SequencingServer(filename, port, this);
+  m_server = new BroadcastServer(filename, port, this);
   m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
   connect(m_server, &QObject::destroyed,
           [this]() { m_server_status->setText("Not hosting"); });

@@ -7,11 +7,11 @@
 #include "ServerSession.h"
 #include "protocol/RemoteAction.h"
 // TODO : Rename this broadcastserver
-class SequencingServer : public QObject {
+class BroadcastServer : public QObject {
   Q_OBJECT
  public:
-  SequencingServer(QString filename, int port, QObject *parent = nullptr);
-  ~SequencingServer();
+  BroadcastServer(QString filename, int port, QObject *parent = nullptr);
+  ~BroadcastServer();
   int port();
 
  private slots:

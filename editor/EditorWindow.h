@@ -14,8 +14,8 @@
 #include "PxtoneIODevice.h"
 #include "SideMenu.h"
 #include "pxtone/pxtnService.h"
-#include "server/ActionClient.h"
-#include "server/SequencingServer.h"
+#include "server/BroadcastServer.h"
+#include "server/Client.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;
@@ -44,8 +44,8 @@ class EditorWindow : public QMainWindow {
   PxtoneIODevice m_pxtn_device;
   QSplitter* m_splitter;
   SideMenu* m_side_menu;
-  SequencingServer* m_server;
-  ActionClient* m_client;
+  BroadcastServer* m_server;
+  Client* m_client;
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;

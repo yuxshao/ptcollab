@@ -1,14 +1,14 @@
-#include "ActionClient.h"
+#include "Client.h"
 
 #include <QAbstractSocket>
 #include <QHostAddress>
 #include <QMessageBox>
-ActionClient::ActionClient(QObject *parent)
+Client::Client(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
       m_data_stream((QIODevice *)m_socket),
       m_ready(false) {
-  connect(m_socket, &QTcpSocket::readyRead, this, &ActionClient::tryToRead);
+  connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, [this]() {
     m_ready = false;
     emit disconnected();
@@ -19,25 +19,25 @@ ActionClient::ActionClient(QObject *parent)
     emit errorOccurred(m_socket->errorString());
   });
 }
-HostAndPort ActionClient::currentlyConnectedTo() {
+HostAndPort Client::currentlyConnectedTo() {
   return HostAndPort{m_socket->peerAddress().toString(), m_socket->peerPort()};
 }
-void ActionClient::connectToServer(QString hostname, quint16 port) {
+void Client::connectToServer(QString hostname, quint16 port) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);
 }
 
-void ActionClient::sendRemoteAction(const RemoteAction &m) {
+void Client::sendRemoteAction(const RemoteAction &m) {
   m_data_stream << REMOTE_ACTION << m;
 }
 
-void ActionClient::sendEditState(const EditState &m) {
+void Client::sendEditState(const EditState &m) {
   m_data_stream << EDIT_STATE << m;
 }
 
-qint64 ActionClient::uid() { return m_uid; }
+qint64 Client::uid() { return m_uid; }
 
-void ActionClient::tryToRead() {
+void Client::tryToRead() {
   if (!m_ready) tryToStart();
   // This second check is not an else b/c tryToStart(); might change m_ready;
   if (m_ready) {
@@ -63,7 +63,7 @@ void ActionClient::tryToRead() {
   }
 }
 
-void ActionClient::tryToStart() {
+void Client::tryToStart() {
   // Get the file + history
   qInfo() << "Getting initial data from server";
   QString header;

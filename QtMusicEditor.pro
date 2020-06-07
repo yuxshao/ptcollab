@@ -58,8 +58,8 @@ HEADERS += \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h \
-           server/ActionClient.h \
-           server/SequencingServer.h \
+           server/BroadcastServer.h \
+           server/Client.h \
            server/ServerSession.h
 FORMS += \
     editor/EditorWindow.ui \
@@ -98,8 +98,8 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
-           server/ActionClient.cpp \
-           server/SequencingServer.cpp \
+           server/BroadcastServer.cpp \
+           server/Client.cpp \
            server/ServerSession.cpp
 
 LIBS += -logg -lvorbisfile

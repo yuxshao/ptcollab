@@ -1,9 +1,9 @@
-#include "SequencingServer.h"
+#include "BroadcastServer.h"
 
 #include <QDataStream>
 #include <QMessageBox>
 #include <QTcpSocket>
-SequencingServer::SequencingServer(QString filename, int port, QObject *parent)
+BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
@@ -20,26 +20,26 @@ SequencingServer::SequencingServer(QString filename, int port, QObject *parent)
   qInfo() << "Listening on" << m_server->serverPort();
 
   connect(m_server, &QTcpServer::newConnection, this,
-          &SequencingServer::newClient);
+          &BroadcastServer::newClient);
 }
 
-SequencingServer::~SequencingServer() { m_server->close(); }
-int SequencingServer::port() { return m_server->serverPort(); }
+BroadcastServer::~BroadcastServer() { m_server->close(); }
+int BroadcastServer::port() { return m_server->serverPort(); }
 
-void SequencingServer::newClient() {
+void BroadcastServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
   qInfo() << "New connection" << conn->peerAddress();
 
   ServerSession *session =
       new ServerSession(this, conn, m_file, m_history, m_next_uid++);
   connect(session, &ServerSession::receivedRemoteAction, this,
-          &SequencingServer::broadcastRemoteAction);
+          &BroadcastServer::broadcastRemoteAction);
   connect(session, &ServerSession::receivedEditState, this,
-          &SequencingServer::broadcastEditState);
+          &BroadcastServer::broadcastEditState);
   m_sessions.push_back(session);
 }
 
-void SequencingServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
+void BroadcastServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
   // iterate over list of conns, prune inactive ones, and send action to active
   // ones
   qInfo() << "Broadcasting action" << m.uid << m.action.idx;
@@ -62,7 +62,7 @@ void SequencingServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
 
 // TODO: this duplication sucks. but it seems necessary b/c we can't have a
 // unified message type like this
-void SequencingServer::broadcastEditState(const EditStateWithUid &m) {
+void BroadcastServer::broadcastEditState(const EditStateWithUid &m) {
   // Less is done here b/c we're not adding to history
   for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
     while (it != m_sessions.end() && !(*it)->isConnected()) {
