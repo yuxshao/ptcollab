@@ -554,6 +554,8 @@ void KeyboardEditor::setCurrentUnit(int unit) {
   emit editStateChanged(m_edit_state);
 }
 
+void KeyboardEditor::setShowAll(bool b) { m_show_all_units = b; }
+
 void KeyboardEditor::setRemoteEditState(const EditStateWithUid &e) {
   // qDebug() << "setRemoteEditState" << e.uid;
   m_remote_edit_states.erase(e.uid);

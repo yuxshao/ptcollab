@@ -25,6 +25,7 @@ class SideMenu : public QWidget {
   void quantXUpdated(int);
   void quantYUpdated(int);
   void selectedUnitChanged(int);
+  void showAllChanged(bool);
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();

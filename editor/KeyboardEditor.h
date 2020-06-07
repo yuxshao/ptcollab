@@ -34,6 +34,7 @@ class KeyboardEditor : public QWidget {
   void setQuantX(int);
   void setQuantY(int);
   void setCurrentUnit(int);
+  void setShowAll(bool);
   void setRemoteEditState(const EditStateWithUid &state);
   void clearRemoteEditState(qint32 uid);
   void clearRemoteEditStates();

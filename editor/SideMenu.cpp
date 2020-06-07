@@ -22,6 +22,7 @@ SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
           &SideMenu::stopButtonPressed);
+  connect(ui->showAll, &QCheckBox::toggled, this, &SideMenu::showAllChanged);
   connect(ui->units, signal, this, &SideMenu::selectedUnitChanged);
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);

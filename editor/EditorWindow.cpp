@@ -100,6 +100,8 @@ EditorWindow::EditorWindow(QWidget *parent)
           &KeyboardEditor::setQuantY);
   connect(m_side_menu, &SideMenu::selectedUnitChanged, m_keyboard_editor,
           &KeyboardEditor::setCurrentUnit);
+  connect(m_side_menu, &SideMenu::showAllChanged, m_keyboard_editor,
+          &KeyboardEditor::setShowAll);
   connect(m_keyboard_editor, &KeyboardEditor::currentUnitChanged, m_side_menu,
           &SideMenu::setSelectedUnit);
   connect(m_keyboard_editor, &KeyboardEditor::showAllChanged, m_side_menu,
