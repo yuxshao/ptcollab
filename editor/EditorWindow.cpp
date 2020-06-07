@@ -256,18 +256,16 @@ void EditorWindow::loadFileAndHost() {
   }
   QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
-  if (filename.length() == 0) {
-    qDebug() << "Aborting, no file selected";
-    return;
-  }
+  if (filename.length() == 0) return;
   bool ok;
   int port =
       QInputDialog::getInt(this, "Port", "What port should this server run on?",
                            15835, 0, 65536, 1, &ok);
-  if (!ok) {
-    qDebug() << "Aborted hosting";
-    return;
-  }
+  if (!ok) return;
+  QString username =
+      QInputDialog::getText(this, "Username", "What's your display name?",
+                            QLineEdit::Normal, "", &ok);
+  if (!ok) return;
   if (m_server) {
     delete m_server;
     m_server = nullptr;
@@ -279,7 +277,7 @@ void EditorWindow::loadFileAndHost() {
           [this]() { m_server_status->setText("Not hosting"); });
   m_filename = filename;
 
-  m_client->connectToServer("localhost", port);
+  m_client->connectToServer("localhost", port, username);
 }
 
 bool EditorWindow::saveToFile(QString filename) {
@@ -323,15 +321,18 @@ void EditorWindow::connectToHost() {
   QString host =
       QInputDialog::getText(this, "Host", "What host should I connect to?",
                             QLineEdit::Normal, "localhost", &ok);
-  if (!ok) {
-    qDebug() << "Aborted connecting";
-    return;
-  }
+  if (!ok) return;
+
   int port = QInputDialog::getInt(
       this, "Port", "What port should I connect to?", 15835, 0, 65536, 1, &ok);
-  if (!ok) {
-    qDebug() << "Aborted connecting";
-    return;
-  }
-  m_client->connectToServer(host, port);
+  if (!ok) return;
+
+  QString username =
+      QInputDialog::getText(this, "Username", "What's your display name?",
+                            QLineEdit::Normal, "", &ok);
+  if (!ok) return;
+
+  // TODO: some validation here? e.g., maybe disallow exotic chars in case type
+  // isn't supported on other clients?
+  m_client->connectToServer(host, port, username);
 }

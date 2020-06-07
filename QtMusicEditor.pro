@@ -36,6 +36,7 @@ HEADERS += \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
            editor/SideMenu.h \
+           protocol/Hello.h \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \
            pxtone/pxtn.h \
@@ -75,6 +76,7 @@ SOURCES += main.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \
            editor/SideMenu.cpp \
+           protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \
            protocol/RemoteAction.cpp \
            pxtone/pxtnDelay.cpp \

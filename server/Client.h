@@ -15,7 +15,7 @@ class Client : public QObject {
   Client(QObject *parent);
 
   HostAndPort currentlyConnectedTo();
-  void connectToServer(QString hostname, quint16 port);
+  void connectToServer(QString hostname, quint16 port, QString username);
   void sendRemoteAction(const RemoteAction &m);
   void sendEditState(const EditState &m);
   qint64 uid();
@@ -30,7 +30,7 @@ class Client : public QObject {
  private:
   QTcpSocket *m_socket;
   QDataStream m_data_stream;
-  bool m_ready;
+  bool m_received_hello;
   qint64 m_uid;
   void tryToRead();
   void tryToStart();

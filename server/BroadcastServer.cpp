@@ -30,12 +30,13 @@ void BroadcastServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
   qInfo() << "New connection" << conn->peerAddress();
 
-  ServerSession *session =
-      new ServerSession(this, conn, m_file, m_history, m_next_uid++);
+  ServerSession *session = new ServerSession(this, conn, m_next_uid++);
   connect(session, &ServerSession::receivedRemoteAction, this,
           &BroadcastServer::broadcastRemoteAction);
   connect(session, &ServerSession::receivedEditState, this,
           &BroadcastServer::broadcastEditState);
+  connect(session, &ServerSession::receivedHello,
+          [session, this]() { session->sendHello(m_file, m_history); });
   m_sessions.push_back(session);
 }
 

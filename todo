@@ -35,9 +35,10 @@
 2. Hook up show-all checkbox properly
 
 TODO:
- - Names show up and users are notified if anyone leaves
+ - Users can specify names, they show up next to icon
+ - List of connected users
+ - Icon disappears if user leaves / disconnect from server
  - Custom icon for people's names?
- - A list of connected users?
  - Unit view
  - See which unit each person is on!
  - Copy paste
