@@ -1,6 +1,7 @@
 #ifndef SIDEMENU_H
 #define SIDEMENU_H
 
+#include <QStringListModel>
 #include <QWidget>
 
 namespace Ui {
@@ -40,9 +41,11 @@ class SideMenu : public QWidget {
   void setSelectedUnit(int);
   void setPlay(bool);
   void setModified(bool);
+  void setUserList(QList<std::pair<qint64, QString>> users);
 
  private:
   Ui::SideMenu *ui;
+  QStringListModel *m_users;
 };
 
 #endif  // SIDEMENU_H

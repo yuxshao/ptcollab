@@ -4,7 +4,10 @@
 
 #include "ui_SideMenu.h"
 
-SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
+SideMenu::SideMenu(QWidget* parent)
+    : QWidget(parent),
+      ui(new Ui::SideMenu),
+      m_users(new QStringListModel(this)) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -30,6 +33,7 @@ SideMenu::SideMenu(QWidget* parent) : QWidget(parent), ui(new Ui::SideMenu) {
           &SideMenu::hostButtonPressed);
   connect(ui->connectBtn, &QPushButton::clicked, this,
           &SideMenu::connectButtonPressed);
+  ui->userList->setModel(m_users);
 }
 
 SideMenu::~SideMenu() { delete ui; }
@@ -52,6 +56,13 @@ void SideMenu::setModified(bool modified) {
     ui->saveBtn->setText("Save locally* (C-s)");
   else
     ui->saveBtn->setText("Save locally (C-s)");
+}
+
+void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
+  QList<QString> usernames;
+  for (const auto& [uid, username] : users)
+    usernames.append(QString("%1 (%2)").arg(username).arg(uid));
+  m_users->setStringList(usernames);
 }
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
 void SideMenu::setPlay(bool playing) {

@@ -109,6 +109,8 @@ EditorWindow::EditorWindow(QWidget *parent)
           &SideMenu::setShowAll);
   connect(m_keyboard_editor, &KeyboardEditor::onEdit,
           [=]() { m_side_menu->setModified(true); });
+  connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
+          &SideMenu::setUserList);
 
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &EditorWindow::togglePlayState);

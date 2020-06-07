@@ -17,6 +17,13 @@ QSize KeyboardEditor::sizeHint() const {
   return QSize(one_over_last_clock(m_pxtn) / m_edit_state.scale.clockPerPx,
                m_edit_state.scale.pitchToY(EVENTMIN_KEY));
 }
+QList<std::pair<qint64, QString>> getUserList(
+    const std::unordered_map<qint64, RemoteEditState> &users) {
+  QList<std::pair<qint64, QString>> list;
+  for (auto it = users.begin(); it != users.end(); ++it)
+    list.append(std::make_pair(it->first, it->second.user));
+  return list;
+}
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                                Client *client, QScrollArea *parent)
     : QWidget(parent),
@@ -56,10 +63,12 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
               qWarning() << "Remote session already exists for uid" << uid
                          << "; overwriting";
             m_remote_edit_states[uid] = RemoteEditState{std::nullopt, user};
+            emit userListChanged(getUserList(m_remote_edit_states));
           });
   connect(m_client, &Client::receivedDeleteSession, [this](qint64 uid) {
     if (!m_remote_edit_states.erase(uid))
       qWarning() << "Received delete for unknown remote session";
+    emit userListChanged(getUserList(m_remote_edit_states));
   });
 
   connect(m_client, &Client::receivedEditState,
