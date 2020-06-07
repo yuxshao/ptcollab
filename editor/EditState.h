@@ -9,6 +9,8 @@ struct Interval {
 
   qint32 length() const { return end - start; }
 };
+QDataStream &operator<<(QDataStream &out, const Interval &a);
+QDataStream &operator>>(QDataStream &in, Interval &a);
 struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn };
   Type type;
@@ -18,6 +20,8 @@ struct MouseEditState {
   qint32 current_pitch;
   Interval clock_int(qint32 quantize);
 };
+QDataStream &operator<<(QDataStream &out, const MouseEditState &a);
+QDataStream &operator>>(QDataStream &in, MouseEditState &a);
 
 constexpr int PITCH_PER_KEY = 256;
 constexpr int EVENTMAX_KEY = 135 * PITCH_PER_KEY;
@@ -38,6 +42,8 @@ struct Scale {
   }
   qreal pitchOfY(qreal y) const { return pitchOffset - y * pitchPerPx; }
 };
+QDataStream &operator<<(QDataStream &out, const Scale &a);
+QDataStream &operator>>(QDataStream &in, Scale &a);
 
 struct EditState {
   MouseEditState mouse_edit_state;
@@ -48,5 +54,7 @@ struct EditState {
 
   EditState(int quantize_clock, int quantize_pitch);
 };
+QDataStream &operator<<(QDataStream &out, const EditState &a);
+QDataStream &operator>>(QDataStream &in, EditState &a);
 
 #endif  // EDITSTATE_H
