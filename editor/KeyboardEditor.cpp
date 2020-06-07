@@ -157,13 +157,13 @@ struct Brush {
         base_brightness(base_brightness),
         on_brightness(on_brightness) {}
 
-  QBrush toQBrush(int velocity, bool on, int alpha) const {
+  QColor toQColor(int velocity, bool on, int alpha) const {
     int brightness =
         lerp(double(velocity) / EVENTMAX_VELOCITY, muted_brightness,
              on ? on_brightness : base_brightness);
     int saturation = lerp(double(velocity) / EVENTMAX_VELOCITY,
                           muted_saturation, base_saturation);
-    return QBrush(QColor::fromHsl(hue, saturation, brightness, alpha));
+    return QColor::fromHsl(hue, saturation, brightness, alpha);
   }
 };
 
@@ -196,12 +196,12 @@ void drawOngoingEdit(const EditState &state, QPainter &painter,
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
       paintBlock(pitch, interval, painter,
-                 brushes[state.m_current_unit].toQBrush(
+                 brushes[state.m_current_unit].toQColor(
                      velocity, false, alpha * alphaMultiplier),
                  state.scale);
 
       paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                     brushes[state.m_current_unit].toQBrush(
+                     brushes[state.m_current_unit].toQColor(
                          255, true, alpha * alphaMultiplier),
                      state.scale);
 
@@ -224,17 +224,22 @@ void drawOngoingEdit(const EditState &state, QPainter &painter,
   }
 }
 
-void drawCursor(const EditState &state, QPainter &painter, const QBrush &brush,
-                const QString &username) {
+void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
+                const QString &username, qint64 uid) {
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
                   state.scale.pitchToY(state.mouse_edit_state.current_pitch));
   QPainterPath path;
   path.moveTo(position);
-  path.lineTo(position + QPoint(10, 0));
-  path.lineTo(position + QPoint(0, 10));
+  path.lineTo(position + QPoint(8, 0));
+  path.lineTo(position + QPoint(0, 8));
   path.closeSubpath();
-  painter.fillPath(path, brush);
-  if (username != "") painter.drawText(position + QPoint(5, 5), username);
+  painter.fillPath(path, color);
+  if (username != "") {
+    painter.setPen(color);
+    painter.setFont(QFont("Sans serif", 6));
+    painter.drawText(position + QPoint(8, 13),
+                     QString("%1 (%2)").arg(username).arg(uid));
+  }
 }
 
 // TODO: Make an FPS tracker singleton
@@ -341,13 +346,13 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           int start = std::max(drawStates[i].pitch.clock, on.start);
           int end = std::min(e->clock, on.end);
           Interval interval{start, end};
-          QBrush brush = brushes[i].toQBrush(drawStates[i].velocity.value,
+          QBrush brush = brushes[i].toQColor(drawStates[i].velocity.value,
                                              on.contains(clock), alpha);
           paintBlock(drawStates[i].pitch.value, interval, painter, brush,
                      m_edit_state.scale);
           if (start == on.start)
             paintHighlight(drawStates[i].pitch.value, start, painter,
-                           brushes[i].toQBrush(255, true, alpha),
+                           brushes[i].toQColor(255, true, alpha),
                            m_edit_state.scale);
         }
         drawStates[i].ongoingOnEvent.emplace(
@@ -363,13 +368,13 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
           int start = std::max(drawStates[i].pitch.clock, on.start);
           int end = std::min(e->clock, on.end);
           Interval interval{start, end};
-          QBrush brush = brushes[i].toQBrush(drawStates[i].velocity.value,
+          QBrush brush = brushes[i].toQColor(drawStates[i].velocity.value,
                                              on.contains(clock), alpha);
           paintBlock(drawStates[i].pitch.value, interval, painter, brush,
                      m_edit_state.scale);
           if (start == on.start)
             paintHighlight(drawStates[i].pitch.value, start, painter,
-                           brushes[i].toQBrush(255, true, alpha),
+                           brushes[i].toQColor(255, true, alpha),
                            m_edit_state.scale);
           if (e->clock > on.end) drawStates[i].ongoingOnEvent.reset();
         }
@@ -389,21 +394,20 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       Interval on = drawStates[i].ongoingOnEvent.value();
       int start = std::max(drawStates[i].pitch.clock, on.start);
       Interval interval{start, on.end};
-      QBrush brush = brushes[i].toQBrush(drawStates[i].velocity.value,
+      QBrush brush = brushes[i].toQColor(drawStates[i].velocity.value,
                                          on.contains(clock), alpha);
       paintBlock(drawStates[i].pitch.value, interval, painter, brush,
                  m_edit_state.scale);
       if (start == on.start)
         paintBlock(drawStates[i].pitch.value,
                    {start, start + 2 * int(m_edit_state.scale.clockPerPx)},
-                   painter, brushes[i].toQBrush(255, true, alpha),
+                   painter, brushes[i].toQColor(255, true, alpha),
                    m_edit_state.scale);
       drawStates[i].ongoingOnEvent.reset();
     }
   }
 
-  drawOngoingEdit(m_edit_state, painter, brushes, &pen, size().height(), 1);
-
+  // Draw ongoing edits
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
     if (uid == m_sync.uid()) continue;
     if (remote_state.state.has_value()) {
@@ -416,22 +420,29 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
                       size().height(), alphaMultiplier);
     }
   }
+  drawOngoingEdit(m_edit_state, painter, brushes, &pen, size().height(), 1);
+
+  // Draw cursors
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
     if (uid == m_sync.uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
-      state.scale =
-          m_edit_state.scale;  // Draw the cursor according to our scale
+      state.scale = m_edit_state.scale;  // Position according to our scale
       int unit = state.m_current_unit;
       if (uint(unit) >= brushes.size()) continue;
       // Draw cursor
-      QBrush brush(Qt::white);
+      QColor color = Qt::white;
       if (unit != m_edit_state.m_current_unit)
-        brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
-      drawCursor(state, painter, brush, remote_state.user);
+        color = brushes[unit].toQColor(EVENTMAX_VELOCITY, false, 128);
+      drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
-  drawCursor(m_edit_state, painter, QBrush(Qt::white), "");
+  {
+    QString my_username = "";
+    auto it = m_remote_edit_states.find(m_sync.uid());
+    if (it != m_remote_edit_states.end()) my_username = it->second.user;
+    drawCursor(m_edit_state, painter, Qt::white, my_username, m_sync.uid());
+  }
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
   // Draw the current player position
