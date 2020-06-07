@@ -31,7 +31,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       // TODO: we probably don't want to have the editor own the client haha.
       // Need some loose coupling thing.
       m_client(client),
-      m_sync(0, m_pxtn->evels),
+      m_sync(0, m_pxtn, this),
       m_remote_edit_states() {
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
@@ -55,6 +55,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
           &KeyboardEditor::setRemoteEditState);
   connect(this, &KeyboardEditor::editStateChanged, m_client,
           &Client::sendEditState);
+  connect(&m_sync, &PxtoneActionSynchronizer::measureNumChanged,
+          [this]() { updateGeometry(); });
 }
 
 struct LastEvent {
@@ -382,12 +384,14 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   drawOngoingEdit(m_edit_state, painter, brushes, &pen, size().height(), 1);
 
   for (const auto &[uid, state] : m_remote_edit_states) {
+    if (uid == m_sync.uid()) continue;
     double alphaMultiplier =
         (state.m_current_unit == m_edit_state.m_current_unit ? 0.7 : 0.3);
     drawOngoingEdit(state, painter, brushes, nullptr, size().height(),
                     alphaMultiplier);
   }
   for (const auto &[uid, state] : m_remote_edit_states) {
+    if (uid == m_sync.uid()) continue;
     int unit = state.m_current_unit;
     if (uint(unit) >= brushes.size()) continue;
     // Draw cursor
@@ -596,10 +600,6 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                              m_edit_state.m_quantize_pitch) +
                     m_edit_state.m_quantize_pitch;
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
-  int clockPerMeas =
-      m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num();
-  Interval meas_int{clock_int.start / clockPerMeas,
-                    clock_int.end / clockPerMeas};
 
   if (m_pxtn->Unit_Num() > 0) {
     std::vector<Action> actions;
@@ -664,10 +664,6 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     }
     if (actions.size() > 0) {
       m_client->sendRemoteAction(m_sync.applyLocalAction(actions));
-      if (meas_int.end >= m_pxtn->master->get_meas_num()) {
-        m_pxtn->master->set_meas_num(meas_int.end + 1);
-        updateGeometry();
-      }
       // TODO: Change this to like, when the synchronizer receives an action.
       emit onEdit();
     }

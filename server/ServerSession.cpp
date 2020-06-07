@@ -61,21 +61,23 @@ void ServerSession::sendEditState(const EditStateWithUid &m) {
 qint64 ServerSession::uid() { return m_uid; }
 
 void ServerSession::readMessage() {
-  m_data_stream.startTransaction();
-  MessageType type;
-  m_data_stream >> type;
-  switch (type) {
-    case REMOTE_ACTION: {
-      RemoteAction m;
-      m_data_stream >> m;
-      if (!(m_data_stream.commitTransaction())) return;
-      emit receivedRemoteAction(RemoteActionWithUid{m, m_uid});
-    } break;
-    case EDIT_STATE: {
-      EditState m(0, 0);
-      m_data_stream >> m;
-      if (!(m_data_stream.commitTransaction())) return;
-      emit receivedEditState(EditStateWithUid{m, m_uid});
-    } break;
+  while (!m_data_stream.atEnd()) {
+    m_data_stream.startTransaction();
+    MessageType type;
+    m_data_stream >> type;
+    switch (type) {
+      case REMOTE_ACTION: {
+        RemoteAction m;
+        m_data_stream >> m;
+        if (!(m_data_stream.commitTransaction())) return;
+        emit receivedRemoteAction(RemoteActionWithUid{m, m_uid});
+      } break;
+      case EDIT_STATE: {
+        EditState m(0, 0);
+        m_data_stream >> m;
+        if (!(m_data_stream.commitTransaction())) return;
+        emit receivedEditState(EditStateWithUid{m, m_uid});
+      } break;
+    }
   }
 }

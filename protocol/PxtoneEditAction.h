@@ -5,15 +5,15 @@
 #include <set>
 #include <vector>
 
-#include "pxtone/pxtnEvelist.h"
+#include "pxtone/pxtnService.h"
 struct Action {
   enum Type { ADD, DELETE };  // Add implicitly means add to an empty space
   Type type;
   EVENTKIND kind;
   qint32 unit_no;
   qint32 start_clock;
-  qint32 end_clock_or_value;  // depending on type
-  void perform(pxtnEvelist *evels) const;
+  qint32 end_clock_or_value;  // end clock if delete, value if add
+  void perform(pxtnService *pxtn, bool *widthChanged) const;
   void print() const;
 };
 QDataStream &operator<<(QDataStream &out, const Action &a);
@@ -27,6 +27,6 @@ QDataStream &operator>>(QDataStream &in, Action &a);
 // That gives me the undo result.
 
 std::vector<Action> apply_actions_and_get_undo(
-    const std::vector<Action> &actions, pxtnEvelist *evels);
+    const std::vector<Action> &actions, pxtnService *pxtn, bool *widthChanged);
 
 #endif  // PXTONEEDITACTION_H

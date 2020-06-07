@@ -1,12 +1,20 @@
 #include "PxtoneActionSynchronizer.h"
 
 #include <QDebug>
-PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnEvelist *evels)
-    : m_uid(uid), m_evels(evels), m_local_index(0), m_remote_index(0) {}
+PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
+                                                   QObject *parent)
+    : QObject(parent),
+      m_uid(uid),
+      m_pxtn(pxtn),
+      m_local_index(0),
+      m_remote_index(0) {}
 
 RemoteAction PxtoneActionSynchronizer::applyLocalAction(
     const std::vector<Action> &action) {
-  m_uncommitted.push_back(apply_actions_and_get_undo(action, m_evels));
+  bool widthChanged = false;
+  m_uncommitted.push_back(
+      apply_actions_and_get_undo(action, m_pxtn, &widthChanged));
+  if (widthChanged) emit measureNumChanged();
   qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   qDebug() << "New action";
   return RemoteAction{RemoteAction::Type::ACTION, m_local_index++, action};
@@ -22,6 +30,7 @@ RemoteAction PxtoneActionSynchronizer::getRedo() {
 }
 
 void PxtoneActionSynchronizer::setUid(qint64 uid) { m_uid = uid; }
+qint64 PxtoneActionSynchronizer::uid() { return m_uid; }
 
 void PxtoneActionSynchronizer::applyRemoteAction(
     const RemoteActionWithUid &actionWithUid) {
@@ -39,6 +48,7 @@ void PxtoneActionSynchronizer::applyRemoteAction(
     }
     ++m_remote_index;
   }
+  bool widthChanged = false;
   switch (action.type) {
     case RemoteAction::Type::ACTION:
       if (uid == m_uid) {
@@ -62,16 +72,18 @@ void PxtoneActionSynchronizer::applyRemoteAction(
         // things that don't intersect in bbox
         for (auto uncommitted = m_uncommitted.rbegin();
              uncommitted != m_uncommitted.rend(); ++uncommitted) {
-          *uncommitted = apply_actions_and_get_undo(*uncommitted, m_evels);
+          *uncommitted =
+              apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
         }
 
         // apply the committed action
         std::vector<Action> reverse =
-            apply_actions_and_get_undo(action.action, m_evels);
+            apply_actions_and_get_undo(action.action, m_pxtn, &widthChanged);
 
         // redo each of the uncommitted actions forwards
         for (std::vector<Action> &uncommitted : m_uncommitted) {
-          uncommitted = apply_actions_and_get_undo(uncommitted, m_evels);
+          uncommitted =
+              apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
         }
 
         m_log.emplace_back(uid, action.idx, reverse);
@@ -98,7 +110,8 @@ void PxtoneActionSynchronizer::applyRemoteAction(
       qDebug() << "Applying undo / redo";
       for (auto uncommitted = m_uncommitted.rbegin();
            uncommitted != m_uncommitted.rend(); ++uncommitted) {
-        *uncommitted = apply_actions_and_get_undo(*uncommitted, m_evels);
+        *uncommitted =
+            apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
       }
 
       // Go back to last {undone,done} action by user, temporarily undoing done
@@ -116,21 +129,26 @@ void PxtoneActionSynchronizer::applyRemoteAction(
         for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
           if (it->state == flip_from && it->uid == uid) {
             // qDebug() << "Flipped " << it->uid << it->idx;
-            it->reverse = apply_actions_and_get_undo(it->reverse, m_evels);
+            it->reverse =
+                apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
             it->state = flip_to;
             break;
           } else if (it->state == LoggedAction::UndoState::DONE) {
             qDebug() << "Temporarily undoing " << it->uid << it->idx;
-            it->reverse = apply_actions_and_get_undo(it->reverse, m_evels);
+            it->reverse =
+                apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
             temporarily_undone.push_front(&(*it));
           }
         }
         for (LoggedAction *it : temporarily_undone)
-          it->reverse = apply_actions_and_get_undo(it->reverse, m_evels);
+          it->reverse =
+              apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
       }
 
       for (std::vector<Action> &uncommitted : m_uncommitted) {
-        uncommitted = apply_actions_and_get_undo(uncommitted, m_evels);
+        uncommitted =
+            apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
       }
   }
+  if (widthChanged) emit measureNumChanged();
 }

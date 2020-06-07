@@ -1,6 +1,6 @@
 #ifndef PXTONEACTIONSYNCHRONIZER_H
 #define PXTONEACTIONSYNCHRONIZER_H
-
+#include <QObject>
 #include <list>
 
 #include "protocol/PxtoneEditAction.h"
@@ -20,9 +20,10 @@ struct LoggedAction {
       : state(DONE), uid(uid), idx(idx), reverse(reverse) {}
 };
 
-class PxtoneActionSynchronizer {
+class PxtoneActionSynchronizer : public QObject {
+  Q_OBJECT
  public:
-  PxtoneActionSynchronizer(int uid, pxtnEvelist *evels);
+  PxtoneActionSynchronizer(int uid, pxtnService *pxtn, QObject *parent);
 
   RemoteAction applyLocalAction(const std::vector<Action> &action);
   // Not a great API. One applies but the other just gets actions?
@@ -31,12 +32,15 @@ class PxtoneActionSynchronizer {
   RemoteAction getUndo();
   RemoteAction getRedo();
   void setUid(qint64 uid);
+  qint64 uid();
 
   void applyRemoteAction(const RemoteActionWithUid &);
+ signals:
+  void measureNumChanged();
 
  private:
   qint64 m_uid;
-  pxtnEvelist *m_evels;
+  pxtnService *m_pxtn;
   std::vector<LoggedAction> m_log;
   std::list<std::vector<Action>> m_uncommitted;
   int m_local_index;
