@@ -8,6 +8,7 @@
 #include <QSplitter>
 #include <QtMultimedia/QAudioOutput>
 
+#include "EditState.h"
 #include "EditorScrollArea.h"
 #include "KeyboardEditor.h"
 #include "PxtoneIODevice.h"

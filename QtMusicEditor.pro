@@ -28,6 +28,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/Animation.h \
            editor/DummySyncServer.h \
+           editor/EditState.h \
            editor/EditorScrollArea.h \
            editor/EditorWindow.h \
            editor/KeyboardEditor.h \
@@ -66,6 +67,7 @@ FORMS += \
 SOURCES += main.cpp \
            editor/Animation.cpp \
            editor/DummySyncServer.cpp \
+           editor/EditState.cpp \
            editor/EditorScrollArea.cpp \
            editor/EditorWindow.cpp \
            editor/KeyboardEditor.cpp \
