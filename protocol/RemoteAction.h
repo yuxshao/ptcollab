@@ -21,11 +21,6 @@ class RemoteAction {
 QDataStream &operator<<(QDataStream &out, const RemoteAction &r);
 QDataStream &operator>>(QDataStream &in, RemoteAction &r);
 
-enum MessageType { REMOTE_ACTION, EDIT_STATE };
-
-QDataStream &operator<<(QDataStream &out, const MessageType &r);
-QDataStream &operator>>(QDataStream &in, MessageType &r);
-
 struct RemoteActionWithUid {
   RemoteAction action;
   qint64 uid;
@@ -40,5 +35,19 @@ struct EditStateWithUid {
 
 QDataStream &operator<<(QDataStream &out, const EditStateWithUid &r);
 QDataStream &operator>>(QDataStream &in, EditStateWithUid &r);
+
+// TODO: Lots of duplication in defining the stream operators. Would be nice to
+// just say they all work as qint8s.
+namespace FromServer {
+enum MessageType { REMOTE_ACTION, EDIT_STATE, NEW_SESSION, DELETE_SESSION };
+QDataStream &operator<<(QDataStream &out, const MessageType &r);
+QDataStream &operator>>(QDataStream &in, MessageType &r);
+}  // namespace FromServer
+
+namespace FromClient {
+enum MessageType { REMOTE_ACTION, EDIT_STATE };
+QDataStream &operator<<(QDataStream &out, const MessageType &r);
+QDataStream &operator>>(QDataStream &in, MessageType &r);
+}  // namespace FromClient
 
 #endif  // REMOTEACTION_H

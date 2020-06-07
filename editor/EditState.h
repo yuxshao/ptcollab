@@ -52,8 +52,7 @@ struct EditState {
   int m_current_unit;
   int m_quantize_clock;
   int m_quantize_pitch;
-
-  EditState(int quantize_clock, int quantize_pitch);
+  EditState();
 };
 QDataStream &operator<<(QDataStream &out, const EditState &a);
 QDataStream &operator>>(QDataStream &in, EditState &a);

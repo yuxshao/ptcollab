@@ -24,7 +24,6 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_timer(new QElapsedTimer),
       m_show_all_units(false),
       painted(0),
-      m_edit_state(pxtn->master->get_beat_clock(), PITCH_PER_KEY),
       m_audio_output(audio_output),
       m_audio_note_preview(nullptr),
       m_anim(new Animation(this)),
@@ -33,6 +32,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_client(client),
       m_sync(0, m_pxtn, this),
       m_remote_edit_states() {
+  m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
+  m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
   m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
@@ -51,8 +52,27 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
           [this](const RemoteActionWithUid &action) {
             m_sync.applyRemoteAction(action);
           });
-  connect(m_client, &Client::receivedEditState, this,
-          &KeyboardEditor::setRemoteEditState);
+
+  connect(m_client, &Client::receivedNewSession,
+          [this](const QString &user, qint64 uid) {
+            if (m_remote_edit_states.find(uid) != m_remote_edit_states.end())
+              qWarning() << "Remote session already exists for uid" << uid
+                         << "; overwriting";
+            m_remote_edit_states[uid] = RemoteEditState{std::nullopt, user};
+          });
+  connect(m_client, &Client::receivedEditState,
+          [this](const EditStateWithUid &m) {
+            auto it = m_remote_edit_states.find(m.uid);
+            if (it == m_remote_edit_states.end())
+              qWarning() << "Received edit state for unknown session" << m.uid;
+            else
+              it->second.state.emplace(m.state);
+          });
+  connect(m_client, &Client::receivedDeleteSession, [this](qint64 uid) {
+    if (!m_remote_edit_states.erase(uid))
+      qWarning() << "Received delete for unknown remote session";
+  });
+
   connect(this, &KeyboardEditor::editStateChanged, m_client,
           &Client::sendEditState);
   connect(&m_sync, &PxtoneActionSynchronizer::measureNumChanged,
@@ -383,26 +403,32 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
   drawOngoingEdit(m_edit_state, painter, brushes, &pen, size().height(), 1);
 
-  for (const auto &[uid, state] : m_remote_edit_states) {
+  for (const auto &[uid, remote_state] : m_remote_edit_states) {
     if (uid == m_sync.uid()) continue;
-    double alphaMultiplier =
-        (state.m_current_unit == m_edit_state.m_current_unit ? 0.7 : 0.3);
-    EditState adjusted_state(state);
-    adjusted_state.scale = m_edit_state.scale;
-    drawOngoingEdit(adjusted_state, painter, brushes, nullptr, size().height(),
-                    alphaMultiplier);
+    if (remote_state.state.has_value()) {
+      const EditState &state = remote_state.state.value();
+      double alphaMultiplier =
+          (state.m_current_unit == m_edit_state.m_current_unit ? 0.7 : 0.3);
+      EditState adjusted_state(state);
+      adjusted_state.scale = m_edit_state.scale;
+      drawOngoingEdit(adjusted_state, painter, brushes, nullptr,
+                      size().height(), alphaMultiplier);
+    }
   }
-  for (const auto &[uid, state] : m_remote_edit_states) {
+  for (const auto &[uid, remote_state] : m_remote_edit_states) {
     if (uid == m_sync.uid()) continue;
-    int unit = state.m_current_unit;
-    if (uint(unit) >= brushes.size()) continue;
-    // Draw cursor
-    QBrush brush(Qt::white);
-    if (unit != m_edit_state.m_current_unit)
-      brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
-    EditState adjusted_state(state);
-    adjusted_state.scale = m_edit_state.scale;
-    drawCursor(adjusted_state, painter, brush);
+    if (remote_state.state.has_value()) {
+      EditState state = remote_state.state.value();
+      state.scale =
+          m_edit_state.scale;  // Draw the cursor according to our scale
+      int unit = state.m_current_unit;
+      if (uint(unit) >= brushes.size()) continue;
+      // Draw cursor
+      QBrush brush(Qt::white);
+      if (unit != m_edit_state.m_current_unit)
+        brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
+      drawCursor(state, painter, brush);
+    }
   }
   drawCursor(m_edit_state, painter, QBrush(Qt::white));
 
@@ -556,16 +582,6 @@ void KeyboardEditor::setCurrentUnit(int unit) {
 
 void KeyboardEditor::setShowAll(bool b) { m_show_all_units = b; }
 
-void KeyboardEditor::setRemoteEditState(const EditStateWithUid &e) {
-  // qDebug() << "setRemoteEditState" << e.uid;
-  m_remote_edit_states.erase(e.uid);
-  m_remote_edit_states.insert(std::make_pair(e.uid, e.state));
-}
-
-void KeyboardEditor::clearRemoteEditState(qint32 uid) {
-  m_remote_edit_states.erase(uid);
-}
-
 void KeyboardEditor::clearRemoteEditStates() { m_remote_edit_states.clear(); }
 
 void KeyboardEditor::toggleShowAllUnits() {
@@ -678,8 +694,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                                               : MouseEditState::Type::Nothing);
   }
   emit editStateChanged(m_edit_state);
-  // TODO: maybe would be good to set it up so that edit state change is bundled
-  // with the actual remote action
+  // TODO: maybe would be good to set it up so that edit state change is
+  // bundled with the actual remote action
 }
 
 void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync.getUndo()); }

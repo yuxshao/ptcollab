@@ -25,6 +25,8 @@ class Client : public QObject {
   void disconnected();
   void receivedRemoteAction(const RemoteActionWithUid &m);
   void receivedEditState(const EditStateWithUid &m);
+  void receivedNewSession(const QString &username, qint64 uid);
+  void receivedDeleteSession(qint64 uid);
   void errorOccurred(QString error);
 
  private:

@@ -1,5 +1,7 @@
 #include "Hello.h"
 
+#include <QDebug>
+
 // Constants so different versions of the software can hopefully try to
 // communicate with each other
 constexpr char CLIENT_HELLO[] = "CLIENT_HELLO";
@@ -34,8 +36,10 @@ bool ServerHello::isValid() {
 qint64 ServerHello::uid() { return m_uid; }
 
 QDataStream &operator<<(QDataStream &out, const ServerHello &m) {
+  // qDebug() << "sending" << m.hello << m.version << m.m_uid;
   return (out << m.hello << m.version << m.m_uid);
 }
 QDataStream &operator>>(QDataStream &in, ServerHello &m) {
+  // qDebug() << "receiving" << m.hello << m.version << m.m_uid;
   return (in >> m.hello >> m.version >> m.m_uid);
 }

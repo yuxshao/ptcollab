@@ -75,6 +75,7 @@ EditorWindow::EditorWindow(QWidget *parent)
           });
   connect(m_client, &Client::disconnected, [this]() {
     m_client_status->setText(tr("Not connected"));
+    m_keyboard_editor->clearRemoteEditStates();
     QMessageBox::information(this, "Disconnected", "Disconnected from server.");
   });
   connect(m_client, &Client::errorOccurred, [this](QString error) {

@@ -11,6 +11,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
       m_conn(conn),
       m_data_stream((QIODevice *)conn),
       m_uid(uid),
+      m_username(""),
       m_received_hello(false) {
   connect(m_conn, &QIODevice::readyRead, this, &ServerSession::readMessage);
   connect(m_conn, &QAbstractSocket::disconnected, [this]() {
@@ -22,7 +23,8 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
 }
 
 void ServerSession::sendHello(QFile &file,
-                              const QList<RemoteActionWithUid> &history) {
+                              const QList<RemoteActionWithUid> &history,
+                              const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_conn->peerAddress();
   if (!file.isOpen()) {
     qFatal("Server cannot open file");
@@ -45,20 +47,28 @@ void ServerSession::sendHello(QFile &file,
     m_data_stream.writeRawData(buffer.get(), bytesRead);
   }
 
-  m_data_stream << history;
+  m_data_stream << history << sessions;
 }
 
-bool ServerSession::isConnected() { return (m_conn != nullptr); }
-
 void ServerSession::sendRemoteAction(const RemoteActionWithUid &m) {
-  m_data_stream << REMOTE_ACTION << m;
+  m_data_stream << FromServer::REMOTE_ACTION << m;
 }
 
 void ServerSession::sendEditState(const EditStateWithUid &m) {
-  m_data_stream << EDIT_STATE << m;
+  m_data_stream << FromServer::EDIT_STATE << m;
 }
 
-qint64 ServerSession::uid() { return m_uid; }
+void ServerSession::sendNewSession(const QString &username, qint64 uid) {
+  m_data_stream << FromServer::NEW_SESSION << username << uid;
+}
+
+void ServerSession::sendDeleteSession(qint64 uid) {
+  m_data_stream << FromServer::DELETE_SESSION << uid;
+}
+
+qint64 ServerSession::uid() const { return m_uid; }
+
+QString ServerSession::username() const { return m_username; }
 
 void ServerSession::readMessage() {
   while (!m_data_stream.atEnd()) {
@@ -68,20 +78,21 @@ void ServerSession::readMessage() {
       m_data_stream >> m;
       if (!m_data_stream.commitTransaction()) return;
       m_received_hello = true;
+      m_username = m.username();
       emit receivedHello();
     } else {
       m_data_stream.startTransaction();
-      MessageType type;
+      FromClient::MessageType type;
       m_data_stream >> type;
       switch (type) {
-        case REMOTE_ACTION: {
+        case FromClient::REMOTE_ACTION: {
           RemoteAction m;
           m_data_stream >> m;
           if (!(m_data_stream.commitTransaction())) return;
           emit receivedRemoteAction(RemoteActionWithUid{m, m_uid});
         } break;
-        case EDIT_STATE: {
-          EditState m(0, 0);
+        case FromClient::EDIT_STATE: {
+          EditState m;
           m_data_stream >> m;
           if (!(m_data_stream.commitTransaction())) return;
           emit receivedEditState(EditStateWithUid{m, m_uid});

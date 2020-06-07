@@ -30,6 +30,7 @@ QDataStream &operator>>(QDataStream &in, EditStateWithUid &r) {
   return (in >> r.state >> r.uid);
 }
 
+namespace FromServer {
 QDataStream &operator<<(QDataStream &out, const MessageType &m) {
   return (out << qint8(m));
 }
@@ -39,3 +40,16 @@ QDataStream &operator>>(QDataStream &in, MessageType &m) {
   m = MessageType(type_int);
   return in;
 }
+}  // namespace FromServer
+
+namespace FromClient {
+QDataStream &operator<<(QDataStream &out, const MessageType &m) {
+  return (out << qint8(m));
+}
+QDataStream &operator>>(QDataStream &in, MessageType &m) {
+  qint8 type_int;
+  in >> type_int;
+  m = MessageType(type_int);
+  return in;
+}
+}  // namespace FromClient

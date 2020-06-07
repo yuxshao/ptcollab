@@ -17,6 +17,9 @@ class ClientHello {
   friend QDataStream &operator>>(QDataStream &in, ClientHello &m);
 };
 
+// TODO: The server hello's actually includes much more - the actual file &
+// history, etc. But it's not included here because that would mean reading the
+// file into memory on the server side. (Maybe this will change)
 class ServerHello {
   QString hello;
   qint64 version;

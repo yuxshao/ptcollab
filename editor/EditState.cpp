@@ -8,12 +8,12 @@ Interval MouseEditState::clock_int(int q) const {
   int end = std::max(start_clock, current_clock);
   return {quantize(begin, q), quantize(end, q) + q};
 }
-EditState::EditState(int quantize_clock, int quantize_pitch)
+EditState::EditState()
     : mouse_edit_state({MouseEditState::Type::Nothing, 0, 0, 0, 0}),
       scale(),
       m_current_unit(0),
-      m_quantize_clock(quantize_clock),
-      m_quantize_pitch(quantize_pitch) {}
+      m_quantize_clock(1),
+      m_quantize_pitch(1) {}
 
 QDataStream &operator<<(QDataStream &out, const Interval &a) {
   return (out << a.start << a.end);

@@ -14,6 +14,11 @@
 #include "pxtone/pxtnService.h"
 #include "server/Client.h"
 
+struct RemoteEditState {
+  std::optional<EditState> state;
+  QString user;
+};
+
 class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
@@ -35,8 +40,6 @@ class KeyboardEditor : public QWidget {
   void setQuantY(int);
   void setCurrentUnit(int);
   void setShowAll(bool);
-  void setRemoteEditState(const EditStateWithUid &state);
-  void clearRemoteEditState(qint32 uid);
   void clearRemoteEditStates();
   void undo();
   void redo();
@@ -60,7 +63,7 @@ class KeyboardEditor : public QWidget {
   Animation *m_anim;
   Client *m_client;
   PxtoneActionSynchronizer m_sync;
-  std::unordered_map<int, EditState> m_remote_edit_states;
+  std::unordered_map<int, RemoteEditState> m_remote_edit_states;
 };
 
 #endif  // KEYBOARDEDITOR_H

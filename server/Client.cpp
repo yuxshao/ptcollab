@@ -31,11 +31,11 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 }
 
 void Client::sendRemoteAction(const RemoteAction &m) {
-  m_data_stream << REMOTE_ACTION << m;
+  m_data_stream << FromClient::REMOTE_ACTION << m;
 }
 
 void Client::sendEditState(const EditState &m) {
-  m_data_stream << EDIT_STATE << m;
+  m_data_stream << FromClient::EDIT_STATE << m;
 }
 
 qint64 Client::uid() { return m_uid; }
@@ -46,20 +46,31 @@ void Client::tryToRead() {
       tryToStart();
     else {
       m_data_stream.startTransaction();
-      MessageType type;
+      FromServer::MessageType type;
       m_data_stream >> type;
       switch (type) {
-        case REMOTE_ACTION: {
+        case FromServer::REMOTE_ACTION: {
           RemoteActionWithUid m;
           m_data_stream >> m;
           if (!(m_data_stream.commitTransaction())) return;
           emit receivedRemoteAction(m);
         } break;
-        case EDIT_STATE: {
-          EditStateWithUid m{EditState(0, 0), 0};
+        case FromServer::EDIT_STATE: {
+          EditStateWithUid m;
           m_data_stream >> m;
           if (!(m_data_stream.commitTransaction())) return;
           emit receivedEditState(m);
+        } break;
+        case FromServer::NEW_SESSION: {
+          QString username;
+          qint64 uid;
+          m_data_stream >> username >> uid;
+          emit receivedNewSession(username, uid);
+        } break;
+        case FromServer::DELETE_SESSION: {
+          qint64 uid;
+          m_data_stream >> uid;
+          emit receivedDeleteSession(uid);
         } break;
       }
     }
@@ -79,7 +90,8 @@ void Client::tryToStart() {
   m_uid = hello.uid();
 
   // TODO: just see if you can get rid of this chunked thing. qdatastream might
-  // just do it for you.
+  // just do it for you. Then maybe the hello can just include the history and
+  // data.
   qint64 size;
   m_data_stream >> size;
   qDebug() << "Expecting file of size" << size;
@@ -97,7 +109,8 @@ void Client::tryToStart() {
   }
   qDebug() << "Received file";
   QList<RemoteActionWithUid> history;
-  m_data_stream >> history;
+  QMap<qint64, QString> sessions;
+  m_data_stream >> history >> sessions;
   if (!m_data_stream.commitTransaction()) return;
 
   qDebug() << "Received history of size" << history.size();
@@ -106,4 +119,6 @@ void Client::tryToStart() {
   desc.set_memory_r(data.get(), size);
   m_received_hello = true;
   emit connected(desc, history, m_uid);
+  for (auto it = sessions.begin(); it != sessions.end(); ++it)
+    emit receivedNewSession(it.value(), it.key());
 }
