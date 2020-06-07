@@ -20,9 +20,9 @@ EditorScrollArea::EditorScrollArea(QWidget *parent)
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
   double ratioH = double(lastPos.x()) / viewport()->width();
 
-  qDebug() << horizontalScrollBar()->pageStep()
+  /*qDebug() << horizontalScrollBar()->pageStep()
            << horizontalScrollBar()->value() << horizontalScrollBar()->maximum()
-           << ratioH;
+           << ratioH;*/
   if (event->button() & Qt::MiddleButton) {
     middleDown = true;
     viewport()->setCursor(Qt::ClosedHandCursor);

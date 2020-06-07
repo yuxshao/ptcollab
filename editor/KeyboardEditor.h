@@ -28,7 +28,6 @@ struct MouseEditState {
   int start_pitch;
   int current_clock;
   int current_pitch;
-  QAudioOutput *audio;
   Interval clock_int(int quantize);
 };
 
@@ -50,6 +49,21 @@ struct Scale {
     return (pitchOffset - pitch) / pitchPerPx;
   }
   qreal pitchOfY(qreal y) const { return pitchOffset - y * pitchPerPx; }
+};
+
+struct EditState {
+  MouseEditState mouse_edit_state;
+  Scale scale;
+  int m_current_unit;
+  int m_quantize_clock;
+  int m_quantize_pitch;
+
+  EditState(int quantize_clock, int quantize_pitch)
+      : mouse_edit_state({MouseEditState::Type::Nothing, 0, 0, 0, 0}),
+        scale(),
+        m_current_unit(0),
+        m_quantize_clock(quantize_clock),
+        m_quantize_pitch(quantize_pitch) {}
 };
 
 class KeyboardEditor : public QWidget {
@@ -83,17 +97,14 @@ class KeyboardEditor : public QWidget {
   void refreshSize();
   QSize sizeHint() const override;
   QAudioOutput *make_audio(int pitch);
-  Scale scale;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
-  int m_current_unit;
   bool m_show_all_units;
   int painted;
-  MouseEditState m_mouse_edit_state;
+  EditState m_edit_state;
   QAudioOutput *m_audio_output;
+  QAudioOutput *m_audio_note_preview;
   Animation *m_anim;
-  int m_quantize_clock;
-  int m_quantize_pitch;
   ActionClient *m_client;
   PxtoneActionSynchronizer m_sync;
 };
