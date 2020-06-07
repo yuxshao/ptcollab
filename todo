@@ -28,12 +28,13 @@
 2. Status bar, saving with network, reconnecting / starting new server etc.
 3. Send view changes / edit state changes.
 4. Redo in the right order
+5. Demo it in a video, test with friends
 
 6/7
 1. Fix issue where other ppl's cursors show up in the wrong position
+2. Hook up show-all checkbox properly
 
 TODO:
- - Hook up show-all checkbox properly
  - Names show up and users are notified if anyone leaves
  - Custom icon for people's names?
  - A list of connected users?

@@ -128,9 +128,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
-        "Experimental editor for pxtone files in Qt. Some goals: "
-        "faster workflow with more shortcuts, (not yet) collaborative "
-        "editing.");
+        "Experimental collaborative pxtone editor. Special "
+        "thanks to all testers and everyone in the pxtone discord!");
   });
 }
 
