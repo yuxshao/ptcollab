@@ -150,52 +150,63 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
 }
 static QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
 void drawOngoingEdit(const EditState &state, QPainter &painter,
-                     const std::vector<Brush> &brushes, QPen &pen, int height) {
-  // Draw an ongoing edit or seek
-  if (uint(state.m_current_unit) <
-      brushes.size()) {  // In case nothing's loaded
-    const MouseEditState &mouse_edit_state = state.mouse_edit_state;
-    switch (mouse_edit_state.type) {
-      case MouseEditState::Type::Nothing:
-      case MouseEditState::Type::SetOn:
-      case MouseEditState::Type::DeleteOn:
-      case MouseEditState::Type::SetNote:
-      case MouseEditState::Type::DeleteNote: {
-        int velocity = impliedVelocity(mouse_edit_state, state.scale);
-        // TODO: maybe factor out this quantization logic
-        Interval interval(mouse_edit_state.clock_int(state.m_quantize_clock));
-        int pitch =
-            quantize(mouse_edit_state.start_pitch, state.m_quantize_pitch) +
-            state.m_quantize_pitch;
-        int alpha =
-            (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
-        paintBlock(
-            pitch, interval, painter,
-            brushes[state.m_current_unit].toQBrush(velocity, false, alpha),
-            state.scale);
+                     const std::vector<Brush> &brushes, QPen *pen, int height,
+                     double alphaMultiplier) {
+  if (uint(state.m_current_unit) >= brushes.size())
+    return;  // In case nothing's loaded
+  const MouseEditState &mouse_edit_state = state.mouse_edit_state;
+  switch (mouse_edit_state.type) {
+    case MouseEditState::Type::Nothing:
+    case MouseEditState::Type::SetOn:
+    case MouseEditState::Type::DeleteOn:
+    case MouseEditState::Type::SetNote:
+    case MouseEditState::Type::DeleteNote: {
+      int velocity = impliedVelocity(mouse_edit_state, state.scale);
+      // TODO: maybe factor out this quantization logic
+      Interval interval(mouse_edit_state.clock_int(state.m_quantize_clock));
+      int pitch =
+          quantize(mouse_edit_state.start_pitch, state.m_quantize_pitch) +
+          state.m_quantize_pitch;
+      int alpha =
+          (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
+      paintBlock(pitch, interval, painter,
+                 brushes[state.m_current_unit].toQBrush(
+                     velocity, false, alpha * alphaMultiplier),
+                 state.scale);
 
-        paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                       brushes[state.m_current_unit].toQBrush(255, true, alpha),
-                       state.scale);
+      paintHighlight(pitch, std::min(interval.start, interval.end), painter,
+                     brushes[state.m_current_unit].toQBrush(
+                         255, true, alpha * alphaMultiplier),
+                     state.scale);
 
-        if (mouse_edit_state.type != MouseEditState::Nothing) {
-          painter.setPen(pen);
-          painter.drawText(interval.start / state.scale.clockPerPx,
-                           state.scale.pitchToY(pitch),
-                           QString("(%1, %2, %3, %4)")
-                               .arg(interval.start)
-                               .arg(interval.end)
-                               .arg(pitch)
-                               .arg(velocity));
-        }
-      } break;
-      case MouseEditState::Type::Seek:
-        painter.fillRect(
-            mouse_edit_state.current_clock / state.scale.clockPerPx, 0, 1,
-            height, halfWhite);
-        break;
-    }
+      if (mouse_edit_state.type != MouseEditState::Nothing && pen != nullptr) {
+        painter.setPen(*pen);
+        painter.drawText(interval.start / state.scale.clockPerPx,
+                         state.scale.pitchToY(pitch),
+                         QString("(%1, %2, %3, %4)")
+                             .arg(interval.start)
+                             .arg(interval.end)
+                             .arg(pitch)
+                             .arg(velocity));
+      }
+    } break;
+    case MouseEditState::Type::Seek:
+      painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
+                       0, 1, height, halfWhite);
+      break;
   }
+}
+
+void drawCursor(const EditState &state, QPainter &painter,
+                const QBrush &brush) {
+  QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
+                  state.scale.pitchToY(state.mouse_edit_state.current_pitch));
+  QPainterPath path;
+  path.moveTo(position);
+  path.lineTo(position + QPoint(10, 0));
+  path.lineTo(position + QPoint(0, 10));
+  path.closeSubpath();
+  painter.fillPath(path, brush);
 }
 
 // TODO: Make an FPS tracker singleton
@@ -363,7 +374,24 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     }
   }
 
-  drawOngoingEdit(m_edit_state, painter, brushes, pen, size().height());
+  drawOngoingEdit(m_edit_state, painter, brushes, &pen, size().height(), 1);
+
+  for (const auto &[uid, state] : m_remote_edit_states) {
+    double alphaMultiplier =
+        (state.m_current_unit == m_edit_state.m_current_unit ? 0.7 : 0.3);
+    drawOngoingEdit(state, painter, brushes, nullptr, size().height(),
+                    alphaMultiplier);
+  }
+  for (const auto &[uid, state] : m_remote_edit_states) {
+    int unit = state.m_current_unit;
+    if (uint(unit) >= brushes.size()) continue;
+    // Draw cursor
+    QBrush brush(Qt::white);
+    if (unit != m_edit_state.m_current_unit)
+      brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
+    drawCursor(state, painter, brush);
+  }
+  drawCursor(m_edit_state, painter, QBrush(Qt::white));
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
   // Draw the current player position

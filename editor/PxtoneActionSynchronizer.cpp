@@ -115,7 +115,7 @@ void PxtoneActionSynchronizer::applyRemoteAction(
         std::list<LoggedAction *> temporarily_undone;
         for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
           if (it->state == flip_from && it->uid == uid) {
-            qDebug() << "Flipped " << it->uid << it->idx;
+            // qDebug() << "Flipped " << it->uid << it->idx;
             it->reverse = apply_actions_and_get_undo(it->reverse, m_evels);
             it->state = flip_to;
             break;
