@@ -29,10 +29,12 @@
 3. Send view changes / edit state changes.
 4. Redo in the right order
 
+6/7
+1. Fix issue where other ppl's cursors show up in the wrong position
+
 TODO:
  - Names show up and users are notified if anyone leaves
  - Custom icon for people's names?
- - Fix scale issue
 
 Synchronization:
  - Changes to units / adding voices?

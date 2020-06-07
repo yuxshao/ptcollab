@@ -387,7 +387,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     if (uid == m_sync.uid()) continue;
     double alphaMultiplier =
         (state.m_current_unit == m_edit_state.m_current_unit ? 0.7 : 0.3);
-    drawOngoingEdit(state, painter, brushes, nullptr, size().height(),
+    EditState adjusted_state(state);
+    adjusted_state.scale = m_edit_state.scale;
+    drawOngoingEdit(adjusted_state, painter, brushes, nullptr, size().height(),
                     alphaMultiplier);
   }
   for (const auto &[uid, state] : m_remote_edit_states) {
@@ -398,7 +400,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
     QBrush brush(Qt::white);
     if (unit != m_edit_state.m_current_unit)
       brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
-    drawCursor(state, painter, brush);
+    EditState adjusted_state(state);
+    adjusted_state.scale = m_edit_state.scale;
+    drawCursor(adjusted_state, painter, brush);
   }
   drawCursor(m_edit_state, painter, QBrush(Qt::white));
 
