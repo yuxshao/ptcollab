@@ -27,7 +27,13 @@ HostAndPort Client::currentlyConnectedTo() {
 void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);
-  m_data_stream << ClientHello(username);
+
+  QMetaObject::Connection *const conn = new QMetaObject::Connection;
+  *conn = connect(m_socket, &QTcpSocket::connected, [this, conn, username]() {
+    qDebug() << "Sending hello to server";
+    m_data_stream << ClientHello(username);
+    delete conn;
+  });
 }
 
 void Client::sendRemoteAction(const RemoteAction &m) {
