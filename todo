@@ -33,8 +33,14 @@
 1. Fix issue where other ppl's cursors show up in the wrong position
 
 TODO:
+ - Hook up show-all checkbox properly
  - Names show up and users are notified if anyone leaves
  - Custom icon for people's names?
+ - A list of connected users?
+ - Unit view
+ - See which unit each person is on!
+ - Copy paste
+ - Recent connections dropdown
 
 Synchronization:
  - Changes to units / adding voices?
