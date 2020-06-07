@@ -34,6 +34,7 @@ class PxtoneActionSynchronizer : public QObject {
   void setUid(qint64 uid);
   qint64 uid();
 
+ public slots:
   void applyRemoteAction(const RemoteActionWithUid &);
  signals:
   void measureNumChanged();

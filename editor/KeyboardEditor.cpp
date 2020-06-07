@@ -30,7 +30,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       // TODO: we probably don't want to have the editor own the client haha.
       // Need some loose coupling thing.
       m_client(client),
-      m_sync(0, m_pxtn, this),
+      m_sync(new PxtoneActionSynchronizer(0, m_pxtn, this)),
       m_remote_edit_states() {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
@@ -48,11 +48,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
 
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
-  connect(m_client, &Client::receivedRemoteAction,
-          [this](const RemoteActionWithUid &action) {
-            m_sync.applyRemoteAction(action);
-          });
-
+  connect(m_client, &Client::receivedRemoteAction, m_sync,
+          &PxtoneActionSynchronizer::applyRemoteAction);
   connect(m_client, &Client::receivedNewSession,
           [this](const QString &user, qint64 uid) {
             if (m_remote_edit_states.find(uid) != m_remote_edit_states.end())
@@ -60,6 +57,11 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                          << "; overwriting";
             m_remote_edit_states[uid] = RemoteEditState{std::nullopt, user};
           });
+  connect(m_client, &Client::receivedDeleteSession, [this](qint64 uid) {
+    if (!m_remote_edit_states.erase(uid))
+      qWarning() << "Received delete for unknown remote session";
+  });
+
   connect(m_client, &Client::receivedEditState,
           [this](const EditStateWithUid &m) {
             auto it = m_remote_edit_states.find(m.uid);
@@ -68,14 +70,10 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
             else
               it->second.state.emplace(m.state);
           });
-  connect(m_client, &Client::receivedDeleteSession, [this](qint64 uid) {
-    if (!m_remote_edit_states.erase(uid))
-      qWarning() << "Received delete for unknown remote session";
-  });
 
   connect(this, &KeyboardEditor::editStateChanged, m_client,
           &Client::sendEditState);
-  connect(&m_sync, &PxtoneActionSynchronizer::measureNumChanged,
+  connect(m_sync, &PxtoneActionSynchronizer::measureNumChanged,
           [this]() { updateGeometry(); });
 }
 
@@ -234,12 +232,10 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
   path.lineTo(position + QPoint(0, 8));
   path.closeSubpath();
   painter.fillPath(path, color);
-  if (username != "") {
-    painter.setPen(color);
-    painter.setFont(QFont("Sans serif", 6));
-    painter.drawText(position + QPoint(8, 13),
-                     QString("%1 (%2)").arg(username).arg(uid));
-  }
+  painter.setPen(color);
+  painter.setFont(QFont("Sans serif", 6));
+  painter.drawText(position + QPoint(8, 13),
+                   QString("%1 (%2)").arg(username).arg(uid));
 }
 
 // TODO: Make an FPS tracker singleton
@@ -409,7 +405,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
   // Draw ongoing edits
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
-    if (uid == m_sync.uid()) continue;
+    if (uid == m_sync->uid()) continue;
     if (remote_state.state.has_value()) {
       const EditState &state = remote_state.state.value();
       double alphaMultiplier =
@@ -424,7 +420,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
-    if (uid == m_sync.uid()) continue;
+    if (uid == m_sync->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       state.scale = m_edit_state.scale;  // Position according to our scale
@@ -439,9 +435,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   }
   {
     QString my_username = "";
-    auto it = m_remote_edit_states.find(m_sync.uid());
+    auto it = m_remote_edit_states.find(m_sync->uid());
     if (it != m_remote_edit_states.end()) my_username = it->second.user;
-    drawCursor(m_edit_state, painter, Qt::white, my_username, m_sync.uid());
+    drawCursor(m_edit_state, painter, Qt::white, my_username, m_sync->uid());
   }
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
@@ -603,11 +599,11 @@ void KeyboardEditor::toggleShowAllUnits() {
 
 void KeyboardEditor::loadHistory(const QList<RemoteActionWithUid> &history) {
   for (const RemoteActionWithUid &action : history) {
-    m_sync.applyRemoteAction(action);
+    m_sync->applyRemoteAction(action);
   }
 }
 
-void KeyboardEditor::setUid(qint64 uid) { m_sync.setUid(uid); }
+void KeyboardEditor::setUid(qint64 uid) { m_sync->setUid(uid); }
 
 void KeyboardEditor::setQuantX(int q) {
   m_edit_state.m_quantize_clock = m_pxtn->master->get_beat_clock() / q;
@@ -697,7 +693,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      m_client->sendRemoteAction(m_sync.applyLocalAction(actions));
+      m_client->sendRemoteAction(m_sync->applyLocalAction(actions));
       // TODO: Change this to like, when the synchronizer receives an action.
       emit onEdit();
     }
@@ -710,6 +706,6 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   // bundled with the actual remote action
 }
 
-void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync.getUndo()); }
+void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync->getUndo()); }
 
-void KeyboardEditor::redo() { m_client->sendRemoteAction(m_sync.getRedo()); }
+void KeyboardEditor::redo() { m_client->sendRemoteAction(m_sync->getRedo()); }

@@ -33,11 +33,11 @@
 6/7
 1. Fix issue where other ppl's cursors show up in the wrong position
 2. Hook up show-all checkbox properly
+3. Users can specify names, show up next to cursor
+4. Cursor disappears if user leaves / disconnect from server
 
 TODO:
- - Users can specify names, they show up next to icon
  - List of connected users
- - Icon disappears if user leaves / disconnect from server
  - Custom icon for people's names?
  - Unit view
  - See which unit each person is on!
