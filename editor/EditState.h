@@ -1,6 +1,7 @@
 #ifndef EDITSTATE_H
 #define EDITSTATE_H
 #include <QObject>
+int quantize(int v, int q);
 struct Interval {
   qint32 start;
   qint32 end;
@@ -18,7 +19,7 @@ struct MouseEditState {
   qint32 start_pitch;
   qint32 current_clock;
   qint32 current_pitch;
-  Interval clock_int(qint32 quantize);
+  Interval clock_int(qint32 quantize) const;
 };
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a);
 QDataStream &operator>>(QDataStream &in, MouseEditState &a);

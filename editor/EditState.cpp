@@ -1,7 +1,13 @@
 #include "EditState.h"
 
 #include <QDataStream>
+int quantize(int v, int q) { return (v / q) * q; }
 
+Interval MouseEditState::clock_int(int q) const {
+  int begin = std::min(start_clock, current_clock);
+  int end = std::max(start_clock, current_clock);
+  return {quantize(begin, q), quantize(end, q) + q};
+}
 EditState::EditState(int quantize_clock, int quantize_pitch)
     : mouse_edit_state({MouseEditState::Type::Nothing, 0, 0, 0, 0}),
       scale(),

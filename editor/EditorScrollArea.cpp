@@ -18,7 +18,7 @@ EditorScrollArea::EditorScrollArea(QWidget *parent)
 }
 
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
-  double ratioH = double(lastPos.x()) / viewport()->width();
+  // double ratioH = double(lastPos.x()) / viewport()->width();
 
   /*qDebug() << horizontalScrollBar()->pageStep()
            << horizontalScrollBar()->value() << horizontalScrollBar()->maximum()
