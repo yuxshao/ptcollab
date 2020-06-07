@@ -1,0 +1,71 @@
+- dynamic height and width
+- stopping and starting via space
+- seeking
+- background
+- edit different units
+- update last measure is recognized by moo
+ - configurable quantization
+   - toggle on / off
+   - drop down for speccing it
+- play / stop buttons
+- Saving file
+- middle click drag
+- have it look decent on scroll limits
+5/31
+- hear note on play (HARD) - had to factor out the logic independent of the current unit play position
+- fix the offset
+- zoom according to where cursor is right now
+- tried the linear smoothing thing. it was way out of wack. not convergent.
+- undo
+
+6/04
+- Implement the undo system drawpile uses
+- Fix a few things like broken redo (no more chnaging of length 0)
+
+6/6
+1. Hook up the network. didn't get working b/c I was distracted but things are
+   sending and I think they're generally connected!
+2. Status bar, saving with network, reconnecting / starting new server etc.
+3. Send view changes / edit state changes.
+4. Redo in the right order
+
+TODO:
+
+Synchronization:
+ - Changes to units / adding voices?
+ - drawpile autoresets, so that server doesn't have to send whole history over.
+   - probably goes hand-in-hand with undo stack, which drawpile limits to
+     globally 30. probably a good idea so we don't keep on growing in memory
+   - undo stack is probably sth like: all committed local history prunes after
+     reaching size X
+   - autoreset is then being able to supply a base ptcop + a history with size
+     > X
+
+Editor QoL:
+ - follow playhead
+ - Time bar at the top
+ - Piano on the left
+ - lower bar for editing volume?
+ - editing volume, etc. in bottom bar
+ - Speed things up.
+   - Separate audio thread with locking.
+   - Bounding boxes for the undos/redos
+     - At least on remote action rollback. You have to undo a prefix from the tip.
+     - Also possibly useful for actual undos.
+       - actually probably not useful for actual undos because there are cases
+         where you'd have to roll everything back anyway.
+   - Indexes for searching through list fast
+     - according to botb event limit is 500k in the regular editor; here the
+       limit is 1M.
+
+       could probably handle 1000 events with little lag (1000 events * 1000
+       actions = 1M iterations, not too much)
+
+Edit while playing soundness (low priority, unlikely to hit)
+ - Add things between last event and next (before / after now?)
+ - Delete things. Don't strand the pointer
+ - Adjust the length of ON
+
+Just general format? improvements:
+ - A kind of meta instrument that changes depending on parameter or pitch
+
