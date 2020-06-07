@@ -28,13 +28,13 @@ class KeyboardEditor : public QWidget {
   void currentUnitChanged(int);
   void showAllChanged(bool);
   void onEdit();
-  void newEditState(const EditState &e);
+  void editStateChanged(const EditState &e);
 
  public slots:
   void setQuantX(int);
   void setQuantY(int);
   void setCurrentUnit(int);
-  void setRemoteEditState(qint32 uid, const EditState &state);
+  void setRemoteEditState(const EditStateWithUid &state);
   void clearRemoteEditState(qint32 uid);
   void clearRemoteEditStates();
   void undo();

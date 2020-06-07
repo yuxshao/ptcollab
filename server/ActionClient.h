@@ -9,7 +9,7 @@ struct HostAndPort {
   QString host;
   int port;
 };
-
+// TODO: just rename this client
 class ActionClient : public QObject {
   Q_OBJECT
  public:

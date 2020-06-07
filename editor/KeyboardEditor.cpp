@@ -51,6 +51,10 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
           [this](const RemoteActionWithUid &action) {
             m_sync.applyRemoteAction(action);
           });
+  connect(m_client, &ActionClient::receivedEditState, this,
+          &KeyboardEditor::setRemoteEditState);
+  connect(this, &KeyboardEditor::editStateChanged, m_client,
+          &ActionClient::sendEditState);
 }
 
 struct LastEvent {
@@ -485,7 +489,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   m_audio_note_preview = audio;
   m_edit_state.mouse_edit_state =
       MouseEditState{type, clock, pitch, clock, pitch};
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
@@ -512,7 +516,7 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
     m_edit_state.mouse_edit_state.start_pitch =
         m_edit_state.mouse_edit_state.current_pitch;
   }
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
   event->ignore();
 }
 
@@ -534,17 +538,18 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
       emit currentUnitChanged(m_edit_state.m_current_unit);
       break;
   }
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
 }
 
 void KeyboardEditor::setCurrentUnit(int unit) {
   m_edit_state.m_current_unit = unit;
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
 }
 
-void KeyboardEditor::setRemoteEditState(qint32 uid, const EditState &state) {
-  m_remote_edit_states.erase(uid);
-  m_remote_edit_states.insert(std::make_pair(uid, state));
+void KeyboardEditor::setRemoteEditState(const EditStateWithUid &e) {
+  // qDebug() << "setRemoteEditState" << e.uid;
+  m_remote_edit_states.erase(e.uid);
+  m_remote_edit_states.insert(std::make_pair(e.uid, e.state));
 }
 
 void KeyboardEditor::clearRemoteEditState(qint32 uid) {
@@ -568,11 +573,11 @@ void KeyboardEditor::setUid(qint64 uid) { m_sync.setUid(uid); }
 
 void KeyboardEditor::setQuantX(int q) {
   m_edit_state.m_quantize_clock = m_pxtn->master->get_beat_clock() / q;
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
 }
 void KeyboardEditor::setQuantY(int q) {
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY / q;
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
 }
 
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
@@ -670,7 +675,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                                               ? MouseEditState::Type::Seek
                                               : MouseEditState::Type::Nothing);
   }
-  emit newEditState(m_edit_state);
+  emit editStateChanged(m_edit_state);
   // TODO: maybe would be good to set it up so that edit state change is bundled
   // with the actual remote action
 }

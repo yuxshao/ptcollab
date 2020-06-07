@@ -61,11 +61,9 @@ void ServerSession::sendEditState(const EditStateWithUid &m) {
 qint64 ServerSession::uid() { return m_uid; }
 
 void ServerSession::readMessage() {
-  qDebug() << "Server has new message";
   m_data_stream.startTransaction();
   MessageType type;
   m_data_stream >> type;
-  qDebug() << type;
   switch (type) {
     case REMOTE_ACTION: {
       RemoteAction m;

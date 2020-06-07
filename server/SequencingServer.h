@@ -6,6 +6,7 @@
 
 #include "ServerSession.h"
 #include "protocol/RemoteAction.h"
+// TODO : Rename this broadcastserver
 class SequencingServer : public QObject {
   Q_OBJECT
  public:
