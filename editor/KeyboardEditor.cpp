@@ -224,8 +224,8 @@ void drawOngoingEdit(const EditState &state, QPainter &painter,
   }
 }
 
-void drawCursor(const EditState &state, QPainter &painter,
-                const QBrush &brush) {
+void drawCursor(const EditState &state, QPainter &painter, const QBrush &brush,
+                const QString &username) {
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
                   state.scale.pitchToY(state.mouse_edit_state.current_pitch));
   QPainterPath path;
@@ -234,6 +234,7 @@ void drawCursor(const EditState &state, QPainter &painter,
   path.lineTo(position + QPoint(0, 10));
   path.closeSubpath();
   painter.fillPath(path, brush);
+  if (username != "") painter.drawText(position + QPoint(5, 5), username);
 }
 
 // TODO: Make an FPS tracker singleton
@@ -427,10 +428,10 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       QBrush brush(Qt::white);
       if (unit != m_edit_state.m_current_unit)
         brush = brushes[unit].toQBrush(EVENTMAX_VELOCITY, false, 128);
-      drawCursor(state, painter, brush);
+      drawCursor(state, painter, brush, remote_state.user);
     }
   }
-  drawCursor(m_edit_state, painter, QBrush(Qt::white));
+  drawCursor(m_edit_state, painter, QBrush(Qt::white), "");
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
   // Draw the current player position
