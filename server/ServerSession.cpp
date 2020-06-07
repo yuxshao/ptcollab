@@ -40,7 +40,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
   m_data_stream << history;
   qInfo() << "Sent to" << conn->peerAddress();
 
-  connect(conn, &QIODevice::readyRead, this, &ServerSession::readRemoteAction);
+  connect(conn, &QIODevice::readyRead, this, &ServerSession::readMessage);
   connect(conn, &QAbstractSocket::disconnected, [this]() {
     m_conn->deleteLater();
     m_conn = nullptr;
@@ -50,16 +50,34 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
 
 bool ServerSession::isConnected() { return (m_conn != nullptr); }
 
-void ServerSession::writeRemoteAction(const RemoteActionWithUid &action) {
-  m_data_stream << action;
+void ServerSession::sendRemoteAction(const RemoteActionWithUid &m) {
+  m_data_stream << REMOTE_ACTION << m;
+}
+
+void ServerSession::sendEditState(const EditStateWithUid &m) {
+  m_data_stream << EDIT_STATE << m;
 }
 
 qint64 ServerSession::uid() { return m_uid; }
 
-void ServerSession::readRemoteAction() {
+void ServerSession::readMessage() {
+  qDebug() << "Server has new message";
   m_data_stream.startTransaction();
-  RemoteAction action;
-  m_data_stream >> action;
-  if (!(m_data_stream.commitTransaction())) return;
-  emit newRemoteAction(RemoteActionWithUid{action, m_uid});
+  MessageType type;
+  m_data_stream >> type;
+  qDebug() << type;
+  switch (type) {
+    case REMOTE_ACTION: {
+      RemoteAction m;
+      m_data_stream >> m;
+      if (!(m_data_stream.commitTransaction())) return;
+      emit receivedRemoteAction(RemoteActionWithUid{m, m_uid});
+    } break;
+    case EDIT_STATE: {
+      EditState m(0, 0);
+      m_data_stream >> m;
+      if (!(m_data_stream.commitTransaction())) return;
+      emit receivedEditState(EditStateWithUid{m, m_uid});
+    } break;
+  }
 }

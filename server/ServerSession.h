@@ -12,15 +12,17 @@ class ServerSession : public QObject {
   ServerSession(QObject *parent, QTcpSocket *conn, QFile &file,
                 const QList<RemoteActionWithUid> &history, qint64 uid);
   bool isConnected();
-  void writeRemoteAction(const RemoteActionWithUid &action);
+  void sendRemoteAction(const RemoteActionWithUid &action);
+  void sendEditState(const EditStateWithUid &m);
   qint64 uid();
 
  signals:
-  void newRemoteAction(const RemoteActionWithUid &action);
+  void receivedRemoteAction(const RemoteActionWithUid &action);
+  void receivedEditState(const EditStateWithUid &action);
   void disconnected();
 
  private slots:
-  void readRemoteAction();
+  void readMessage();
 
  private:
   QTcpSocket *m_conn;

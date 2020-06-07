@@ -192,7 +192,8 @@ void drawOngoingEdit(const EditState &state, QPainter &painter,
     } break;
     case MouseEditState::Type::Seek:
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
-                       0, 1, height, halfWhite);
+                       0, 1, height,
+                       QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
       break;
   }
 }
@@ -423,6 +424,8 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
         m_edit_state.scale.pitchPerPx = PITCH_PER_KEY / 4;
     }
 
+    // TODO: Probably also want edit state change here
+
     updateGeometry();
     event->accept();
   }
@@ -482,6 +485,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   m_audio_note_preview = audio;
   m_edit_state.mouse_edit_state =
       MouseEditState{type, clock, pitch, clock, pitch};
+  emit newEditState(m_edit_state);
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
@@ -508,6 +512,7 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
     m_edit_state.mouse_edit_state.start_pitch =
         m_edit_state.mouse_edit_state.current_pitch;
   }
+  emit newEditState(m_edit_state);
   event->ignore();
 }
 
@@ -529,10 +534,12 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
       emit currentUnitChanged(m_edit_state.m_current_unit);
       break;
   }
+  emit newEditState(m_edit_state);
 }
 
 void KeyboardEditor::setCurrentUnit(int unit) {
   m_edit_state.m_current_unit = unit;
+  emit newEditState(m_edit_state);
 }
 
 void KeyboardEditor::setRemoteEditState(qint32 uid, const EditState &state) {
@@ -561,9 +568,11 @@ void KeyboardEditor::setUid(qint64 uid) { m_sync.setUid(uid); }
 
 void KeyboardEditor::setQuantX(int q) {
   m_edit_state.m_quantize_clock = m_pxtn->master->get_beat_clock() / q;
+  emit newEditState(m_edit_state);
 }
 void KeyboardEditor::setQuantY(int q) {
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY / q;
+  emit newEditState(m_edit_state);
 }
 
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
@@ -661,6 +670,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                                               ? MouseEditState::Type::Seek
                                               : MouseEditState::Type::Nothing);
   }
+  emit newEditState(m_edit_state);
+  // TODO: maybe would be good to set it up so that edit state change is bundled
+  // with the actual remote action
 }
 
 void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync.getUndo()); }

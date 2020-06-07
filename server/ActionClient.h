@@ -17,13 +17,15 @@ class ActionClient : public QObject {
 
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port);
-  void sendRemoteAction(const RemoteAction &action);
+  void sendRemoteAction(const RemoteAction &m);
+  void sendEditState(const EditState &m);
   qint64 uid();
  signals:
   void connected(pxtnDescriptor &desc,
                  const QList<RemoteActionWithUid> &history, qint64 uid);
   void disconnected();
-  void receivedRemoteAction(const RemoteActionWithUid &action);
+  void receivedRemoteAction(const RemoteActionWithUid &m);
+  void receivedEditState(const EditStateWithUid &m);
   void errorOccurred(QString error);
 
  private:

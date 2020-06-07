@@ -32,15 +32,17 @@ void SequencingServer::newClient() {
 
   ServerSession *session =
       new ServerSession(this, conn, m_file, m_history, m_next_uid++);
-  connect(session, &ServerSession::newRemoteAction, this,
-          &SequencingServer::broadcastMessage);
+  connect(session, &ServerSession::receivedRemoteAction, this,
+          &SequencingServer::broadcastRemoteAction);
+  connect(session, &ServerSession::receivedEditState, this,
+          &SequencingServer::broadcastEditState);
   m_sessions.push_back(session);
 }
 
-void SequencingServer::broadcastMessage(const RemoteActionWithUid &action) {
+void SequencingServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
   // iterate over list of conns, prune inactive ones, and send action to active
   // ones
-  qInfo() << "Broadcasting action" << action.uid << action.action.idx;
+  qInfo() << "Broadcasting action" << m.uid << m.action.idx;
   int sent = 0;
   for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
     // TODO: could probably make this cleaner. make sure not to accidentally
@@ -51,10 +53,24 @@ void SequencingServer::broadcastMessage(const RemoteActionWithUid &action) {
       it = m_sessions.erase(it);
     }
     if (it == m_sessions.end()) break;
-    (*it)->writeRemoteAction(action);
+    (*it)->sendRemoteAction(m);
     ++sent;
   }
-  m_history.push_back(action);
-  qInfo() << "Sent (" << action.uid << action.action.idx << ") to" << sent
-          << "clients";
+  m_history.push_back(m);
+  qInfo() << "Sent (" << m.uid << m.action.idx << ") to" << sent << "clients";
+}
+
+// TODO: this duplication sucks. but it seems necessary b/c we can't have a
+// unified message type like this
+void SequencingServer::broadcastEditState(const EditStateWithUid &m) {
+  // Less is done here b/c we're not adding to history
+  for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
+    while (it != m_sessions.end() && !(*it)->isConnected()) {
+      qInfo() << "Cleared session" << (*it)->uid();
+      delete *it;
+      it = m_sessions.erase(it);
+    }
+    if (it == m_sessions.end()) break;
+    (*it)->sendEditState(m);
+  }
 }

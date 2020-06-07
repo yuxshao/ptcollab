@@ -27,8 +27,12 @@ void ActionClient::connectToServer(QString hostname, quint16 port) {
   m_socket->connectToHost(hostname, port);
 }
 
-void ActionClient::sendRemoteAction(const RemoteAction &action) {
-  m_data_stream << action;
+void ActionClient::sendRemoteAction(const RemoteAction &m) {
+  m_data_stream << REMOTE_ACTION << m;
+}
+
+void ActionClient::sendEditState(const EditState &m) {
+  m_data_stream << EDIT_STATE << m;
 }
 
 qint64 ActionClient::uid() { return m_uid; }
@@ -39,16 +43,28 @@ void ActionClient::tryToRead() {
   if (m_ready) {
     while (!m_data_stream.atEnd()) {
       m_data_stream.startTransaction();
-      RemoteActionWithUid action;
-      m_data_stream >> action;
-      if (!m_data_stream.commitTransaction()) return;
-      emit receivedRemoteAction(action);
+      MessageType type;
+      m_data_stream >> type;
+      switch (type) {
+        case REMOTE_ACTION: {
+          RemoteActionWithUid m;
+          m_data_stream >> m;
+          if (!(m_data_stream.commitTransaction())) return;
+          emit receivedRemoteAction(m);
+        } break;
+        case EDIT_STATE: {
+          EditStateWithUid m{EditState(0, 0), 0};
+          m_data_stream >> m;
+          if (!(m_data_stream.commitTransaction())) return;
+          emit receivedEditState(m);
+        } break;
+      }
     }
   }
 }
 
 void ActionClient::tryToStart() {
-  // send over the file + whole history
+  // Get the file + history
   qInfo() << "Getting initial data from server";
   QString header;
   qint32 version;

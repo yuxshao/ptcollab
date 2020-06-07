@@ -28,6 +28,7 @@ class KeyboardEditor : public QWidget {
   void currentUnitChanged(int);
   void showAllChanged(bool);
   void onEdit();
+  void newEditState(const EditState &e);
 
  public slots:
   void setQuantX(int);
