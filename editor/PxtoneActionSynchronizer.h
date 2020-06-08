@@ -12,11 +12,11 @@
 struct LoggedAction {
   enum UndoState { DONE, UNDONE, GONE };
   UndoState state;
-  int uid;
-  int idx;
+  qint64 uid;
+  qint64 idx;
   std::vector<Action>
       reverse;  // TODO: Figure out where to call sth undo vs. reverse
-  LoggedAction(int uid, int idx, const std::vector<Action> &reverse)
+  LoggedAction(qint64 uid, qint64 idx, const std::vector<Action> &reverse)
       : state(DONE), uid(uid), idx(idx), reverse(reverse) {}
 };
 
