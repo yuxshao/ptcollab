@@ -9,14 +9,12 @@ BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
       m_sessions(),
       m_file(filename, this),
       m_next_uid(0) {
-  if (!m_file.open(QIODevice::ReadOnly)) {
-    qFatal("File cannot be opened");
-    return;
-  }
-  if (!m_server->listen(QHostAddress::Any, port)) {
-    qFatal("Unable to start TCP server");
-    return;
-  }
+  if (!m_file.open(QIODevice::ReadOnly)) throw QString("File cannot be opened");
+
+  if (!m_server->listen(QHostAddress::Any, port))
+    throw QString("Unable to start TCP server: %1")
+        .arg(m_server->errorString());
+
   qInfo() << "Listening on" << m_server->serverPort();
 
   connect(m_server, &QTcpServer::newConnection, this,
