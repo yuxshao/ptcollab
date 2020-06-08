@@ -290,7 +290,7 @@ void EditorWindow::loadFileAndHost() {
 
 bool EditorWindow::saveToFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(
-      fopen(filename.toStdString().c_str(), "w"), &fclose);
+      fopen(filename.toStdString().c_str(), "wb"), &fclose);
   if (!f) {
     qWarning() << "Could not open file";
     return false;
