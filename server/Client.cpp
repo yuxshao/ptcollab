@@ -47,10 +47,11 @@ void Client::sendEditState(const EditState &m) {
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {
-  while (!m_data_stream.atEnd()) {
-    if (!m_received_hello)
-      tryToStart();
-    else {
+  // I got tripped up. tryToStart cannot be in the loop b/c that will cause it
+  // to loop infinitely. The way it's coded right now at least.
+  if (!m_received_hello) tryToStart();
+  if (m_received_hello)
+    while (!m_data_stream.atEnd()) {
       m_data_stream.startTransaction();
       FromServer::MessageType type;
       m_data_stream >> type;
@@ -80,7 +81,6 @@ void Client::tryToRead() {
         } break;
       }
     }
-  }
 }
 
 void Client::tryToStart() {
@@ -95,9 +95,8 @@ void Client::tryToStart() {
 
   m_uid = hello.uid();
 
-  // TODO: just see if you can get rid of this chunked thing. qdatastream might
-  // just do it for you. Then maybe the hello can just include the history and
-  // data.
+  // TODO: Pretty sure this chunked read is not necessary since QTcpSocket
+  // (QAbstractSocket) does its own buffering.
   qint64 size;
   m_data_stream >> size;
   qDebug() << "Expecting file of size" << size;
