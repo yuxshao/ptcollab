@@ -274,7 +274,12 @@ void EditorWindow::loadFileAndHost() {
     m_server = nullptr;
     qDebug() << "Stopped old server";
   }
-  m_server = new BroadcastServer(filename, port, this);
+  try {
+    m_server = new BroadcastServer(filename, port, this);
+  } catch (QString e) {
+    QMessageBox::critical(this, "Server startup error", e);
+    return;
+  }
   m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
   connect(m_server, &QObject::destroyed,
           [this]() { m_server_status->setText("Not hosting"); });

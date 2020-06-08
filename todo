@@ -36,6 +36,7 @@
 3. Users can specify names, show up next to cursor
 4. Cursor disappears if user leaves / disconnect from server
 5. Show list of connected users on left
+6. fixed random bug where startup would loop forever if the file was too big
 
 TODO:
  - Custom icon for people's names?
