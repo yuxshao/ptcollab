@@ -300,7 +300,7 @@ bool pxtnService::moo_get_pxtnVOICETONE(const pxtnUnit* p_u,
 
   return true;
 }
-#include <QDebug>
+
 int32_t pxtnService::moo_tone_sample_custom(const pxtnUnit* p_u,
                                             pxtnVOICETONE* vts, void* data,
                                             int32_t buf_size,
