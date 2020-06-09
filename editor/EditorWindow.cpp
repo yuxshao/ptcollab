@@ -54,7 +54,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   // Apparently this reduces latency in pulseaudio, but also makes
   // some sounds choppier
-  //  m_audio->setCategory("game");
+  m_audio->setCategory("game");
   m_audio->setVolume(1.0);
 
   m_splitter = new QSplitter(Qt::Horizontal, this);
@@ -138,6 +138,9 @@ EditorWindow::EditorWindow(QWidget *parent)
 
 EditorWindow::~EditorWindow() { delete ui; }
 
+// TODO: Factor this out into a PxtoneAudioPlayer class. Setting play state,
+// seeking. Unfortunately start / stop don't even fix this because stopping
+// still waits for the buffer to drain (instead of flushing and throwing away)
 void EditorWindow::togglePlayState() {
   if (m_audio->state() == QAudio::SuspendedState) {
     m_audio->resume();

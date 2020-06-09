@@ -40,10 +40,8 @@
 
 6/8
 1. fix crash when you hold down a non-looping sample for too long
-2. 
 
 TODO:
- - don't blip when seeking and playing again
  - edit while playing soundness
  - show measure num, set loop points
  - Unit view, at least for drums
@@ -78,6 +76,7 @@ Editor QoL:
 
        could probably handle 1000 events with little lag (1000 events * 1000
        actions = 1M iterations, not too much)
+ - don't blip when seeking and playing again (hard due to QAudioOutput behavior)
 
 Edit while playing soundness (low priority, unlikely to hit)
  - Add things between last event and next (before / after now?)
