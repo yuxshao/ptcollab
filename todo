@@ -40,6 +40,8 @@
 
 6/8
 1. fix crash when you hold down a non-looping sample for too long
+2. realize it's hard to fix the blip
+3. I think fixed crash on server restart
 
 TODO:
  - edit while playing soundness

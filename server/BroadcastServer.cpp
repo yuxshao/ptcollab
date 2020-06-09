@@ -21,7 +21,13 @@ BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
           &BroadcastServer::newClient);
 }
 
-BroadcastServer::~BroadcastServer() { m_server->close(); }
+BroadcastServer::~BroadcastServer() {
+  // Without these disconnects, I think the sessions' destructors emit the
+  // socket disconnected signal which ends up trying to call
+  // [broadcastDeleteSession] even after this destructor's been called.
+  for (ServerSession *s : m_sessions) s->disconnect();
+  m_server->close();
+}
 int BroadcastServer::port() { return m_server->serverPort(); }
 static QMap<qint64, QString> sessionMapping(
     const std::list<ServerSession *> &sessions) {
