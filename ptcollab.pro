@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = QtMusicEditor
+TARGET = ptcollab
 INCLUDEPATH += .
 QT       += core gui
 
