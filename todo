@@ -38,12 +38,15 @@
 5. Show list of connected users on left
 6. fixed random bug where startup would loop forever if the file was too big
 
+6/8
+1. fix crash when you hold down a non-looping sample for too long
+2. 
+
 TODO:
- - Custom icon for people's names?
- - Unit view
- - See which unit each person is on!
- - Copy paste
- - Recent connections dropdown
+ - don't blip when seeking and playing again
+ - edit while playing soundness
+ - show measure num, set loop points
+ - Unit view, at least for drums
 
 Synchronization:
  - Changes to units / adding voices?
@@ -54,13 +57,14 @@ Synchronization:
      reaching size X
    - autoreset is then being able to supply a base ptcop + a history with size
      > X
+   - Undo stack isn't actually that important, usually only undo 1-2 at a time.
+     But also, cheap to have a large stack.
 
 Editor QoL:
- - follow playhead
  - Time bar at the top
- - Piano on the left
  - lower bar for editing volume?
  - editing volume, etc. in bottom bar
+ - follow playhead
  - Speed things up.
    - Separate audio thread with locking.
    - Bounding boxes for the undos/redos
@@ -79,6 +83,14 @@ Edit while playing soundness (low priority, unlikely to hit)
  - Add things between last event and next (before / after now?)
  - Delete things. Don't strand the pointer
  - Adjust the length of ON
+
+Low priority:
+ - Workflow: Copy paste - maybe not that important b/c when writing with others you're
+   probably just going to be adding notes with them. it's much more like
+   doodling! Or at least, it is right now.
+ - Editor UI: Piano on the left
+ - Misc UI: Recent connections dropdown
+ - Custom icon for people's names?
 
 Just general format? improvements:
  - A kind of meta instrument that changes depending on parameter or pitch

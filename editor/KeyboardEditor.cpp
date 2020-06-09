@@ -318,14 +318,17 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   // size incrase. for longer songs though and lower end comps we probably do
   // want a bigger buffer. The formula fixes the upper bound issue, but perhaps
   // we can do some smoothing with a linear thing too.
-  // int bytes_per_second = 4 /* bytes in sample */ * 44100 /* samples per
-  // second */; int64_t usecs = m_audio_output->processedUSecs() -
-  // int64_t(m_audio_output->bufferSize()) * 10E5 / bytes_per_second;
+  int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
 
-  /*int64_t usecs = m_audio_output->processedUSecs();
-  int clock = usecs * m_pxtn->master->get_beat_tempo() *
-              m_pxtn->master->get_beat_clock() / 60 / 1000000;*/
+  // int64_t usecs = m_audio_output->processedUSecs();
+  // usecs -= int64_t(m_audio_output->bufferSize()) * 1E6 / bytes_per_second;
+  // int clock = usecs * m_pxtn->master->get_beat_tempo() *
+  //          m_pxtn->master->get_beat_clock() / 60 / 1000000;
+
   int clock = m_pxtn->moo_get_now_clock();
+  clock -= int64_t(m_audio_output->bufferSize()) *
+           m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() /
+           60 / bytes_per_second;
 
   int repeat_clock = m_pxtn->master->get_repeat_meas() *
                      m_pxtn->master->get_beat_num() *
