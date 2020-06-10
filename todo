@@ -45,22 +45,45 @@
 
 6/9
 1. alt scroll to change quant
-2. 
+2. ... read a bit about wav formats, turns out there's 8&16 bit linear PCM,
+   then 32-bit float and 8-bit mu/a-law. pxtone only supports linear pcm but
+   apparently that's usually enough?
+
+   pxtnPulses are the wav / ogg / pt{voice,noise} loaders. pxtnwoice is like a
+   variant over them that is the actual voice. then unit is unit.
+   use pxtnService::Woice_read pxtnWoice::read to create a new instrument
+
+   the io mate fns are for reading from an existing project.
+   what's an assist woice / unit? they're names.
+
+   pxtnUnit is largely - moo state (current woice, pan buffers), names, porta
+   state. We could probably just make an extra pxtnUnit for note previews??
+
+   Or still, just make pxtnWoice get stuff for you. Prob better b/c you can
+   just directly set the woice. The only thing the unit sampl provides is vel,
+   vol, and vol panning. Increment sample doesn't depend on the unit at all
+   outside of woice.
 
 TODO:
- - edit while playing soundness
-   - in particular, if a note is added as next event.
- - show measure num, set loop points
-   - will probably need some pixel font thing
- - Unit view, at least for drums
-   - how many views do you want? the fewer, the easier it is to be 'present'
-     with others.
  - adding instruments and units
    - first, adding / deleting units with fixed pool of instrs (see drawpile layers maybe?)
    - then, adding / deleting instrs
+ - Unit view, at least for drums
+   - how many views do you want? the fewer, the easier it is to be 'present'
+     with others.
+   - something like ptweb
+     - can pin instruments to be drums. (list of pinned is global)
+     - 
+ - show measure num, set loop points
+   - will probably need some pixel font thing
+ - edit while playing soundness
+   - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
 
- - wider-scale: factor out moo state from pxtn state
+Technical stuff:
+ - streaming opreator for pxtnDesc
+   - then you can generalize adding / subbing voices
+ - factor out moo state from pxtn state
    - can then preview notes at the time they're played
 
 Synchronization:
