@@ -95,10 +95,15 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter->addWidget(m_scroll_area);
   m_splitter->setSizes(QList{10, 10000});
 
-  connect(m_side_menu, &SideMenu::quantXUpdated, m_keyboard_editor,
-          &KeyboardEditor::setQuantX);
-  connect(m_side_menu, &SideMenu::quantYUpdated, m_keyboard_editor,
-          &KeyboardEditor::setQuantY);
+  connect(m_side_menu, &SideMenu::quantXIndexUpdated, m_keyboard_editor,
+          &KeyboardEditor::setQuantXIndex);
+  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_editor,
+          &KeyboardEditor::setQuantYIndex);
+  connect(m_keyboard_editor, &KeyboardEditor::quantXIndexChanged, m_side_menu,
+          &SideMenu::setQuantXIndex);
+  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_editor,
+          &KeyboardEditor::setQuantYIndex);
+
   connect(m_side_menu, &SideMenu::selectedUnitChanged, m_keyboard_editor,
           &KeyboardEditor::setCurrentUnit);
   connect(m_side_menu, &SideMenu::showAllChanged, m_keyboard_editor,

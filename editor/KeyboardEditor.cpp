@@ -7,6 +7,7 @@
 #include <QTime>
 
 #include "PxtoneUnitIODevice.h"
+#include "quantize.h"
 
 int one_over_last_clock(pxtnService const *pxtn) {
   return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
@@ -38,6 +39,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       // Need some loose coupling thing.
       m_client(client),
       m_sync(new PxtoneActionSynchronizer(0, m_pxtn, this)),
+      quantXIndex(0),
+      quantizeSelectionY(0),
       m_remote_edit_states() {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
@@ -468,18 +471,18 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 }
 
 void KeyboardEditor::wheelEvent(QWheelEvent *event) {
-  QPoint delta = event->angleDelta();
+  qreal delta = event->angleDelta().y();
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {
       // scale X
-      m_edit_state.scale.clockPerPx *= pow(2, delta.y() / 240.0);
+      m_edit_state.scale.clockPerPx *= pow(2, delta / 240.0);
       if (m_edit_state.scale.clockPerPx < 0.5)
         m_edit_state.scale.clockPerPx = 0.5;
       if (m_edit_state.scale.clockPerPx > 128)
         m_edit_state.scale.clockPerPx = 128;
     } else {
       // scale Y
-      m_edit_state.scale.pitchPerPx *= pow(2, delta.y() / 240.0);
+      m_edit_state.scale.pitchPerPx *= pow(2, delta / 240.0);
       if (m_edit_state.scale.pitchPerPx < 8) m_edit_state.scale.pitchPerPx = 8;
       if (m_edit_state.scale.pitchPerPx > PITCH_PER_KEY / 4)
         m_edit_state.scale.pitchPerPx = PITCH_PER_KEY / 4;
@@ -489,7 +492,19 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
 
     updateGeometry();
     event->accept();
+  } else if (event->modifiers() & Qt::AltModifier) {
+    // In this case, alt flips the scroll direction.
+    // Maybe alt shift could handle quantize y?
+    delta = event->angleDelta().x();
+    int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
+    if (delta < 0 && quantXIndex < size - 1) quantXIndex++;
+    if (delta > 0 && quantXIndex > 0) quantXIndex--;
+    refreshQuantSettings();
+    emit quantXIndexChanged(quantXIndex);
+    event->accept();
   }
+
+  emit editStateChanged(m_edit_state);
 }
 
 QAudioOutput *KeyboardEditor::make_audio(int pitch) {
@@ -624,12 +639,21 @@ void KeyboardEditor::loadHistory(const QList<RemoteActionWithUid> &history) {
 
 void KeyboardEditor::setUid(qint64 uid) { m_sync->setUid(uid); }
 
-void KeyboardEditor::setQuantX(int q) {
-  m_edit_state.m_quantize_clock = m_pxtn->master->get_beat_clock() / q;
+void KeyboardEditor::refreshQuantSettings() {
+  m_edit_state.m_quantize_clock =
+      m_pxtn->master->get_beat_clock() / quantizeXOptions[quantXIndex].second;
+  m_edit_state.m_quantize_pitch =
+      PITCH_PER_KEY / quantizeYOptions[quantizeSelectionY].second;
+}
+
+void KeyboardEditor::setQuantXIndex(int q) {
+  quantXIndex = q;
+  refreshQuantSettings();
   emit editStateChanged(m_edit_state);
 }
-void KeyboardEditor::setQuantY(int q) {
-  m_edit_state.m_quantize_pitch = PITCH_PER_KEY / q;
+void KeyboardEditor::setQuantYIndex(int q) {
+  quantizeSelectionY = q;
+  refreshQuantSettings();
   emit editStateChanged(m_edit_state);
 }
 

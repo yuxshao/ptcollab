@@ -36,6 +36,7 @@ HEADERS += \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
            editor/SideMenu.h \
+           editor/quantize.h \
            protocol/Hello.h \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \

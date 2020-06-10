@@ -43,10 +43,25 @@
 2. realize it's hard to fix the blip
 3. I think fixed crash on server restart
 
+6/9
+1. alt scroll to change quant
+2. 
+
 TODO:
  - edit while playing soundness
+   - in particular, if a note is added as next event.
  - show measure num, set loop points
+   - will probably need some pixel font thing
  - Unit view, at least for drums
+   - how many views do you want? the fewer, the easier it is to be 'present'
+     with others.
+ - adding instruments and units
+   - first, adding / deleting units with fixed pool of instrs (see drawpile layers maybe?)
+   - then, adding / deleting instrs
+ - would be nice to click on a user and jump to their view
+
+ - wider-scale: factor out moo state from pxtn state
+   - can then preview notes at the time they're played
 
 Synchronization:
  - Changes to units / adding voices?

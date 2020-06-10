@@ -2,6 +2,7 @@
 
 #include <QList>
 
+#include "quantize.h"
 #include "ui_SideMenu.h"
 
 SideMenu::SideMenu(QWidget* parent)
@@ -15,12 +16,9 @@ SideMenu::SideMenu(QWidget* parent)
     ui->quantY->addItem(label, value);
 
   void (QComboBox::*signal)(int) = &QComboBox::currentIndexChanged;
-  connect(ui->quantX, signal, [=](int index) {
-    emit quantXUpdated(ui->quantX->itemData(index).toInt());
-  });
-  connect(ui->quantY, signal, [=](int index) {
-    emit quantYUpdated(ui->quantY->itemData(index).toInt());
-  });
+
+  connect(ui->quantX, signal, this, &SideMenu::quantXIndexUpdated);
+  connect(ui->quantY, signal, this, &SideMenu::quantYIndexUpdated);
   connect(ui->playBtn, &QPushButton::clicked, this,
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
@@ -38,12 +36,8 @@ SideMenu::SideMenu(QWidget* parent)
 
 SideMenu::~SideMenu() { delete ui; }
 
-void SideMenu::setQuantX(int x) {
-  ui->quantX->setCurrentIndex(ui->quantX->findData(x));
-}
-void SideMenu::setQuantY(int y) {
-  ui->quantY->setCurrentIndex(ui->quantX->findData(y));
-}
+void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }
+void SideMenu::setQuantYIndex(int i) { ui->quantY->setCurrentIndex(i); }
 void SideMenu::setShowAll(bool b) {
   ui->showAll->setCheckState(b ? Qt::Checked : Qt::Unchecked);
 }

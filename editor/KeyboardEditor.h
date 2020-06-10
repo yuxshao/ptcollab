@@ -35,10 +35,11 @@ class KeyboardEditor : public QWidget {
   void onEdit();
   void editStateChanged(const EditState &e);
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
+  void quantXIndexChanged(int);
 
  public slots:
-  void setQuantX(int);
-  void setQuantY(int);
+  void setQuantXIndex(int);
+  void setQuantYIndex(int);
   void setCurrentUnit(int);
   void setShowAll(bool);
   void clearRemoteEditStates();
@@ -64,7 +65,10 @@ class KeyboardEditor : public QWidget {
   Animation *m_anim;
   Client *m_client;
   PxtoneActionSynchronizer *m_sync;
+  int quantXIndex;
+  int quantizeSelectionY;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
+  void refreshQuantSettings();
 };
 
 #endif  // KEYBOARDEDITOR_H
