@@ -180,8 +180,8 @@ void PxtoneActionSynchronizer::applyAddUnit(qint32 woice_id,
                                             QString expected_woice_name,
                                             QString unit_name, qint64 uid) {
   (void)uid;
-  if (m_pxtn->Woice_Num() <= woice_id) {
-    qWarning("Voice doesn't exist. (ID too high)");
+  if (m_pxtn->Woice_Num() <= woice_id || woice_id < 0) {
+    qWarning("Voice doesn't exist. (ID out of bounds)");
     return;
   }
   QString woice_name = m_pxtn->Woice_Get(woice_id)->get_name_buf(nullptr);
