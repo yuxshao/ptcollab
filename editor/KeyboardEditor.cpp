@@ -82,6 +82,12 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
             else
               it->second.state.emplace(m.state);
           });
+  connect(m_client, &Client::receivedAddUnit,
+          [this](qint32 woice_id, QString woice_name, QString unit_name,
+                 qint64 uid) {
+            m_sync->applyAddUnit(woice_id, woice_name, unit_name, uid);
+            emit unitsChanged();
+          });
 
   connect(this, &KeyboardEditor::editStateChanged, m_client,
           &Client::sendEditState);
@@ -319,9 +325,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
   painter.setPen(Qt::blue);
   // TODO: usecs is choppy - it's an upper bound that gets worse with buffer
   // size incrase. for longer songs though and lower end comps we probably do
-  // want a bigger buffer. The formula fixes the upper bound issue, but perhaps
-  // we can do some smoothing with a linear thing too.
-  // int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
+  // want a bigger buffer. The formula fixes the upper bound issue, but
+  // perhaps we can do some smoothing with a linear thing too. int
+  // bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
 
   // int64_t usecs = m_audio_output->processedUSecs();
   // usecs -= int64_t(m_audio_output->bufferSize()) * 1E6 / bytes_per_second;
@@ -353,7 +359,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
         (i == m_edit_state.m_current_unit || m_show_all_units ? 255 : 64);
     switch (e->kind) {
       case EVENTKIND_ON:
-        // Draw the last block of the previous on event if there's one to draw.
+        // Draw the last block of the previous on event if there's one to
+        // draw.
         // TODO: This 'draw previous note block' is duplicated quite a bit.
         if (drawStates[i].ongoingOnEvent.has_value()) {
           Interval on = drawStates[i].ongoingOnEvent.value();

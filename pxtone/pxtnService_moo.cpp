@@ -55,7 +55,7 @@ term:
 // Units   ////////////////////////////////////
 ////////////////////////////////////////////////
 
-bool pxtnService::_moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const {
+bool pxtnService::moo_ResetVoiceOn_Custom(pxtnUnit* p_u, int32_t w) const {
   if (!_moo_b_init) return false;
 
   const pxtnWoice* p_wc = Woice_Get(w);
@@ -66,6 +66,10 @@ bool pxtnService::_moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const {
   p_u->Tone_Reset(_moo_bt_tempo, _moo_freq, _moo_clock_rate);
 
   return true;
+}
+
+bool pxtnService::_moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const {
+  return moo_ResetVoiceOn_Custom(p_u, w);
 }
 
 bool pxtnService::_moo_InitUnitTone() {

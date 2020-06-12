@@ -65,6 +65,11 @@ void ServerSession::sendNewSession(const QString &username, qint64 uid) {
 void ServerSession::sendDeleteSession(qint64 uid) {
   m_data_stream << FromServer::DELETE_SESSION << uid;
 }
+void ServerSession::sendAddUnit(qint32 woice_id, QString woice_name,
+                                QString unit_name, qint64 uid) {
+  m_data_stream << FromServer::ADD_UNIT << woice_id << woice_name << unit_name
+                << uid;
+}
 
 qint64 ServerSession::uid() const { return m_uid; }
 
@@ -96,6 +101,13 @@ void ServerSession::readMessage() {
           m_data_stream >> m;
           if (!(m_data_stream.commitTransaction())) return;
           emit receivedEditState(EditStateWithUid{m, m_uid});
+        } break;
+        case FromClient::ADD_UNIT: {
+          qint32 woice_id;
+          QString woice_name, unit_name;
+          m_data_stream >> woice_id >> woice_name >> unit_name;
+          if (!(m_data_stream.commitTransaction())) return;
+          emit receivedAddUnit(woice_id, woice_name, unit_name, m_uid);
         } break;
       }
     }

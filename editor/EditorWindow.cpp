@@ -117,6 +117,13 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
           &SideMenu::setUserList);
 
+  connect(m_side_menu, &SideMenu::addUnit, [this](int woice_id) {
+    m_client->sendAddUnit(woice_id,
+                          m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
+                          "test_name");
+  });
+  connect(m_keyboard_editor, &KeyboardEditor::unitsChanged, this,
+          &EditorWindow::refreshSideMenuUnits);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &EditorWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
@@ -128,11 +135,18 @@ EditorWindow::EditorWindow(QWidget *parent)
           &EditorWindow::loadFileAndHost);
   connect(m_side_menu, &SideMenu::connectButtonPressed, this,
           &EditorWindow::connectToHost);
+
   connect(ui->actionHost, &QAction::triggered, this,
           &EditorWindow::loadFileAndHost);
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
+  connect(ui->actionHelp, &QAction::triggered, [=]() {
+    QMessageBox::about(this, "Help",
+                       "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
+                       "horizontally.\nMiddle-click drag also "
+                       "scrolls.\nAlt+Scroll to change quantization.");
+  });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
@@ -215,6 +229,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   }
 }
 
+void EditorWindow::refreshSideMenuUnits() {
+  std::vector<QString> units;
+  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
+    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
+  m_side_menu->setUnits(units);
+}
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   if (m_pxtn.read(&desc) != pxtnOK) {
     qWarning() << "Error reading descriptor";
@@ -229,10 +249,13 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   m_pxtn_device.open(QIODevice::ReadOnly);
   m_audio->start(&m_pxtn_device);
   m_audio->suspend();
-  std::vector<QString> units;
-  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
-    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
-  m_side_menu->setUnits(units);
+  refreshSideMenuUnits();
+
+  QStringList woices;
+  for (int i = 0; i < m_pxtn.Woice_Num(); ++i)
+    woices.append(m_pxtn.Woice_Get(i)->get_name_buf(nullptr));
+  m_side_menu->setWoiceList(woices);
+
   m_keyboard_editor->updateGeometry();
   return true;
 }

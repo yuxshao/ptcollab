@@ -22,9 +22,13 @@ class ServerSession : public QObject {
   QString username() const;
   bool hasReceivedHello() const;
 
+  void sendAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
+                   qint64 uid);
  signals:
   void receivedRemoteAction(const RemoteActionWithUid &action);
   void receivedEditState(const EditStateWithUid &action);
+  void receivedAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
+                       qint64 uid);
   void receivedHello();
   void disconnected();
 

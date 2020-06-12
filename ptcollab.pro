@@ -35,6 +35,7 @@ HEADERS += \
            editor/PxtoneActionSynchronizer.h \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
+           editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
            editor/quantize.h \
            protocol/Hello.h \
@@ -65,6 +66,7 @@ HEADERS += \
            server/ServerSession.h
 FORMS += \
     editor/EditorWindow.ui \
+    editor/SelectWoiceDialog.ui \
     editor/SideMenu.ui
 SOURCES += main.cpp \
            editor/Animation.cpp \
@@ -76,6 +78,7 @@ SOURCES += main.cpp \
            editor/PxtoneActionSynchronizer.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \
+           editor/SelectWoiceDialog.cpp \
            editor/SideMenu.cpp \
            protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \

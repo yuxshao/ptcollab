@@ -18,6 +18,7 @@ class Client : public QObject {
   void connectToServer(QString hostname, quint16 port, QString username);
   void sendRemoteAction(const RemoteAction &m);
   void sendEditState(const EditState &m);
+  void sendAddUnit(qint32 woice_id, QString woice_name, QString unit_name);
   qint64 uid();
  signals:
   void connected(pxtnDescriptor &desc,
@@ -27,6 +28,8 @@ class Client : public QObject {
   void receivedEditState(const EditStateWithUid &m);
   void receivedNewSession(const QString &username, qint64 uid);
   void receivedDeleteSession(qint64 uid);
+  void receivedAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
+                       qint64 uid);
   void errorOccurred(QString error);
 
  private:

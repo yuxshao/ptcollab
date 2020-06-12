@@ -20,6 +20,8 @@ class BroadcastServer : public QObject {
  private:
   void broadcastRemoteAction(const RemoteActionWithUid &m);
   void broadcastEditState(const EditStateWithUid &m);
+  void broadcastAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
+                        qint64 uid);
   void broadcastNewSession(const QString &username, qint64 uid);
   void broadcastDeleteSession(qint64 uid);
   QTcpServer *m_server;

@@ -247,6 +247,8 @@ class pxtnService {
   bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
 
   bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
+  // TODO: temporary fn for initting a new unit and making playback avail
+  bool moo_ResetVoiceOn_Custom(pxtnUnit *p_u, int32_t w) const;
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,

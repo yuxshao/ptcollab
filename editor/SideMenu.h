@@ -4,6 +4,8 @@
 #include <QStringListModel>
 #include <QWidget>
 
+#include "SelectWoiceDialog.h"
+
 namespace Ui {
 class SideMenu;
 }
@@ -25,6 +27,7 @@ class SideMenu : public QWidget {
   void saveButtonPressed();
   void hostButtonPressed();
   void connectButtonPressed();
+  void addUnit(int);
 
  public slots:
   void setQuantXIndex(int);
@@ -35,10 +38,12 @@ class SideMenu : public QWidget {
   void setPlay(bool);
   void setModified(bool);
   void setUserList(QList<std::pair<qint64, QString>> users);
+  void setWoiceList(QStringList);
 
  private:
   Ui::SideMenu *ui;
   QStringListModel *m_users;
+  SelectWoiceDialog *m_add_unit_dialog;
 };
 
 #endif  // SIDEMENU_H

@@ -1,14 +1,16 @@
 #include "SideMenu.h"
 
+#include <QDebug>
+#include <QDialog>
 #include <QList>
 
 #include "quantize.h"
 #include "ui_SideMenu.h"
-
 SideMenu::SideMenu(QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
-      m_users(new QStringListModel(this)) {
+      m_users(new QStringListModel(this)),
+      m_add_unit_dialog(new SelectWoiceDialog(this)) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -31,6 +33,12 @@ SideMenu::SideMenu(QWidget* parent)
           &SideMenu::hostButtonPressed);
   connect(ui->connectBtn, &QPushButton::clicked, this,
           &SideMenu::connectButtonPressed);
+  connect(ui->addUnitBn, &QPushButton::clicked, m_add_unit_dialog,
+          &QDialog::open);
+  connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
+    int idx = m_add_unit_dialog->getSelectedWoiceIndex();
+    if (idx >= 0) emit addUnit(idx);
+  });
   ui->userList->setModel(m_users);
 }
 
@@ -42,8 +50,10 @@ void SideMenu::setShowAll(bool b) {
   ui->showAll->setCheckState(b ? Qt::Checked : Qt::Unchecked);
 }
 void SideMenu::setUnits(std::vector<QString> const& units) {
+  unsigned long long index = ui->units->currentIndex();
   ui->units->clear();
   for (auto& u : units) ui->units->addItem(u);
+  if (index < units.size()) ui->units->setCurrentIndex(index);
 };
 void SideMenu::setModified(bool modified) {
   if (modified)
@@ -58,6 +68,11 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
     usernames.append(QString("%1 (%2)").arg(username).arg(uid));
   m_users->setStringList(usernames);
 }
+
+void SideMenu::setWoiceList(QStringList woices) {
+  m_add_unit_dialog->setWoices(woices);
+}
+
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)

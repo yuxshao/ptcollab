@@ -64,6 +64,12 @@
    vol, and vol panning. Increment sample doesn't depend on the unit at all
    outside of woice.
 
+6/11
+1. Read about qlistview
+
+6/12
+1. ability to add units
+
 TODO:
  - adding instruments and units
    - first, adding / deleting units with fixed pool of instrs (see drawpile layers maybe?)

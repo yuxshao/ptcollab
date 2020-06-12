@@ -44,6 +44,13 @@ void Client::sendEditState(const EditState &m) {
   if (m_socket->isOpen()) m_data_stream << FromClient::EDIT_STATE << m;
 }
 
+void Client::sendAddUnit(qint32 woice_id, QString woice_name,
+                         QString unit_name) {
+  if (m_socket->isOpen()) {
+    m_data_stream << FromClient::ADD_UNIT << woice_id << woice_name
+                  << unit_name;
+  }
+}
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {
@@ -79,6 +86,13 @@ void Client::tryToRead() {
           m_data_stream >> uid;
           emit receivedDeleteSession(uid);
         } break;
+        case FromServer::ADD_UNIT: {
+          qint32 woice_id;
+          QString woice_name, unit_name;
+          qint64 uid;
+          m_data_stream >> woice_id >> woice_name >> unit_name >> uid;
+          emit receivedAddUnit(woice_id, woice_name, unit_name, uid);
+        }
       }
     }
 }

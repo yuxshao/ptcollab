@@ -31,6 +31,7 @@ class KeyboardEditor : public QWidget {
 
  signals:
   void currentUnitChanged(int);
+  void unitsChanged();
   void showAllChanged(bool);
   void onEdit();
   void editStateChanged(const EditState &e);

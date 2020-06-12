@@ -69,6 +69,8 @@ void BroadcastServer::newClient() {
                     &BroadcastServer::broadcastRemoteAction);
             connect(session, &ServerSession::receivedEditState, this,
                     &BroadcastServer::broadcastEditState);
+            connect(session, &ServerSession::receivedAddUnit, this,
+                    &BroadcastServer::broadcastAddUnit);
           });
 }
 
@@ -82,6 +84,12 @@ void BroadcastServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
 
 void BroadcastServer::broadcastEditState(const EditStateWithUid &m) {
   for (ServerSession *s : m_sessions) s->sendEditState(m);
+}
+
+void BroadcastServer::broadcastAddUnit(qint32 woice_id, QString woice_name,
+                                       QString unit_name, qint64 uid) {
+  for (ServerSession *s : m_sessions)
+    s->sendAddUnit(woice_id, woice_name, unit_name, uid);
 }
 
 void BroadcastServer::broadcastNewSession(const QString &username, qint64 uid) {

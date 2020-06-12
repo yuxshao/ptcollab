@@ -57,5 +57,6 @@ class EditorWindow : public QMainWindow {
   void save();
   void saveAs();
   bool loadDescriptor(pxtnDescriptor& desc);
+  void refreshSideMenuUnits();
 };
 #endif  // MAINWINDOW_H

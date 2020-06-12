@@ -39,13 +39,19 @@ QDataStream &operator>>(QDataStream &in, EditStateWithUid &r);
 // TODO: Lots of duplication in defining the stream operators. Would be nice to
 // just say they all work as qint8s.
 namespace FromServer {
-enum MessageType { REMOTE_ACTION, EDIT_STATE, NEW_SESSION, DELETE_SESSION };
+enum MessageType {
+  REMOTE_ACTION,
+  EDIT_STATE,
+  NEW_SESSION,
+  DELETE_SESSION,
+  ADD_UNIT
+};
 QDataStream &operator<<(QDataStream &out, const MessageType &r);
 QDataStream &operator>>(QDataStream &in, MessageType &r);
 }  // namespace FromServer
 
 namespace FromClient {
-enum MessageType { REMOTE_ACTION, EDIT_STATE };
+enum MessageType { REMOTE_ACTION, EDIT_STATE, ADD_UNIT };
 QDataStream &operator<<(QDataStream &out, const MessageType &r);
 QDataStream &operator>>(QDataStream &in, MessageType &r);
 }  // namespace FromClient

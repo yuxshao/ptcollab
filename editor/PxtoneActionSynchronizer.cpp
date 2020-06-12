@@ -1,6 +1,7 @@
 #include "PxtoneActionSynchronizer.h"
 
 #include <QDebug>
+#include <QDialog>
 PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
                                                    QObject *parent)
     : QObject(parent),
@@ -173,4 +174,35 @@ void PxtoneActionSynchronizer::applyRemoteAction(
       }
   }
   if (widthChanged) emit measureNumChanged();
+}
+
+void PxtoneActionSynchronizer::applyAddUnit(qint32 woice_id,
+                                            QString expected_woice_name,
+                                            QString unit_name, qint64 uid) {
+  (void)uid;
+  if (m_pxtn->Woice_Num() <= woice_id) {
+    qWarning("Voice doesn't exist. (ID too high)");
+    return;
+  }
+  QString woice_name = m_pxtn->Woice_Get(woice_id)->get_name_buf(nullptr);
+  if (woice_name != expected_woice_name) {
+    qWarning("Voice doesn't exist. (Name doesn't match)");
+    return;
+  }
+  if (!m_pxtn->Unit_AddNew()) {
+    qWarning("Could not add another unit.");
+    return;
+  } else {
+    int unit_no = m_pxtn->Unit_Num() - 1;
+    pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
+    std::string unit_name_str =
+        unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
+    const char *unit_name_buf = unit_name_str.c_str();
+    unit->set_name_buf(unit_name_buf, unit_name_str.length());
+    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, woice_id);
+    unit->Tone_Init();
+    // TODO: This is sort of bad to do, to use a private moo fn for the purposes
+    // of note previews. We really need to split out the moo state.
+    m_pxtn->moo_ResetVoiceOn_Custom(unit, woice_id);
+  }
 }

@@ -95,20 +95,44 @@
     </layout>
    </item>
    <item>
-    <widget class="QComboBox" name="units">
-     <property name="focusPolicy">
-      <enum>Qt::NoFocus</enum>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <property name="topMargin">
+      <number>0</number>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Ctrl+(Shift)+scroll to zoom.
-Shift+scroll to scroll horizontally.
-Middle-click drag also scrolls.</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QPushButton" name="addUnitBn">
+       <property name="maximumSize">
+        <size>
+         <width>35</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>+</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="subUnitBtn">
+       <property name="maximumSize">
+        <size>
+         <width>35</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="units">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QLabel" name="label_5">
