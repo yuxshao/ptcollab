@@ -27,7 +27,7 @@ class SideMenu : public QWidget {
   void saveButtonPressed();
   void hostButtonPressed();
   void connectButtonPressed();
-  void addUnit(int);
+  void addUnit(int woice_idx, QString unit_name);
 
  public slots:
   void setQuantXIndex(int);

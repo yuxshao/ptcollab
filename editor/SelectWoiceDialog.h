@@ -14,6 +14,7 @@ class SelectWoiceDialog : public QDialog {
   explicit SelectWoiceDialog(QWidget *parent = nullptr);
   void setWoices(QStringList woices);
   int getSelectedWoiceIndex();
+  QString getUnitNameSelection();
   ~SelectWoiceDialog();
 
  private:

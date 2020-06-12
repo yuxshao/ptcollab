@@ -37,7 +37,8 @@ SideMenu::SideMenu(QWidget* parent)
           &QDialog::open);
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
-    if (idx >= 0) emit addUnit(idx);
+    QString name = m_add_unit_dialog->getUnitNameSelection();
+    if (idx >= 0) emit addUnit(idx, name);
   });
   ui->userList->setModel(m_users);
 }

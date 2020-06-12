@@ -12,6 +12,11 @@ void SelectWoiceDialog::setWoices(QStringList woices) {
   ui->woiceList->addItems(woices);
 }
 
-int SelectWoiceDialog::getSelectedWoiceIndex() { ui->woiceList->currentRow(); }
+int SelectWoiceDialog::getSelectedWoiceIndex() {
+  return ui->woiceList->currentRow();
+}
 
+QString SelectWoiceDialog::getUnitNameSelection() {
+  return ui->unitName->text();
+}
 SelectWoiceDialog::~SelectWoiceDialog() { delete ui; }

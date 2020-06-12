@@ -117,11 +117,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
           &SideMenu::setUserList);
 
-  connect(m_side_menu, &SideMenu::addUnit, [this](int woice_id) {
-    m_client->sendAddUnit(woice_id,
-                          m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
-                          "test_name");
-  });
+  connect(
+      m_side_menu, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
+        m_client->sendAddUnit(woice_id,
+                              m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
+                              unit_name);
+      });
   connect(m_keyboard_editor, &KeyboardEditor::unitsChanged, this,
           &EditorWindow::refreshSideMenuUnits);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
