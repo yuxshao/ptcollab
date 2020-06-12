@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QDialog>
 #include <QList>
+#include <QMessageBox>
 
 #include "quantize.h"
 #include "ui_SideMenu.h"
@@ -38,7 +39,11 @@ SideMenu::SideMenu(QWidget* parent)
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     QString name = m_add_unit_dialog->getUnitNameSelection();
-    if (idx >= 0) emit addUnit(idx, name);
+    if (idx >= 0 && name != "")
+      emit addUnit(idx, name);
+    else
+      QMessageBox::warning(this, "Invalid unit options",
+                           "Name or selected instrument invalid");
   });
   ui->userList->setModel(m_users);
 }
