@@ -6,7 +6,6 @@
 
 #include "ServerSession.h"
 #include "protocol/RemoteAction.h"
-// TODO : Rename this broadcastserver
 class BroadcastServer : public QObject {
   Q_OBJECT
  public:
@@ -18,17 +17,15 @@ class BroadcastServer : public QObject {
   void newClient();
 
  private:
-  void broadcastRemoteAction(const RemoteActionWithUid &m);
-  void broadcastEditState(const EditStateWithUid &m);
-  void broadcastAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
-                        qint64 uid);
+  void broadcastAction(const ClientAction &m, qint64 uid);
   void broadcastNewSession(const QString &username, qint64 uid);
   void broadcastDeleteSession(qint64 uid);
   QTcpServer *m_server;
-  QList<RemoteActionWithUid> m_history;
+  QList<ServerAction> m_history;
   std::list<ServerSession *> m_sessions;
   QFile m_file;
   int m_next_uid;
+  void broadcastServerAction(const ServerAction &a);
 };
 
 #endif  // SEQUENCINGSERVER_H

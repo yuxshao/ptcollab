@@ -62,8 +62,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client);
   connect(m_client, &Client::connected,
-          [this](pxtnDescriptor &desc,
-                 const QList<RemoteActionWithUid> &history, qint64 uid) {
+          [this](pxtnDescriptor &desc, const QList<ServerAction> &history,
+                 qint64 uid) {
             HostAndPort host_and_port = m_client->currentlyConnectedTo();
             m_client_status->setText(tr("Connected to %1:%2")
                                          .arg(host_and_port.host)
@@ -119,9 +119,9 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(
       m_side_menu, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
-        m_client->sendAddUnit(woice_id,
-                              m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
-                              unit_name);
+        m_client->sendAction(
+            AddUnit{woice_id, m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
+                    unit_name});
       });
   connect(m_keyboard_editor, &KeyboardEditor::unitsChanged, this,
           &EditorWindow::refreshSideMenuUnits);

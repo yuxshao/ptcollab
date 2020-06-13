@@ -34,23 +34,12 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_data_stream << ClientHello(username);
 }
 
-void Client::sendRemoteAction(const RemoteAction &m) {
+void Client::sendAction(const ClientAction &m) {
   // These open guards might cause a desync in case the socket isn't open but
   // the client still thinks something's up. Hopefully this i sunlikely.
-  if (m_socket->isOpen()) m_data_stream << FromClient::REMOTE_ACTION << m;
+  if (m_socket->isOpen()) m_data_stream << m;
 }
 
-void Client::sendEditState(const EditState &m) {
-  if (m_socket->isOpen()) m_data_stream << FromClient::EDIT_STATE << m;
-}
-
-void Client::sendAddUnit(qint32 woice_id, QString woice_name,
-                         QString unit_name) {
-  if (m_socket->isOpen()) {
-    m_data_stream << FromClient::ADD_UNIT << woice_id << woice_name
-                  << unit_name;
-  }
-}
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {
@@ -60,39 +49,18 @@ void Client::tryToRead() {
   if (m_received_hello)
     while (!m_data_stream.atEnd()) {
       m_data_stream.startTransaction();
-      FromServer::MessageType type;
-      m_data_stream >> type;
-      switch (type) {
-        case FromServer::REMOTE_ACTION: {
-          RemoteActionWithUid m;
-          m_data_stream >> m;
-          if (!(m_data_stream.commitTransaction())) return;
-          emit receivedRemoteAction(m);
-        } break;
-        case FromServer::EDIT_STATE: {
-          EditStateWithUid m;
-          m_data_stream >> m;
-          if (!(m_data_stream.commitTransaction())) return;
-          emit receivedEditState(m);
-        } break;
-        case FromServer::NEW_SESSION: {
-          QString username;
-          qint64 uid;
-          m_data_stream >> username >> uid;
-          emit receivedNewSession(username, uid);
-        } break;
-        case FromServer::DELETE_SESSION: {
-          qint64 uid;
-          m_data_stream >> uid;
-          emit receivedDeleteSession(uid);
-        } break;
-        case FromServer::ADD_UNIT: {
-          qint32 woice_id;
-          QString woice_name, unit_name;
-          qint64 uid;
-          m_data_stream >> woice_id >> woice_name >> unit_name >> uid;
-          emit receivedAddUnit(woice_id, woice_name, unit_name, uid);
-        }
+      try {
+        m_data_stream.startTransaction();
+        ServerAction action;
+        m_data_stream >> action;
+        if (!(m_data_stream.commitTransaction())) return;
+        emit receivedAction(action);
+      } catch (const std::string &e) {
+        qWarning(
+            "Could not read server action. Error: %s. "
+            "Discarding",
+            e.c_str());
+        m_data_stream.rollbackTransaction();
       }
     }
 }
@@ -127,7 +95,8 @@ void Client::tryToStart() {
     }
   }
   qDebug() << "Received file";
-  QList<RemoteActionWithUid> history;
+  QList<ServerAction> history;
+  // TODO: actually use sessions using the history state thing from before
   QMap<qint64, QString> sessions;
   m_data_stream >> history >> sessions;
   if (!m_data_stream.commitTransaction()) return;
@@ -138,6 +107,6 @@ void Client::tryToStart() {
   desc.set_memory_r(data.get(), size);
   m_received_hello = true;
   emit connected(desc, history, m_uid);
-  for (auto it = sessions.begin(); it != sessions.end(); ++it)
-    emit receivedNewSession(it.value(), it.key());
+  // for (auto it = sessions.begin(); it != sessions.end(); ++it)
+  //  emit receivedNewSession(it.value(), it.key());
 }

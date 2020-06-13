@@ -58,43 +58,67 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
 
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
-  connect(m_client, &Client::receivedRemoteAction, m_sync,
-          &PxtoneActionSynchronizer::applyRemoteAction);
-  connect(m_client, &Client::receivedNewSession,
-          [this](const QString &user, qint64 uid) {
-            if (m_remote_edit_states.find(uid) != m_remote_edit_states.end())
-              qWarning() << "Remote session already exists for uid" << uid
-                         << "; overwriting";
-            m_remote_edit_states[uid] = RemoteEditState{std::nullopt, user};
-            emit userListChanged(getUserList(m_remote_edit_states));
-          });
-  connect(m_client, &Client::receivedDeleteSession, [this](qint64 uid) {
-    if (!m_remote_edit_states.erase(uid))
-      qWarning() << "Received delete for unknown remote session";
-    emit userListChanged(getUserList(m_remote_edit_states));
-  });
+  connect(m_client, &Client::receivedAction, this,
+          &KeyboardEditor::processRemoteAction);
 
-  connect(m_client, &Client::receivedEditState,
-          [this](const EditStateWithUid &m) {
-            auto it = m_remote_edit_states.find(m.uid);
-            if (it == m_remote_edit_states.end())
-              qWarning() << "Received edit state for unknown session" << m.uid;
-            else
-              it->second.state.emplace(m.state);
-          });
-  connect(m_client, &Client::receivedAddUnit,
-          [this](qint32 woice_id, QString woice_name, QString unit_name,
-                 qint64 uid) {
-            m_sync->applyAddUnit(woice_id, woice_name, unit_name, uid);
-            emit unitsChanged();
-          });
-
-  connect(this, &KeyboardEditor::editStateChanged, m_client,
-          &Client::sendEditState);
+  connect(this, &KeyboardEditor::editStateChanged,
+          [this]() { m_client->sendAction(m_edit_state); });
   connect(m_sync, &PxtoneActionSynchronizer::measureNumChanged,
           [this]() { updateGeometry(); });
 }
 
+// boilerplate for std::visit
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+void KeyboardEditor::processRemoteAction(const ServerAction &a) {
+  qint64 uid = a.uid;
+  std::visit(
+      overloaded{
+          [this, uid](const ClientAction &s) {
+            std::visit(
+                overloaded{[this, uid](const EditState &s) {
+                             auto it = m_remote_edit_states.find(uid);
+                             if (it == m_remote_edit_states.end())
+                               qWarning()
+                                   << "Received edit state for unknown session"
+                                   << uid;
+                             else
+                               it->second.state.emplace(s);
+                           },
+                           [this, uid](const EditAction &s) {
+                             m_sync->applyRemoteAction(s, uid);
+                           },
+                           [this, uid](const UndoRedo &s) {
+                             m_sync->applyUndoRedo(s, uid);
+                           },
+                           [this, uid](const AddUnit &s) {
+                             m_sync->applyAddUnit(s, uid);
+                             emit unitsChanged();
+                           }},
+                s);
+          },
+          [this, uid](const NewSession &s) {
+            if (m_remote_edit_states.find(uid) != m_remote_edit_states.end())
+              qWarning() << "Remote session already exists for uid" << uid
+                         << "; overwriting";
+            m_remote_edit_states[uid] =
+                RemoteEditState{std::nullopt, s.username};
+            emit userListChanged(getUserList(m_remote_edit_states));
+          },
+          [this, uid](const DeleteSession &s) {
+            (void)s;
+            if (!m_remote_edit_states.erase(uid))
+              qWarning() << "Received delete for unknown remote session";
+            emit userListChanged(getUserList(m_remote_edit_states));
+          },
+      },
+      a.action);
+}
 struct LastEvent {
   int clock;
   int value;
@@ -511,7 +535,7 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
     event->accept();
   }
 
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 
 QAudioOutput *KeyboardEditor::make_audio(int pitch) {
@@ -568,7 +592,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   m_audio_note_preview = audio;
   m_edit_state.mouse_edit_state =
       MouseEditState{type, clock, pitch, clock, pitch};
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
@@ -595,7 +619,7 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
     m_edit_state.mouse_edit_state.start_pitch =
         m_edit_state.mouse_edit_state.current_pitch;
   }
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
   event->ignore();
 }
 
@@ -617,12 +641,12 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
       emit currentUnitChanged(m_edit_state.m_current_unit);
       break;
   }
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 
 void KeyboardEditor::setCurrentUnit(int unit) {
   m_edit_state.m_current_unit = unit;
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 
 void KeyboardEditor::setShowAll(bool b) { m_show_all_units = b; }
@@ -638,10 +662,8 @@ void KeyboardEditor::toggleShowAllUnits() {
   emit showAllChanged(m_show_all_units);
 }
 
-void KeyboardEditor::loadHistory(const QList<RemoteActionWithUid> &history) {
-  for (const RemoteActionWithUid &action : history) {
-    m_sync->applyRemoteAction(action);
-  }
+void KeyboardEditor::loadHistory(const QList<ServerAction> &history) {
+  for (const ServerAction &a : history) processRemoteAction(a);
 }
 
 void KeyboardEditor::setUid(qint64 uid) { m_sync->setUid(uid); }
@@ -656,12 +678,12 @@ void KeyboardEditor::refreshQuantSettings() {
 void KeyboardEditor::setQuantXIndex(int q) {
   quantXIndex = q;
   refreshQuantSettings();
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 void KeyboardEditor::setQuantYIndex(int q) {
   quantizeSelectionY = q;
   refreshQuantSettings();
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
 }
 
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
@@ -743,7 +765,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      m_client->sendRemoteAction(m_sync->applyLocalAction(actions));
+      m_client->sendAction(m_sync->applyLocalAction(actions));
       // TODO: Change this to like, when the synchronizer receives an action.
       emit onEdit();
     }
@@ -751,11 +773,11 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                                               ? MouseEditState::Type::Seek
                                               : MouseEditState::Type::Nothing);
   }
-  emit editStateChanged(m_edit_state);
+  emit editStateChanged();
   // TODO: maybe would be good to set it up so that edit state change is
   // bundled with the actual remote action
 }
 
-void KeyboardEditor::undo() { m_client->sendRemoteAction(m_sync->getUndo()); }
+void KeyboardEditor::undo() { m_client->sendAction(UndoRedo::UNDO); }
 
-void KeyboardEditor::redo() { m_client->sendRemoteAction(m_sync->getRedo()); }
+void KeyboardEditor::redo() { m_client->sendAction(UndoRedo::REDO); }

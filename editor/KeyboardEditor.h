@@ -26,7 +26,7 @@ class KeyboardEditor : public QWidget {
                           Client *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
-  void loadHistory(const QList<RemoteActionWithUid> &history);
+  void loadHistory(const QList<ServerAction> &history);
   void setUid(qint64 uid);
 
  signals:
@@ -34,7 +34,7 @@ class KeyboardEditor : public QWidget {
   void unitsChanged();
   void showAllChanged(bool);
   void onEdit();
-  void editStateChanged(const EditState &e);
+  void editStateChanged();
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
   void quantXIndexChanged(int);
 
@@ -44,6 +44,7 @@ class KeyboardEditor : public QWidget {
   void setCurrentUnit(int);
   void setShowAll(bool);
   void clearRemoteEditStates();
+  void processRemoteAction(const ServerAction &a);
   void undo();
   void redo();
 

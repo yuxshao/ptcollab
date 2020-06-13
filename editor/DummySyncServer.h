@@ -22,8 +22,8 @@ class DummySyncServer {
   PxtoneActionSynchronizer *m_sync;
   float m_commit_lag_s;
   float m_mirror_lag_s;
-  std::list<RemoteAction> m_pending_commit;
-  std::list<RemoteAction> m_pending_mirror;
+  std::list<EditAction> m_pending_commit;
+  std::list<EditAction> m_pending_mirror;
 };
 
 #endif  // DUMMYSYNCSERVER_H

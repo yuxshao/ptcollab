@@ -25,19 +25,17 @@ class PxtoneActionSynchronizer : public QObject {
  public:
   PxtoneActionSynchronizer(int uid, pxtnService *pxtn, QObject *parent);
 
-  RemoteAction applyLocalAction(const std::vector<Action> &action);
-  // Not a great API. One applies but the other just gets actions?
-  // And you have to make sure the caller sends them over to the server in the
-  // right order.
-  RemoteAction getUndo();
-  RemoteAction getRedo();
+  // rename to applyAndGetEditAction and applyEditAction
+  EditAction applyLocalAction(const std::vector<Action> &action);
   void setUid(qint64 uid);
   qint64 uid();
 
  public slots:
-  void applyRemoteAction(const RemoteActionWithUid &);
-  void applyAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
-                    qint64 uid);
+  // Maybe these three types could be grouped.
+  void applyRemoteAction(const EditAction &a, qint64 uid);
+  // Undo should become UndoRedo and have a bool in it
+  void applyUndoRedo(const UndoRedo &r, qint64 uid);
+  void applyAddUnit(const AddUnit &a, qint64 uid);
  signals:
   void measureNumChanged();
 

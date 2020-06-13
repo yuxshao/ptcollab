@@ -12,23 +12,14 @@ class ServerSession : public QObject {
   ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid);
   // Probably don't need super complex state right now. Just need to check if
   // hello is here. enum State { STARTING, READY, DISCONNECTED }; State state();
-  void sendHello(QFile &file, const QList<RemoteActionWithUid> &history,
+  void sendHello(QFile &file, const QList<ServerAction> &history,
                  const QMap<qint64, QString> &sessions);
-  void sendRemoteAction(const RemoteActionWithUid &action);
-  void sendEditState(const EditStateWithUid &m);
-  void sendNewSession(const QString &username, qint64 uid);
-  void sendDeleteSession(qint64 uid);
+  void sendAction(const ServerAction &action);
   qint64 uid() const;
   QString username() const;
   bool hasReceivedHello() const;
-
-  void sendAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
-                   qint64 uid);
  signals:
-  void receivedRemoteAction(const RemoteActionWithUid &action);
-  void receivedEditState(const EditStateWithUid &action);
-  void receivedAddUnit(qint32 woice_id, QString woice_name, QString unit_name,
-                       qint64 uid);
+  void receivedAction(const ClientAction &action, qint64 uid);
   void receivedHello();
   void disconnected();
 

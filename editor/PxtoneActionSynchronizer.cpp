@@ -10,7 +10,7 @@ PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
       m_local_index(0),
       m_remote_index(0) {}
 
-RemoteAction PxtoneActionSynchronizer::applyLocalAction(
+EditAction PxtoneActionSynchronizer::applyLocalAction(
     const std::vector<Action> &action) {
   bool widthChanged = false;
   m_uncommitted.push_back(
@@ -18,28 +18,17 @@ RemoteAction PxtoneActionSynchronizer::applyLocalAction(
   if (widthChanged) emit measureNumChanged();
   qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   qDebug() << "New action";
-  return RemoteAction{RemoteAction::Type::ACTION, m_local_index++, action};
-}
-
-RemoteAction PxtoneActionSynchronizer::getUndo() {
-  return RemoteAction{RemoteAction::Type::UNDO, m_local_index++,
-                      std::vector<Action>()};
-}
-RemoteAction PxtoneActionSynchronizer::getRedo() {
-  return RemoteAction{RemoteAction::Type::REDO, m_local_index++,
-                      std::vector<Action>()};
+  return EditAction{m_local_index++, action};
 }
 
 void PxtoneActionSynchronizer::setUid(qint64 uid) { m_uid = uid; }
 qint64 PxtoneActionSynchronizer::uid() { return m_uid; }
 
-void PxtoneActionSynchronizer::applyRemoteAction(
-    const RemoteActionWithUid &actionWithUid) {
-  const RemoteAction &action = actionWithUid.action;
-  qint64 uid = actionWithUid.uid;
+void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
+                                                 qint64 uid) {
+  // TODO: tag these things with names!
   qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
-  qDebug() << "Received action" << action.idx << "from user" << uid << "type"
-           << action.type;
+  qDebug() << "Received action" << action.idx << "from user" << uid;
   if (uid == m_uid) {
     if (action.idx != m_remote_index) {
       qWarning() << "Received a remote action with index" << action.idx
@@ -50,142 +39,142 @@ void PxtoneActionSynchronizer::applyRemoteAction(
     ++m_remote_index;
   }
   bool widthChanged = false;
-  switch (action.type) {
-    case RemoteAction::Type::ACTION:
-      if (uid == m_uid) {
-        // TODO: Respond to unexpected indexes smarter. What would make things
-        // consistent?
-        if (m_uncommitted.size() == 0) {
-          qWarning() << "Received a remote action of mine even when I'm not "
-                        "expecting any pending remote responses. Discarding. "
-                     << action.idx << m_remote_index;
-        } else {
-          // The server told us that our local action was applied! Put it in the
-          // log, but no need to apply any actions since that was already
-          // presumptuously applied.
+  if (uid == m_uid) {
+    // TODO: Respond to unexpected indexes smarter. What would make things
+    // consistent?
+    if (m_uncommitted.size() == 0) {
+      qWarning() << "Received a remote action of mine even when I'm not "
+                    "expecting any pending remote responses. Discarding. "
+                 << action.idx << m_remote_index;
+    } else {
+      // The server told us that our local action was applied! Put it in the
+      // log, but no need to apply any actions since that was already
+      // presumptuously applied.
 
-          m_log.emplace_back(uid, action.idx, m_uncommitted.front());
-          m_uncommitted.pop_front();
-        }
-      } else {
-        // Undo each of the uncommitted actions
-        // TODO: This is probably where you could be smarter and avoid undoing
-        // things that don't intersect in bbox
-        for (auto uncommitted = m_uncommitted.rbegin();
-             uncommitted != m_uncommitted.rend(); ++uncommitted) {
-          *uncommitted =
-              apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
-        }
+      m_log.emplace_back(uid, action.idx, m_uncommitted.front());
+      m_uncommitted.pop_front();
+    }
+  } else {
+    // Undo each of the uncommitted actions
+    // TODO: This is probably where you could be smarter and avoid undoing
+    // things that don't intersect in bbox
+    for (auto uncommitted = m_uncommitted.rbegin();
+         uncommitted != m_uncommitted.rend(); ++uncommitted) {
+      *uncommitted =
+          apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
+    }
 
-        // apply the committed action
-        std::vector<Action> reverse =
-            apply_actions_and_get_undo(action.action, m_pxtn, &widthChanged);
+    // apply the committed action
+    std::vector<Action> reverse =
+        apply_actions_and_get_undo(action.action, m_pxtn, &widthChanged);
 
-        // redo each of the uncommitted actions forwards
-        for (std::vector<Action> &uncommitted : m_uncommitted) {
-          uncommitted =
-              apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
-        }
+    // redo each of the uncommitted actions forwards
+    for (std::vector<Action> &uncommitted : m_uncommitted) {
+      uncommitted =
+          apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
+    }
 
-        m_log.emplace_back(uid, action.idx, reverse);
-      }
+    m_log.emplace_back(uid, action.idx, reverse);
+  }
 
-      // Invalidate any previous undone actions by this user
-      for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
-        if (it->uid == uid) switch (it->state) {
-            case LoggedAction::UNDONE:
-              it->state = LoggedAction::GONE;
-              break;
-            case LoggedAction::GONE:
-              break;
-            case LoggedAction::DONE:
-              // break out of the outer for with a goto
-              goto exit_loop;
-          }
-      }
-    exit_loop:
-      // qDebug() << "m_log size" << m_log.size();
-      break;
-    case RemoteAction::Type::UNDO:
-    case RemoteAction::Type::REDO:
-      qDebug() << "Applying undo";
-      if (m_log.size() == 0) {
-        qDebug() << "No actions in the log. Doing nothing.";
-        break;
-      }
-
-      auto target = m_log.rend();
-      // If we're redoing, we're eventually going to want to find the first
-      // undone item by this user.
-      if (action.type == RemoteAction::REDO) {
-        for (auto it = m_log.begin(); it != m_log.end(); ++it)
-          if (it->state == LoggedAction::UNDONE && it->uid == uid) {
-            target = std::reverse_iterator(it + 1);
-            break;
-          }
-      } else if (action.type == RemoteAction::UNDO) {
-        // Likewise, if undoing, find the last done item.
-        for (auto it = m_log.rbegin(); it != m_log.rend(); ++it)
-          if (it->state == LoggedAction::DONE && it->uid == uid) {
-            target = it;
-            break;
-          }
-      }
-      if (target == m_log.rend()) {
-        qDebug()
-            << "User has no more actions to undo / redo in this direction.";
-        break;
-      }
-
-      for (auto uncommitted = m_uncommitted.rbegin();
-           uncommitted != m_uncommitted.rend(); ++uncommitted) {
-        *uncommitted =
-            apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
-      }
-
-      // Go back to the target action by user, temporarily undoing
-      // done actions by other users. Flip. Then redo the done actions by
-      // other users.
-      {
-        std::list<LoggedAction *> temporarily_undone;
-        auto it = m_log.rbegin();
-        while (it != target) {
-          if (it->state == LoggedAction::UndoState::DONE) {
-            qDebug() << "Temporarily undoing " << it->uid << it->idx;
-            it->reverse =
-                apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
-            temporarily_undone.push_front(&(*it));
-          }
-          ++it;
-        }
-        it->reverse =
-            apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
-        it->state = (it->state == LoggedAction::UNDONE ? LoggedAction::DONE
-                                                       : LoggedAction::UNDONE);
-        ;
-        for (LoggedAction *it : temporarily_undone)
-          it->reverse =
-              apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
-      }
-
-      for (std::vector<Action> &uncommitted : m_uncommitted) {
-        uncommitted =
-            apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
+  // Invalidate any previous undone actions by this user
+  for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
+    if (it->uid == uid) switch (it->state) {
+        case LoggedAction::UNDONE:
+          it->state = LoggedAction::GONE;
+          break;
+        case LoggedAction::GONE:
+          break;
+        case LoggedAction::DONE:
+          // break out of the outer for with a goto
+          goto exit_loop;
       }
   }
+exit_loop:
+  // qDebug() << "m_log size" << m_log.size();
+
   if (widthChanged) emit measureNumChanged();
 }
 
-void PxtoneActionSynchronizer::applyAddUnit(qint32 woice_id,
-                                            QString expected_woice_name,
-                                            QString unit_name, qint64 uid) {
+void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
+  qDebug() << "Applying undo / redo";
+  if (m_log.size() == 0) {
+    qDebug() << "No actions in the log. Doing nothing.";
+    return;
+  }
+
+  auto target = m_log.rend();
+  // If we're redoing, we're eventually going to want to find the first
+  // undone item by this user.
+  switch (r) {
+    case REDO:
+      for (auto it = m_log.begin(); it != m_log.end(); ++it)
+        if (it->state == LoggedAction::UNDONE && it->uid == uid) {
+          target = std::reverse_iterator(it + 1);
+          break;
+        }
+      break;
+    case UNDO:
+      // Likewise, if undoing, find the last done item.
+      for (auto it = m_log.rbegin(); it != m_log.rend(); ++it)
+        if (it->state == LoggedAction::DONE && it->uid == uid) {
+          target = it;
+          break;
+        }
+  };
+  if (target == m_log.rend()) {
+    qDebug() << "User has no more actions to undo / redo in this direction.";
+    return;
+  }
+
+  bool widthChanged = false;
+  for (auto uncommitted = m_uncommitted.rbegin();
+       uncommitted != m_uncommitted.rend(); ++uncommitted) {
+    *uncommitted =
+        apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
+  }
+
+  // Go back to the target action by user, temporarily undoing
+  // done actions by other users. Flip. Then redo the done actions by
+  // other users.
+  {
+    std::list<LoggedAction *> temporarily_undone;
+    auto it = m_log.rbegin();
+    while (it != target) {
+      if (it->state == LoggedAction::UndoState::DONE) {
+        qDebug() << "Temporarily undoing " << it->uid << it->idx;
+        it->reverse =
+            apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+        temporarily_undone.push_front(&(*it));
+      }
+      ++it;
+    }
+    it->reverse =
+        apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+    it->state = (it->state == LoggedAction::UNDONE ? LoggedAction::DONE
+                                                   : LoggedAction::UNDONE);
+    ;
+    for (LoggedAction *it : temporarily_undone)
+      it->reverse =
+          apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+  }
+
+  for (std::vector<Action> &uncommitted : m_uncommitted) {
+    uncommitted =
+        apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
+  }
+
+  if (widthChanged) emit measureNumChanged();
+}
+
+void PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
-  if (m_pxtn->Woice_Num() <= woice_id || woice_id < 0) {
+  if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
     return;
   }
-  QString woice_name = m_pxtn->Woice_Get(woice_id)->get_name_buf(nullptr);
-  if (woice_name != expected_woice_name) {
+  QString woice_name = m_pxtn->Woice_Get(a.woice_id)->get_name_buf(nullptr);
+  if (woice_name != a.woice_name) {
     qWarning("Voice doesn't exist. (Name doesn't match)");
     return;
   }
@@ -196,13 +185,13 @@ void PxtoneActionSynchronizer::applyAddUnit(qint32 woice_id,
     int unit_no = m_pxtn->Unit_Num() - 1;
     pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
     std::string unit_name_str =
-        unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
+        a.unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
     const char *unit_name_buf = unit_name_str.c_str();
     unit->set_name_buf(unit_name_buf, unit_name_str.length());
-    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, woice_id);
+    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
     unit->Tone_Init();
     // TODO: This is sort of bad to do, to use a private moo fn for the purposes
     // of note previews. We really need to split out the moo state.
-    m_pxtn->moo_ResetVoiceOn_Custom(unit, woice_id);
+    m_pxtn->moo_ResetVoiceOn_Custom(unit, a.woice_id);
   }
 }

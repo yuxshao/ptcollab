@@ -65,37 +65,27 @@ void BroadcastServer::newClient() {
                     });
 
             session->sendHello(m_file, m_history, sessionMapping(m_sessions));
-            connect(session, &ServerSession::receivedRemoteAction, this,
-                    &BroadcastServer::broadcastRemoteAction);
-            connect(session, &ServerSession::receivedEditState, this,
-                    &BroadcastServer::broadcastEditState);
-            connect(session, &ServerSession::receivedAddUnit, this,
-                    &BroadcastServer::broadcastAddUnit);
+            connect(session, &ServerSession::receivedAction, this,
+                    &BroadcastServer::broadcastAction);
           });
 }
 
-// TODO: Try to reduce this duplication even more?
-void BroadcastServer::broadcastRemoteAction(const RemoteActionWithUid &m) {
-  qInfo() << "Broadcasting action" << m.uid << m.action.idx << "to"
-          << m_sessions.size() << "users";
-  for (ServerSession *s : m_sessions) s->sendRemoteAction(m);
-  m_history.push_back(m);
+void BroadcastServer::broadcastServerAction(const ServerAction &a) {
+  for (ServerSession *s : m_sessions) s->sendAction(a);
+  if (a.shouldBeRecorded()) m_history.push_back(a);
 }
 
-void BroadcastServer::broadcastEditState(const EditStateWithUid &m) {
-  for (ServerSession *s : m_sessions) s->sendEditState(m);
-}
-
-void BroadcastServer::broadcastAddUnit(qint32 woice_id, QString woice_name,
-                                       QString unit_name, qint64 uid) {
-  for (ServerSession *s : m_sessions)
-    s->sendAddUnit(woice_id, woice_name, unit_name, uid);
+void BroadcastServer::broadcastAction(const ClientAction &m, qint64 uid) {
+  // TODO offer way to print clientaction
+  qInfo() << "Broadcasting action from" << uid << "to" << m_sessions.size()
+          << "users";
+  broadcastServerAction({uid, m});
 }
 
 void BroadcastServer::broadcastNewSession(const QString &username, qint64 uid) {
-  for (ServerSession *s : m_sessions) s->sendNewSession(username, uid);
+  broadcastServerAction({uid, NewSession{username}});
 }
 
 void BroadcastServer::broadcastDeleteSession(qint64 uid) {
-  for (ServerSession *s : m_sessions) s->sendDeleteSession(uid);
+  broadcastServerAction({uid, DeleteSession{}});
 }

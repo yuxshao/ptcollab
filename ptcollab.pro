@@ -41,6 +41,7 @@ HEADERS += \
            protocol/Hello.h \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \
+           protocol/SerializeVariant.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \

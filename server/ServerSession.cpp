@@ -22,8 +22,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
   });
 }
 
-void ServerSession::sendHello(QFile &file,
-                              const QList<RemoteActionWithUid> &history,
+void ServerSession::sendHello(QFile &file, const QList<ServerAction> &history,
                               const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_conn->peerAddress();
   if (!file.isOpen()) {
@@ -50,26 +49,7 @@ void ServerSession::sendHello(QFile &file,
   m_data_stream << history << sessions;
 }
 
-void ServerSession::sendRemoteAction(const RemoteActionWithUid &m) {
-  m_data_stream << FromServer::REMOTE_ACTION << m;
-}
-
-void ServerSession::sendEditState(const EditStateWithUid &m) {
-  m_data_stream << FromServer::EDIT_STATE << m;
-}
-
-void ServerSession::sendNewSession(const QString &username, qint64 uid) {
-  m_data_stream << FromServer::NEW_SESSION << username << uid;
-}
-
-void ServerSession::sendDeleteSession(qint64 uid) {
-  m_data_stream << FromServer::DELETE_SESSION << uid;
-}
-void ServerSession::sendAddUnit(qint32 woice_id, QString woice_name,
-                                QString unit_name, qint64 uid) {
-  m_data_stream << FromServer::ADD_UNIT << woice_id << woice_name << unit_name
-                << uid;
-}
+void ServerSession::sendAction(const ServerAction &a) { m_data_stream << a; }
 
 qint64 ServerSession::uid() const { return m_uid; }
 
@@ -86,29 +66,18 @@ void ServerSession::readMessage() {
       m_username = m.username();
       emit receivedHello();
     } else {
-      m_data_stream.startTransaction();
-      FromClient::MessageType type;
-      m_data_stream >> type;
-      switch (type) {
-        case FromClient::REMOTE_ACTION: {
-          RemoteAction m;
-          m_data_stream >> m;
-          if (!(m_data_stream.commitTransaction())) return;
-          emit receivedRemoteAction(RemoteActionWithUid{m, m_uid});
-        } break;
-        case FromClient::EDIT_STATE: {
-          EditState m;
-          m_data_stream >> m;
-          if (!(m_data_stream.commitTransaction())) return;
-          emit receivedEditState(EditStateWithUid{m, m_uid});
-        } break;
-        case FromClient::ADD_UNIT: {
-          qint32 woice_id;
-          QString woice_name, unit_name;
-          m_data_stream >> woice_id >> woice_name >> unit_name;
-          if (!(m_data_stream.commitTransaction())) return;
-          emit receivedAddUnit(woice_id, woice_name, unit_name, m_uid);
-        } break;
+      ClientAction action;
+      try {
+        m_data_stream.startTransaction();
+        m_data_stream >> action;
+        if (!(m_data_stream.commitTransaction())) return;
+        emit receivedAction(action, m_uid);
+      } catch (const std::string &e) {
+        qWarning(
+            "Could not read client action from %lld (%s). Error: %s. "
+            "Discarding",
+            m_uid, m_username.toStdString().c_str(), e.c_str());
+        m_data_stream.rollbackTransaction();
       }
     }
   }
