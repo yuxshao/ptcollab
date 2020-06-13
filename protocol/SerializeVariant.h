@@ -3,6 +3,10 @@
 
 #include <QDataStream>
 #include <variant>
+
+// Some scourging the internet to find a way to deserialize a variant b/c
+// variants work well for deduping code for the msg protocol
+// https://github.com/nlohmann/json/issues/1261
 namespace detail {
 template <std::size_t N>
 struct variant_switch {
@@ -10,7 +14,7 @@ struct variant_switch {
   inline void operator()(int index, QDataStream &in, Variant &v) const {
     if (index == N) {
       std::variant_alternative_t<N, Variant> a;
-      operator>>(in, a);
+      in >> a;
       v.template emplace<N>(a);
     } else
       variant_switch<N - 1>{}(index, in, v);
