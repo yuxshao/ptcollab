@@ -31,17 +31,16 @@ struct variant_switch<0> {
 };
 }  // namespace detail
 
-template <typename Variant>
-QDataStream &deserializeVariant(QDataStream &in, Variant &a) {
+template <typename... Args>
+QDataStream &operator>>(QDataStream &in, std::variant<Args...> &a) {
   size_t index;
   in >> *(qint64 *)(&index);
-  ::detail::variant_switch<size_t(std::variant_size_v<Variant> - 1)>{}(index,
-                                                                       in, a);
+  ::detail::variant_switch<sizeof...(Args) - 1>{}(index, in, a);
   return in;
 }
 
-template <typename Variant>
-QDataStream &serializeVariant(QDataStream &out, const Variant &a) {
+template <typename... Args>
+QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
   out << qint64(a.index());
   std::visit([&out](auto &&v) { out << v; }, a);
   return out;

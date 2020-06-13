@@ -93,6 +93,8 @@ Technical stuff:
    - then you can generalize adding / subbing voices
  - factor out moo state from pxtn state
    - can then preview notes at the time they're played
+ - server keeps its own state + running history (currently it plays back
+   -everything-)
 
 Synchronization:
  - Changes to units / adding voices?

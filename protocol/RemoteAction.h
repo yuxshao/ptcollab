@@ -56,12 +56,6 @@ inline QDataStream &operator>>(QDataStream &in, AddUnit &a) {
 }
 
 using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit>;
-inline QDataStream &operator<<(QDataStream &out, const ClientAction &a) {
-  return serializeVariant(out, a);
-}
-inline QDataStream &operator>>(QDataStream &in, ClientAction &a) {
-  return deserializeVariant(in, a);
-};
 
 struct NewSession {
   QString username;
@@ -88,13 +82,11 @@ struct ServerAction {
 };
 
 inline QDataStream &operator<<(QDataStream &out, const ServerAction &a) {
-  out << a.uid;
-  serializeVariant(out, a.action);
+  out << a.uid << a.action;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, ServerAction &a) {
-  in >> a.uid;
-  deserializeVariant(in, a.action);
+  in >> a.uid >> a.action;
   return in;
 }
 
