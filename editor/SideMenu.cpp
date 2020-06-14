@@ -36,8 +36,14 @@ SideMenu::SideMenu(QWidget* parent)
           &SideMenu::connectButtonPressed);
   connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
           &QDialog::open);
-  connect(ui->removeUnitBtn, &QPushButton::clicked, this,
-          &SideMenu::removeUnit);
+  connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
+    if (ui->units->count() > 0 &&
+        QMessageBox::question(
+            this, tr("Are you sure?"),
+            tr("Are you sure you want to delete the unit (%1)?")
+                .arg(ui->units->currentText())) == QMessageBox::Yes)
+      emit removeUnit();
+  });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     QString name = m_add_unit_dialog->getUnitNameSelection();

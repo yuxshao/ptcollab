@@ -171,34 +171,35 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
 // TODO: Could probably also make adding and deleting units undoable. The main
 // thing is they'd have to be added to the log. And a record of a delete needs
 // to include the notes that were deleted with it.
-void PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
+bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
   if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
-    return;
+    return false;
   }
   QString woice_name = m_pxtn->Woice_Get(a.woice_id)->get_name_buf(nullptr);
   if (woice_name != a.woice_name) {
     qWarning("Voice doesn't exist. (Name doesn't match)");
-    return;
+    return false;
   }
   if (!m_pxtn->Unit_AddNew()) {
     qWarning("Could not add another unit.");
-    return;
-  } else {
-    m_unit_id_map.addUnit();
-    int unit_no = m_pxtn->Unit_Num() - 1;
-    pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
-    std::string unit_name_str =
-        a.unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
-    const char *unit_name_buf = unit_name_str.c_str();
-    unit->set_name_buf(unit_name_buf, unit_name_str.length());
-    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
-    unit->Tone_Init();
-    // TODO: This is sort of bad to do, to use a private moo fn for the purposes
-    // of note previews. We really need to split out the moo state.
-    m_pxtn->moo_ResetVoiceOn_Custom(unit, a.woice_id);
+    return false;
   }
+
+  m_unit_id_map.addUnit();
+  int unit_no = m_pxtn->Unit_Num() - 1;
+  pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
+  std::string unit_name_str =
+      a.unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
+  const char *unit_name_buf = unit_name_str.c_str();
+  unit->set_name_buf(unit_name_buf, unit_name_str.length());
+  m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
+  unit->Tone_Init();
+  // TODO: This is sort of bad to do, to use a private moo fn for the purposes
+  // of note previews. We really need to split out the moo state.
+  m_pxtn->moo_ResetVoiceOn_Custom(unit, a.woice_id);
+  return true;
 }
 
 void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,

@@ -72,9 +72,12 @@
 
 6/13
 1. this std::variant thing worked?!?
+2. removing units
+  - confirm box for delete
+  - autofill name, double click to add
+  - switch to unit directly
 
 TODO:
- - get delete units btn to work
  - confirmation box for delete
  - adding / deleting instrs
  - Unit view, at least for drums

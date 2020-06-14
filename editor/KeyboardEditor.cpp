@@ -101,8 +101,13 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                       m_sync->applyUndoRedo(s, uid);
                     },
                     [this, uid](const AddUnit &s) {
-                      m_sync->applyAddUnit(s, uid);
+                      bool success = m_sync->applyAddUnit(s, uid);
                       emit unitsChanged();
+                      if (uid == m_sync->uid() && success) {
+                        m_edit_state.m_current_unit_id =
+                            m_sync->unitIdMap().noToId(m_pxtn->Unit_Num() - 1);
+                        emit currentUnitNoChanged(m_pxtn->Unit_Num() - 1);
+                      }
                     },
                     [this, uid](const RemoveUnit &s) {
                       auto current_unit_no = m_sync->unitIdMap().idToNo(
@@ -622,9 +627,9 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       }
     }
   }
-  // TODO: This note preview thing is a bit jank in case unit changes. But it's
-  // fairly safe I think because the audio output itself cuts off if the unit
-  // disappears.
+  // TODO: This note preview thing is a bit jank in case unit changes. But
+  // it's fairly safe I think because the audio output itself cuts off if the
+  // unit disappears.
   m_audio_note_preview = audio;
   m_edit_state.mouse_edit_state =
       MouseEditState{type, clock, pitch, clock, pitch};
@@ -673,8 +678,8 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
       if (maybe_unit_no == std::nullopt) break;
       qint32 unit_no = nonnegative_modulo(maybe_unit_no.value() + offset,
                                           m_pxtn->Unit_Num());
-      qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
-               << m_sync->unitIdMap().noToId(unit_no);
+      // qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
+      //         << m_sync->unitIdMap().noToId(unit_no);
       m_edit_state.m_current_unit_id = m_sync->unitIdMap().noToId(unit_no);
       emit currentUnitNoChanged(unit_no);
       emit editStateChanged();
@@ -683,8 +688,8 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
 }
 
 void KeyboardEditor::setCurrentUnitNo(int unit_no) {
-  qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
-           << m_sync->unitIdMap().noToId(unit_no);
+  // qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
+  //         << m_sync->unitIdMap().noToId(unit_no);
   m_edit_state.m_current_unit_id = m_sync->unitIdMap().noToId(unit_no);
 
   emit editStateChanged();

@@ -31,12 +31,12 @@ class PxtoneActionSynchronizer : public QObject {
   qint64 uid();
   const UnitIdMap &unitIdMap() { return m_unit_id_map; }
   void resetUnitIdMap() { m_unit_id_map = UnitIdMap(m_pxtn); }
+  bool applyAddUnit(const AddUnit &a, qint64 uid);
 
  public slots:
   // Maybe these three types could be grouped.
   void applyRemoteAction(const EditAction &a, qint64 uid);
   void applyUndoRedo(const UndoRedo &r, qint64 uid);
-  void applyAddUnit(const AddUnit &a, qint64 uid);
   void applyRemoveUnit(const RemoveUnit &a, qint64 uid);
  signals:
   void measureNumChanged();
