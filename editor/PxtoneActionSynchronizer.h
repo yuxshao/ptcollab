@@ -34,10 +34,12 @@ class PxtoneActionSynchronizer : public QObject {
   bool applyAddUnit(const AddUnit &a, qint64 uid);
 
  public slots:
-  // Maybe these three types could be grouped.
+  // Maybe these types could be grouped.
   void applyRemoteAction(const EditAction &a, qint64 uid);
   void applyUndoRedo(const UndoRedo &r, qint64 uid);
   void applyRemoveUnit(const RemoveUnit &a, qint64 uid);
+  void applyAddWoice(AddWoice &a, qint64 uid);
+
  signals:
   void measureNumChanged();
 

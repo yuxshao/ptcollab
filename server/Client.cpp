@@ -69,44 +69,26 @@ void Client::tryToStart() {
   // Get the file + history
   qInfo() << "Getting initial data from server";
 
-  m_data_stream.setVersion(QDataStream::Qt_5_14);
-  m_data_stream.startTransaction();
   ServerHello hello;
-  m_data_stream >> hello;
-  if (!hello.isValid()) qFatal("Invalid hello response");
-
-  m_uid = hello.uid();
-
-  // TODO: Pretty sure this chunked read is not necessary since QTcpSocket
-  // (QAbstractSocket) does its own buffering.
-  qint64 size;
-  m_data_stream >> size;
-  qDebug() << "Expecting file of size" << size;
-  std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
-  int pos = 0;
-  while (pos < size) {
-    int read = m_data_stream.readRawData(data.get() + pos, size - pos);
-    if (read != -1) pos += read;
-    if (read == -1 || m_data_stream.atEnd()) {
-      // TODO: might not be right for chunked transfer
-      qInfo() << "Not enough data has been sent yet." << pos;
-      m_data_stream.rollbackTransaction();
-      return;
-    }
-  }
-  qDebug() << "Received file";
+  Data data;
   QList<ServerAction> history;
   // TODO: actually use sessions using the history state thing from before
   QMap<qint64, QString> sessions;
-  m_data_stream >> history >> sessions;
+
+  m_data_stream.setVersion(QDataStream::Qt_5_14);
+  m_data_stream.startTransaction();
+
+  m_data_stream >> hello;
+  if (!hello.isValid()) qFatal("Invalid hello response");
+  m_uid = hello.uid();
+
+  m_data_stream >> data >> history >> sessions;
   if (!m_data_stream.commitTransaction()) return;
 
   qDebug() << "Received history of size" << history.size();
 
-  pxtnDescriptor desc;
-  desc.set_memory_r(data.get(), size);
   m_received_hello = true;
-  emit connected(desc, history, m_uid);
+  emit connected(data.descriptor(), history, m_uid);
   // for (auto it = sessions.begin(); it != sessions.end(); ++it)
   //  emit receivedNewSession(it.value(), it.key());
 }

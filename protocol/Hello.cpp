@@ -36,10 +36,11 @@ bool ServerHello::isValid() {
 qint64 ServerHello::uid() { return m_uid; }
 
 QDataStream &operator<<(QDataStream &out, const ServerHello &m) {
-  // qDebug() << "sending" << m.hello << m.version << m.m_uid;
+  // qDebug() << "Sending server hello" << m.hello << m.version << m.m_uid;
   return (out << m.hello << m.version << m.m_uid);
 }
 QDataStream &operator>>(QDataStream &in, ServerHello &m) {
-  // qDebug() << "receiving" << m.hello << m.version << m.m_uid;
-  return (in >> m.hello >> m.version >> m.m_uid);
+  (in >> m.hello >> m.version >> m.m_uid);
+  // qDebug() << "Received server hello" << m.hello << m.version << m.m_uid;
+  return in;
 }

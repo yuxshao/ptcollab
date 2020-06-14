@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#include <memory>
+
 #include "./pxtn.h"
 
 enum pxtnSEEK {

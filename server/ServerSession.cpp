@@ -5,7 +5,6 @@
 
 #include "protocol/Hello.h"
 
-constexpr qint64 chunkSize = 8 * 1024 * 4;  // arbitrary 4KB
 ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
     : QObject(parent),
       m_conn(conn),
@@ -22,31 +21,13 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
   });
 }
 
-void ServerSession::sendHello(QFile &file, const QList<ServerAction> &history,
+// TODO: Include history, sessions, data in hello
+void ServerSession::sendHello(Data &file, const QList<ServerAction> &history,
                               const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_conn->peerAddress();
-  if (!file.isOpen()) {
-    qFatal("Server cannot open file");
-    return;
-  }
-  file.seek(0);
 
-  // send over the file + whole history
   m_data_stream.setVersion(QDataStream::Qt_5_14);
-  m_data_stream << ServerHello(m_uid);
-
-  std::unique_ptr<char[]> buffer = std::make_unique<char[]>(chunkSize);
-  qint64 bytesLeft = file.size();
-  m_data_stream << bytesLeft;
-  while (bytesLeft > 0) {
-    qint64 bytesRead = file.read(buffer.get(), std::min(chunkSize, bytesLeft));
-    if (bytesRead == -1) return;
-    bytesLeft -= bytesRead;
-    qDebug() << "Sending" << bytesRead;
-    m_data_stream.writeRawData(buffer.get(), bytesRead);
-  }
-
-  m_data_stream << history << sessions;
+  m_data_stream << ServerHello(m_uid) << file << history << sessions;
 }
 
 void ServerSession::sendAction(const ServerAction &a) { m_data_stream << a; }

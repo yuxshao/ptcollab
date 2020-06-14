@@ -35,7 +35,6 @@ class EditorWindow : public QMainWindow {
   void connectToHost();
 
  private:
-  void loadFile(QString filename);
   void keyPressEvent(QKeyEvent* event);
   QAudioOutput* m_audio;
   KeyboardEditor* m_keyboard_editor;

@@ -219,3 +219,8 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
     m_unit_id_map.removeUnit(unit_no);
   }
 }
+
+void PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
+  (void)uid;
+  m_pxtn->Woice_read(m_pxtn->Woice_Num(), &a.data.descriptor(), a.type);
+}

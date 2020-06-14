@@ -38,6 +38,7 @@ HEADERS += \
            editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
            editor/quantize.h \
+           protocol/Data.h \
            protocol/Hello.h \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \
@@ -81,6 +82,7 @@ SOURCES += main.cpp \
            editor/PxtoneUnitIODevice.cpp \
            editor/SelectWoiceDialog.cpp \
            editor/SideMenu.cpp \
+           protocol/Data.cpp \
            protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \
            protocol/RemoteAction.cpp \

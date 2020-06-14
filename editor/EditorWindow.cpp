@@ -271,28 +271,6 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   return true;
 }
 
-void EditorWindow::loadFile(QString filename) {
-  std::unique_ptr<std::FILE, decltype(&fclose)> f(
-      fopen(filename.toStdString().c_str(), "rb"), &fclose);
-  if (!f) {
-    qWarning() << "Could not open file";
-    return;
-  }
-  pxtnDescriptor desc;
-  desc.set_file_r(f.get());
-  if (m_pxtn.read(&desc) != pxtnOK) {
-    qWarning() << "Error reading file" << filename;
-    return;
-  }
-  if (m_pxtn.tones_ready() != pxtnOK) {
-    qWarning() << "Error getting tones ready";
-    return;
-  }
-  resetAndSuspendAudio();
-
-  loadDescriptor(desc);
-}
-
 void EditorWindow::loadFileAndHost() {
   if (m_server) {
     auto result = QMessageBox::question(this, "Server already running",

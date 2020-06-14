@@ -90,6 +90,7 @@ TODO:
  - edit while playing soundness
    - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
+ - take some inspiration from domino midi! linear changing of params
 
 Technical stuff:
  - streaming opreator for pxtnDesc

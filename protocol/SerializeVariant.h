@@ -30,7 +30,7 @@ struct variant_switch<0> {
       in >> a;
       v.template emplace<0>(a);
     } else
-      throw "invalid variant index";
+      throw std::runtime_error("invalid variant index");
   }
 };
 }  // namespace detail

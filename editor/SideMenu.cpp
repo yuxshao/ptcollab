@@ -38,10 +38,11 @@ SideMenu::SideMenu(QWidget* parent)
           &QDialog::open);
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
     if (ui->units->count() > 0 &&
-        QMessageBox::question(
-            this, tr("Are you sure?"),
-            tr("Are you sure you want to delete the unit (%1)?")
-                .arg(ui->units->currentText())) == QMessageBox::Yes)
+        QMessageBox::question(this, tr("Are you sure?"),
+                              tr("Are you sure you want to delete the unit "
+                                 "(%1)? This cannot be undone.")
+                                  .arg(ui->units->currentText())) ==
+            QMessageBox::Yes)
       emit removeUnit();
   });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
@@ -85,6 +86,8 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
 
 void SideMenu::setWoiceList(QStringList woices) {
   m_add_unit_dialog->setWoices(woices);
+  ui->woiceList->clear();
+  ui->woiceList->addItems(woices);
 }
 
 void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }

@@ -3,14 +3,13 @@
 #include <QDataStream>
 #include <QMessageBox>
 #include <QTcpSocket>
+
 BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
-      m_file(filename, this),
+      m_file(filename.toStdString()),
       m_next_uid(0) {
-  if (!m_file.open(QIODevice::ReadOnly)) throw QString("File cannot be opened");
-
   if (!m_server->listen(QHostAddress::Any, port))
     throw QString("Unable to start TCP server: %1")
         .arg(m_server->errorString());

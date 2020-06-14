@@ -5,6 +5,7 @@
 #include <QTcpServer>
 
 #include "ServerSession.h"
+#include "protocol/Data.h"
 #include "protocol/RemoteAction.h"
 class BroadcastServer : public QObject {
   Q_OBJECT
@@ -23,7 +24,7 @@ class BroadcastServer : public QObject {
   QTcpServer *m_server;
   QList<ServerAction> m_history;
   std::list<ServerSession *> m_sessions;
-  QFile m_file;
+  Data m_file;
   int m_next_uid;
   void broadcastServerAction(const ServerAction &a);
 };

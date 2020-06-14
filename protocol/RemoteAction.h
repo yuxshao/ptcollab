@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "protocol/Data.h"
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/SerializeVariant.h"
 
@@ -64,6 +65,33 @@ inline QDataStream &operator<<(QDataStream &out, const RemoveUnit &a) {
 }
 inline QDataStream &operator>>(QDataStream &in, RemoveUnit &a) {
   in >> a.unit_id;
+  return in;
+}
+
+struct AddWoice {
+  QString name;
+  pxtnWOICETYPE type;
+  Data data;
+};
+inline QDataStream &operator<<(QDataStream &out, const AddWoice &a) {
+  out << a.name << (qint8)a.type << a.data;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, AddWoice &a) {
+  in >> a.name >> *(qint8 *)(&a.type) >> a.data;
+  return in;
+}
+
+struct RemoveWoice {
+  qint32 id;
+  qint32 name;
+};
+inline QDataStream &operator<<(QDataStream &out, const RemoveWoice &a) {
+  out << a.id << a.name;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, RemoveWoice &a) {
+  in >> a.id >> a.name;
   return in;
 }
 
