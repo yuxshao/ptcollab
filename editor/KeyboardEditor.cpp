@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QScrollArea>
 #include <QTime>
 
