@@ -15,18 +15,7 @@ class Data {
 
  public:
   Data() : f(nullptr), m_data(nullptr), m_size(0) {}
-  Data(QString filename) : f(nullptr), m_data(nullptr) {
-#ifdef _WIN32
-    f = _wfopen(filename.toStdWstring().c_str(), "rb");
-#else
-    f = fopen(filename.toStdString().c_str(), "rb");
-#endif
-    if (f == nullptr)
-      throw std::runtime_error("Unable to open file: " +
-                               filename.toStdString());
-    m_desc.set_file_r(f);
-    m_size = m_desc.get_size_bytes();
-  };
+  Data(QString filename);
 
   ~Data() {
     if (f != nullptr) fclose(f);

@@ -1,5 +1,17 @@
 #include "Data.h"
 
+Data::Data(QString filename) : f(nullptr), m_data(nullptr) {
+#ifdef _WIN32
+  f = _wfopen(filename.toStdWstring().c_str(), "rb");
+#else
+  f = fopen(filename.toStdString().c_str(), "rb");
+#endif
+  if (f == nullptr)
+    throw std::runtime_error("Unable to open file: " + filename.toStdString());
+  m_desc.set_file_r(f);
+  m_size = m_desc.get_size_bytes();
+};
+
 constexpr qint64 chunkSize = 32 * 1024;  // arbitrary 32KB
 // Moves seek position to end
 QDataStream &operator<<(QDataStream &out, Data &m) {
