@@ -43,25 +43,28 @@ void Client::sendAction(const ClientAction &m) {
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {
+  // qDebug() << "Client has bytes available" << m_socket->bytesAvailable();
   // I got tripped up. tryToStart cannot be in the loop b/c that will cause it
   // to loop infinitely. The way it's coded right now at least.
   if (!m_received_hello) tryToStart();
   if (m_received_hello)
     while (!m_data_stream.atEnd()) {
       m_data_stream.startTransaction();
+
+      ServerAction action;
       try {
-        m_data_stream.startTransaction();
-        ServerAction action;
         m_data_stream >> action;
-        if (!(m_data_stream.commitTransaction())) return;
-        emit receivedAction(action);
       } catch (const std::string &e) {
         qWarning(
             "Could not read server action. Error: %s. "
             "Discarding",
             e.c_str());
         m_data_stream.rollbackTransaction();
+        return;
       }
+      if (!(m_data_stream.commitTransaction())) return;
+
+      emit receivedAction(action);
     }
 }
 

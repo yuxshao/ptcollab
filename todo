@@ -80,6 +80,7 @@
 6/14 
 1. more generic binary serialization
 2. hopefully unicode?
+3. fix crash when you rejoin. it was a deserial transaction mistakes!
 
 TODO:
  - adding / deleting instrs
@@ -88,6 +89,7 @@ TODO:
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
+ - fix crash when you rejoin
  - moving voices up and down
  - show measure num, set loop points
    - will probably need some pixel font thing

@@ -47,19 +47,22 @@ void ServerSession::readMessage() {
       m_username = m.username();
       emit receivedHello();
     } else {
+      m_data_stream.startTransaction();
+
       ClientAction action;
       try {
-        m_data_stream.startTransaction();
         m_data_stream >> action;
-        if (!(m_data_stream.commitTransaction())) return;
-        emit receivedAction(action, m_uid);
       } catch (const std::string &e) {
         qWarning(
             "Could not read client action from %lld (%s). Error: %s. "
             "Discarding",
             m_uid, m_username.toStdString().c_str(), e.c_str());
         m_data_stream.rollbackTransaction();
+        return;
       }
+      if (!(m_data_stream.commitTransaction())) return;
+
+      emit receivedAction(action, m_uid);
     }
   }
 }

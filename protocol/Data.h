@@ -36,7 +36,7 @@ class Data {
   friend QDataStream &operator<<(QDataStream &out, const Data &m);
   friend QDataStream &operator>>(QDataStream &in, Data &m);
 };
-constexpr qint64 chunkSize = 8 * 1024 * 4;  // arbitrary 4KB
+constexpr qint64 chunkSize = 32 * 1024;  // arbitrary 32KB
 
 // Moves seek position to end
 inline QDataStream &operator<<(QDataStream &out, Data &m) {

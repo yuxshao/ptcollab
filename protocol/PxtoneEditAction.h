@@ -29,8 +29,8 @@ class UnitIdMap {
     m_no_to_id.push_back(id);
     m_id_to_no[id] = no;
 
-    qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
-             << QMap<qint32, qint32>(m_id_to_no);
+    // qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
+    //         << QMap<qint32, qint32>(m_id_to_no);
   }
   void removeUnit(qint32 no) {
     qint32 id = m_no_to_id[no];
