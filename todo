@@ -84,7 +84,7 @@ TODO:
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
-     - 
+ - moving voices up and down
  - show measure num, set loop points
    - will probably need some pixel font thing
  - edit while playing soundness
