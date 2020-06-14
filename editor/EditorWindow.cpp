@@ -105,10 +105,10 @@ EditorWindow::EditorWindow(QWidget *parent)
           &KeyboardEditor::setQuantYIndex);
 
   connect(m_side_menu, &SideMenu::selectedUnitChanged, m_keyboard_editor,
-          &KeyboardEditor::setCurrentUnit);
+          &KeyboardEditor::setCurrentUnitNo);
   connect(m_side_menu, &SideMenu::showAllChanged, m_keyboard_editor,
           &KeyboardEditor::setShowAll);
-  connect(m_keyboard_editor, &KeyboardEditor::currentUnitChanged, m_side_menu,
+  connect(m_keyboard_editor, &KeyboardEditor::currentUnitNoChanged, m_side_menu,
           &SideMenu::setSelectedUnit);
   connect(m_keyboard_editor, &KeyboardEditor::showAllChanged, m_side_menu,
           &SideMenu::setShowAll);
@@ -123,6 +123,8 @@ EditorWindow::EditorWindow(QWidget *parent)
             AddUnit{woice_id, m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
                     unit_name});
       });
+  connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
+          &KeyboardEditor::removeCurrentUnit);
   connect(m_keyboard_editor, &KeyboardEditor::unitsChanged, this,
           &EditorWindow::refreshSideMenuUnits);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
@@ -219,13 +221,19 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
         if (event->modifiers() & Qt::ShiftModifier)
-          m_keyboard_editor->redo();
+          m_client->sendAction(UndoRedo::REDO);
         else
-          m_keyboard_editor->undo();
+          m_client->sendAction(UndoRedo::UNDO);
       }
       break;
     case Qt::Key_Y:
-      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->redo();
+      if (event->modifiers() & Qt::ControlModifier)
+        m_client->sendAction(UndoRedo::REDO);
+      break;
+    case Qt::Key_Backspace:
+      if (event->modifiers() & Qt::ControlModifier &&
+          event->modifiers() & Qt::ShiftModifier)
+        m_keyboard_editor->removeCurrentUnit();
       break;
   }
 }
@@ -241,6 +249,8 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
     qWarning() << "Error reading descriptor";
     return false;
   }
+  // TODO: this unit ID map should be much closer to the service.
+  m_keyboard_editor->resetUnitIdMap();
   if (m_pxtn.tones_ready() != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;

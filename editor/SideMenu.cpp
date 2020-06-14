@@ -34,8 +34,10 @@ SideMenu::SideMenu(QWidget* parent)
           &SideMenu::hostButtonPressed);
   connect(ui->connectBtn, &QPushButton::clicked, this,
           &SideMenu::connectButtonPressed);
-  connect(ui->addUnitBn, &QPushButton::clicked, m_add_unit_dialog,
+  connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
           &QDialog::open);
+  connect(ui->removeUnitBtn, &QPushButton::clicked, this,
+          &SideMenu::removeUnit);
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     QString name = m_add_unit_dialog->getUnitNameSelection();

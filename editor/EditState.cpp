@@ -11,7 +11,7 @@ Interval MouseEditState::clock_int(int q) const {
 EditState::EditState()
     : mouse_edit_state({MouseEditState::Type::Nothing, 0, 0, 0, 0}),
       scale(),
-      m_current_unit(0),
+      m_current_unit_id(0),
       m_quantize_clock(1),
       m_quantize_pitch(1) {}
 
@@ -43,11 +43,11 @@ QDataStream &operator>>(QDataStream &in, Scale &a) {
 }
 
 QDataStream &operator<<(QDataStream &out, const EditState &a) {
-  return (out << a.mouse_edit_state << a.scale << a.m_current_unit
+  return (out << a.mouse_edit_state << a.scale << a.m_current_unit_id
               << a.m_quantize_clock << a.m_quantize_pitch);
 }
 
 QDataStream &operator>>(QDataStream &in, EditState &a) {
-  return (in >> a.mouse_edit_state >> a.scale >> a.m_current_unit >>
+  return (in >> a.mouse_edit_state >> a.scale >> a.m_current_unit_id >>
           a.m_quantize_clock >> a.m_quantize_pitch);
 }

@@ -77,8 +77,8 @@ void BroadcastServer::broadcastServerAction(const ServerAction &a) {
 
 void BroadcastServer::broadcastAction(const ClientAction &m, qint64 uid) {
   // TODO offer way to print clientaction
-  qInfo() << "Broadcasting action from" << uid << "to" << m_sessions.size()
-          << "users";
+  // qInfo() << "Broadcasting action from" << uid << "to" << m_sessions.size()
+  //         << "users";
   broadcastServerAction({uid, m});
 }
 

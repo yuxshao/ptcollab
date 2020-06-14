@@ -55,7 +55,20 @@ inline QDataStream &operator>>(QDataStream &in, AddUnit &a) {
   return in;
 }
 
-using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit>;
+struct RemoveUnit {
+  qint32 unit_id;
+};
+inline QDataStream &operator<<(QDataStream &out, const RemoveUnit &a) {
+  out << a.unit_id;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, RemoveUnit &a) {
+  in >> a.unit_id;
+  return in;
+}
+
+using ClientAction =
+    std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit>;
 
 struct NewSession {
   QString username;

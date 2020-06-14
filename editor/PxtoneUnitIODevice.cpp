@@ -24,6 +24,7 @@ void PxtoneUnitIODevice::stopTone() {
 qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
   maxlen = maxlen * sizeof(char) / sizeof(int32_t);
   const pxtnUnit *p_u = pxtn->Unit_Get(unit_no);
+  if (p_u == nullptr) return 0;  // E.g., if unit is removed during playback
   int filled = 0;
   while (filled < maxlen) {
     p_u->Tone_Envelope_Custom(voice_tones);

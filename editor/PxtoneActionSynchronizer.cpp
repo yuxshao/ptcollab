@@ -7,6 +7,7 @@ PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
     : QObject(parent),
       m_uid(uid),
       m_pxtn(pxtn),
+      m_unit_id_map(pxtn),
       m_local_index(0),
       m_remote_index(0) {}
 
@@ -14,7 +15,7 @@ EditAction PxtoneActionSynchronizer::applyLocalAction(
     const std::vector<Action> &action) {
   bool widthChanged = false;
   m_uncommitted.push_back(
-      apply_actions_and_get_undo(action, m_pxtn, &widthChanged));
+      apply_actions_and_get_undo(action, m_pxtn, &widthChanged, m_unit_id_map));
   if (widthChanged) emit measureNumChanged();
   qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   qDebug() << "New action";
@@ -60,18 +61,18 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
     // things that don't intersect in bbox
     for (auto uncommitted = m_uncommitted.rbegin();
          uncommitted != m_uncommitted.rend(); ++uncommitted) {
-      *uncommitted =
-          apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
+      *uncommitted = apply_actions_and_get_undo(*uncommitted, m_pxtn,
+                                                &widthChanged, m_unit_id_map);
     }
 
     // apply the committed action
-    std::vector<Action> reverse =
-        apply_actions_and_get_undo(action.action, m_pxtn, &widthChanged);
+    std::vector<Action> reverse = apply_actions_and_get_undo(
+        action.action, m_pxtn, &widthChanged, m_unit_id_map);
 
     // redo each of the uncommitted actions forwards
     for (std::vector<Action> &uncommitted : m_uncommitted) {
-      uncommitted =
-          apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
+      uncommitted = apply_actions_and_get_undo(uncommitted, m_pxtn,
+                                               &widthChanged, m_unit_id_map);
     }
 
     m_log.emplace_back(uid, action.idx, reverse);
@@ -130,8 +131,8 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
   bool widthChanged = false;
   for (auto uncommitted = m_uncommitted.rbegin();
        uncommitted != m_uncommitted.rend(); ++uncommitted) {
-    *uncommitted =
-        apply_actions_and_get_undo(*uncommitted, m_pxtn, &widthChanged);
+    *uncommitted = apply_actions_and_get_undo(*uncommitted, m_pxtn,
+                                              &widthChanged, m_unit_id_map);
   }
 
   // Go back to the target action by user, temporarily undoing
@@ -143,30 +144,33 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
     while (it != target) {
       if (it->state == LoggedAction::UndoState::DONE) {
         qDebug() << "Temporarily undoing " << it->uid << it->idx;
-        it->reverse =
-            apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+        it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn,
+                                                 &widthChanged, m_unit_id_map);
         temporarily_undone.push_front(&(*it));
       }
       ++it;
     }
-    it->reverse =
-        apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+    it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged,
+                                             m_unit_id_map);
     it->state = (it->state == LoggedAction::UNDONE ? LoggedAction::DONE
                                                    : LoggedAction::UNDONE);
     ;
     for (LoggedAction *it : temporarily_undone)
-      it->reverse =
-          apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged);
+      it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn,
+                                               &widthChanged, m_unit_id_map);
   }
 
   for (std::vector<Action> &uncommitted : m_uncommitted) {
-    uncommitted =
-        apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged);
+    uncommitted = apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged,
+                                             m_unit_id_map);
   }
 
   if (widthChanged) emit measureNumChanged();
 }
 
+// TODO: Could probably also make adding and deleting units undoable. The main
+// thing is they'd have to be added to the log. And a record of a delete needs
+// to include the notes that were deleted with it.
 void PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
   if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
@@ -182,6 +186,7 @@ void PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
     qWarning("Could not add another unit.");
     return;
   } else {
+    m_unit_id_map.addUnit();
     int unit_no = m_pxtn->Unit_Num() - 1;
     pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
     std::string unit_name_str =
@@ -193,5 +198,23 @@ void PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
     // TODO: This is sort of bad to do, to use a private moo fn for the purposes
     // of note previews. We really need to split out the moo state.
     m_pxtn->moo_ResetVoiceOn_Custom(unit, a.woice_id);
+  }
+}
+
+void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
+                                               qint64 uid) {
+  (void)uid;
+  auto unit_no_maybe = m_unit_id_map.idToNo(a.unit_id);
+  if (unit_no_maybe == std::nullopt) {
+    qWarning("Unit ID (%d) doesn't exist.", a.unit_id);
+    return;
+  }
+  qint32 unit_no = unit_no_maybe.value();
+  m_pxtn->evels->Record_UnitNo_Miss(unit_no);
+  if (!m_pxtn->Unit_Remove(unit_no)) {
+    qWarning("Could not remove unit.");
+    return;
+  } else {
+    m_unit_id_map.removeUnit(unit_no);
   }
 }

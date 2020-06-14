@@ -28,9 +28,10 @@ class KeyboardEditor : public QWidget {
   void toggleShowAllUnits();
   void loadHistory(const QList<ServerAction> &history);
   void setUid(qint64 uid);
+  void resetUnitIdMap();
 
  signals:
-  void currentUnitChanged(int);
+  void currentUnitNoChanged(int);
   void unitsChanged();
   void showAllChanged(bool);
   void onEdit();
@@ -41,12 +42,11 @@ class KeyboardEditor : public QWidget {
  public slots:
   void setQuantXIndex(int);
   void setQuantYIndex(int);
-  void setCurrentUnit(int);
+  void setCurrentUnitNo(int);
+  void removeCurrentUnit();
   void setShowAll(bool);
   void clearRemoteEditStates();
   void processRemoteAction(const ServerAction &a);
-  void undo();
-  void redo();
 
  private:
   void mousePressEvent(QMouseEvent *event) override;

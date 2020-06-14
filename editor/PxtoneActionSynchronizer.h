@@ -29,13 +29,15 @@ class PxtoneActionSynchronizer : public QObject {
   EditAction applyLocalAction(const std::vector<Action> &action);
   void setUid(qint64 uid);
   qint64 uid();
+  const UnitIdMap &unitIdMap() { return m_unit_id_map; }
+  void resetUnitIdMap() { m_unit_id_map = UnitIdMap(m_pxtn); }
 
  public slots:
   // Maybe these three types could be grouped.
   void applyRemoteAction(const EditAction &a, qint64 uid);
-  // Undo should become UndoRedo and have a bool in it
   void applyUndoRedo(const UndoRedo &r, qint64 uid);
   void applyAddUnit(const AddUnit &a, qint64 uid);
+  void applyRemoveUnit(const RemoveUnit &a, qint64 uid);
  signals:
   void measureNumChanged();
 
@@ -44,6 +46,7 @@ class PxtoneActionSynchronizer : public QObject {
   pxtnService *m_pxtn;
   std::vector<LoggedAction> m_log;
   std::list<std::vector<Action>> m_uncommitted;
+  UnitIdMap m_unit_id_map;
   int m_local_index;
   int m_remote_index;
 };

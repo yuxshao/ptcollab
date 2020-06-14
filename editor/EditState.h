@@ -49,7 +49,7 @@ QDataStream &operator>>(QDataStream &in, Scale &a);
 struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
-  int m_current_unit;
+  int m_current_unit_id;
   int m_quantize_clock;
   int m_quantize_pitch;
   EditState();

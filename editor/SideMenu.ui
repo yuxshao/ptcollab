@@ -100,12 +100,15 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QPushButton" name="addUnitBn">
+      <widget class="QPushButton" name="addUnitBtn">
        <property name="maximumSize">
         <size>
          <width>35</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
         <string>+</string>
@@ -113,12 +116,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="subUnitBtn">
+      <widget class="QPushButton" name="removeUnitBtn">
        <property name="maximumSize">
         <size>
          <width>35</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
         <string>-</string>
