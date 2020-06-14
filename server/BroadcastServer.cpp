@@ -8,7 +8,7 @@ BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
-      m_file(filename.toStdString()),
+      m_file(filename),
       m_next_uid(0) {
   if (!m_server->listen(QHostAddress::Any, port))
     throw QString("Unable to start TCP server: %1")

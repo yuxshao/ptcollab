@@ -15,10 +15,15 @@ class Data {
 
  public:
   Data() : f(nullptr), m_data(nullptr), m_size(0) {}
-  Data(std::string filename)
-      : f(fopen(filename.c_str(), "rb")), m_data(nullptr) {
+  Data(QString filename) : f(nullptr), m_data(nullptr) {
+#ifdef _WIN32
+    f = _wfopen(filename.toStdWstring().c_str(), "rb");
+#else
+    f = fopen(filename.toStdString().c_str(), "rb");
+#endif
     if (f == nullptr)
-      throw std::runtime_error("Unable to open file: " + filename);
+      throw std::runtime_error("Unable to open file: " +
+                               filename.toStdString());
     m_desc.set_file_r(f);
     m_size = m_desc.get_size_bytes();
   };

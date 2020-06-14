@@ -77,6 +77,10 @@
   - autofill name, double click to add
   - switch to unit directly
 
+6/14 
+1. more generic binary serialization
+2. hopefully unicode?
+
 TODO:
  - adding / deleting instrs
  - Unit view, at least for drums

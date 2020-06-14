@@ -309,8 +309,12 @@ void EditorWindow::loadFileAndHost() {
 }
 
 bool EditorWindow::saveToFile(QString filename) {
-  std::unique_ptr<std::FILE, decltype(&fclose)> f(
-      fopen(filename.toStdString().c_str(), "wb"), &fclose);
+#ifdef _WIN32
+  FILE *f_raw = _wfopen(filename.toStdWstring().c_str(), "wb");
+#else
+  FILE *f_raw = fopen(filename.toStdString().c_str(), "wb");
+#endif
+  std::unique_ptr<std::FILE, decltype(&fclose)> f(f_raw, &fclose);
   if (!f) {
     qWarning() << "Could not open file";
     return false;
