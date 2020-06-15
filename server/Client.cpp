@@ -40,6 +40,11 @@ void Client::sendAction(const ClientAction &m) {
   if (m_socket->isOpen()) m_data_stream << m;
 }
 
+void Client::sendActionWithData(ClientAction &&m) {
+  // No const here b/c the data pointer changes
+  if (m_socket->isOpen()) m_data_stream << m;
+}
+
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {
@@ -91,7 +96,8 @@ void Client::tryToStart() {
   qDebug() << "Received history of size" << history.size();
 
   m_received_hello = true;
-  emit connected(data.descriptor(), history, m_uid);
+  pxtnDescriptor d = data.descriptor();
+  emit connected(d, history, m_uid);
   // for (auto it = sessions.begin(); it != sessions.end(); ++it)
   //  emit receivedNewSession(it.value(), it.key());
 }

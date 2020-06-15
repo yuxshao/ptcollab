@@ -26,7 +26,7 @@ class KeyboardEditor : public QWidget {
                           Client *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
-  void loadHistory(const QList<ServerAction> &history);
+  void loadHistory(QList<ServerAction> &history);
   void setUid(qint64 uid);
   void resetUnitIdMap();
 
@@ -46,7 +46,7 @@ class KeyboardEditor : public QWidget {
   void removeCurrentUnit();
   void setShowAll(bool);
   void clearRemoteEditStates();
-  void processRemoteAction(const ServerAction &a);
+  void processRemoteAction(ServerAction &a);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;

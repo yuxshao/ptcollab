@@ -220,7 +220,8 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
   }
 }
 
-void PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
+bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
   (void)uid;
-  m_pxtn->Woice_read(m_pxtn->Woice_Num(), &a.data.descriptor(), a.type);
+  pxtnDescriptor d = a.data.descriptor();
+  return m_pxtn->Woice_read(m_pxtn->Woice_Num(), &d, a.type);
 }

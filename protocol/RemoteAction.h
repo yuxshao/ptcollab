@@ -73,7 +73,7 @@ struct AddWoice {
   pxtnWOICETYPE type;
   Data data;
 };
-inline QDataStream &operator<<(QDataStream &out, AddWoice &a) {
+inline QDataStream &operator<<(QDataStream &out, const AddWoice &a) {
   out << a.name << (qint8)a.type << a.data;
   return out;
 }

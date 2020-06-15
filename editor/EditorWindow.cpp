@@ -61,18 +61,18 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client);
-  connect(m_client, &Client::connected,
-          [this](pxtnDescriptor &desc, const QList<ServerAction> &history,
-                 qint64 uid) {
-            HostAndPort host_and_port = m_client->currentlyConnectedTo();
-            m_client_status->setText(tr("Connected to %1:%2")
-                                         .arg(host_and_port.host)
-                                         .arg(host_and_port.port));
-            QMessageBox::information(this, "Connected", "Connected to server.");
-            loadDescriptor(desc);
-            m_keyboard_editor->setUid(uid);
-            m_keyboard_editor->loadHistory(history);
-          });
+  connect(
+      m_client, &Client::connected,
+      [this](pxtnDescriptor &desc, QList<ServerAction> &history, qint64 uid) {
+        HostAndPort host_and_port = m_client->currentlyConnectedTo();
+        m_client_status->setText(tr("Connected to %1:%2")
+                                     .arg(host_and_port.host)
+                                     .arg(host_and_port.port));
+        QMessageBox::information(this, "Connected", "Connected to server.");
+        loadDescriptor(desc);
+        m_keyboard_editor->setUid(uid);
+        m_keyboard_editor->loadHistory(history);
+      });
   connect(m_client, &Client::disconnected, [this]() {
     m_client_status->setText(tr("Not connected"));
     m_keyboard_editor->clearRemoteEditStates();

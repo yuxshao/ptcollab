@@ -8,21 +8,28 @@
 #include "pxtone/pxtnDescriptor.h"
 // TODO: SEe if you can use QFile instead for unicdoe support
 class Data {
-  FILE *f;
-  std::unique_ptr<char[]> m_data;
+  // Mutable because writing Data involves temp. changing the seek ptr.
+  mutable std::shared_ptr<FILE> f;
+  std::shared_ptr<char[]> m_data;
   qint64 m_size;
-  pxtnDescriptor m_desc;
+
+  pxtnDescriptor _descriptor_promise_no_change_to_seek_or_contents(
+      long int *current_seek_pos) const {
+    pxtnDescriptor d;
+    if (current_seek_pos != nullptr) *current_seek_pos = ftell(f.get());
+    d.set_file_r(f.get());
+    return d;
+  }
 
  public:
   Data() : f(nullptr), m_data(nullptr), m_size(0) {}
   Data(QString filename);
 
-  ~Data() {
-    if (f != nullptr) fclose(f);
+  pxtnDescriptor descriptor() {
+    return _descriptor_promise_no_change_to_seek_or_contents(nullptr);
   }
-  pxtnDescriptor &descriptor() { return m_desc; }
 
-  friend QDataStream &operator<<(QDataStream &out, Data &m);
+  friend QDataStream &operator<<(QDataStream &out, const Data &m);
   friend QDataStream &operator>>(QDataStream &in, Data &m);
 };
 

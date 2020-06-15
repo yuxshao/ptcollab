@@ -37,6 +37,7 @@ class pxtnDescriptor {
 
  public:
   pxtnDescriptor();
+  pxtnDescriptor(pxtnDescriptor &&src) = default;
 
   bool set_file_r(FILE *fp);
   bool set_file_w(FILE *fp);

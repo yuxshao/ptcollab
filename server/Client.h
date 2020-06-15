@@ -17,12 +17,13 @@ class Client : public QObject {
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port, QString username);
   void sendAction(const ClientAction &m);
+  void sendActionWithData(ClientAction &&m);
   qint64 uid();
  signals:
-  void connected(pxtnDescriptor &desc, const QList<ServerAction> &history,
+  void connected(pxtnDescriptor &desc, QList<ServerAction> &history,
                  qint64 uid);
   void disconnected();
-  void receivedAction(const ServerAction &m);
+  void receivedAction(ServerAction &m);
   void errorOccurred(QString error);
 
  private:

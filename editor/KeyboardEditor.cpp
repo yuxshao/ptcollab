@@ -80,11 +80,11 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
-void KeyboardEditor::processRemoteAction(const ServerAction &a) {
+void KeyboardEditor::processRemoteAction(ServerAction &a) {
   qint64 uid = a.uid;
   std::visit(
       overloaded{
-          [this, uid](const ClientAction &s) {
+          [this, uid](ClientAction &s) {
             std::visit(
                 overloaded{
                     [this, uid](const EditState &s) {
@@ -709,8 +709,8 @@ void KeyboardEditor::toggleShowAllUnits() {
   emit showAllChanged(m_show_all_units);
 }
 
-void KeyboardEditor::loadHistory(const QList<ServerAction> &history) {
-  for (const ServerAction &a : history) processRemoteAction(a);
+void KeyboardEditor::loadHistory(QList<ServerAction> &history) {
+  for (ServerAction &a : history) processRemoteAction(a);
 }
 
 void KeyboardEditor::setUid(qint64 uid) { m_sync->setUid(uid); }
