@@ -52,8 +52,19 @@ SideMenu::SideMenu(QWidget* parent)
         tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
     if (filename != "") emit addWoice(filename);
   });
-  connect(ui->removeWoiceBtn, &QPushButton::clicked, this,
-          &SideMenu::removeWoice);
+  connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
+    int idx = ui->woiceList->currentRow();
+    if (idx >= 0) {
+      if (ui->woiceList->count() > 0 &&
+          QMessageBox::question(
+              this, tr("Are you sure?"),
+              tr("Are you sure you want to delete the voice "
+                 "(%1)? This cannot be undone.")
+                  .arg(ui->woiceList->currentItem()->text())) ==
+              QMessageBox::Yes)
+        emit removeWoice(idx, ui->woiceList->currentItem()->text());
+    }
+  });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     QString name = m_add_unit_dialog->getUnitNameSelection();

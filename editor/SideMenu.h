@@ -31,7 +31,7 @@ class SideMenu : public QWidget {
   void removeUnit();
   // TODO: Maybe set up the UI so that you can also give a name
   void addWoice(QString filename);
-  void removeWoice(int idx);
+  void removeWoice(int idx, QString name);
 
  public slots:
   void setQuantXIndex(int);

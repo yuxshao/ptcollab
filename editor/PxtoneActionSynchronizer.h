@@ -33,6 +33,7 @@ class PxtoneActionSynchronizer : public QObject {
   void resetUnitIdMap() { m_unit_id_map = UnitIdMap(m_pxtn); }
   bool applyAddUnit(const AddUnit &a, qint64 uid);
   bool applyAddWoice(AddWoice &a, qint64 uid);
+  bool applyRemoveWoice(RemoveWoice &a, qint64 uid);
 
  public slots:
   // Maybe these types could be grouped.

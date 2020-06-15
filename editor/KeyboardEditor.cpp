@@ -31,6 +31,16 @@ QList<std::pair<qint64, QString>> getUserList(
     list.append(std::make_pair(it->first, it->second.user));
   return list;
 }
+// int64_t(m_edit_state.mouse_edit_state.current_clock)
+void seekMoo(pxtnService *pxtn, int64_t clock) {
+  pxtnVOMITPREPARATION prep{};
+  prep.flags |= pxtnVOMITPREPFLAG_loop;
+  prep.start_pos_sample = clock * 60 * 44100 / pxtn->master->get_beat_clock() /
+                          pxtn->master->get_beat_tempo();
+  prep.master_volume = 0.80f;
+  pxtn->moo_preparation(&prep);
+}
+
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                                Client *client, QScrollArea *parent)
     : QWidget(parent),
@@ -81,6 +91,10 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
+// It sort of sucks that ServerAction isn't const. This has to do with the fact
+// that events that involve reading from a pxtnDescriptor can't be made const
+// easily and also be serializable from a file in the same type. Perhaps if the
+// pxtone API had a 'read descriptor' separate from a 'write descriptor'...
 void KeyboardEditor::processRemoteAction(ServerAction &a) {
   qint64 uid = a.uid;
   std::visit(
@@ -113,6 +127,19 @@ void KeyboardEditor::processRemoteAction(ServerAction &a) {
                               this, tr("Could not add voice"),
                               tr("Could not add voice %1").arg(s.name));
                       }
+                    },
+                    [this, uid](RemoveWoice &s) {
+                      bool success = m_sync->applyRemoveWoice(s, uid);
+                      emit woicesChanged();
+                      if (!success && uid == m_sync->uid())
+                        QMessageBox::warning(
+                            this, tr("Could not remove voice"),
+                            tr("Could not add remove %1").arg(s.name));
+                      else
+                        // TODO: Not a great way to handle deleted
+                        // woices. But I'm not really sure how else. Probably
+                        // related to that task for separating out moo.
+                        seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
                     },
                     [this, uid](const AddUnit &s) {
                       bool success = m_sync->applyAddUnit(s, uid);
@@ -815,13 +842,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                            clock_int.end});
         break;
       case MouseEditState::Seek: {
-        pxtnVOMITPREPARATION prep{};
-        prep.flags |= pxtnVOMITPREPFLAG_loop;
-        prep.start_pos_sample =
-            int64_t(m_edit_state.mouse_edit_state.current_clock) * 60 * 44100 /
-            m_pxtn->master->get_beat_clock() / m_pxtn->master->get_beat_tempo();
-        prep.master_volume = 0.80f;
-        m_pxtn->moo_preparation(&prep);
+        seekMoo(m_pxtn, m_edit_state.mouse_edit_state.current_clock);
       } break;
       case MouseEditState::Nothing:
         break;

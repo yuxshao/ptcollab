@@ -81,15 +81,18 @@
 1. more generic binary serialization
 2. hopefully unicode?
 3. fix crash when you rejoin. it was a deserial transaction mistakes!
+4. Add instruments!
+5. remove instruments
 
 TODO:
- - adding / deleting instrs
+ - Sticky velocity set
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
- - fix crash when you rejoin
+ - change voice events
+   - this will require a map from voice id to no
  - moving voices up and down
  - show measure num, set loop points
    - will probably need some pixel font thing

@@ -92,7 +92,7 @@ inline QDataStream &operator>>(QDataStream &in, AddWoice &a) {
 
 struct RemoveWoice {
   qint32 id;
-  qint32 name;
+  QString name;
 };
 inline QDataStream &operator<<(QDataStream &out, const RemoveWoice &a) {
   out << a.id << a.name;
@@ -104,7 +104,7 @@ inline QDataStream &operator>>(QDataStream &in, RemoveWoice &a) {
 }
 
 using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit,
-                                  RemoveUnit, AddWoice>;
+                                  RemoveUnit, AddWoice, RemoveWoice>;
 
 struct NewSession {
   QString username;

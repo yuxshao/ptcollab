@@ -228,11 +228,44 @@ bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
     qDebug() << "Woice_read error" << result;
     return false;
   }
-  QString name = a.name;
+  QString name(a.name);
   name.truncate(pxtnMAX_TUNEWOICENAME);
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
   m_pxtn->Woice_Get_variable(woice_idx)->set_name_buf(
       name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice_idx);
+  return true;
+}
+
+// TODO: Once you add the ability for units to change instruments,
+// you'll need a map for voices.
+bool PxtoneActionSynchronizer::applyRemoveWoice(RemoveWoice &a, qint64 uid) {
+  (void)uid;
+  if (m_pxtn->Woice_Num() == 1) {
+    qWarning() << "Cannot remove last woice.";
+    return false;
+  }
+  QString expected_name(a.name);
+  expected_name.truncate(pxtnMAX_TUNEWOICENAME);
+
+  const pxtnWoice *woice = m_pxtn->Woice_Get(a.id);
+  if (woice == nullptr) {
+    qWarning() << "Received command to remove woice" << a.id
+               << "that doesn't exist.";
+    return false;
+  }
+
+  QString actual_name(woice->get_name_buf(nullptr));
+  if (actual_name != expected_name) {
+    qWarning() << "Received command to remove woice" << a.id
+               << "with mismatched name" << expected_name << actual_name;
+    return false;
+  }
+
+  if (!m_pxtn->Woice_Remove(a.id)) {
+    qWarning() << "Could not remove woice" << a.id << expected_name;
+    return false;
+  }
+  m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
   return true;
 }

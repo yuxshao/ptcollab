@@ -148,6 +148,13 @@ EditorWindow::EditorWindow(QWidget *parent)
     QString name = fileinfo.baseName();
     m_client->sendAction(AddWoice{type, name, data});
   });
+  connect(m_side_menu, &SideMenu::removeWoice, [this](int idx, QString name) {
+    if (m_pxtn.Woice_Num() == 1) {
+      QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));
+      return;
+    }
+    if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
+  });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);
 
