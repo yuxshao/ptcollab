@@ -17,7 +17,10 @@ class Data {
       long int *current_seek_pos) const {
     pxtnDescriptor d;
     if (current_seek_pos != nullptr) *current_seek_pos = ftell(f.get());
-    d.set_file_r(f.get());
+    if (f != nullptr)
+      d.set_file_r(f.get());
+    else
+      d.set_memory_r(m_data.get(), m_size);
     return d;
   }
 
