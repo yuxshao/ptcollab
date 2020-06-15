@@ -10,7 +10,7 @@
 class BroadcastServer : public QObject {
   Q_OBJECT
  public:
-  BroadcastServer(QString filename, int port, QObject *parent = nullptr);
+  BroadcastServer(Data &&data, int port, QObject *parent = nullptr);
   ~BroadcastServer();
   int port();
 
@@ -24,7 +24,7 @@ class BroadcastServer : public QObject {
   QTcpServer *m_server;
   QList<ServerAction> m_history;
   std::list<ServerSession *> m_sessions;
-  Data m_file;
+  Data m_data;
   int m_next_uid;
   void broadcastServerAction(const ServerAction &a);
 };

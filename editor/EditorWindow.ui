@@ -27,19 +27,22 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionHost"/>
+    <addaction name="actionNewHost"/>
+    <addaction name="actionOpenHost"/>
     <addaction name="actionConnect"/>
+    <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionHelp"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionHost">
+  <action name="actionOpenHost">
    <property name="text">
-    <string>Host</string>
+    <string>Open &amp;&amp; Host</string>
    </property>
   </action>
   <action name="actionSave">
@@ -65,6 +68,11 @@
   <action name="actionHelp">
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="actionNewHost">
+   <property name="text">
+    <string>New &amp;&amp; Host</string>
    </property>
   </action>
  </widget>

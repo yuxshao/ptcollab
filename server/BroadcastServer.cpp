@@ -4,11 +4,11 @@
 #include <QMessageBox>
 #include <QTcpSocket>
 
-BroadcastServer::BroadcastServer(QString filename, int port, QObject *parent)
+BroadcastServer::BroadcastServer(Data &&data, int port, QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
-      m_file(filename),
+      m_data(data),
       m_next_uid(0) {
   if (!m_server->listen(QHostAddress::Any, port))
     throw QString("Unable to start TCP server: %1")
@@ -63,7 +63,7 @@ void BroadcastServer::newClient() {
                       session->deleteLater();
                     });
 
-            session->sendHello(m_file, m_history, sessionMapping(m_sessions));
+            session->sendHello(m_data, m_history, sessionMapping(m_sessions));
             connect(session, &ServerSession::receivedAction, this,
                     &BroadcastServer::broadcastAction);
           });

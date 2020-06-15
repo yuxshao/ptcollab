@@ -69,6 +69,7 @@ EditorWindow::EditorWindow(QWidget *parent)
                                      .arg(host_and_port.host)
                                      .arg(host_and_port.port));
         QMessageBox::information(this, "Connected", "Connected to server.");
+        m_side_menu->setEditWidgetsEnabled(true);
         loadDescriptor(desc);
         m_keyboard_editor->setUid(uid);
         m_keyboard_editor->loadHistory(history);
@@ -91,6 +92,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setVisible(true);
 
   m_side_menu = new SideMenu;
+
+  m_side_menu->setEditWidgetsEnabled(false);
   m_splitter->addWidget(m_side_menu);
   m_splitter->addWidget(m_scroll_area);
   m_splitter->setSizes(QList{10, 10000});
@@ -169,13 +172,12 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);
-  connect(m_side_menu, &SideMenu::hostButtonPressed, this,
-          &EditorWindow::loadFileAndHost);
+  connect(m_side_menu, &SideMenu::hostButtonPressed, [this]() { Host(true); });
   connect(m_side_menu, &SideMenu::connectButtonPressed, this,
           &EditorWindow::connectToHost);
 
-  connect(ui->actionHost, &QAction::triggered, this,
-          &EditorWindow::loadFileAndHost);
+  connect(ui->actionNewHost, &QAction::triggered, [this]() { Host(false); });
+  connect(ui->actionOpenHost, &QAction::triggered, [this]() { Host(true); });
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
@@ -245,10 +247,13 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_A:
       m_keyboard_editor->toggleShowAllUnits();
       break;
+    case Qt::Key_N:
+      if (event->modifiers() & Qt::ControlModifier) Host(false);
+      break;
     case Qt::Key_O:
       if (event->modifiers() & Qt::ControlModifier) {
         if (event->modifiers() & Qt::ShiftModifier)
-          loadFileAndHost();
+          Host(true);
         else
           connectToHost();
       }
@@ -286,10 +291,14 @@ void EditorWindow::refreshSideMenuWoices() {
     woices.append(m_pxtn.Woice_Get(i)->get_name_buf(nullptr));
   m_side_menu->setWoiceList(QStringList(woices));
 }
+
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
-  if (m_pxtn.read(&desc) != pxtnOK) {
-    qWarning() << "Error reading pxtone data from descriptor";
-    return false;
+  // An empty desc is interpreted as an empty file so we don't error.
+  if (desc.get_size_bytes() > 0) {
+    if (m_pxtn.read(&desc) != pxtnOK) {
+      qWarning() << "Error reading pxtone data from descriptor";
+      return false;
+    }
   }
   // TODO: this unit ID map should be much closer to the service.
   m_keyboard_editor->resetUnitIdMap();
@@ -313,15 +322,17 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   return true;
 }
 
-void EditorWindow::loadFileAndHost() {
+void EditorWindow::Host(bool load_file) {
   if (m_server) {
     auto result = QMessageBox::question(this, "Server already running",
                                         "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
-  QString filename = QFileDialog::getOpenFileName(this, "Open file", "",
-                                                  "pxtone projects (*.ptcop)");
-  if (filename.length() == 0) return;
+  QString filename =
+      load_file ? QFileDialog::getOpenFileName(this, "Open file", "",
+                                               "pxtone projects (*.ptcop)")
+                : "";
+  if (load_file && filename.length() == 0) return;
   bool ok;
   int port =
       QInputDialog::getInt(this, "Port", "What port should this server run on?",
@@ -337,7 +348,10 @@ void EditorWindow::loadFileAndHost() {
     qDebug() << "Stopped old server";
   }
   try {
-    m_server = new BroadcastServer(filename, port, this);
+    if (load_file)
+      m_server = new BroadcastServer(Data(filename), port, this);
+    else
+      m_server = new BroadcastServer(Data(), port, this);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;

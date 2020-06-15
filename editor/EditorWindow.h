@@ -30,11 +30,10 @@ class EditorWindow : public QMainWindow {
   ~EditorWindow();
 
  private slots:
-  void loadFileAndHost();
-
   void connectToHost();
 
  private:
+  void Host(bool load_file);
   void keyPressEvent(QKeyEvent* event);
   QAudioOutput* m_audio;
   KeyboardEditor* m_keyboard_editor;

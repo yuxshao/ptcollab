@@ -80,9 +80,11 @@
 6/14 
 1. more generic binary serialization
 2. hopefully unicode?
-3. fix crash when you rejoin. it was a deserial transaction mistakes!
-4. Add instruments!
+3. fix crash when you rejoin. it was a deserial transaction mistake!
+4. Add instruments! - lots of fumbling around with descriptor
 5. remove instruments
+6. sticky vel
+7. host empty
 
 TODO:
  - Unit view, at least for drums
@@ -90,25 +92,25 @@ TODO:
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
- - change voice events
-   - this will require a map from voice id to no
+ - bottom bar for changing other params like vol, pan, etc.
+   - change voice events will require a map from voice id to no
  - moving voices up and down
  - show measure num, set loop points
    - will probably need some pixel font thing
+ - set tempo, time signature
  - edit while playing soundness
    - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
  - take some inspiration from domino midi! linear changing of params
 
 Technical stuff:
- - streaming opreator for pxtnDesc
-   - then you can generalize adding / subbing voices
+ - have a pxtndescriptor for reading. lets us keep const property on read.
  - factor out moo state from pxtn state
    - can then preview notes at the time they're played
      - this is important now that velocity is sticky. ppl should hear notes at
        the right volume
- - server keeps its own state + running history (currently it plays back
-   -everything-)
+ - server keeps its own state (e.g., active users) + running history (currently
+   it plays back -everything-)
 
 Synchronization:
  - Changes to units / adding voices?

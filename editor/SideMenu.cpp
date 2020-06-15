@@ -77,6 +77,15 @@ SideMenu::SideMenu(QWidget* parent)
   ui->userList->setModel(m_users);
 }
 
+void SideMenu::setEditWidgetsEnabled(bool b) {
+  // Really only this first one is necessary, since you can't add anything else
+  // without it.
+  ui->addWoiceBtn->setEnabled(b);
+  ui->removeWoiceBtn->setEnabled(b);
+  ui->addUnitBtn->setEnabled(b);
+  ui->removeUnitBtn->setEnabled(b);
+}
+
 SideMenu::~SideMenu() { delete ui; }
 
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }

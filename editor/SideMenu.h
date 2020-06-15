@@ -15,6 +15,7 @@ class SideMenu : public QWidget {
 
  public:
   explicit SideMenu(QWidget *parent = nullptr);
+  void setEditWidgetsEnabled(bool);
   ~SideMenu();
 
  signals:
