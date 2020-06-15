@@ -16,11 +16,13 @@ class Data {
   pxtnDescriptor _descriptor_promise_no_change_to_seek_or_contents(
       long int *current_seek_pos) const {
     pxtnDescriptor d;
-    if (current_seek_pos != nullptr) *current_seek_pos = ftell(f.get());
-    if (f != nullptr)
+    if (f != nullptr) {
       d.set_file_r(f.get());
-    else
+      if (current_seek_pos != nullptr) *current_seek_pos = ftell(f.get());
+    } else {
       d.set_memory_r(m_data.get(), m_size);
+      if (current_seek_pos != nullptr) *current_seek_pos = -1;
+    }
     return d;
   }
 

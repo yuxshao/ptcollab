@@ -223,5 +223,16 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
 bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
   (void)uid;
   pxtnDescriptor d = a.data.descriptor();
-  return m_pxtn->Woice_read(m_pxtn->Woice_Num(), &d, a.type);
+  pxtnERR result = m_pxtn->Woice_read(m_pxtn->Woice_Num(), &d, a.type);
+  if (result != pxtnOK) {
+    qDebug() << "Woice_read error" << result;
+    return false;
+  }
+  QString name = a.name;
+  name.truncate(pxtnMAX_TUNEWOICENAME);
+  int32_t woice_idx = m_pxtn->Woice_Num() - 1;
+  m_pxtn->Woice_Get_variable(woice_idx)->set_name_buf(
+      name.toStdString().c_str(), name.length());
+  m_pxtn->Woice_ReadyTone(woice_idx);
+  return true;
 }

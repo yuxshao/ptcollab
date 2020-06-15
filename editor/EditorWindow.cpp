@@ -123,6 +123,31 @@ EditorWindow::EditorWindow(QWidget *parent)
             AddUnit{woice_id, m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
                     unit_name});
       });
+  connect(m_side_menu, &SideMenu::addWoice, [this](QString path) {
+    QFileInfo fileinfo(path);
+    QString filename = fileinfo.fileName();
+    QString suffix = fileinfo.suffix().toLower();
+    pxtnWOICETYPE type;
+
+    if (suffix == "ptvoice")
+      type = pxtnWOICE_PTV;
+    else if (suffix == "ptnoise")
+      type = pxtnWOICE_PTN;
+    else if (suffix == "ogg" || suffix == "oga")
+      type = pxtnWOICE_OGGV;
+    else if (suffix == "wav")
+      type = pxtnWOICE_PCM;
+    else {
+      QMessageBox::critical(this, tr("Invalid file type"),
+                            tr("Voice file (%1) has invalid extension (%2)")
+                                .arg(filename)
+                                .arg(suffix));
+      return;
+    }
+    Data data(path);
+    QString name = fileinfo.baseName();
+    m_client->sendAction(AddWoice{type, name, data});
+  });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);
 
@@ -249,10 +274,10 @@ void EditorWindow::refreshSideMenuUnits() {
 }
 
 void EditorWindow::refreshSideMenuWoices() {
-  std::vector<QString> woices;
+  QStringList woices;
   for (int i = 0; i < m_pxtn.Woice_Num(); ++i)
-    woices.push_back(QString(m_pxtn.Woice_Get(i)->get_name_buf(nullptr)));
-  m_side_menu->setUnits(woices);
+    woices.append(m_pxtn.Woice_Get(i)->get_name_buf(nullptr));
+  m_side_menu->setWoiceList(QStringList(woices));
 }
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   if (m_pxtn.read(&desc) != pxtnOK) {

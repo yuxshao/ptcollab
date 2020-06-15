@@ -1,6 +1,7 @@
 #include "KeyboardEditor.h"
 
 #include <QDebug>
+#include <QMessageBox>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPainterPath>
@@ -100,6 +101,18 @@ void KeyboardEditor::processRemoteAction(ServerAction &a) {
                     },
                     [this, uid](const UndoRedo &s) {
                       m_sync->applyUndoRedo(s, uid);
+                    },
+                    [this, uid](AddWoice &s) {
+                      bool success = m_sync->applyAddWoice(s, uid);
+                      emit woicesChanged();
+                      if (!success) {
+                        qWarning() << "Could not add voice" << s.name
+                                   << "from user" << uid;
+                        if (uid == m_sync->uid())
+                          QMessageBox::warning(
+                              this, tr("Could not add voice"),
+                              tr("Could not add voice %1").arg(s.name));
+                      }
                     },
                     [this, uid](const AddUnit &s) {
                       bool success = m_sync->applyAddUnit(s, uid);

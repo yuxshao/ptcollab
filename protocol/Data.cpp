@@ -34,7 +34,7 @@ QDataStream &operator<<(QDataStream &out, const Data &m) {
     bytesLeft -= size;
     out.writeRawData(buffer.get(), size);
   }
-  d.seek(pxtnSEEK_set, starting_seek_pos);
+  if (starting_seek_pos != -1) d.seek(pxtnSEEK_set, starting_seek_pos);
   return out;
 }
 

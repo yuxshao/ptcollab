@@ -33,13 +33,20 @@ inline QDataStream &operator>>(QDataStream &in, EditAction &r) {
 }
 
 enum UndoRedo { UNDO, REDO };
+template <typename T>
+QDataStream &read_as_qint8(QDataStream &in, T &x) {
+  qint8 v;
+  in >> v;
+  x = T(v);
+  return in;
+}
 
 inline QDataStream &operator<<(QDataStream &out, const UndoRedo &a) {
-  out << (qint8)a;
+  out << qint8(a);
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, UndoRedo &a) {
-  in >> *(qint8 *)(&a);
+  read_as_qint8(in, a);
   return in;
 }
 struct AddUnit {
@@ -69,16 +76,17 @@ inline QDataStream &operator>>(QDataStream &in, RemoveUnit &a) {
 }
 
 struct AddWoice {
-  QString name;
   pxtnWOICETYPE type;
+  QString name;
   Data data;
 };
 inline QDataStream &operator<<(QDataStream &out, const AddWoice &a) {
-  out << a.name << (qint8)a.type << a.data;
+  out << (qint8)a.type << a.name << a.data;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, AddWoice &a) {
-  in >> a.name >> *(qint8 *)(&a.type) >> a.data;
+  read_as_qint8(in, a.type);
+  in >> a.name >> a.data;
   return in;
 }
 
@@ -95,8 +103,8 @@ inline QDataStream &operator>>(QDataStream &in, RemoveWoice &a) {
   return in;
 }
 
-using ClientAction =
-    std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit>;
+using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit,
+                                  RemoveUnit, AddWoice>;
 
 struct NewSession {
   QString username;
