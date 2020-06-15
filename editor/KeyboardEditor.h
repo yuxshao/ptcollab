@@ -33,6 +33,7 @@ class KeyboardEditor : public QWidget {
  signals:
   void currentUnitNoChanged(int);
   void unitsChanged();
+  void woicesChanged();
   void showAllChanged(bool);
   void onEdit();
   void editStateChanged();

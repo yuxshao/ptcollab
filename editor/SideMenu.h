@@ -29,6 +29,9 @@ class SideMenu : public QWidget {
   void connectButtonPressed();
   void addUnit(int woice_idx, QString unit_name);
   void removeUnit();
+  // TODO: Maybe set up the UI so that you can also give a name
+  void addWoice(QString filename);
+  void removeWoice(int idx);
 
  public slots:
   void setQuantXIndex(int);

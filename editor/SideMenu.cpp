@@ -46,6 +46,14 @@ SideMenu::SideMenu(QWidget* parent)
             QMessageBox::Yes)
       emit removeUnit();
   });
+  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
+    QString filename = QFileDialog::getOpenFileName(
+        this, tr("Add voice"), "",
+        tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
+    if (filename != "") emit addWoice(filename);
+  });
+  connect(ui->removeWoiceBtn, &QPushButton::clicked, this,
+          &SideMenu::removeWoice);
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     QString name = m_add_unit_dialog->getUnitNameSelection();

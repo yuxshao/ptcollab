@@ -161,7 +161,7 @@
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
-       <string>Instruments</string>
+       <string>Voices</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>

@@ -125,8 +125,11 @@ EditorWindow::EditorWindow(QWidget *parent)
       });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);
+
   connect(m_keyboard_editor, &KeyboardEditor::unitsChanged, this,
           &EditorWindow::refreshSideMenuUnits);
+  connect(m_keyboard_editor, &KeyboardEditor::woicesChanged, this,
+          &EditorWindow::refreshSideMenuWoices);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &EditorWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
@@ -244,9 +247,16 @@ void EditorWindow::refreshSideMenuUnits() {
     units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
   m_side_menu->setUnits(units);
 }
+
+void EditorWindow::refreshSideMenuWoices() {
+  std::vector<QString> woices;
+  for (int i = 0; i < m_pxtn.Woice_Num(); ++i)
+    woices.push_back(QString(m_pxtn.Woice_Get(i)->get_name_buf(nullptr)));
+  m_side_menu->setUnits(woices);
+}
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   if (m_pxtn.read(&desc) != pxtnOK) {
-    qWarning() << "Error reading descriptor";
+    qWarning() << "Error reading pxtone data from descriptor";
     return false;
   }
   // TODO: this unit ID map should be much closer to the service.
