@@ -282,10 +282,9 @@ constexpr int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
 
 int pixelsPerVelocity = 3;
 int impliedVelocity(MouseEditState state, const Scale &scale) {
-  return clamp(
-      EVENTDEFAULT_VELOCITY + (state.current_pitch - state.start_pitch) /
-                                  scale.pitchPerPx / pixelsPerVelocity,
-      0, EVENTMAX_VELOCITY);
+  return clamp(state.base_velocity + (state.current_pitch - state.start_pitch) /
+                                         scale.pitchPerPx / pixelsPerVelocity,
+               0, EVENTMAX_VELOCITY);
 }
 static QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
 void drawOngoingEdit(const EditState &state, QPainter &painter, QPen *pen,
@@ -672,34 +671,32 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   // it's fairly safe I think because the audio output itself cuts off if the
   // unit disappears.
   m_audio_note_preview = audio;
-  m_edit_state.mouse_edit_state =
-      MouseEditState{type, clock, pitch, clock, pitch};
+  m_edit_state.mouse_edit_state = MouseEditState{
+      type, m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
+      pitch};
   emit editStateChanged();
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
-  if (m_edit_state.mouse_edit_state.type == MouseEditState::Type::Nothing &&
+  MouseEditState &state = m_edit_state.mouse_edit_state;
+  if (state.type == MouseEditState::Type::Nothing &&
       event->modifiers() & Qt::ShiftModifier) {
-    m_edit_state.mouse_edit_state.type = MouseEditState::Type::Seek;
+    state.type = MouseEditState::Type::Seek;
   }
-  if (m_edit_state.mouse_edit_state.type == MouseEditState::Type::Seek &&
+  if (state.type == MouseEditState::Type::Seek &&
       !(event->modifiers() & Qt::ShiftModifier)) {
-    m_edit_state.mouse_edit_state.type = MouseEditState::Type::Nothing;
+    state.type = MouseEditState::Type::Nothing;
   }
   // TODO: The edit state should just work in pixel coords. Enough
   // places don't really care about the coord in pitch / clock
   // m_edit_state.scale. Update: Okay maybe not because quantize is useful.
   // Maybe we need more heavyweight abstr
 
-  m_edit_state.mouse_edit_state.current_clock =
-      event->localPos().x() * m_edit_state.scale.clockPerPx;
-  m_edit_state.mouse_edit_state.current_pitch =
-      m_edit_state.scale.pitchOfY(event->localPos().y());
-  if (m_edit_state.mouse_edit_state.type == MouseEditState::Type::Nothing) {
-    m_edit_state.mouse_edit_state.start_clock =
-        m_edit_state.mouse_edit_state.current_clock;
-    m_edit_state.mouse_edit_state.start_pitch =
-        m_edit_state.mouse_edit_state.current_pitch;
+  state.current_clock = event->localPos().x() * m_edit_state.scale.clockPerPx;
+  state.current_pitch = m_edit_state.scale.pitchOfY(event->localPos().y());
+  if (state.type == MouseEditState::Type::Nothing) {
+    state.start_clock = state.current_clock;
+    state.start_pitch = state.current_pitch;
   }
   emit editStateChanged();
   event->ignore();
@@ -808,14 +805,14 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         actions.push_back({Action::ADD, EVENTKIND_ON,
                            m_edit_state.m_current_unit_id, clock_int.start,
                            clock_int.length()});
+        m_edit_state.mouse_edit_state.base_velocity =
+            impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale);
         actions.push_back({Action::ADD, EVENTKIND_VELOCITY,
                            m_edit_state.m_current_unit_id, clock_int.start,
-                           impliedVelocity(m_edit_state.mouse_edit_state,
-                                           m_edit_state.scale)});
+                           m_edit_state.mouse_edit_state.base_velocity});
         actions.push_back({Action::ADD, EVENTKIND_KEY,
                            m_edit_state.m_current_unit_id, clock_int.start,
                            start_pitch});
-
         break;
       case MouseEditState::DeleteOn:
         actions.push_back({Action::DELETE, EVENTKIND_ON,
@@ -849,7 +846,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     }
     if (actions.size() > 0) {
       m_client->sendAction(m_sync->applyLocalAction(actions));
-      // TODO: Change this to like, when the synchronizer receives an action.
+      // TODO: Change this to like, when the synchronizer receives an
+      // action.
       emit onEdit();
     }
     m_edit_state.mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier

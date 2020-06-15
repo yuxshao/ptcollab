@@ -85,7 +85,6 @@
 5. remove instruments
 
 TODO:
- - Sticky velocity set
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
@@ -106,6 +105,8 @@ Technical stuff:
    - then you can generalize adding / subbing voices
  - factor out moo state from pxtn state
    - can then preview notes at the time they're played
+     - this is important now that velocity is sticky. ppl should hear notes at
+       the right volume
  - server keeps its own state + running history (currently it plays back
    -everything-)
 
