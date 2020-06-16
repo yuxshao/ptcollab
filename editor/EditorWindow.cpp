@@ -8,6 +8,7 @@
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
+#include <QDesktopWidget>
 
 #include "pxtone/pxtnDescriptor.h"
 #include "server/BroadcastServer.h"
@@ -32,6 +33,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   int sample_rate = 44100;
   m_pxtn.set_destination_quality(channel_num, sample_rate);
   ui->setupUi(this);
+  resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
 
   QAudioFormat format;
   format.setSampleRate(sample_rate);
