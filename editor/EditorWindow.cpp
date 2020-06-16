@@ -366,7 +366,8 @@ void EditorWindow::Host(bool load_file) {
 
 bool EditorWindow::saveToFile(QString filename) {
 #ifdef _WIN32
-  FILE *f_raw = _wfopen(filename.toStdWstring().c_str(), "wb");
+    FILE *f_raw;
+    _wfopen_s(&f_raw, filename.toStdWString().c_str(), L"rb");
 #else
   FILE *f_raw = fopen(filename.toStdString().c_str(), "wb");
 #endif

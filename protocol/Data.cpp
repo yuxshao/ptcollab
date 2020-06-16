@@ -2,7 +2,8 @@
 
 Data::Data(QString filename) : f(nullptr), m_data(nullptr) {
 #ifdef _WIN32
-  FILE *file = _wfopen(filename.toStdWstring().c_str(), "rb");
+  FILE *file;
+  _wfopen_s(&file, filename.toStdWString().c_str(), L"rb");
 #else
   FILE *file = fopen(filename.toStdString().c_str(), "rb");
 #endif

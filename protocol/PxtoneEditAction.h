@@ -6,6 +6,7 @@
 #include <QList>
 #include <set>
 #include <vector>
+#include <optional>
 
 #include "pxtone/pxtnService.h"
 // Because unit nos are fixed in pxtone, we have to maintain this mapping so
