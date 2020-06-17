@@ -86,6 +86,9 @@
 6. sticky vel
 7. host empty
 
+6/15
+1. Build windows version
+
 TODO:
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
@@ -98,6 +101,7 @@ TODO:
  - show measure num, set loop points
    - will probably need some pixel font thing
  - set tempo, time signature
+ - static build
  - edit while playing soundness
    - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
