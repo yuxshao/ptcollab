@@ -670,7 +670,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   // TODO: This note preview thing is a bit jank in case unit changes. But
   // it's fairly safe I think because the audio output itself cuts off if the
   // unit disappears.
-  m_audio_note_preview = audio;
+  if (audio != nullptr) m_audio_note_preview = audio;
   m_edit_state.mouse_edit_state = MouseEditState{
       type, m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
       pitch};
