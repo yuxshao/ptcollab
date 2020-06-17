@@ -371,14 +371,14 @@ void EditorWindow::Host(bool load_file) {
 
 bool EditorWindow::saveToFile(QString filename) {
 #ifdef _WIN32
-    FILE *f_raw;
-    _wfopen_s(&f_raw, filename.toStdWString().c_str(), L"rb");
+  FILE *f_raw;
+  _wfopen_s(&f_raw, filename.toStdWString().c_str(), L"wb");
 #else
   FILE *f_raw = fopen(filename.toStdString().c_str(), "wb");
 #endif
   std::unique_ptr<std::FILE, decltype(&fclose)> f(f_raw, &fclose);
   if (!f) {
-    qWarning() << "Could not open file";
+    qWarning() << "Could not open file" << filename;
     return false;
   }
   pxtnDescriptor desc;

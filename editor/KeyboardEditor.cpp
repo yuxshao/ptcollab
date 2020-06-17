@@ -623,7 +623,6 @@ QAudioOutput *KeyboardEditor::make_audio(int pitch) {
   format.setByteOrder(QAudioFormat::LittleEndian);
   format.setSampleType(QAudioFormat::SignedInt);
   QAudioOutput *audio = new QAudioOutput(format, this);
-  // TODO: Will have to handle if the unit is deleted while playing.
   auto maybe_unit_no =
       m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
   if (maybe_unit_no != std::nullopt) {

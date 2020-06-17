@@ -94,8 +94,14 @@
 2. Don't use shared ptr array, hopefully better fix now?
 3. Exit menu item
 
+6/17
+1. fix Save As in windows (save to original file is still broken)
+
 TODO:
- - placing notes is choppy in windows. why???
+ - placing notes is choppy in windows. why??? it's because of note preview. how to fix? wasapi?
+ - fix save-to-original-file. I think the problem is that the read handle is still open.
+   - Will probably have to just read it all into memory at beginning since if you save on linux and a new client joins it might screw up.
+ - test cross-platform.
 
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
