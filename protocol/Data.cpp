@@ -42,7 +42,8 @@ QDataStream &operator<<(QDataStream &out, const Data &m) {
 QDataStream &operator>>(QDataStream &in, Data &m) {
   m.f = nullptr;
   in >> m.m_size;
-  m.m_data = std::shared_ptr<char[]>(new char[m.m_size]);
+  // Hopefully this addresses the issue on mac.
+  m.m_data = std::shared_ptr<char>(new char[m.m_size], std::default_delete<char[]>());
 
   qDebug() << "expecting file of size" << m.m_size;
   qint64 read = in.readRawData(m.m_data.get(), m.m_size);

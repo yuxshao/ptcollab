@@ -10,7 +10,7 @@
 class Data {
   // Mutable because writing Data involves temp. changing the seek ptr.
   mutable std::shared_ptr<FILE> f;
-  std::shared_ptr<char[]> m_data;
+  std::shared_ptr<char> m_data;
   qint64 m_size;
 
   pxtnDescriptor _descriptor_promise_no_change_to_seek_or_contents(
