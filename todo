@@ -95,6 +95,8 @@
 TODO:
  - build on mac: no shared ptr array
  - exit menu item
+ - placing notes is choppy in windows. why???
+
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
