@@ -89,7 +89,12 @@
 6/15
 1. Build windows version
 
+6/16
+1. Fix double voice issue with release rclick
+
 TODO:
+ - build on mac: no shared ptr array
+ - exit menu item
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
@@ -106,6 +111,11 @@ TODO:
    - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
  - take some inspiration from domino midi! linear changing of params
+
+Aesthetics:
+customizable piano roll colours
+qwerty midi input
+tab system to edit multiple files at once / switch between sessions
 
 Technical stuff:
  - have a pxtndescriptor for reading. lets us keep const property on read.

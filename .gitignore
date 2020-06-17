@@ -71,3 +71,6 @@ Thumbs.db
 *.dll
 *.exe
 
+# build folder in case others are building
+/bin/
+/build/
