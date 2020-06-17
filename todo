@@ -91,10 +91,10 @@
 
 6/16
 1. Fix double voice issue with release rclick
+2. Don't use shared ptr array, hopefully better fix now?
+3. Exit menu item
 
 TODO:
- - build on mac: no shared ptr array
- - exit menu item
  - placing notes is choppy in windows. why???
 
  - Unit view, at least for drums

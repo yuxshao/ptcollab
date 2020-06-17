@@ -189,6 +189,9 @@ EditorWindow::EditorWindow(QWidget *parent)
                        "horizontally.\nMiddle-click drag also "
                        "scrolls.\nAlt+Scroll to change quantization.");
   });
+  connect(ui->actionExit, &QAction::triggered, []() {
+    QApplication::instance()->quit();
+  });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",

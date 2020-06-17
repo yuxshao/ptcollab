@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>27</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -36,6 +36,7 @@
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionHelp"/>
+    <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -73,6 +74,11 @@
   <action name="actionNewHost">
    <property name="text">
     <string>New &amp;&amp; Host</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>
