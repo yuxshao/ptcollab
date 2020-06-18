@@ -29,8 +29,8 @@ class pxtnDescriptor {
     _TAGLINE_NUM = 128,
   };
 
-  void *_p_desc;
-  bool _b_file;
+  FILE *_p_file;
+  const void *_p_data;
   bool _b_read;
   int32_t _size;
   int32_t _cur;
@@ -41,7 +41,7 @@ class pxtnDescriptor {
 
   bool set_file_r(FILE *fp);
   bool set_file_w(FILE *fp);
-  bool set_memory_r(void *p_mem, int len);
+  bool set_memory_r(const void *p_mem, int len);
   bool seek(pxtnSEEK mode, int val);
 
   bool w_asfile(const void *p, int size, int num);

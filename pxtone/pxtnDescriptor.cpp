@@ -4,20 +4,20 @@
 #include "./pxtn.h"
 
 pxtnDescriptor::pxtnDescriptor() {
-  _p_desc = NULL;
+  _p_file = NULL;
+  _p_data = NULL;
   _size = 0;
-  _b_file = false;
   _b_read = false;
   _cur = 0;
 }
 
 int pxtnDescriptor::get_size_bytes() const { return _size; }
 
-bool pxtnDescriptor::set_memory_r(void *p_mem, int size) {
+bool pxtnDescriptor::set_memory_r(const void *p_mem, int size) {
   if (!p_mem || size < 1) return false;
-  _p_desc = p_mem;
+  _p_file = NULL;
+  _p_data = p_mem;
   _size = size;
-  _b_file = false;
   _b_read = true;
   _cur = 0;
   return true;
@@ -29,9 +29,9 @@ bool pxtnDescriptor::set_file_r(FILE *fd) {
   if (fseek(fd, 0, SEEK_END)) return false;
   _size = (int32_t)ftell(fd);
   if (fseek(fd, 0, SEEK_SET)) return false;
-  _p_desc = fd;
+  _p_file = fd;
+  _p_data = NULL;
 
-  _b_file = true;
   _b_read = true;
   _cur = 0;
   return true;
@@ -40,18 +40,18 @@ bool pxtnDescriptor::set_file_r(FILE *fd) {
 bool pxtnDescriptor::set_file_w(FILE *fd) {
   if (!fd) return false;
 
-  _p_desc = fd;
+  _p_file = fd;
+  _p_data = NULL;
   _size = 0;
-  _b_file = true;
   _b_read = false;
   _cur = 0;
   return true;
 }
 
 bool pxtnDescriptor::seek(pxtnSEEK mode, int val) {
-  if (_b_file) {
+  if (_p_file) {
     int seek_tbl[pxtnSEEK_max + 1] = {SEEK_SET, SEEK_CUR, SEEK_END};
-    if (fseek((FILE *)_p_desc, val, seek_tbl[mode])) return false;
+    if (fseek(_p_file, val, seek_tbl[mode])) return false;
   } else {
     switch (mode) {
       case pxtnSEEK_set:
@@ -77,9 +77,9 @@ bool pxtnDescriptor::seek(pxtnSEEK mode, int val) {
 bool pxtnDescriptor::w_asfile(const void *p, int size, int num) {
   bool b_ret = false;
 
-  if (!_p_desc || !_b_file || _b_read) goto End;
+  if (!_p_file || _b_read) goto End;
 
-  if (int(fwrite(p, size, num, (FILE *)_p_desc)) != num) goto End;
+  if (int(fwrite(p, size, num, _p_file)) != num) goto End;
   _size += size * num;
 
   b_ret = true;
@@ -88,20 +88,20 @@ End:
 }
 
 bool pxtnDescriptor::r(void *p, int size, int num) {
-  if (!_p_desc) return false;
   if (!_b_read) return false;
 
   bool b_ret = false;
 
-  if (_b_file) {
-    if (int(fread(p, size, num, (FILE *)_p_desc)) != num) goto End;
-  } else {
+  if (_p_file) {
+    if (int(fread(p, size, num, _p_file)) != num) goto End;
+  } else if (_p_data) {
     for (int i = 0; i < num; i++) {
       if (_cur + size > _size) goto End;
-      memcpy(&((char *)p)[i], (uint8_t *)_p_desc + _cur, size);
+      memcpy(&((char *)p)[i], (uint8_t *)_p_data + _cur, size);
       _cur += size;
     }
-  }
+  } else
+    return false;
 
   b_ret = true;
 End:
@@ -124,8 +124,7 @@ int pxtnDescriptor_v_chk(int val) {
 
 // ..uint32_t
 int pxtnDescriptor::v_w_asfile(int val, int *p_add) {
-  if (!_p_desc) return 0;
-  if (!_b_file) return 0;
+  if (!_p_file) return 0;
   if (_b_read) return 0;
 
   uint8_t a[5]{};
@@ -178,7 +177,7 @@ int pxtnDescriptor::v_w_asfile(int val, int *p_add) {
     b[3] = (a[2] >> 5) | ((a[3] << 3) & 0x7F) | 0x80;
     b[4] = (a[3] >> 4) | ((a[4] << 4) & 0x7F);
   }
-  if (int32_t(fwrite(b, 1, bytes, (FILE *)_p_desc)) != bytes) return false;
+  if (int32_t(fwrite(b, 1, bytes, _p_file)) != bytes) return false;
   if (p_add) *p_add += bytes;
   _size += bytes;
   return true;
@@ -188,7 +187,7 @@ int pxtnDescriptor::v_w_asfile(int val, int *p_add) {
 
 // 可変長読み込み（int32_t  までを保証）
 bool pxtnDescriptor::v_r(int32_t *p) {
-  if (!_p_desc) return false;
+  if (!_p_file && !_p_data) return false;
   if (!_b_read) return false;
 
   int i;
