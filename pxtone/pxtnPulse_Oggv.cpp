@@ -109,7 +109,7 @@ bool pxtnPulse_Oggv::_SetInformation() {
       goto End;  //{printf("Invalid Vorbis bitstream header. \n");exit(1);}
     case OV_EFAULT:
       goto End;  //{printf("Internal logic fault; indicates a bug or heap/stack
-                 //corruption. \n");exit(1);}
+                 // corruption. \n");exit(1);}
     default:
       break;
   }
@@ -215,7 +215,7 @@ pxtnERR pxtnPulse_Oggv::Decode(pxtnPulse_PCM* p_pcm) const {
     case OV_EFAULT:
       res = pxtnERR_ogg;
       goto term;  //{printf("Internal logic fault; indicates a bug or heap/stack
-                  //corruption. \n");exit(1);}
+                  // corruption. \n");exit(1);}
     default:
       break;
   }

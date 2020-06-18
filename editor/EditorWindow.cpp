@@ -1,6 +1,7 @@
 #include "EditorWindow.h"
 
 #include <QDebug>
+#include <QDesktopWidget>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -8,7 +9,6 @@
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
-#include <QDesktopWidget>
 
 #include "pxtone/pxtnDescriptor.h"
 #include "server/BroadcastServer.h"
@@ -189,9 +189,8 @@ EditorWindow::EditorWindow(QWidget *parent)
                        "horizontally.\nMiddle-click drag also "
                        "scrolls.\nAlt+Scroll to change quantization.");
   });
-  connect(ui->actionExit, &QAction::triggered, []() {
-    QApplication::instance()->quit();
-  });
+  connect(ui->actionExit, &QAction::triggered,
+          []() { QApplication::instance()->quit(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
