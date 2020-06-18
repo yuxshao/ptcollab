@@ -15,11 +15,11 @@ Client::Client(QObject *parent)
     m_received_hello = false;
     emit disconnected();
   });
-  void (QTcpSocket::*errorSignal)(QAbstractSocket::SocketError) =
-      &QTcpSocket::error;
-  connect(m_socket, errorSignal, [this](QAbstractSocket::SocketError) {
-    emit errorOccurred(m_socket->errorString());
-  });
+
+  connect(m_socket, &QTcpSocket::errorOccurred,
+          [this](QAbstractSocket::SocketError) {
+            emit errorOccurred(m_socket->errorString());
+          });
 }
 HostAndPort Client::currentlyConnectedTo() {
   return HostAndPort{m_socket->peerAddress().toString(), m_socket->peerPort()};
