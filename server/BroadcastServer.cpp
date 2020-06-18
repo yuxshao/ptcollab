@@ -4,7 +4,8 @@
 #include <QMessageBox>
 #include <QTcpSocket>
 
-BroadcastServer::BroadcastServer(Data &&data, int port, QObject *parent)
+BroadcastServer::BroadcastServer(const QByteArray &data, int port,
+                                 QObject *parent)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),

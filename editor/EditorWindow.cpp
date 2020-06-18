@@ -149,9 +149,14 @@ EditorWindow::EditorWindow(QWidget *parent)
                                 .arg(suffix));
       return;
     }
-    Data data(path);
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+      QMessageBox::critical(this, tr("Could not open file"),
+                            tr("Could not open file (%1)").arg(filename));
+      return;
+    }
     QString name = fileinfo.baseName();
-    m_client->sendAction(AddWoice{type, name, data});
+    m_client->sendAction(AddWoice{type, name, file.readAll()});
   });
   connect(m_side_menu, &SideMenu::removeWoice, [this](int idx, QString name) {
     if (m_pxtn.Woice_Num() == 1) {
@@ -352,10 +357,15 @@ void EditorWindow::Host(bool load_file) {
     qDebug() << "Stopped old server";
   }
   try {
-    if (load_file)
-      m_server = new BroadcastServer(Data(filename), port, this);
-    else
-      m_server = new BroadcastServer(Data(), port, this);
+    if (load_file) {
+      QFile file(filename);
+      if (!file.open(QIODevice::ReadOnly))
+        // TODO: Probably make a class for common kinds of errors like this.
+        throw QString("Could not read file.");
+
+      m_server = new BroadcastServer(file.readAll(), port, this);
+    } else
+      m_server = new BroadcastServer(QByteArray(), port, this);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
@@ -425,7 +435,7 @@ void EditorWindow::connectToHost() {
                             QLineEdit::Normal, "Anonymous", &ok);
   if (!ok) return;
 
-  // TODO: some validation here? e.g., maybe disallow exotic chars in case type
-  // isn't supported on other clients?
+  // TODO: some validation here? e.g., maybe disallow exotic chars in case
+  // type isn't supported on other clients?
   m_client->connectToServer(host, port, username);
 }

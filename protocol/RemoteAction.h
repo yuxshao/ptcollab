@@ -78,7 +78,7 @@ inline QDataStream &operator>>(QDataStream &in, RemoveUnit &a) {
 struct AddWoice {
   pxtnWOICETYPE type;
   QString name;
-  Data data;
+  QByteArray data;
 };
 inline QDataStream &operator<<(QDataStream &out, const AddWoice &a) {
   out << (qint8)a.type << a.name << a.data;

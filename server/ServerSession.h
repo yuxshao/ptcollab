@@ -13,7 +13,7 @@ class ServerSession : public QObject {
   ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid);
   // Probably don't need super complex state right now. Just need to check if
   // hello is here. enum State { STARTING, READY, DISCONNECTED }; State state();
-  void sendHello(Data &file, const QList<ServerAction> &history,
+  void sendHello(const QByteArray &file, const QList<ServerAction> &history,
                  const QMap<qint64, QString> &sessions);
   void sendAction(const ServerAction &action);
   qint64 uid() const;

@@ -222,7 +222,8 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
 
 bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
   (void)uid;
-  pxtnDescriptor d = a.data.descriptor();
+  pxtnDescriptor d;
+  d.set_memory_r(a.data.constData(), a.data.size());
   pxtnERR result = m_pxtn->Woice_read(m_pxtn->Woice_Num(), &d, a.type);
   if (result != pxtnOK) {
     qDebug() << "Woice_read error" << result;

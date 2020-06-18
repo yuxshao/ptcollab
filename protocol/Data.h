@@ -7,6 +7,11 @@
 
 #include "pxtone/pxtnDescriptor.h"
 // TODO: SEe if you can use QFile instead for unicdoe support
+
+// It is way too annoying to support this, for what? A way to serialize a file
+// as a stream and deserialize to memory? The files aren't that big. A FILE
+// could be modified under our feet even! concretely, you can't save a file on
+// the server if it's being used to seed clients.
 class Data {
   // Mutable because writing Data involves temp. changing the seek ptr.
   mutable std::shared_ptr<FILE> f;

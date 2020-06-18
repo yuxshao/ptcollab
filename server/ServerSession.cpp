@@ -22,12 +22,13 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
 }
 
 // TODO: Include history, sessions, data in hello
-void ServerSession::sendHello(Data &file, const QList<ServerAction> &history,
+void ServerSession::sendHello(const QByteArray &data,
+                              const QList<ServerAction> &history,
                               const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_conn->peerAddress();
 
   m_data_stream.setVersion(QDataStream::Qt_5_14);
-  m_data_stream << ServerHello(m_uid) << file << history << sessions;
+  m_data_stream << ServerHello(m_uid) << data << history << sessions;
 }
 
 void ServerSession::sendAction(const ServerAction &a) { m_data_stream << a; }

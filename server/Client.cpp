@@ -78,7 +78,7 @@ void Client::tryToStart() {
   qInfo() << "Getting initial data from server";
 
   ServerHello hello;
-  Data data;
+  QByteArray data;
   QList<ServerAction> history;
   // TODO: actually use sessions using the history state thing from before
   QMap<qint64, QString> sessions;
@@ -96,7 +96,8 @@ void Client::tryToStart() {
   qDebug() << "Received history of size" << history.size();
 
   m_received_hello = true;
-  pxtnDescriptor d = data.descriptor();
+  pxtnDescriptor d;
+  d.set_memory_r(data.constData(), data.size());
   emit connected(d, history, m_uid);
   // for (auto it = sessions.begin(); it != sessions.end(); ++it)
   //  emit receivedNewSession(it.value(), it.key());
