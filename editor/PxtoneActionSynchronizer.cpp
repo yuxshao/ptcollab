@@ -193,7 +193,7 @@ bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   std::string unit_name_str =
       a.unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
   const char *unit_name_buf = unit_name_str.c_str();
-  unit->set_name_buf(unit_name_buf, unit_name_str.length());
+  unit->set_name_buf(unit_name_buf, int32_t(unit_name_str.length()));
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
   unit->Tone_Init();
   // TODO: This is sort of bad to do, to use a private moo fn for the purposes
