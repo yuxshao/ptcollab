@@ -83,14 +83,6 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
           [this]() { updateGeometry(); });
 }
 
-// boilerplate for std::visit
-template <class... Ts>
-struct overloaded : Ts... {
-  using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
 // It sort of sucks that ServerAction isn't const. This has to do with the fact
 // that events that involve reading from a pxtnDescriptor can't be made const
 // easily and also be serializable from a file in the same type. Perhaps if the

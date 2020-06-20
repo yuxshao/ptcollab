@@ -10,6 +10,14 @@
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/SerializeVariant.h"
 
+// boilerplate for std::visit
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
 inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
   return out;
 }
@@ -122,11 +130,20 @@ struct ServerAction {
   qint64 uid;
   std::variant<ClientAction, NewSession, DeleteSession> action;
   bool shouldBeRecorded() const {
-    // TODO: match on variant, only return editaction
     // TODO: instead of using this to track history, have the broadcast server
     // update its own internal state (similar to the synchronizer) and return
     // that
-    return true;
+    bool ret;
+    std::visit(
+        overloaded{[&ret](const ClientAction &a) {
+                     std::visit(
+                         overloaded{[&ret](const EditState &) { ret = false; },
+                                    [&ret](const auto &) { ret = true; }},
+                         a);
+                   },
+                   [&ret](const auto &) { ret = true; }},
+        action);
+    return ret;
   }
 };
 
