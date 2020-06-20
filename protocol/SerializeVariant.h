@@ -50,4 +50,13 @@ QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
   return out;
 }
 
+#include <QTextStream>
+#include <typeinfo>
+
+template <typename... Args>
+QTextStream &operator<<(QTextStream &out, const std::variant<Args...> &a) {
+  std::visit([&out](auto &&v) { out << v; }, a);
+  return out;
+}
+
 #endif  // SERIALIZEVARIANT_H

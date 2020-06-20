@@ -63,6 +63,11 @@ void ServerSession::readMessage() {
       }
       if (!(m_data_stream.commitTransaction())) return;
 
+      /*QString s;
+      QTextStream ts(&s);
+      ts << action;
+      qDebug() << "Read from" << m_uid << "action" << s;*/
+
       emit receivedAction(action, m_uid);
     }
   }

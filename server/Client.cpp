@@ -67,6 +67,8 @@ void Client::tryToRead() {
         m_data_stream.rollbackTransaction();
         return;
       }
+      if (action.shouldBeRecorded()) qDebug() << "Received" << action;
+
       if (!(m_data_stream.commitTransaction())) return;
 
       emit receivedAction(action);
