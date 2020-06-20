@@ -149,7 +149,7 @@ EditorWindow::EditorWindow(QWidget *parent)
                                 .arg(suffix));
       return;
     }
-    QFile file(filename);
+    QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
       QMessageBox::critical(this, tr("Could not open file"),
                             tr("Could not open file (%1)").arg(filename));
