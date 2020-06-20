@@ -61,11 +61,8 @@ void Client::tryToRead() {
       ServerAction action;
       try {
         m_data_stream >> action;
-      } catch (const std::string &e) {
-        qWarning(
-            "Could not read server action. Error: %s. "
-            "Discarding",
-            e.c_str());
+      } catch (const std::runtime_error &e) {
+        qWarning("Discarding unreadable server action. Error: %s. ", e.what());
         m_data_stream.rollbackTransaction();
         return;
       }
