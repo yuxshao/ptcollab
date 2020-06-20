@@ -29,11 +29,14 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);
 
-  // This is fine to call immediately after calling connecttohost because that
-  // fn call opens the socket.
-  // TODO: This is not fine. The connection might fail.
-  qDebug() << "Sending hello to server";
-  m_data_stream << ClientHello(username);
+  // Guarded on connection in case the connection fails. In the past not having
+  // this has caused me problems
+  QMetaObject::Connection *const conn = new QMetaObject::Connection;
+  *conn = connect(m_socket, &QTcpSocket::connected, [this, conn, username]() {
+    qDebug() << "Sending hello to server";
+    m_data_stream << ClientHello(username);
+    delete conn;
+  });
 }
 
 void Client::sendAction(const ClientAction &m) {
