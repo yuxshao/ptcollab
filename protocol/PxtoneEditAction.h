@@ -24,7 +24,7 @@ class UnitIdMap {
   };
   void addUnit() {
     qint32 id = m_next_id++;
-    qsizetype no = m_no_to_id.size();
+    size_t no = m_no_to_id.size();
 
     // equiv: m_no_to_id[no] = id;
     m_no_to_id.push_back(id);
@@ -33,21 +33,21 @@ class UnitIdMap {
     // qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
     //         << QMap<qint32, qint32>(m_id_to_no);
   }
-  void removeUnit(qint32 no) {
+  void removeUnit(size_t no) {
     qint32 id = m_no_to_id[no];
     m_no_to_id.erase(m_no_to_id.begin() + no);
     m_id_to_no.erase(id);
     for (auto &it : m_id_to_no)
       if (it.second > no) --it.second;
 
-    //qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
-    //         << QMap<qint32, qsizetype>(m_id_to_no);
+    // qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
+    //         << QMap<qint32, size_t>(m_id_to_no);
   }
   // TODO: move unit
 
  private:
   int m_next_id;
-  std::map<qint32, qsizetype> m_id_to_no;
+  std::map<qint32, size_t> m_id_to_no;
   std::vector<qint32> m_no_to_id;
 };
 

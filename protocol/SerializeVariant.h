@@ -11,7 +11,7 @@ namespace detail {
 template <std::size_t N>
 struct variant_switch {
   template <typename Variant>
-  inline void operator()(qsizetype index, QDataStream &in, Variant &v) const {
+  inline void operator()(size_t index, QDataStream &in, Variant &v) const {
     if (index == N) {
       std::variant_alternative_t<N, Variant> a;
       in >> a;
@@ -24,7 +24,7 @@ struct variant_switch {
 template <>
 struct variant_switch<0> {
   template <typename Variant>
-  inline void operator()(qsizetype index, QDataStream &in, Variant &v) const {
+  inline void operator()(size_t index, QDataStream &in, Variant &v) const {
     if (index == 0) {
       std::variant_alternative_t<0, Variant> a;
       in >> a;
@@ -37,15 +37,15 @@ struct variant_switch<0> {
 
 template <typename... Args>
 QDataStream &operator>>(QDataStream &in, std::variant<Args...> &a) {
-  qsizetype index;
+  quint64 index;
   in >> index;
-  ::detail::variant_switch<sizeof...(Args) - 1>{}(index, in, a);
+  ::detail::variant_switch<sizeof...(Args) - 1>{}(size_t(index), in, a);
   return in;
 }
 
 template <typename... Args>
 QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
-  out << qsizetype(a.index());
+  out << quint64(a.index());
   std::visit([&out](auto &&v) { out << v; }, a);
   return out;
 }
