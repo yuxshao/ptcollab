@@ -107,7 +107,7 @@
 2. 
 
 TODO:
- - make protocol const. put hello in the protocol.
+ - put hello in the protocol.
  - figure out what's wrong with the soft disconencts.
  - test cross-platform for real.
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?

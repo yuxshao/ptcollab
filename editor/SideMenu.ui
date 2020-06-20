@@ -56,6 +56,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="connectBtn">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Connect (C-o)</string>
        </property>
