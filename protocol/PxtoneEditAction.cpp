@@ -107,11 +107,13 @@ std::vector<Action> apply_actions_and_get_undo(
 }
 
 QDataStream &operator<<(QDataStream &out, const Action &a) {
-  return (out << a.type << a.kind << a.unit_id << a.start_clock
-              << a.end_clock_or_value);
+  out << qint8(a.type) << qint8(a.kind) << a.unit_id << a.start_clock
+      << a.end_clock_or_value;
+  return out;
 }
 QDataStream &operator>>(QDataStream &in, Action &a) {
-  return (in >> a.type >> a.kind >> a.unit_id >> a.start_clock >>
-          a.end_clock_or_value);
+  read_as_qint8(in, a.type);
+  read_as_qint8(in, a.kind);
+  in >> a.unit_id >> a.start_clock >> a.end_clock_or_value;
   return in;
 }

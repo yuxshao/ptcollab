@@ -51,6 +51,14 @@ class UnitIdMap {
   std::vector<qint32> m_no_to_id;
 };
 
+template <typename T>
+QDataStream &read_as_qint8(QDataStream &in, T &x) {
+  qint8 v;
+  in >> v;
+  x = T(v);
+  return in;
+}
+
 struct Action {
   enum Type { ADD, DELETE };  // Add implicitly means add to an empty space
   Type type;

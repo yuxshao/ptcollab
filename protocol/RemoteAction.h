@@ -47,13 +47,7 @@ inline QTextStream &operator<<(QTextStream &out, const EditAction &a) {
 }
 
 enum UndoRedo { UNDO, REDO };
-template <typename T>
-QDataStream &read_as_qint8(QDataStream &in, T &x) {
-  qint8 v;
-  in >> v;
-  x = T(v);
-  return in;
-}
+
 inline QTextStream &operator<<(QTextStream &out, const UndoRedo &a) {
   out << "UndoRedo(";
   switch (a) {
