@@ -31,6 +31,7 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 
   // This is fine to call immediately after calling connecttohost because that
   // fn call opens the socket.
+  // TODO: This is not fine. The connection might fail.
   qDebug() << "Sending hello to server";
   m_data_stream << ClientHello(username);
 }
@@ -89,7 +90,7 @@ void Client::tryToStart() {
   // TODO: actually use sessions using the history state thing from before
   QMap<qint64, QString> sessions;
 
-  m_data_stream.setVersion(QDataStream::Qt_5_14);
+  m_data_stream.setVersion(QDataStream::Qt_5_5);
   m_data_stream.startTransaction();
 
   m_data_stream >> hello;

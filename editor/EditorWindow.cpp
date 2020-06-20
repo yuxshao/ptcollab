@@ -267,6 +267,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           connectToHost();
       }
       break;
+    case Qt::Key_H:
+      if (event->modifiers() & Qt::ShiftModifier) {
+        m_keyboard_editor->toggleTestActivity();
+      }
+      break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
         if (event->modifiers() & Qt::ShiftModifier)

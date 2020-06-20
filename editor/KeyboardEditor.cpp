@@ -57,6 +57,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_sync(new PxtoneActionSynchronizer(0, m_pxtn, this)),
       quantXIndex(0),
       quantizeSelectionY(0),
+      m_test_activity(false),
       m_remote_edit_states() {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
@@ -176,6 +177,10 @@ void KeyboardEditor::processRemoteAction(ServerAction &a) {
           },
       },
       a.action);
+}
+
+void KeyboardEditor::toggleTestActivity() {
+  m_test_activity = !m_test_activity;
 }
 
 struct LastEvent {
@@ -564,6 +569,15 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
                    size().height(), halfWhite);
   painter.fillRect(m_pxtn->moo_get_end_clock() / m_edit_state.scale.clockPerPx,
                    0, 1, size().height(), halfWhite);
+
+  // Simulate activity on a client
+  if (m_test_activity) {
+    double period = 60;
+    double amp = 20;
+    m_edit_state.mouse_edit_state.current_clock += amp * sin(painted / period);
+    m_edit_state.mouse_edit_state.current_pitch += amp * cos(painted / period);
+    emit editStateChanged();
+  }
 }
 
 void KeyboardEditor::wheelEvent(QWheelEvent *event) {

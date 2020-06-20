@@ -27,7 +27,7 @@ void ServerSession::sendHello(const QByteArray &data,
                               const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_conn->peerAddress();
 
-  m_data_stream.setVersion(QDataStream::Qt_5_14);
+  m_data_stream.setVersion(QDataStream::Qt_5_5);
   m_data_stream << ServerHello(m_uid) << data << history << sessions;
 }
 
@@ -53,11 +53,11 @@ void ServerSession::readMessage() {
       ClientAction action;
       try {
         m_data_stream >> action;
-      } catch (const std::string &e) {
+      } catch (const std::runtime_error &e) {
         qWarning(
             "Could not read client action from %lld (%s). Error: %s. "
             "Discarding",
-            m_uid, m_username.toStdString().c_str(), e.c_str());
+            m_uid, m_username.toStdString().c_str(), e.what());
         m_data_stream.rollbackTransaction();
         return;
       }

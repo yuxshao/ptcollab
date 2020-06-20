@@ -48,6 +48,7 @@ class KeyboardEditor : public QWidget {
   void setShowAll(bool);
   void clearRemoteEditStates();
   void processRemoteAction(ServerAction &a);
+  void toggleTestActivity();
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -70,6 +71,7 @@ class KeyboardEditor : public QWidget {
   PxtoneActionSynchronizer *m_sync;
   int quantXIndex;
   int quantizeSelectionY;
+  bool m_test_activity;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   void refreshQuantSettings();
 };
