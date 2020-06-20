@@ -6,8 +6,9 @@
 class TransposableWheelEvent : QWheelEvent {
  public:
   void transpose() {
-    pixelD = pixelD.transposed();
-    angleD = angleD.transposed();
+    // not using QPoint::transposed() because it doesn't exist in older versions
+    pixelD = {pixelD.y(), pixelD.x()};
+    angleD = {angleD.y(), angleD.x()};
   }
 };
 
