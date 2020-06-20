@@ -220,7 +220,7 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
   }
 }
 
-bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
+bool PxtoneActionSynchronizer::applyAddWoice(const AddWoice &a, qint64 uid) {
   (void)uid;
   pxtnDescriptor d;
   d.set_memory_r(a.data.constData(), a.data.size());
@@ -240,7 +240,8 @@ bool PxtoneActionSynchronizer::applyAddWoice(AddWoice &a, qint64 uid) {
 
 // TODO: Once you add the ability for units to change instruments,
 // you'll need a map for voices.
-bool PxtoneActionSynchronizer::applyRemoveWoice(RemoveWoice &a, qint64 uid) {
+bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
+                                                qint64 uid) {
   (void)uid;
   if (m_pxtn->Woice_Num() == 1) {
     qWarning() << "Cannot remove last woice.";

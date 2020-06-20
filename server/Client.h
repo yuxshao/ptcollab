@@ -17,7 +17,6 @@ class Client : public QObject {
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port, QString username);
   void sendAction(const ClientAction &m);
-  void sendActionWithData(ClientAction &&m);
   qint64 uid();
  signals:
   void connected(pxtnDescriptor &desc, QList<ServerAction> &history,

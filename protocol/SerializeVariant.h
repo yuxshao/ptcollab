@@ -46,7 +46,7 @@ QDataStream &operator>>(QDataStream &in, std::variant<Args...> &a) {
 template <typename... Args>
 QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
   out << quint64(a.index());
-  std::visit([&out](auto &&v) { out << v; }, a);
+  std::visit([&out](const auto &v) { out << v; }, a);
   return out;
 }
 
@@ -55,7 +55,7 @@ QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
 
 template <typename... Args>
 QTextStream &operator<<(QTextStream &out, const std::variant<Args...> &a) {
-  std::visit([&out](auto &&v) { out << v; }, a);
+  std::visit([&out](const auto &v) { out << v; }, a);
   return out;
 }
 

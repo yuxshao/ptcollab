@@ -88,11 +88,11 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
 // that events that involve reading from a pxtnDescriptor can't be made const
 // easily and also be serializable from a file in the same type. Perhaps if the
 // pxtone API had a 'read descriptor' separate from a 'write descriptor'...
-void KeyboardEditor::processRemoteAction(ServerAction &a) {
+void KeyboardEditor::processRemoteAction(const ServerAction &a) {
   qint64 uid = a.uid;
   std::visit(
       overloaded{
-          [this, uid](ClientAction &s) {
+          [this, uid](const ClientAction &s) {
             std::visit(
                 overloaded{
                     [this, uid](const EditState &s) {
@@ -109,7 +109,7 @@ void KeyboardEditor::processRemoteAction(ServerAction &a) {
                     [this, uid](const UndoRedo &s) {
                       m_sync->applyUndoRedo(s, uid);
                     },
-                    [this, uid](AddWoice &s) {
+                    [this, uid](const AddWoice &s) {
                       bool success = m_sync->applyAddWoice(s, uid);
                       emit woicesChanged();
                       if (!success) {
@@ -121,7 +121,7 @@ void KeyboardEditor::processRemoteAction(ServerAction &a) {
                               tr("Could not add voice %1").arg(s.name));
                       }
                     },
-                    [this, uid](RemoveWoice &s) {
+                    [this, uid](const RemoveWoice &s) {
                       bool success = m_sync->applyRemoveWoice(s, uid);
                       emit woicesChanged();
                       if (!success && uid == m_sync->uid())

@@ -45,11 +45,6 @@ void Client::sendAction(const ClientAction &m) {
   if (m_socket->isOpen()) m_data_stream << m;
 }
 
-void Client::sendActionWithData(ClientAction &&m) {
-  // No const here b/c the data pointer changes
-  if (m_socket->isOpen()) m_data_stream << m;
-}
-
 qint64 Client::uid() { return m_uid; }
 
 void Client::tryToRead() {

@@ -47,7 +47,7 @@ class KeyboardEditor : public QWidget {
   void removeCurrentUnit();
   void setShowAll(bool);
   void clearRemoteEditStates();
-  void processRemoteAction(ServerAction &a);
+  void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
 
  private:
