@@ -8,7 +8,7 @@
 pxtnUnit::pxtnUnit() {
   _bPlayed = true;
   _bOperated = true;
-  strcpy_s(_name_buf, sizeof(_name_buf), "no name");
+  strcpy(_name_buf, "no name");
   _name_size = int32_t(strlen(_name_buf));
 }
 
