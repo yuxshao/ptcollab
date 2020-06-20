@@ -1,6 +1,7 @@
 #include "Client.h"
 
 #include <QAbstractSocket>
+#include <QDateTime>
 #include <QHostAddress>
 #include <QMessageBox>
 
@@ -67,7 +68,10 @@ void Client::tryToRead() {
         m_data_stream.rollbackTransaction();
         return;
       }
-      if (action.shouldBeRecorded()) qDebug() << "Received" << action;
+      if (action.shouldBeRecorded())
+        qDebug() << QDateTime::currentDateTime().toString(
+                        "yyyy.MM.dd hh:mm:ss.zzz")
+                 << "Received" << action;
 
       if (!(m_data_stream.commitTransaction())) return;
 

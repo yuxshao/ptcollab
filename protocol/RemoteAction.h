@@ -128,11 +128,11 @@ inline QDataStream &operator>>(QDataStream &in, AddWoice &a) {
 static const char *pxtnWOICETYPE_names[] = {"None", "PCM", "PTV", "PTN",
                                             "OGGV"};
 
-QByteArray hashData(const QByteArray &data) {
+inline QByteArray hashData(const QByteArray &data) {
   QByteArray hash =
       QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
   hash.truncate(16);
-  return data;
+  return hash;
 }
 
 inline QTextStream &operator<<(QTextStream &out, const AddWoice &a) {

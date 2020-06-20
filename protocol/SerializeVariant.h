@@ -37,8 +37,8 @@ struct variant_switch<0> {
 
 template <typename... Args>
 QDataStream &operator>>(QDataStream &in, std::variant<Args...> &a) {
-  size_t index;
-  in >> *(qsizetype *)(&index);
+  qsizetype index;
+  in >> index;
   ::detail::variant_switch<sizeof...(Args) - 1>{}(index, in, a);
   return in;
 }

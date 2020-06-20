@@ -1,6 +1,7 @@
 #include "BroadcastServer.h"
 
 #include <QDataStream>
+#include <QDateTime>
 #include <QMessageBox>
 #include <QTcpSocket>
 
@@ -72,7 +73,8 @@ void BroadcastServer::newClient() {
 
 void BroadcastServer::broadcastServerAction(const ServerAction &a) {
   if (a.shouldBeRecorded())
-    qDebug() << "Broadcast to" << m_sessions.size() << a;
+    qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
+             << "Broadcast to" << m_sessions.size() << a;
 
   for (ServerSession *s : m_sessions) s->sendAction(a);
   if (a.shouldBeRecorded()) m_history.push_back(a);

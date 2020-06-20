@@ -17,8 +17,8 @@ EditAction PxtoneActionSynchronizer::applyLocalAction(
   m_uncommitted.push_back(
       apply_actions_and_get_undo(action, m_pxtn, &widthChanged, m_unit_id_map));
   if (widthChanged) emit measureNumChanged();
-  qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
-  qDebug() << "New action";
+  // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
+  // qDebug() << "New action";
   return EditAction{m_local_index++, action};
 }
 
@@ -28,8 +28,8 @@ qint64 PxtoneActionSynchronizer::uid() { return m_uid; }
 void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
                                                  qint64 uid) {
   // TODO: tag these things with names!
-  qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
-  qDebug() << "Received action" << action.idx << "from user" << uid;
+  // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
+  // qDebug() << "Received action" << action.idx << "from user" << uid;
   if (uid == m_uid) {
     if (action.idx != m_remote_index) {
       qWarning() << "Received a remote action with index" << action.idx
