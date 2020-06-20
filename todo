@@ -99,7 +99,16 @@
 2. fix save to original file in windows. I think?
 3. tested 'cross platform' by running in wine simultaneously with linux lol
 
+6/19
+1. Discovered that there's a problem with soft disconnects.
+
+6/20
+1. headless server sort of
+2. 
+
 TODO:
+ - make protocol const. put hello in the protocol.
+ - figure out what's wrong with the soft disconencts.
  - test cross-platform for real.
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
 
