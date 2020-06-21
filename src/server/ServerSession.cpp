@@ -44,8 +44,8 @@ void ServerSession::sendAction(const ServerAction &a) {
   m_data_stream << a;
   qint32 beforeFlush = m_socket->bytesToWrite();
   if (beforeFlush == 0) {
-    qWarning() << "Broadcast didn't seem to result in filling up write buffer."
-               << m_uid;
+    qWarning() << "ServerSession::sendAction for u" << m_uid
+               << "didn't seem to fill write buffer.";
     qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
                << m_socket->isValid() << "), state(" << m_socket->state()
                << "), error(" << m_socket->errorString() << ")";

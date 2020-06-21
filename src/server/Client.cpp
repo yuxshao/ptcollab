@@ -43,9 +43,15 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 void Client::sendAction(const ClientAction &m) {
   // Sometimes if I try to write data to a socket that's not ready it
   // invalidates the socket forever. I think these two guards should prevent it.
-  if (m_socket->isValid() && m_socket->state() == QTcpSocket::ConnectedState)
+  if (m_socket->isValid() && m_socket->state() == QTcpSocket::ConnectedState) {
     m_data_stream << m;
-  else {
+    if (m_socket->bytesToWrite() == 0) {
+      qWarning() << "Client::sendAction didn't seem to fill write buffer.";
+      qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
+                 << m_socket->isValid() << "), state(" << m_socket->state()
+                 << "), error(" << m_socket->errorString() << ")";
+    }
+  } else {
     qDebug() << "Not sending action while socket is not ready" << m;
     qDebug() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
              << m_socket->isValid() << "), state(" << m_socket->state()
