@@ -7,8 +7,8 @@
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
+  a.setApplicationVersion(QString(GIT_VERSION));
   QCommandLineParser parser;
-
   parser.setApplicationDescription("pxtone collab");
 
   parser.addHelpOption();
