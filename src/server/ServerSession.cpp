@@ -41,6 +41,20 @@ void ServerSession::sendAction(const ServerAction &a) {
                << m_socket->isValid() << "), state(" << m_socket->state()
                << "), error(" << m_socket->errorString() << ")";
   }
+
+  // Testing writing to the socket directly
+  /* QByteArray arr;
+  QDataStream d(&arr, QIODevice::WriteOnly);
+  d << a;
+  qint64 written = m_socket->write(arr);
+  if (written < arr.length()) {
+    qWarning() << "ServerSession::sendAction for u" << m_uid
+               << "didn't write as much as expected.";
+    qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
+               << m_socket->isValid() << "), state(" << m_socket->state()
+               << "), error(" << m_socket->errorString() << ")";
+  }*/
+
   m_data_stream << a;
   qint32 beforeFlush = m_socket->bytesToWrite();
   if (beforeFlush == 0) {

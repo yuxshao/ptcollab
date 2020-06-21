@@ -78,12 +78,15 @@ void Client::tryToRead() {
         m_data_stream.rollbackTransaction();
         return;
       }
+      if (!m_data_stream.commitTransaction()) {
+        // qDebug() << "Client::tryToRead: Past stream end, can't commit.";
+        return;
+      }
+
       if (action.shouldBeRecorded())
         qDebug() << QDateTime::currentDateTime().toString(
                         "yyyy.MM.dd hh:mm:ss.zzz")
                  << "Received" << action;
-
-      if (!(m_data_stream.commitTransaction())) return;
 
       emit receivedAction(action);
     }

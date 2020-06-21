@@ -104,11 +104,16 @@
 
 6/20
 1. headless server sort of
-2. 
+
+6/21
+1. Added logging, I think the thing causing the disconnects was the fact that
+   transactions were being added up. So a rollback must've caused like a
+   cascade of events written and made the write state weird. (Thanks to tests
+   with steedfarmer)
 
 TODO:
+ - figure out what's wrong with the freezing. probably also related to rollbacks?
  - put hello in the protocol.
- - figure out what's wrong with the soft disconencts.
  - test cross-platform for real.
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
 
