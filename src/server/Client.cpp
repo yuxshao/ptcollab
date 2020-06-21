@@ -35,6 +35,7 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
   *conn = connect(m_socket, &QTcpSocket::connected, [this, conn, username]() {
     qDebug() << "Sending hello to server";
     m_data_stream << ClientHello(username);
+    disconnect(*conn);
     delete conn;
   });
 }

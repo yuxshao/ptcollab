@@ -14,6 +14,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
       m_received_hello(false) {
   connect(m_conn, &QIODevice::readyRead, this, &ServerSession::readMessage);
   connect(m_conn, &QAbstractSocket::disconnected, [this]() {
+    qDebug() << "Disconnected" << m_uid;
     m_conn->deleteLater();
     // m_state = ServerSession::DISCONNECTED;
     m_conn = nullptr;
