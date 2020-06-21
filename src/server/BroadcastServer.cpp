@@ -29,7 +29,9 @@ BroadcastServer::~BroadcastServer() {
   for (ServerSession *s : m_sessions) s->disconnect();
   m_server->close();
 }
+
 int BroadcastServer::port() { return m_server->serverPort(); }
+
 static QMap<qint64, QString> sessionMapping(
     const std::list<ServerSession *> &sessions) {
   QMap<qint64, QString> mapping;

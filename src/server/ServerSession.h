@@ -28,7 +28,7 @@ class ServerSession : public QObject {
   void readMessage();
 
  private:
-  QTcpSocket *m_conn;
+  QTcpSocket *m_socket;
   QDataStream m_data_stream;
   qint64 m_uid;
   QString m_username;
