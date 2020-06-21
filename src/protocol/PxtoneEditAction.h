@@ -20,7 +20,7 @@ class UnitIdMap {
   std::optional<qint32> idToNo(qint32 id) const {
     auto it = m_id_to_no.find(id);
     if (it == m_id_to_no.end()) return std::nullopt;
-    return it->second;
+    return qint32(it->second);
   };
   void addUnit() {
     qint32 id = m_next_id++;
