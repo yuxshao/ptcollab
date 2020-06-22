@@ -110,8 +110,30 @@
    transactions were being added up. So a rollback must've caused like a
    cascade of events written and made the write state weird. (Thanks to tests
    with steedfarmer)
+2. Tested with steedfarmer again with the soft disconnect fix. Indeed, no more
+   soft disconnects. But still the program sometimes hangs + memory explodes.
+
+   Discoveries:
+     - Sometimes a message is not sent if an instrument is simultaneously being added.
+     - Hanging seems to be during repeated application of event undos/redos.
+     - Hanging happens (in one case at least) after an edit message is dropped
+       in roundtrip, prob. because that leads to a ton of local undo/redos.
+       - I did see in my debugger like, 200k actions trying to be applied. I
+         have no idea how it got to that number.
+     - Turns out a message is dropped because QDataStream is not writable if we
+       are simultaneously reading from it and hit ReadPastEnd. Dammit. Need
+       separate read / write stream
+     - But still, why does the action list grow to be so large? that's crazy.
+       why does that cause things to hang? And was it really large? Or just
+       that things sort of piled up with every additional message?
 
 TODO:
+ - separate data streams for reading and writing
+ - be robust if you see a msg was droppd
+ - add a place where you can easily see errors like missed writes or unexpected
+   IDs. log on server side history of actions too (maybe exclude editstate)
+ - investigate the action blowup
+
  - figure out what's wrong with the freezing. probably also related to rollbacks?
  - put hello in the protocol.
  - test cross-platform for real.
