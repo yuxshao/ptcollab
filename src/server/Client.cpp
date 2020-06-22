@@ -46,7 +46,7 @@ void Client::sendAction(const ClientAction &m) {
   if (m_socket->isValid() && m_socket->state() == QTcpSocket::ConnectedState) {
     m_data_stream << m;
     if (m_socket->bytesToWrite() == 0) {
-      qWarning() << "Client::sendAction didn't seem to fill write buffer.";
+      qWarning() << "Client::sendAction didn't seem to fill write buffer." << m;
       qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
                  << m_socket->isValid() << "), state(" << m_socket->state()
                  << "), error(" << m_socket->errorString() << ")";

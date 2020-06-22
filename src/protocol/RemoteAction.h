@@ -36,8 +36,14 @@ inline QDataStream &operator<<(QDataStream &out, const EditAction &a) {
 inline QDataStream &operator>>(QDataStream &in, EditAction &a) {
   quint64 size;
   in >> a.idx >> size;
+  // Here for debugging
+  if (size > 30) qWarning() << "Abnormally large editaction size" << size;
+  if (in.status() != QDataStream::Ok) return in;
   a.action.resize(size);
-  for (size_t i = 0; i < size; ++i) in >> a.action[i];
+  for (size_t i = 0; i < size; ++i) {
+    in >> a.action[i];
+    if (in.status() != QDataStream::Ok) return in;
+  }
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const EditAction &a) {
