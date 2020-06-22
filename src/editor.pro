@@ -5,6 +5,7 @@
 TEMPLATE = app
 TARGET = ptcollab
 INCLUDEPATH += .
+win32:INCLUDEPATH += ../deps/include
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
@@ -114,7 +115,9 @@ SOURCES += main.cpp \
            server/Client.cpp \
            server/ServerSession.cpp
 
-LIBS += -logg -lvorbisfile
+!win32:LIBS += -logg -lvorbisfile
+win32:LIBS += -L"$$PWD/../deps/lib" -llibogg_static -llibvorbisfile
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
