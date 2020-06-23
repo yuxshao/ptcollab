@@ -127,6 +127,10 @@
        why does that cause things to hang? And was it really large? Or just
        that things sort of piled up with every additional message?
 
+6/22
+1. Figure out bug that causes hanging. When having to undo and redo a lot,
+   empty commands get added exponentially.
+
 TODO:
  - separate data streams for reading and writing
  - be robust if you see a msg was droppd

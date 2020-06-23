@@ -77,7 +77,10 @@ std::vector<Action> apply_actions_and_get_undo(
           const EVERECORD *p = pxtn->evels->get_Records();
           for (; p && p->clock < a->start_clock; p = p->next) {
             if (a->kind == p->kind && unit_no == p->unit_no)
-              if (p->clock + p->value >= a->start_clock) {
+              // > instead of >= b/c exclusive. This was causing undos to blow
+              // up in size because it'd lead to a ton of empty noop actions
+              // that replace a note with the smae.
+              if (p->clock + p->value > a->start_clock) {
                 // here the original action replaces a block with a smaller
                 // block. so undo would replace the smaller block with the
                 // original.
