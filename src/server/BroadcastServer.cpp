@@ -4,14 +4,18 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QTcpSocket>
+#include <QTimer>
 
 BroadcastServer::BroadcastServer(const QByteArray &data, int port,
-                                 QObject *parent)
+                                 QObject *parent, int delay_msec,
+                                 double drop_rate)
     : QObject(parent),
       m_server(new QTcpServer(this)),
       m_sessions(),
       m_data(data),
-      m_next_uid(0) {
+      m_next_uid(0),
+      m_delay_msec(delay_msec),
+      m_drop_rate(drop_rate) {
   if (!m_server->listen(QHostAddress::Any, port))
     throw QString("Unable to start TCP server: %1")
         .arg(m_server->errorString());
@@ -77,13 +81,29 @@ void BroadcastServer::broadcastServerAction(const ServerAction &a) {
   if (a.shouldBeRecorded())
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
              << "Broadcast to" << m_sessions.size() << a;
-
   for (ServerSession *s : m_sessions) s->sendAction(a);
   if (a.shouldBeRecorded()) m_history.push_back(a);
 }
 
+#include <QRandomGenerator>
+void BroadcastServer::broadcastUnreliable(const ServerAction &a) {
+  if (m_drop_rate > 0 &&
+      QRandomGenerator::global()->generateDouble() < m_drop_rate) {
+    if (a.shouldBeRecorded())
+      qDebug() << QDateTime::currentDateTime().toString(
+                      "yyyy.MM.dd hh:mm:ss.zzz")
+               << "Dropping from" << m_sessions.size() << a;
+    return;
+  }
+
+  if (m_delay_msec > 0)
+    QTimer::singleShot(m_delay_msec, [this, a]() { broadcastServerAction(a); });
+  else
+    broadcastServerAction(a);
+}
+
 void BroadcastServer::broadcastAction(const ClientAction &m, qint64 uid) {
-  broadcastServerAction({uid, m});
+  broadcastUnreliable({uid, m});
 }
 
 void BroadcastServer::broadcastNewSession(const QString &username, qint64 uid) {

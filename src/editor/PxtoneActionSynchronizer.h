@@ -50,7 +50,6 @@ class PxtoneActionSynchronizer : public QObject {
   std::vector<LoggedAction> m_log;
   std::list<std::list<Action>> m_uncommitted;
   UnitIdMap m_unit_id_map;
-  int m_local_index;
   int m_remote_index;
 };
 

@@ -8,7 +8,6 @@ PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
       m_uid(uid),
       m_pxtn(pxtn),
       m_unit_id_map(pxtn),
-      m_local_index(0),
       m_remote_index(0) {}
 
 EditAction PxtoneActionSynchronizer::applyLocalAction(
@@ -19,7 +18,7 @@ EditAction PxtoneActionSynchronizer::applyLocalAction(
   if (widthChanged) emit measureNumChanged();
   // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   // qDebug() << "New action";
-  return EditAction{m_local_index++, action};
+  return EditAction{qint64(m_remote_index + m_uncommitted.size() - 1), action};
 }
 
 void PxtoneActionSynchronizer::setUid(qint64 uid) { m_uid = uid; }
@@ -27,34 +26,43 @@ qint64 PxtoneActionSynchronizer::uid() { return m_uid; }
 
 void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
                                                  qint64 uid) {
-  // TODO: tag these things with names!
   // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   // qDebug() << "Received action" << action.idx << "from user" << uid;
+  bool widthChanged = false;
+  // Try to be liberal in what I accept:
+  // If the action index is what I expect, just increment the remote counter
+  // (need to undo = false). If the action's index is too high, drop whatever
+  // was missing in between (undo true, drop things). If it's too low, apply it
+  // like you would someone else's action (undo true, drop 0). In any case,
+  // everyone is getting this stream in the same order. Even if it looks messed
+  // up to you.
+  size_t local_actions_to_drop = 0;
+  bool need_to_undo = false;
   if (uid == m_uid) {
+    if (action.idx >= m_remote_index)
+      local_actions_to_drop = action.idx + 1 - m_remote_index;
     if (action.idx != m_remote_index) {
       qWarning() << "Received a remote action with index" << action.idx
-                 << "that was not the one I expected" << m_remote_index
-                 << ". Discarding. ";
-      return;
+                 << "that was not the one I expected" << m_remote_index;
+      need_to_undo = true;
     }
-    ++m_remote_index;
+    if (m_uncommitted.size() < local_actions_to_drop) {
+      qWarning()
+          << "Received a remote action of mine from the future. action.idx("
+          << action.idx << "), m_remote_index(" << m_remote_index
+          << "), m_uncommitted(" << m_uncommitted.size() << ")";
+      need_to_undo = true;
+    }
+  } else {
+    need_to_undo = true;
+    local_actions_to_drop = 0;
   }
-  bool widthChanged = false;
-  if (uid == m_uid) {
-    // TODO: Respond to unexpected indexes smarter. What would make things
-    // consistent?
-    if (m_uncommitted.size() == 0) {
-      qWarning() << "Received a remote action of mine even when I'm not "
-                    "expecting any pending remote responses. Discarding. "
-                 << action.idx << m_remote_index;
-    } else {
-      // The server told us that our local action was applied! Put it in the
-      // log, but no need to apply any actions since that was already
-      // presumptuously applied.
-
-      m_log.emplace_back(uid, action.idx, m_uncommitted.front());
-      m_uncommitted.pop_front();
-    }
+  if (!need_to_undo) {
+    // The server told us that our local action was applied! Put it in the
+    // log, but no need to apply any actions since that was already
+    // presumptuously applied.
+    m_log.emplace_back(uid, action.idx, m_uncommitted.front());
+    m_uncommitted.pop_front();
   } else {
     // Undo each of the uncommitted actions
     // TODO: This is probably where you could be smarter and avoid undoing
@@ -72,6 +80,13 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
     std::list<Action> reverse = apply_actions_and_get_undo(
         action.action, m_pxtn, &widthChanged, m_unit_id_map);
 
+    if (local_actions_to_drop >= m_uncommitted.size())
+      m_uncommitted.clear();
+    else {
+      auto it_end = m_uncommitted.begin();
+      advance(it_end, local_actions_to_drop);
+      m_uncommitted.erase(m_uncommitted.begin(), it_end);
+    }
     // redo each of the uncommitted actions forwards
     for (std::list<Action> &uncommitted : m_uncommitted) {
       // int start_size = uncommitted.size();
@@ -83,6 +98,8 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
 
     m_log.emplace_back(uid, action.idx, reverse);
   }
+
+  m_remote_index += local_actions_to_drop;
 
   // Invalidate any previous undone actions by this user
   for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {

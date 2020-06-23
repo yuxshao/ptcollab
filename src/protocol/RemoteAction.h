@@ -168,6 +168,13 @@ inline QTextStream &operator<<(QTextStream &out, const EditState &a) {
 
 using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit,
                                   RemoveUnit, AddWoice, RemoveWoice>;
+inline bool clientActionShouldBeRecorded(const ClientAction &a) {
+  bool ret;
+  std::visit(overloaded{[&ret](const EditState &) { ret = false; },
+                        [&ret](const auto &) { ret = true; }},
+             a);
+  return ret;
+}
 
 struct NewSession {
   QString username;
@@ -198,15 +205,11 @@ struct ServerAction {
     // update its own internal state (similar to the synchronizer) and return
     // that
     bool ret;
-    std::visit(
-        overloaded{[&ret](const ClientAction &a) {
-                     std::visit(
-                         overloaded{[&ret](const EditState &) { ret = false; },
-                                    [&ret](const auto &) { ret = true; }},
-                         a);
-                   },
-                   [&ret](const auto &) { ret = true; }},
-        action);
+    std::visit(overloaded{[&ret](const ClientAction &a) {
+                            ret = clientActionShouldBeRecorded(a);
+                          },
+                          [&ret](const auto &) { ret = true; }},
+               action);
     return ret;
   }
 };

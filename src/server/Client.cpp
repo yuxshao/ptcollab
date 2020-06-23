@@ -45,6 +45,9 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 }
 
 void Client::sendAction(const ClientAction &m) {
+  if (clientActionShouldBeRecorded(m))
+    qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
+             << "Sending" << m;
   // Sometimes if I try to write data to a socket that's not ready it
   // invalidates the socket forever. I think these two guards should prevent it.
   if (m_socket->isValid() && m_socket->state() == QTcpSocket::ConnectedState) {

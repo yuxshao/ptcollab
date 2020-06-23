@@ -368,9 +368,11 @@ void EditorWindow::Host(bool load_file) {
         // TODO: Probably make a class for common kinds of errors like this.
         throw QString("Could not read file.");
 
-      m_server = new BroadcastServer(file.readAll(), port, this);
+      m_server =
+          new BroadcastServer(file.readAll(), port, this);  //, 3000, 0.3);
     } else
-      m_server = new BroadcastServer(QByteArray(), port, this);
+      m_server =
+          new BroadcastServer(QByteArray(), port, this);  // , 3000, 0.3);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;

@@ -144,10 +144,19 @@ localhost is just not the right environment.
 This kind of thing where msgs get dropped is interesting - seems like a gap
 fill architecture could work well.
 
-TODO:
- - be robust if you see a msg was dropped (postel)
+4. Robust if you see an unexpected message (postel) from yourself.
    - if see later remote id, than what expected, just drop things presumably missed.
    - if earlier, just slot it in b/c everyone sees it in that order.
+
+5. Ability to make server delay / drop msgs artificially
+
+TODO:
+ - seqnums on the server messages.
+   - robust if you see an unexpected message from elsewhere (unexpected server
+     seqnum?)
+   - note: without seqnums, clients do not have a chance if server drops msgs
+     to some clients but not others, without seqnums
+
  - add a place where you can easily see errors like missed writes or unexpected
    IDs. log on server side history of actions too (maybe exclude editstate).
    also log if a message hasn't roundtripped in a while (consider if there's

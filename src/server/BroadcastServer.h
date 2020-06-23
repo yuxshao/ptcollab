@@ -11,7 +11,8 @@ class BroadcastServer : public QObject {
   Q_OBJECT
  public:
   // TODO: Add a configurable delay
-  BroadcastServer(const QByteArray &data, int port, QObject *parent = nullptr);
+  BroadcastServer(const QByteArray &data, int port, QObject *parent = nullptr,
+                  int delay_msec = 0, double drop_rate = 0);
   ~BroadcastServer();
   int port();
 
@@ -27,7 +28,10 @@ class BroadcastServer : public QObject {
   std::list<ServerSession *> m_sessions;
   QByteArray m_data;
   int m_next_uid;
+  int m_delay_msec;
+  double m_drop_rate;
   void broadcastServerAction(const ServerAction &a);
+  void broadcastUnreliable(const ServerAction &a);
 };
 
 #endif  // SEQUENCINGSERVER_H
