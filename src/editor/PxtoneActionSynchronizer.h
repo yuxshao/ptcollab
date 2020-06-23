@@ -14,9 +14,9 @@ struct LoggedAction {
   UndoState state;
   qint64 uid;
   qint64 idx;
-  std::vector<Action>
+  std::list<Action>
       reverse;  // TODO: Figure out where to call sth undo vs. reverse
-  LoggedAction(qint64 uid, qint64 idx, const std::vector<Action> &reverse)
+  LoggedAction(qint64 uid, qint64 idx, const std::list<Action> &reverse)
       : state(DONE), uid(uid), idx(idx), reverse(reverse) {}
 };
 
@@ -26,7 +26,7 @@ class PxtoneActionSynchronizer : public QObject {
   PxtoneActionSynchronizer(int uid, pxtnService *pxtn, QObject *parent);
 
   // rename to applyAndGetEditAction and applyEditAction
-  EditAction applyLocalAction(const std::vector<Action> &action);
+  EditAction applyLocalAction(const std::list<Action> &action);
   void setUid(qint64 uid);
   qint64 uid();
   const UnitIdMap &unitIdMap() { return m_unit_id_map; }
@@ -48,7 +48,7 @@ class PxtoneActionSynchronizer : public QObject {
   qint64 m_uid;
   pxtnService *m_pxtn;
   std::vector<LoggedAction> m_log;
-  std::list<std::vector<Action>> m_uncommitted;
+  std::list<std::list<Action>> m_uncommitted;
   UnitIdMap m_unit_id_map;
   int m_local_index;
   int m_remote_index;

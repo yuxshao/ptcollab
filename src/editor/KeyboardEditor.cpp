@@ -795,7 +795,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
 
   if (m_pxtn->Unit_Num() > 0) {
-    std::vector<Action> actions;
+    std::list<Action> actions;
     switch (m_edit_state.mouse_edit_state.type) {
       case MouseEditState::SetOn:
         actions.push_back({Action::DELETE, EVENTKIND_ON,

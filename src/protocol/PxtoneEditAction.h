@@ -68,6 +68,8 @@ struct Action {
   qint32 end_clock_or_value;  // end clock if delete, value if add
   void perform(pxtnService *pxtn, bool *widthChanged,
                const UnitIdMap &map) const;
+  std::list<Action> get_undo(const pxtnService *pxtn,
+                             const UnitIdMap &map) const;
   void print() const;
 };
 QDataStream &operator<<(QDataStream &out, const Action &a);
@@ -80,8 +82,9 @@ QDataStream &operator>>(QDataStream &in, Action &a);
 // std::vector<Action> pxtnEvelist::apply(const std::vector<Action> &actions)
 // That gives me the undo result.
 
-std::vector<Action> apply_actions_and_get_undo(
-    const std::vector<Action> &actions, pxtnService *pxtn, bool *widthChanged,
-    const UnitIdMap &map);
+std::list<Action> apply_actions_and_get_undo(const std::list<Action> &actions,
+                                             pxtnService *pxtn,
+                                             bool *widthChanged,
+                                             const UnitIdMap &map);
 
 #endif  // PXTONEEDITACTION_H

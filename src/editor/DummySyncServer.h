@@ -14,7 +14,7 @@ class DummySyncServer {
   DummySyncServer(PxtoneActionSynchronizer *sync, float commit_lag_s,
                   float mirror_lag_s);
 
-  void receiveAction(const std::vector<Action> &action);
+  void receiveAction(const std::list<Action> &action);
   void receiveUndo();
   void receiveRedo();
 

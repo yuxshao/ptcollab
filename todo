@@ -130,15 +130,18 @@
 6/22
 1. Figure out bug that causes hanging. When having to undo and redo a lot,
    empty commands get added exponentially.
+2. Find and fix a separate bug regarding using the wrong pxtone state to
+   compute an undo. Didn't cause any problems this time but could bite in the
+   future (e.g., two identical delete would be 'undone' as 2 identical adds
+   instead of the second doing nothing)
 
 TODO:
  - separate data streams for reading and writing
  - be robust if you see a msg was droppd
  - add a place where you can easily see errors like missed writes or unexpected
-   IDs. log on server side history of actions too (maybe exclude editstate)
- - investigate the action blowup
+   IDs. log on server side history of actions too (maybe exclude editstate).
+   also log if a message hasn't roundtripped in a while.
 
- - figure out what's wrong with the freezing. probably also related to rollbacks?
  - put hello in the protocol.
  - test cross-platform for real.
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?

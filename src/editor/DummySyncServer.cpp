@@ -9,7 +9,7 @@ DummySyncServer::DummySyncServer(PxtoneActionSynchronizer *sync,
       m_commit_lag_s(commit_lag_s),
       m_mirror_lag_s(mirror_lag_s) {}
 
-void DummySyncServer::receiveAction(const std::vector<Action> &action) {
+void DummySyncServer::receiveAction(const std::list<Action> &action) {
   EditAction remote_action = m_sync->applyLocalAction(action);
   m_pending_commit.emplace_back(remote_action);
   m_pending_mirror.emplace_back(remote_action);

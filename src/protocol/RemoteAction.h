@@ -26,7 +26,7 @@ inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
 
 struct EditAction {
   qint64 idx;
-  std::vector<Action> action;
+  std::list<Action> action;
 };
 inline QDataStream &operator<<(QDataStream &out, const EditAction &a) {
   out << a.idx << quint64(a.action.size());
@@ -39,10 +39,11 @@ inline QDataStream &operator>>(QDataStream &in, EditAction &a) {
   // Here for debugging
   if (size > 30) qWarning() << "Abnormally large editaction size" << size;
   if (in.status() != QDataStream::Ok) return in;
-  a.action.resize(size);
   for (size_t i = 0; i < size; ++i) {
-    in >> a.action[i];
+    Action action;
+    in >> action;
     if (in.status() != QDataStream::Ok) return in;
+    a.action.push_back(action);
   }
   return in;
 }
