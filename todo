@@ -128,19 +128,31 @@
        that things sort of piled up with every additional message?
 
 6/22
-1. Figure out bug that causes hanging. When having to undo and redo a lot,
-   empty commands get added exponentially.
+1. Figure out bug that causes hanging when an edit action is dropped. When
+   having to undo and redo a lot, empty commands get added exponentially.
 2. Find and fix a separate bug regarding using the wrong pxtone state to
    compute an undo. Didn't cause any problems this time but could bite in the
    future (e.g., two identical delete would be 'undone' as 2 identical adds
    instead of the second doing nothing)
+3. Address QTBUG-63113 by having separate read / write streams. Now messages
+   aren't dropped. Or they shouldn't be.
+
+As a general note it's increasingly scary to touch the networking code...
+worried about making further breaking changes. Don't have tests, also testing
+localhost is just not the right environment.
+
+This kind of thing where msgs get dropped is interesting - seems like a gap
+fill architecture could work well.
 
 TODO:
- - separate data streams for reading and writing
- - be robust if you see a msg was droppd
+ - be robust if you see a msg was dropped (postel)
+   - if see later remote id, than what expected, just drop things presumably missed.
+   - if earlier, just slot it in b/c everyone sees it in that order.
  - add a place where you can easily see errors like missed writes or unexpected
    IDs. log on server side history of actions too (maybe exclude editstate).
-   also log if a message hasn't roundtripped in a while.
+   also log if a message hasn't roundtripped in a while (consider if there's
+   any expected situation where we don't expect roundtrip. prob. not if like
+   drawpile)
 
  - put hello in the protocol.
  - test cross-platform for real.

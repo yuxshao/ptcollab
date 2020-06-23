@@ -29,7 +29,7 @@ class ServerSession : public QObject {
 
  private:
   QTcpSocket *m_socket;
-  QDataStream m_data_stream;
+  QDataStream m_write_stream, m_read_stream;
   qint64 m_uid;
   QString m_username;
   // State m_state;

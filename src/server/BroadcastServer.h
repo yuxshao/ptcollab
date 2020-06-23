@@ -10,6 +10,7 @@
 class BroadcastServer : public QObject {
   Q_OBJECT
  public:
+  // TODO: Add a configurable delay
   BroadcastServer(const QByteArray &data, int port, QObject *parent = nullptr);
   ~BroadcastServer();
   int port();

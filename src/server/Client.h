@@ -27,7 +27,9 @@ class Client : public QObject {
 
  private:
   QTcpSocket *m_socket;
-  QDataStream m_data_stream;
+  // We have separate streams because QTBUG-63113 prevents writing if we're
+  // currently in the middle of a fragmented read.
+  QDataStream m_write_stream, m_read_stream;
   bool m_received_hello;
   qint64 m_uid;
   void tryToRead();

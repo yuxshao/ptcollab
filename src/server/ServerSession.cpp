@@ -8,7 +8,8 @@
 ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
     : QObject(parent),
       m_socket(conn),
-      m_data_stream((QIODevice *)conn),
+      m_write_stream((QIODevice *)conn),
+      m_read_stream((QIODevice *)conn),
       m_uid(uid),
       m_username(""),
       m_received_hello(false) {
@@ -20,6 +21,8 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
     m_socket = nullptr;
     emit disconnected();
   });
+  m_write_stream.setVersion(QDataStream::Qt_5_5);
+  m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
 // TODO: Include history, sessions, data in hello
@@ -28,8 +31,7 @@ void ServerSession::sendHello(const QByteArray &data,
                               const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_socket->peerAddress();
 
-  m_data_stream.setVersion(QDataStream::Qt_5_5);
-  m_data_stream << ServerHello(m_uid) << data << history << sessions;
+  m_write_stream << ServerHello(m_uid) << data << history << sessions;
 }
 
 void ServerSession::sendAction(const ServerAction &a) {
@@ -55,14 +57,15 @@ void ServerSession::sendAction(const ServerAction &a) {
                << "), error(" << m_socket->errorString() << ")";
   }*/
 
-  m_data_stream << a;
+  m_write_stream << a;
   qint32 beforeFlush = m_socket->bytesToWrite();
   if (beforeFlush == 0) {
     qWarning() << "ServerSession::sendAction for u" << m_uid
                << "didn't seem to fill write buffer.";
     qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
                << m_socket->isValid() << "), state(" << m_socket->state()
-               << "), error(" << m_socket->errorString() << ")";
+               << "), error(" << m_socket->errorString() << ")"
+               << "), stream_status(" << m_write_stream.status() << ")";
   }
 }
 
@@ -71,29 +74,29 @@ qint64 ServerSession::uid() const { return m_uid; }
 QString ServerSession::username() const { return m_username; }
 
 void ServerSession::readMessage() {
-  while (!m_data_stream.atEnd()) {
+  while (!m_read_stream.atEnd()) {
     if (!m_received_hello) {
-      m_data_stream.startTransaction();
+      m_read_stream.startTransaction();
       ClientHello m;
-      m_data_stream >> m;
-      if (!m_data_stream.commitTransaction()) return;
+      m_read_stream >> m;
+      if (!m_read_stream.commitTransaction()) return;
       m_received_hello = true;
       m_username = m.username();
       emit receivedHello();
     } else {
-      m_data_stream.startTransaction();
+      m_read_stream.startTransaction();
       ClientAction action;
       try {
-        m_data_stream >> action;
+        m_read_stream >> action;
       } catch (const std::runtime_error &e) {
         qWarning(
             "Could not read client action from %lld (%s). Error: %s. "
             "Discarding",
             m_uid, m_username.toStdString().c_str(), e.what());
-        m_data_stream.rollbackTransaction();
+        m_read_stream.rollbackTransaction();
         return;
       }
-      if (!(m_data_stream.commitTransaction())) return;
+      if (!(m_read_stream.commitTransaction())) return;
 
       /*QString s;
       QTextStream ts(&s);
