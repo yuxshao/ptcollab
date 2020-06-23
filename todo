@@ -190,7 +190,6 @@ qwerty midi input
 tab system to edit multiple files at once / switch between sessions
 
 Technical stuff:
- - have a pxtndescriptor for reading. lets us keep const property on read.
  - factor out moo state from pxtn state
    - can then preview notes at the time they're played
      - this is important now that velocity is sticky. ppl should hear notes at
