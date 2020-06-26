@@ -154,6 +154,7 @@ fill architecture could work well.
 1. Some playtesting!
 
 Functionality:
+ - include that one other dll in the package for vcruntime
  - Click+scroll to change velocity by default.
    Also some way to look at existing note velocity
  - Put in help that shift + click is seek
