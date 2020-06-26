@@ -116,7 +116,7 @@ SOURCES += main.cpp \
            server/ServerSession.cpp
 
 !win32:LIBS += -logg -lvorbisfile
-win32:LIBS += -L"$$PWD/../deps/lib" -llibogg_static -llibvorbisfile
+win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
