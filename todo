@@ -150,22 +150,16 @@ fill architecture could work well.
 
 5. Ability to make server delay / drop msgs artificially
 
-TODO:
- - seqnums on the server messages.
-   - robust if you see an unexpected message from elsewhere (unexpected server
-     seqnum?)
-   - note: without seqnums, clients do not have a chance if server drops msgs
-     to some clients but not others, without seqnums
+6/23 & 6/26
+1. Some playtesting!
 
- - add a place where you can easily see errors like missed writes or unexpected
-   IDs. log on server side history of actions too (maybe exclude editstate).
-   also log if a message hasn't roundtripped in a while (consider if there's
-   any expected situation where we don't expect roundtrip. prob. not if like
-   drawpile)
-
- - put hello in the protocol.
- - test cross-platform for real.
- - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
+Functionality:
+ - Click+scroll to change velocity by default.
+   Also some way to look at existing note velocity
+ - Put in help that shift + click is seek
+ - Instrument preview in file select / unit click
+ - Copy paste
+ - Tempo controls
 
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
@@ -178,16 +172,15 @@ TODO:
  - show measure num, set loop points
    - will probably need some pixel font thing
  - set tempo, time signature
- - static build
  - edit while playing soundness
    - in particular, if a note is added as next event.
  - would be nice to click on a user and jump to their view
  - take some inspiration from domino midi! linear changing of params
 
 Aesthetics:
-customizable piano roll colours
-qwerty midi input
-tab system to edit multiple files at once / switch between sessions
+  customizable piano roll colours
+  qwerty midi input
+  tab system to edit multiple files at once / switch between sessions
 
 Technical stuff:
  - factor out moo state from pxtn state
@@ -196,9 +189,19 @@ Technical stuff:
        the right volume
  - server keeps its own state (e.g., active users) + running history (currently
    it plays back -everything-)
-
-Synchronization:
- - Changes to units / adding voices?
+ - seqnums on the server messages.
+   - robust if you see an unexpected message from elsewhere (unexpected server
+     seqnum?)
+   - note: without seqnums, clients do not have a chance if server drops msgs
+     to some clients but not others, without seqnums
+ - add a place where you can easily see errors like missed writes or unexpected
+   IDs. log on server side history of actions too (maybe exclude editstate).
+   also log if a message hasn't roundtripped in a while (consider if there's
+   any expected situation where we don't expect roundtrip. prob. not if like
+   drawpile)
+ - put hello in the protocol.
+ - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
+ - static build
  - drawpile autoresets, so that server doesn't have to send whole history over.
    - probably goes hand-in-hand with undo stack, which drawpile limits to
      globally 30. probably a good idea so we don't keep on growing in memory
