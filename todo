@@ -159,6 +159,7 @@ fill architecture could work well.
 1. Add some slack in vertical momement before adjusting velocity
 2. Cleaner note params on new note
 3. See existing note velocity
+4. Render just the window, less expensive note velocity (no more sqrt / exps)
 
 Todo by priority
 ----------------

@@ -34,7 +34,7 @@ typedef struct {
 class pxtnService;
 
 // Static parameters that are computed when moo is initialized.
-struct mooState {
+struct mooParams {
   // Whether muting individual units is allowed or not
   bool b_mute_by_unit;
   // Is looping enabled?
@@ -65,7 +65,7 @@ struct mooState {
   // It's a singleton, but it maps key to frequency
   pxtnPulse_Frequency *freq;
 
-  mooState();
+  mooParams();
 
   void release();
 
@@ -80,7 +80,7 @@ struct mooState {
 };
 
 // Moo values that change as the song plays.
-struct dynMooState {
+struct mooState {
   // Buffers that units write to for group operations
   int32_t *group_smps;
   int32_t time_pan_index;
@@ -91,7 +91,7 @@ struct dynMooState {
   // Next event
   const EVERECORD *p_eve;
 
-  dynMooState();
+  mooState();
 
   void release();
 
@@ -166,8 +166,8 @@ class pxtnService {
   bool _moo_b_end_vomit;
   bool _moo_b_init;
 
+  mooParams _moo_params;
   mooState _moo_state;
-  dynMooState _dyn_moo_state;
 
   pxtnERR _init(int32_t fix_evels_num, bool b_edit);
   bool _release();
@@ -270,7 +270,7 @@ class pxtnService {
 
   bool moo_is_valid_data() const;
   bool moo_is_end_vomit() const;
-  const mooState *moo_state() const { return &_moo_state; }
+  const mooParams *moo_params() const { return &_moo_params; }
 
   bool moo_set_mute_by_unit(bool b);
   bool moo_set_loop(bool b);
