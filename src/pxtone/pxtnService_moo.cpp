@@ -3,34 +3,46 @@
 #include "./pxtnMem.h"
 #include "./pxtnService.h"
 
+mooState::mooState() {
+  b_mute_by_unit = false;
+  b_loop = true;
+
+  fade_fade = 0;
+  master_vol = 1.0f;
+  bt_clock = 0;
+  bt_num = 0;
+
+  freq = NULL;
+  smp_end = 0;
+}
+
+dynMooState::dynMooState() {
+  group_smps = NULL;
+  p_eve = NULL;
+
+  smp_count = 0;
+}
+
 void pxtnService::_moo_constructor() {
   _moo_b_init = false;
 
   _moo_b_valid_data = false;
   _moo_b_end_vomit = true;
-  _moo_b_mute_by_unit = false;
-  _moo_b_loop = true;
-
-  _moo_fade_fade = 0;
-  _moo_master_vol = 1.0f;
-  _moo_bt_clock = 0;
-  _moo_bt_num = 0;
-
-  _moo_freq = NULL;
-  _moo_group_smps = NULL;
-  _moo_p_eve = NULL;
-
-  _moo_smp_count = 0;
-  _moo_smp_end = 0;
+  _moo_state = mooState();
+  _dyn_moo_state = dynMooState();
 }
 
 bool pxtnService::_moo_release() {
   if (!_moo_b_init) return false;
   _moo_b_init = false;
-  SAFE_DELETE(_moo_freq);
-  if (_moo_group_smps) free(_moo_group_smps);
-  _moo_group_smps = NULL;
+  _moo_state.release();
+  _dyn_moo_state.release();
   return true;
+}
+void mooState::release() { SAFE_DELETE(freq); }
+void dynMooState::release() {
+  if (group_smps) free(group_smps);
+  group_smps = NULL;
 }
 
 void pxtnService::_moo_destructer() { _moo_release(); }
@@ -38,10 +50,8 @@ void pxtnService::_moo_destructer() { _moo_release(); }
 bool pxtnService::_moo_init() {
   bool b_ret = false;
 
-  if (!(_moo_freq = new pxtnPulse_Frequency()) || !_moo_freq->Init()) goto term;
-  if (!pxtnMem_zero_alloc((void**)&_moo_group_smps,
-                          sizeof(int32_t) * _group_num))
-    goto term;
+  if (!_moo_state.init()) goto term;
+  if (!_dyn_moo_state.init(_group_num)) goto term;
 
   _moo_b_init = true;
   b_ret = true;
@@ -49,6 +59,15 @@ term:
   if (!b_ret) _moo_release();
 
   return b_ret;
+}
+
+bool mooState::init() {
+  freq = new pxtnPulse_Frequency();
+  return (freq && freq->Init());
+}
+
+bool dynMooState::init(int32_t group_num) {
+  return pxtnMem_zero_alloc((void**)&group_smps, sizeof(int32_t) * group_num);
 }
 
 ////////////////////////////////////////////////
@@ -63,7 +82,7 @@ bool pxtnService::moo_ResetVoiceOn_Custom(pxtnUnit* p_u, int32_t w) const {
   if (!p_wc) return false;
 
   p_u->set_woice(p_wc);
-  p_u->Tone_Reset(_moo_bt_tempo, _moo_freq, _moo_clock_rate);
+  p_u->Tone_Reset(_moo_state.bt_tempo, _moo_state.freq, _moo_state.clock_rate);
 
   return true;
 }
@@ -82,18 +101,128 @@ bool pxtnService::_moo_InitUnitTone() {
   return true;
 }
 
+// u is used to look ahead to cut short notes whose release go into the next.
+// This note duration cutting is for the smoothing near the end of a note.
+void pxtnService::_moo_ProcessEvent(pxtnUnit* p_u, int32_t u,
+                                    const EVERECORD* e, int32_t clock) {
+  pxtnVOICETONE* p_tone;
+  const pxtnWoice* p_wc;
+  const pxtnVOICEINSTANCE* p_vi;
+
+  switch (e->kind) {
+    case EVENTKIND_ON: {
+      int32_t on_count =
+          (int32_t)((e->clock + e->value - clock) * _moo_state.clock_rate);
+      if (on_count <= 0) {
+        p_u->Tone_ZeroLives();
+        break;
+      }
+
+      p_u->Tone_KeyOn();
+
+      if (!(p_wc = p_u->get_woice())) break;
+      for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
+        p_tone = p_u->get_tone(v);
+        p_vi = p_wc->get_instance(v);
+
+        // release..
+        if (p_vi->env_release) {
+          /* the actual length of the note + release. the (clock - ..->clock)
+           * is in case we skip start */
+          int32_t max_life_count1 = (int32_t)((e->value - (clock - e->clock)) *
+                                              _moo_state.clock_rate) +
+                                    p_vi->env_release;
+          int32_t max_life_count2;
+          int32_t c = e->clock + e->value + p_tone->env_release_clock;
+          EVERECORD* next = NULL;
+          for (EVERECORD* p = e->next; p; p = p->next) {
+            if (p->clock > c) break;
+            if (p->unit_no == u && p->kind == EVENTKIND_ON) {
+              next = p;
+              break;
+            }
+          }
+          /* end the note at the end of the song if there's no next note */
+          if (!next)
+            max_life_count2 =
+                _moo_state.smp_end - (int32_t)(clock * _moo_state.clock_rate);
+          /* end the note at the next note otherwise. */
+          else
+            max_life_count2 =
+                (int32_t)((next->clock - clock) * _moo_state.clock_rate);
+          /* finally, take min of both */
+          if (max_life_count1 < max_life_count2)
+            p_tone->life_count = max_life_count1;
+          else
+            p_tone->life_count = max_life_count2;
+        }
+        // no-release..
+        else {
+          p_tone->life_count = (int32_t)((e->value - (clock - e->clock)) *
+                                         _moo_state.clock_rate);
+        }
+
+        if (p_tone->life_count > 0) {
+          p_tone->on_count = on_count;
+          p_tone->smp_pos = 0;
+          p_tone->env_pos = 0;
+          if (p_vi->env_size)
+            p_tone->env_volume = p_tone->env_start = 0;  // envelope
+          else
+            p_tone->env_volume = p_tone->env_start = 128;  // no-envelope
+        }
+      }
+      break;
+    }
+
+    case EVENTKIND_KEY:
+      p_u->Tone_Key(e->value);
+      break;
+    case EVENTKIND_PAN_VOLUME:
+      p_u->Tone_Pan_Volume(_dst_ch_num, e->value);
+      break;
+    case EVENTKIND_PAN_TIME:
+      p_u->Tone_Pan_Time(_dst_ch_num, e->value, _dst_sps);
+      break;
+    case EVENTKIND_VELOCITY:
+      p_u->Tone_Velocity(e->value);
+      break;
+    case EVENTKIND_VOLUME:
+      p_u->Tone_Volume(e->value);
+      break;
+    case EVENTKIND_PORTAMENT:
+      p_u->Tone_Portament((int32_t)(e->value * _moo_state.clock_rate));
+      break;
+    case EVENTKIND_BEATCLOCK:
+    case EVENTKIND_BEATTEMPO:
+    case EVENTKIND_BEATNUM:
+    case EVENTKIND_REPEAT:
+    case EVENTKIND_LAST:
+      break;
+    case EVENTKIND_VOICENO:
+      _moo_ResetVoiceOn(p_u, e->value);
+      break;
+    case EVENTKIND_GROUPNO:
+      p_u->Tone_GroupNo(e->value);
+      break;
+    case EVENTKIND_TUNING:
+      p_u->Tone_Tuning(*((float*)(&e->value)));
+      break;
+  }
+}
 bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
   if (!_moo_b_init) return false;
 
   // envelope..
   for (int32_t u = 0; u < _unit_num; u++) _units[u]->Tone_Envelope();
 
-  int32_t clock = (int32_t)(_moo_smp_count / _moo_clock_rate);
+  int32_t clock = (int32_t)(_dyn_moo_state.smp_count / _moo_state.clock_rate);
 
   /* Adding constant update to moo_smp_end since we might be editing while
    * playing */
-  _moo_smp_end = (int32_t)((double)master->get_play_meas() * _moo_bt_num *
-                           _moo_bt_clock * _moo_clock_rate);
+  _moo_state.smp_end =
+      (int32_t)((double)master->get_play_meas() * _moo_state.bt_num *
+                _moo_state.bt_clock * _moo_state.clock_rate);
 
   /* Notify all the units of events that occurred since the last time increment
      and adjust sampling parameters accordingly */
@@ -101,192 +230,89 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
   // TODO: Be able to handle changes while playing.
   // 1. Adding between last and current event for this unit, or deleting the
   // next event, or changing note length.
-  for (; _moo_p_eve && _moo_p_eve->clock <= clock;
-       _moo_p_eve = _moo_p_eve->next) {
-    int32_t u = _moo_p_eve->unit_no;
-    pxtnUnit* p_u = _units[u];
-    pxtnVOICETONE* p_tone;
-    const pxtnWoice* p_wc;
-    const pxtnVOICEINSTANCE* p_vi;
-
-    switch (_moo_p_eve->kind) {
-      case EVENTKIND_ON: {
-        int32_t on_count = (int32_t)(
-            (_moo_p_eve->clock + _moo_p_eve->value - clock) * _moo_clock_rate);
-        if (on_count <= 0) {
-          p_u->Tone_ZeroLives();
-          break;
-        }
-
-        p_u->Tone_KeyOn();
-
-        if (!(p_wc = p_u->get_woice())) break;
-        for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
-          p_tone = p_u->get_tone(v);
-          p_vi = p_wc->get_instance(v);
-
-          // release..
-          if (p_vi->env_release) {
-            /* the actual length of the note + release. the (clock - ..->clock)
-             * is in case we skip start */
-            int32_t max_life_count1 =
-                (int32_t)((_moo_p_eve->value - (clock - _moo_p_eve->clock)) *
-                          _moo_clock_rate) +
-                p_vi->env_release;
-            int32_t max_life_count2;
-            int32_t c = _moo_p_eve->clock + _moo_p_eve->value +
-                        p_tone->env_release_clock;
-            EVERECORD* next = NULL;
-            for (EVERECORD* p = _moo_p_eve->next; p; p = p->next) {
-              if (p->clock > c) break;
-              if (p->unit_no == u && p->kind == EVENTKIND_ON) {
-                next = p;
-                break;
-              }
-            }
-            /* end the note at the end of the song if there's no next note */
-            if (!next)
-              max_life_count2 =
-                  _moo_smp_end - (int32_t)(clock * _moo_clock_rate);
-            /* end the note at the next note otherwise. */
-            else
-              max_life_count2 =
-                  (int32_t)((next->clock - clock) * _moo_clock_rate);
-            /* finally, take min of both */
-            if (max_life_count1 < max_life_count2)
-              p_tone->life_count = max_life_count1;
-            else
-              p_tone->life_count = max_life_count2;
-          }
-          // no-release..
-          else {
-            p_tone->life_count =
-                (int32_t)((_moo_p_eve->value - (clock - _moo_p_eve->clock)) *
-                          _moo_clock_rate);
-          }
-
-          if (p_tone->life_count > 0) {
-            p_tone->on_count = on_count;
-            p_tone->smp_pos = 0;
-            p_tone->env_pos = 0;
-            if (p_vi->env_size)
-              p_tone->env_volume = p_tone->env_start = 0;  // envelope
-            else
-              p_tone->env_volume = p_tone->env_start = 128;  // no-envelope
-          }
-        }
-        break;
-      }
-
-      case EVENTKIND_KEY:
-        p_u->Tone_Key(_moo_p_eve->value);
-        break;
-      case EVENTKIND_PAN_VOLUME:
-        p_u->Tone_Pan_Volume(_dst_ch_num, _moo_p_eve->value);
-        break;
-      case EVENTKIND_PAN_TIME:
-        p_u->Tone_Pan_Time(_dst_ch_num, _moo_p_eve->value, _dst_sps);
-        break;
-      case EVENTKIND_VELOCITY:
-        p_u->Tone_Velocity(_moo_p_eve->value);
-        break;
-      case EVENTKIND_VOLUME:
-        p_u->Tone_Volume(_moo_p_eve->value);
-        break;
-      case EVENTKIND_PORTAMENT:
-        p_u->Tone_Portament((int32_t)(_moo_p_eve->value * _moo_clock_rate));
-        break;
-      case EVENTKIND_BEATCLOCK:
-        break;
-      case EVENTKIND_BEATTEMPO:
-        break;
-      case EVENTKIND_BEATNUM:
-        break;
-      case EVENTKIND_REPEAT:
-        break;
-      case EVENTKIND_LAST:
-        break;
-      case EVENTKIND_VOICENO:
-        _moo_ResetVoiceOn(p_u, _moo_p_eve->value);
-        break;
-      case EVENTKIND_GROUPNO:
-        p_u->Tone_GroupNo(_moo_p_eve->value);
-        break;
-      case EVENTKIND_TUNING:
-        p_u->Tone_Tuning(*((float*)(&_moo_p_eve->value)));
-        break;
-    }
+  // I think _dyn_moo_state.p_eve is incremented past clock at the end of this
+  // loop b/c that way, events are only triggered once even if multiple samples
+  // have the same clock.
+  for (; _dyn_moo_state.p_eve && _dyn_moo_state.p_eve->clock <= clock;
+       _dyn_moo_state.p_eve = _dyn_moo_state.p_eve->next) {
+    int32_t u = _dyn_moo_state.p_eve->unit_no;
+    _moo_ProcessEvent(_units[u], u, _dyn_moo_state.p_eve, clock);
   }
 
   // sampling..
   for (int32_t u = 0; u < _unit_num; u++) {
-    _units[u]->Tone_Sample(_moo_b_mute_by_unit, _dst_ch_num,
-                           _moo_time_pan_index, _moo_smp_smooth);
+    _units[u]->Tone_Sample(_moo_state.b_mute_by_unit, _dst_ch_num,
+                           _dyn_moo_state.time_pan_index,
+                           _moo_state.smp_smooth);
   }
 
   for (int32_t ch = 0; ch < _dst_ch_num; ch++) {
-    for (int32_t g = 0; g < _group_num; g++) _moo_group_smps[g] = 0;
+    for (int32_t g = 0; g < _group_num; g++) _dyn_moo_state.group_smps[g] = 0;
     /* Sample the units into a group buffer */
     for (int32_t u = 0; u < _unit_num; u++)
-      _units[u]->Tone_Supple(_moo_group_smps, ch, _moo_time_pan_index);
+      _units[u]->Tone_Supple(_dyn_moo_state.group_smps, ch,
+                             _dyn_moo_state.time_pan_index);
     /* Add overdrive, delay to group buffer */
     for (int32_t o = 0; o < _ovdrv_num; o++)
-      _ovdrvs[o]->Tone_Supple(_moo_group_smps);
+      _ovdrvs[o]->Tone_Supple(_dyn_moo_state.group_smps);
     for (int32_t d = 0; d < _delay_num; d++)
-      _delays[d]->Tone_Supple(ch, _moo_group_smps);
+      _delays[d]->Tone_Supple(ch, _dyn_moo_state.group_smps);
 
     /* Add group samples together for final */
     // collect.
     int32_t work = 0;
-    for (int32_t g = 0; g < _group_num; g++) work += _moo_group_smps[g];
+    for (int32_t g = 0; g < _group_num; g++)
+      work += _dyn_moo_state.group_smps[g];
 
     /* Fading scale probably for rendering at the end */
     // fade..
-    if (_moo_fade_fade) work = work * (_moo_fade_count >> 8) / _moo_fade_max;
+    if (_moo_state.fade_fade)
+      work = work * (_moo_state.fade_count >> 8) / _moo_state.fade_max;
 
     // master volume
-    work = (int32_t)(work * _moo_master_vol);
+    work = (int32_t)(work * _moo_state.master_vol);
 
     // to buffer..
-    if (work > _moo_top) work = _moo_top;
-    if (work < -_moo_top) work = -_moo_top;
+    if (work > _moo_state.top) work = _moo_state.top;
+    if (work < -_moo_state.top) work = -_moo_state.top;
     *((int16_t*)p_data + ch) = (int16_t)(work);
   }
 
   // --------------
   // increments..
 
-  _moo_smp_count++;
-  _moo_time_pan_index = (_moo_time_pan_index + 1) & (pxtnBUFSIZE_TIMEPAN - 1);
+  _dyn_moo_state.smp_count++;
+  _dyn_moo_state.time_pan_index =
+      (_dyn_moo_state.time_pan_index + 1) & (pxtnBUFSIZE_TIMEPAN - 1);
 
   for (int32_t u = 0; u < _unit_num; u++) {
     int32_t key_now = _units[u]->Tone_Increment_Key();
-    _units[u]->Tone_Increment_Sample(_moo_freq->Get2(key_now) *
-                                     _moo_smp_stride);
+    _units[u]->Tone_Increment_Sample(_moo_state.freq->Get2(key_now) *
+                                     _moo_state.smp_stride);
   }
 
   // delay
   for (int32_t d = 0; d < _delay_num; d++) _delays[d]->Tone_Increment();
 
   // fade out
-  if (_moo_fade_fade < 0) {
-    if (_moo_fade_count > 0)
-      _moo_fade_count--;
+  if (_moo_state.fade_fade < 0) {
+    if (_moo_state.fade_count > 0)
+      _moo_state.fade_count--;
     else
       return false;
   }
   // fade in
-  else if (_moo_fade_fade > 0) {
-    if (_moo_fade_count < (_moo_fade_max << 8))
-      _moo_fade_count++;
+  else if (_moo_state.fade_fade > 0) {
+    if (_moo_state.fade_count < (_moo_state.fade_max << 8))
+      _moo_state.fade_count++;
     else
-      _moo_fade_fade = 0;
+      _moo_state.fade_fade = 0;
   }
 
-  if (_moo_smp_count >= _moo_smp_end) {
-    if (!_moo_b_loop) return false;
-    _moo_smp_count = _moo_smp_repeat;
-    _moo_p_eve = evels->get_Records();
+  if (_dyn_moo_state.smp_count >= _moo_state.smp_end) {
+    if (!_moo_state.b_loop) return false;
+    _dyn_moo_state.smp_count = _moo_state.smp_repeat;
+    _dyn_moo_state.p_eve = evels->get_Records();
     _moo_InitUnitTone();
   }
   return true;
@@ -300,7 +326,8 @@ bool pxtnService::moo_get_pxtnVOICETONE(const pxtnUnit* p_u,
                                         pxtnVOICETONE* vts) const {
   if (!_moo_b_init) return false;
   if (!p_u) return false;
-  p_u->Tone_Reset_Custom(_moo_bt_tempo, _moo_freq, _moo_clock_rate, vts);
+  p_u->Tone_Reset_Custom(_moo_state.bt_tempo, _moo_state.freq,
+                         _moo_state.clock_rate, vts);
 
   return true;
 }
@@ -312,13 +339,13 @@ int32_t pxtnService::moo_tone_sample_custom(const pxtnUnit* p_u,
   if (!p_u) return 0;
   if (buf_size < _dst_ch_num) return 0;
   int32_t* bufs = new int32_t[_dst_ch_num];
-  p_u->Tone_Sample_Custom(_dst_ch_num, _moo_smp_smooth, vts, bufs);
-  p_u->Tone_Increment_Sample_Custom(_moo_freq->Get2(key) * _moo_smp_stride,
-                                    vts);
+  p_u->Tone_Sample_Custom(_dst_ch_num, _moo_state.smp_smooth, vts, bufs);
+  p_u->Tone_Increment_Sample_Custom(
+      _moo_state.freq->Get2(key) * _moo_state.smp_stride, vts);
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
     int32_t work = bufs[ch];
-    if (work > _moo_top) work = _moo_top;
-    if (work < -_moo_top) work = -_moo_top;
+    if (work > _moo_state.top) work = _moo_state.top;
+    if (work < -_moo_state.top) work = -_moo_state.top;
     *((int16_t*)data + ch) = (int16_t)(work);
   }
   delete[] bufs;
@@ -338,41 +365,43 @@ bool pxtnService::moo_is_end_vomit() const {
 /* This place might be a chance to allow variable tempo songs */
 int32_t pxtnService::moo_get_now_clock() const {
   if (!_moo_b_init) return 0;
-  if (_moo_clock_rate) return (int32_t)(_moo_smp_count / _moo_clock_rate);
+  if (_moo_state.clock_rate)
+    return (int32_t)(_dyn_moo_state.smp_count / _moo_state.clock_rate);
   return 0;
 }
 
 int32_t pxtnService::moo_get_end_clock() const {
   if (!_moo_b_init) return 0;
-  if (_moo_clock_rate) return (int32_t)(_moo_smp_end / _moo_clock_rate);
+  if (_moo_state.clock_rate)
+    return (int32_t)(_moo_state.smp_end / _moo_state.clock_rate);
   return 0;
 }
 
 bool pxtnService::moo_set_mute_by_unit(bool b) {
   if (!_moo_b_init) return false;
-  _moo_b_mute_by_unit = b;
+  _moo_state.b_mute_by_unit = b;
   return true;
 }
 bool pxtnService::moo_set_loop(bool b) {
   if (!_moo_b_init) return false;
-  _moo_b_loop = b;
+  _moo_state.b_loop = b;
   return true;
 }
 
 bool pxtnService::moo_set_fade(int32_t fade, float sec) {
   if (!_moo_b_init) return false;
-  _moo_fade_max = (int32_t)((float)_dst_sps * sec) >> 8;
+  _moo_state.fade_max = (int32_t)((float)_dst_sps * sec) >> 8;
   if (fade < 0) {
-    _moo_fade_fade = -1;
-    _moo_fade_count = _moo_fade_max << 8;
+    _moo_state.fade_fade = -1;
+    _moo_state.fade_count = _moo_state.fade_max << 8;
   }  // out
   else if (fade > 0) {
-    _moo_fade_fade = 1;
-    _moo_fade_count = 0;
+    _moo_state.fade_fade = 1;
+    _moo_state.fade_count = 0;
   }  // in
   else {
-    _moo_fade_fade = 0;
-    _moo_fade_count = 0;
+    _moo_state.fade_fade = 0;
+    _moo_state.fade_count = 0;
   }  // off
   return true;
 }
@@ -408,46 +437,51 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
     if (p_prep->fadein_sec) fadein_sec = p_prep->fadein_sec;
 
     if (p_prep->flags & pxtnVOMITPREPFLAG_unit_mute)
-      _moo_b_mute_by_unit = true;
+      _moo_state.b_mute_by_unit = true;
     else
-      _moo_b_mute_by_unit = false;
+      _moo_state.b_mute_by_unit = false;
     if (p_prep->flags & pxtnVOMITPREPFLAG_loop)
-      _moo_b_loop = true;
+      _moo_state.b_loop = true;
     else
-      _moo_b_loop = false;
+      _moo_state.b_loop = false;
 
-    _moo_master_vol = p_prep->master_volume;
+    _moo_state.master_vol = p_prep->master_volume;
   }
 
   /* _dst_sps is like samples to seconds. it's set in pxtnService.cpp
      constructor, comes from Main.cpp. 44100 is passed to both this & xaudio. */
-  _moo_bt_clock = master->get_beat_clock(); /* clock ticks per beat */
-  _moo_bt_num = master->get_beat_num();
-  _moo_bt_tempo = master->get_beat_tempo();
+  _moo_state.bt_clock = master->get_beat_clock(); /* clock ticks per beat */
+  _moo_state.bt_num = master->get_beat_num();
+  _moo_state.bt_tempo = master->get_beat_tempo();
   /* samples per clock tick */
-  _moo_clock_rate = (float)(60.0f * (double)_dst_sps /
-                            ((double)_moo_bt_tempo * (double)_moo_bt_clock));
-  _moo_smp_stride = (44100.0f / _dst_sps);
-  _moo_top = 0x7fff;
+  _moo_state.clock_rate =
+      (float)(60.0f * (double)_dst_sps /
+              ((double)_moo_state.bt_tempo * (double)_moo_state.bt_clock));
+  _moo_state.smp_stride = (44100.0f / _dst_sps);
+  _moo_state.top = 0x7fff;
 
-  _moo_time_pan_index = 0;
+  _dyn_moo_state.time_pan_index = 0;
 
-  _moo_smp_end = (int32_t)((double)meas_end * (double)_moo_bt_num *
-                           (double)_moo_bt_clock * _moo_clock_rate);
-  _moo_smp_repeat = (int32_t)((double)meas_repeat * (double)_moo_bt_num *
-                              (double)_moo_bt_clock * _moo_clock_rate);
+  _moo_state.smp_end =
+      (int32_t)((double)meas_end * (double)_moo_state.bt_num *
+                (double)_moo_state.bt_clock * _moo_state.clock_rate);
+  _moo_state.smp_repeat =
+      (int32_t)((double)meas_repeat * (double)_moo_state.bt_num *
+                (double)_moo_state.bt_clock * _moo_state.clock_rate);
 
   if (start_float) {
-    _moo_smp_start = (int32_t)((float)moo_get_total_sample() * start_float);
+    _moo_state.smp_start =
+        (int32_t)((float)moo_get_total_sample() * start_float);
   } else if (start_sample) {
-    _moo_smp_start = start_sample;
+    _moo_state.smp_start = start_sample;
   } else {
-    _moo_smp_start = (int32_t)((double)start_meas * (double)_moo_bt_num *
-                               (double)_moo_bt_clock * _moo_clock_rate);
+    _moo_state.smp_start =
+        (int32_t)((double)start_meas * (double)_moo_state.bt_num *
+                  (double)_moo_state.bt_clock * _moo_state.clock_rate);
   }
 
-  _moo_smp_count = _moo_smp_start;
-  _moo_smp_smooth = _dst_sps / 250;  // (0.004sec) // (0.010sec)
+  _dyn_moo_state.smp_count = _moo_state.smp_start;
+  _moo_state.smp_smooth = _dst_sps / 250;  // (0.004sec) // (0.010sec)
 
   if (fadein_sec > 0)
     moo_set_fade(1, fadein_sec);
@@ -456,7 +490,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
 
   tones_clear();
 
-  _moo_p_eve = evels->get_Records();
+  _dyn_moo_state.p_eve = evels->get_Records();
 
   _moo_InitUnitTone();
 
@@ -472,13 +506,13 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
 int32_t pxtnService::moo_get_sampling_offset() const {
   if (!_moo_b_init) return 0;
   if (_moo_b_end_vomit) return 0;
-  return _moo_smp_count;
+  return _dyn_moo_state.smp_count;
 }
 
 int32_t pxtnService::moo_get_sampling_end() const {
   if (!_moo_b_init) return 0;
   if (_moo_b_end_vomit) return 0;
-  return _moo_smp_end;
+  return _moo_state.smp_end;
 }
 
 int32_t pxtnService::moo_get_total_sample() const {
@@ -497,7 +531,7 @@ bool pxtnService::moo_set_master_volume(float v) {
   if (!_moo_b_init) return false;
   if (v < 0) v = 0;
   if (v > 1) v = 1;
-  _moo_master_vol = v;
+  _moo_state.master_vol = v;
   return true;
 }
 
@@ -547,7 +581,8 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
   }
 
   if (_sampled_proc) {
-    // int32_t clock = (int32_t)( _moo_smp_count / _moo_clock_rate );
+    // int32_t clock = (int32_t)( _dyn_moo_state.smp_count /
+    // _moo_state.clock_rate );
     if (!_sampled_proc(_sampled_user, this)) {
       _moo_b_end_vomit = true;
       goto term;

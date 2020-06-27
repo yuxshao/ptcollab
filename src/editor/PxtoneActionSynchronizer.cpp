@@ -221,6 +221,7 @@ bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   unit->Tone_Init();
   // TODO: This is sort of bad to do, to use a private moo fn for the purposes
   // of note previews. We really need to split out the moo state.
+  // PRobably wanna instead re-prep moo at the current time.
   m_pxtn->moo_ResetVoiceOn_Custom(unit, a.woice_id);
   return true;
 }

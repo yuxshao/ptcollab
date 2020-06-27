@@ -31,6 +31,64 @@ typedef struct {
   float master_volume;
 } pxtnVOMITPREPARATION;
 
+// Static parameters that are computed when moo is initialized.
+struct mooState {
+  // Whether muting individual units is allowed or not
+  bool b_mute_by_unit;
+  // Is looping enabled?
+  bool b_loop;
+
+  // How many samples at the tail end of the note to use to fade to silence?
+  int32_t smp_smooth;
+  float clock_rate;    // as the sample
+  int32_t smp_start;   // Where was this moo initialized?
+  int32_t smp_end;     // What's the last sample number in the song?
+  int32_t smp_repeat;  // What sample # is the repeat?
+
+  // Some fade params. Not looked into it much yet
+  int32_t fade_count;
+  int32_t fade_max;
+  int32_t fade_fade;
+  float master_vol;
+
+  int32_t top;  // max pcm value allowed
+  float smp_stride;
+
+  float bt_tempo;
+
+  // for make now-meas
+  int32_t bt_clock;
+  int32_t bt_num;
+
+  // It's a singleton, but it maps key to frequency
+  pxtnPulse_Frequency *freq;
+
+  mooState();
+
+  void release();
+
+  bool init();
+};
+
+// Moo values that change as the song plays.
+struct dynMooState {
+  // Buffers that units write to for group operations
+  int32_t *group_smps;
+  int32_t time_pan_index;
+
+  // Current sample position
+  int32_t smp_count;
+
+  // Next event
+  const EVERECORD *p_eve;
+
+  dynMooState();
+
+  void release();
+
+  bool init(int32_t group_num);
+};
+
 class pxtnService;
 
 typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
@@ -101,36 +159,8 @@ class pxtnService {
   bool _moo_b_end_vomit;
   bool _moo_b_init;
 
-  bool _moo_b_mute_by_unit;
-  bool _moo_b_loop;
-
-  int32_t _moo_smp_smooth;
-  float _moo_clock_rate;  // as the sample
-  int32_t _moo_smp_count;
-  int32_t _moo_smp_start;
-  int32_t _moo_smp_end;
-  int32_t _moo_smp_repeat;
-
-  int32_t _moo_fade_count;
-  int32_t _moo_fade_max;
-  int32_t _moo_fade_fade;
-  float _moo_master_vol;
-
-  int32_t _moo_top;
-  float _moo_smp_stride;
-  int32_t _moo_time_pan_index;
-
-  float _moo_bt_tempo;
-
-  // for make now-meas
-  int32_t _moo_bt_clock;
-  int32_t _moo_bt_num;
-
-  int32_t *_moo_group_smps;
-
-  const EVERECORD *_moo_p_eve;
-
-  pxtnPulse_Frequency *_moo_freq;
+  mooState _moo_state;
+  dynMooState _dyn_moo_state;
 
   pxtnERR _init(int32_t fix_evels_num, bool b_edit);
   bool _release();
@@ -143,6 +173,8 @@ class pxtnService {
 
   bool _moo_ResetVoiceOn(pxtnUnit *p_u, int32_t w) const;
   bool _moo_InitUnitTone();
+  void _moo_ProcessEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e,
+                         int32_t clock);
   bool _moo_PXTONE_SAMPLE(void *p_data);
 
   pxtnSampledCallback _sampled_proc;
