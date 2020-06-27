@@ -1,3 +1,5 @@
+Log
+---
 - dynamic height and width
 - stopping and starting via space
 - seeking
@@ -153,35 +155,44 @@ fill architecture could work well.
 6/23 & 6/26
 1. Some playtesting!
 
-Functionality:
+Todo by priority
+----------------
+ - be able to see existing note velocity
+ - Prefer click+scroll to change velocity.
  - include that one other dll in the package for vcruntime
- - Click+scroll to change velocity by default.
-   Also some way to look at existing note velocity
- - Put in help that shift + click is seek
- - Instrument preview in file select / unit click
- - Copy paste
- - Tempo controls
-
- - Unit view, at least for drums
-   - how many views do you want? the fewer, the easier it is to be 'present'
-     with others.
-   - something like ptweb
-     - can pin instruments to be drums. (list of pinned is global)
- - bottom bar for changing other params like vol, pan, etc.
-   - change voice events will require a map from voice id to no
- - moving voices up and down
+ - factor out moo state
+   - instrument preview in file select / unit click
+   - accurate note preview with the proper state at time of note w/ params of note
+ - see other user's playhead optionally
+ - select an interval, and operations (keyboard shortcuts) for
+   - transposing it up / down
+   - moving selection left / right beat or measure
+   - cutting / copying / pasting
+     - Workflow: Copy paste - maybe not that important b/c when writing with others you're
+       probably just going to be adding notes with them. it's much more like
+       doodling! Or at least, it is right now.
+ - Tempo, time signature controls
+ - Adidtional bars for other editing:
+   - bottom bar for params like vol, pan, etc.
+     - change voice events will require a map from voice id to no
+     - linear change tool (see domino)
+   - Unit view, at least for drums
+     - how many views do you want? the fewer, the easier it is to be 'present'
+       with others.
+     - something like ptweb
+       - can pin instruments to be drums. (list of pinned is global)
  - show measure num, set loop points
    - will probably need some pixel font thing
- - set tempo, time signature
- - edit while playing soundness
-   - in particular, if a note is added as next event.
- - would be nice to click on a user and jump to their view
- - take some inspiration from domino midi! linear changing of params
+ - would be real nice to click on a user and jump to their view
+ - more inspiration from domino midi!
 
+Misc todo by categories
+-----------------------
 Aesthetics:
-  customizable piano roll colours
-  qwerty midi input
-  tab system to edit multiple files at once / switch between sessions
+  - customizable piano roll colours
+  - qwerty midi input
+  - tab system to edit multiple files at once / switch between sessions
+  - arcofdream's icon designs for the connect / disconnect menus
 
 Technical stuff:
  - factor out moo state from pxtn state
@@ -190,34 +201,30 @@ Technical stuff:
        the right volume
  - server keeps its own state (e.g., active users) + running history (currently
    it plays back -everything-)
+   - probably goes hand-in-hand with undo stack, which drawpile limits to
+     globally 30. probably a good idea so we don't keep on growing in memory
+   - cheap to have large stack
  - seqnums on the server messages.
    - robust if you see an unexpected message from elsewhere (unexpected server
      seqnum?)
    - note: without seqnums, clients do not have a chance if server drops msgs
      to some clients but not others, without seqnums
- - add a place where you can easily see errors like missed writes or unexpected
-   IDs. log on server side history of actions too (maybe exclude editstate).
-   also log if a message hasn't roundtripped in a while (consider if there's
-   any expected situation where we don't expect roundtrip. prob. not if like
-   drawpile)
+ - place to see errors like missed writes or unexpected IDs.
+   - log on server side history of actions too (maybe exclude editstate).
+   - log if a message hasn't roundtripped in a while (consider if there's
+     any expected situation where we don't expect roundtrip. prob. not if like
+     drawpile)
  - put hello in the protocol.
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
  - static build
- - drawpile autoresets, so that server doesn't have to send whole history over.
-   - probably goes hand-in-hand with undo stack, which drawpile limits to
-     globally 30. probably a good idea so we don't keep on growing in memory
-   - undo stack is probably sth like: all committed local history prunes after
-     reaching size X
-   - autoreset is then being able to supply a base ptcop + a history with size
-     > X
-   - Undo stack isn't actually that important, usually only undo 1-2 at a time.
-     But also, cheap to have a large stack.
+
+Editor functionality:
+ - echo & overdrive
+ - moving voices up and down
 
 Editor QoL:
  - Time bar at the top
- - lower bar for editing volume?
- - editing volume, etc. in bottom bar
- - follow playhead
+ - follow playhead (seems low pri since no on suggested)
  - Speed things up.
    - Separate audio thread with locking.
    - Bounding boxes for the undos/redos
@@ -232,16 +239,12 @@ Editor QoL:
        could probably handle 1000 events with little lag (1000 events * 1000
        actions = 1M iterations, not too much)
  - don't blip when seeking and playing again (hard due to QAudioOutput behavior)
-
-Edit while playing soundness (low priority, unlikely to hit)
- - Add things between last event and next (before / after now?)
- - Delete things. Don't strand the pointer
- - Adjust the length of ON
+ - Edit while playing soundness (low priority, unlikely to hit)
+   - Add things between last event and next (before / after now?)
+   - Delete things. Don't strand the pointer
+   - Adjust the length of ON
 
 Low priority:
- - Workflow: Copy paste - maybe not that important b/c when writing with others you're
-   probably just going to be adding notes with them. it's much more like
-   doodling! Or at least, it is right now.
  - Editor UI: Piano on the left
  - Misc UI: Recent connections dropdown
  - Custom icon for people's names?
