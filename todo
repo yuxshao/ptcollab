@@ -155,10 +155,12 @@ fill architecture could work well.
 6/23 & 6/26
 1. Some playtesting!
 
+6/27
+1. Add some slack in vertical momement before adjusting velocity
+
 Todo by priority
 ----------------
  - be able to see existing note velocity
- - Prefer click+scroll to change velocity.
  - include that one other dll in the package for vcruntime
  - factor out moo state
    - instrument preview in file select / unit click
@@ -225,6 +227,9 @@ Editor functionality:
 Editor QoL:
  - Time bar at the top
  - follow playhead (seems low pri since no on suggested)
+ - Prefer click+scroll to change velocity
+   - This is difficult on trackpad.
+   - Instead, added some slack to velocity adjustment.
  - Speed things up.
    - Separate audio thread with locking.
    - Bounding boxes for the undos/redos

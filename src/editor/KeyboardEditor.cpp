@@ -278,10 +278,14 @@ static Brush brushes[] = {
 constexpr int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
 
 int pixelsPerVelocity = 3;
+static double slack = 50;
 int impliedVelocity(MouseEditState state, const Scale &scale) {
-  return clamp(state.base_velocity + (state.current_pitch - state.start_pitch) /
-                                         scale.pitchPerPx / pixelsPerVelocity,
-               0, EVENTMAX_VELOCITY);
+  double delta = (state.current_pitch - state.start_pitch) / scale.pitchPerPx;
+  // Apply a sigmoid so that small changes in y hardly do anything
+  delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
+
+  return clamp(round(state.base_velocity + delta / pixelsPerVelocity), 0,
+               EVENTMAX_VELOCITY);
 }
 static QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
 void drawOngoingEdit(const EditState &state, QPainter &painter, QPen *pen,
