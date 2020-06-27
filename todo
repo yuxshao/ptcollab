@@ -157,14 +157,15 @@ fill architecture could work well.
 
 6/27
 1. Add some slack in vertical momement before adjusting velocity
+2. Cleaner note params on new note
+3. See existing note velocity
 
 Todo by priority
 ----------------
- - be able to see existing note velocity
- - include that one other dll in the package for vcruntime
  - factor out moo state
    - instrument preview in file select / unit click
    - accurate note preview with the proper state at time of note w/ params of note
+ - include that one other dll in the package for vcruntime
  - see other user's playhead optionally
  - select an interval, and operations (keyboard shortcuts) for
    - transposing it up / down
@@ -248,6 +249,7 @@ Editor QoL:
    - Add things between last event and next (before / after now?)
    - Delete things. Don't strand the pointer
    - Adjust the length of ON
+ - Scroll if clicking and on edge of pane
 
 Low priority:
  - Editor UI: Piano on the left
