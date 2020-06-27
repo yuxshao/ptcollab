@@ -189,10 +189,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
   connect(ui->actionHelp, &QAction::triggered, [=]() {
-    QMessageBox::about(this, "Help",
-                       "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
-                       "horizontally.\nMiddle-click drag also "
-                       "scrolls.\nAlt+Scroll to change quantization.");
+    QMessageBox::about(
+        this, "Help",
+        "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
+        "horizontally.\nMiddle-click drag also "
+        "scrolls.\nAlt+Scroll to change quantization.\nShift+click to seek.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
