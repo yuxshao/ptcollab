@@ -31,6 +31,8 @@ typedef struct {
   float master_volume;
 } pxtnVOMITPREPARATION;
 
+class pxtnService;
+
 // Static parameters that are computed when moo is initialized.
 struct mooState {
   // Whether muting individual units is allowed or not
@@ -68,6 +70,13 @@ struct mooState {
   void release();
 
   bool init();
+
+  void processEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e, int32_t clock,
+                    int32_t dst_ch_num, int32_t dst_sps,
+                    const pxtnService *pxtn) const;
+
+  // TODO: maybe don't need to expose
+  bool resetVoiceOn(pxtnUnit *p_u, int32_t w, const pxtnService *pxtn) const;
 };
 
 // Moo values that change as the song plays.
@@ -88,8 +97,6 @@ struct dynMooState {
 
   bool init(int32_t group_num);
 };
-
-class pxtnService;
 
 typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
 
@@ -263,6 +270,7 @@ class pxtnService {
 
   bool moo_is_valid_data() const;
   bool moo_is_end_vomit() const;
+  const mooState *moo_state() const { return &_moo_state; }
 
   bool moo_set_mute_by_unit(bool b);
   bool moo_set_loop(bool b);
@@ -279,8 +287,6 @@ class pxtnService {
   bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
 
   bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
-  // TODO: temporary fn for initting a new unit and making playback avail
-  bool moo_ResetVoiceOn_Custom(pxtnUnit *p_u, int32_t w) const;
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,
