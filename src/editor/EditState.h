@@ -9,6 +9,7 @@ struct Interval {
   bool contains(qint32 x) const { return (start <= x && x < end); }
 
   qint32 length() const { return end - start; }
+  bool empty() const { return end <= start; }
 };
 inline Interval interval_intersect(const Interval &a, const Interval &b) {
   return {std::max(a.start, b.start), std::min(a.end, b.end)};

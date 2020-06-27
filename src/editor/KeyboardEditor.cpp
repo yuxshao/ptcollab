@@ -292,6 +292,7 @@ static qint32 arbitrarily_tall = 512;
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                     const Brush &brush, const Scale &scale, qint32 alpha) {
+  if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
   painter.setPen(brush.toQColor(draw_vel, true, alpha));
   painter.setFont(QFont("Sans serif", 6));
@@ -355,41 +356,50 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
                    QString("%1 (%2)").arg(username).arg(uid));
 }
 
-double smoothExpDistance(double dy, double dx) {
-  double r = sqrt(dy * dy + dx * dx);
-  qDebug() << r;
-  return std::max(0.0, (exp(-r) - 0.1) / 0.9);
+double smoothDistance(double dy, double dx) {
+  double r = dy * dy + dx * dx;
+  return std::max(0.0, 1 / (r + 1));
 }
 void drawStateSegment(QPainter &painter, const DrawState &state,
-                      const Interval &segment, const Brush &brush, qint32 alpha,
-                      const Scale &scale, qint32 current_clock,
-                      const MouseEditState &mouse) {
+                      const Interval &segment, const Interval &bounds,
+                      const Brush &brush, qint32 alpha, const Scale &scale,
+                      qint32 current_clock, const MouseEditState &mouse,
+                      bool drawTooltip) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
+  if (interval_intersect(interval, bounds).empty()) return;
   QColor color =
       brush.toQColor(state.velocity.value, on.contains(current_clock), alpha);
   paintBlock(state.pitch.value, interval, painter, color, scale);
   if (interval.start == on.start) {
     paintHighlight(state.pitch.value, interval.start, painter,
                    brush.toQColor(255, true, alpha), scale);
-    double alphaMultiplier =
-        smoothExpDistance(
-            (mouse.current_clock - on.start) / 40.0 / scale.clockPerPx,
-            (mouse.current_pitch - state.pitch.value) / 200.0 /
-                scale.pitchPerPx) *
-        0.4;
-    if (mouse.current_clock < on.end && mouse.current_clock >= on.start)
-      alphaMultiplier += 0.6;
-    drawVelTooltip(painter, state.velocity.value, interval.start,
-                   state.pitch.value, brush, scale, alpha * alphaMultiplier);
+    if (drawTooltip) {
+      double alphaMultiplier =
+          smoothDistance(
+              (mouse.current_clock - on.start) / 40.0 / scale.clockPerPx,
+              (mouse.current_pitch - state.pitch.value) / 200.0 /
+                  scale.pitchPerPx) *
+          0.4;
+      if (mouse.current_clock < on.end && mouse.current_clock >= on.start)
+        alphaMultiplier += 0.6;
+      drawVelTooltip(painter, state.velocity.value, interval.start,
+                     state.pitch.value, brush, scale, alpha * alphaMultiplier);
+    }
   }
 }
 // TODO: Make an FPS tracker singleton
 static qreal iFps;
-void KeyboardEditor::paintEvent(QPaintEvent *) {
+constexpr int WINDOW_BOUND_SLACK = 32;
+void KeyboardEditor::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
   QPainter painter(this);
+  Interval clockBounds = {
+      qint32(event->rect().left() * m_edit_state.scale.clockPerPx) -
+          WINDOW_BOUND_SLACK,
+      qint32(event->rect().right() * m_edit_state.scale.clockPerPx) +
+          WINDOW_BOUND_SLACK};
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
@@ -477,23 +487,24 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
+  // TODO: Draw the current unit at the top.
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
        e = e->next) {
+    if (e->clock > clockBounds.end) break;
     int unit_no = e->unit_no;
     qint32 unit_id = m_sync->unitIdMap().noToId(unit_no);
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
-    int alpha =
-        (unit_id == m_edit_state.m_current_unit_id || m_show_all_units ? 255
-                                                                       : 64);
+    bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
+    int alpha = (matchingUnit || m_show_all_units ? 255 : 64);
     switch (e->kind) {
       case EVENTKIND_ON:
         // Draw the last block of the previous on event if there's one to
         // draw.
         if (state.ongoingOnEvent.has_value())
-          drawStateSegment(painter, state, {state.pitch.clock, e->clock}, brush,
-                           alpha, m_edit_state.scale, clock,
-                           m_edit_state.mouse_edit_state);
+          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+                           clockBounds, brush, alpha, m_edit_state.scale, clock,
+                           m_edit_state.mouse_edit_state, matchingUnit);
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
@@ -503,9 +514,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       case EVENTKIND_KEY:
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
-          drawStateSegment(painter, state, {state.pitch.clock, e->clock}, brush,
-                           alpha, m_edit_state.scale, clock,
-                           m_edit_state.mouse_edit_state);
+          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+                           clockBounds, brush, alpha, m_edit_state.scale, clock,
+                           m_edit_state.mouse_edit_state, matchingUnit);
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -522,14 +533,13 @@ void KeyboardEditor::paintEvent(QPaintEvent *) {
       qint32 unit_id = m_sync->unitIdMap().noToId(unit_no);
       DrawState &state = drawStates[unit_no];
       const Brush &brush = brushes[unit_id % NUM_BRUSHES];
-      int alpha =
-          (unit_id == m_edit_state.m_current_unit_id || m_show_all_units ? 255
-                                                                         : 64);
+      bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
+      int alpha = (matchingUnit || m_show_all_units ? 255 : 64);
 
       drawStateSegment(painter, state,
                        {state.pitch.clock, state.ongoingOnEvent.value().end},
-                       brush, alpha, m_edit_state.scale, clock,
-                       m_edit_state.mouse_edit_state);
+                       clockBounds, brush, alpha, m_edit_state.scale, clock,
+                       m_edit_state.mouse_edit_state, matchingUnit);
 
       state.ongoingOnEvent.reset();
     }
