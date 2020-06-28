@@ -31,6 +31,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 # Input
 HEADERS += \
            editor/Animation.h \
+           editor/AudioFormat.h \
            editor/DummySyncServer.h \
            editor/EditState.h \
            editor/EditorScrollArea.h \
@@ -77,6 +78,7 @@ FORMS += \
     editor/SideMenu.ui
 SOURCES += main.cpp \
            editor/Animation.cpp \
+           editor/AudioFormat.cpp \
            editor/DummySyncServer.cpp \
            editor/EditState.cpp \
            editor/EditorScrollArea.cpp \

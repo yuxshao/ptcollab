@@ -3,6 +3,7 @@
 #include <QAudioFormat>
 #include <QAudioOutput>
 
+#include "AudioFormat.h"
 #include "NotePreview.h"
 #include "PxtoneUnitIODevice.h"
 
@@ -37,17 +38,8 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int pitch,
   }
 
   m_device = new PxtoneUnitIODevice(this, m_pxtn, &m_unit);
-  // TODO: Deduplicate this sample setup
-  QAudioFormat format;
-  int channel_num = 2;
-  int sample_rate = 44100;
-  format.setSampleRate(sample_rate);
-  format.setChannelCount(channel_num);
-  format.setSampleSize(16);
-  format.setCodec("audio/pcm");
-  format.setByteOrder(QAudioFormat::LittleEndian);
-  format.setSampleType(QAudioFormat::SignedInt);
-  m_audio = new QAudioOutput(format, m_device);
+
+  m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
 
   m_device->open(QIODevice::ReadOnly);
 

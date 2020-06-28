@@ -10,6 +10,7 @@
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
+#include "AudioFormat.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "server/BroadcastServer.h"
 #include "server/Client.h"
@@ -35,22 +36,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   ui->setupUi(this);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
 
-  QAudioFormat format;
-  format.setSampleRate(sample_rate);
-  format.setChannelCount(channel_num);
-  format.setSampleSize(16);  // fixed in pxtone
-  format.setCodec("audio/pcm");
-  format.setByteOrder(QAudioFormat::LittleEndian);
-  format.setSampleType(QAudioFormat::SignedInt);
-
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-  if (!info.isFormatSupported(format)) {
+  if (!info.isFormatSupported(pxtoneAudioFormat())) {
     qWarning()
         << "Raw audio format not supported by backend, cannot play audio.";
     return;
   }
 
-  m_audio = new QAudioOutput(format, this);
+  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
 
   // m_audio->setBufferSize(441000);
 
