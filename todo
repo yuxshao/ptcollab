@@ -170,6 +170,9 @@ fill architecture could work well.
 Todo by priority
 ----------------
  - instrument preview in file select / unit click
+   - idea: the pitch of the instrument preview could be determined by the last
+     note pressed in a keyboard (that has yet been added). this can avoid
+     complicating the file dialog. maybe.
  - include that one other dll in the package for vcruntime
  - see other user's playhead optionally
  - select an interval, and operations (keyboard shortcuts) for
@@ -180,6 +183,10 @@ Todo by priority
        probably just going to be adding notes with them. it's much more like
        doodling! Or at least, it is right now.
  - Tempo, time signature controls
+ - show measure num, set loop points
+   - will probably need some pixel font thing
+ - keyboard on left side of piano roll (probably will help in figuring out how
+   to sticky a thing in a scrollview)
  - Adidtional bars for other editing:
    - bottom bar for params like vol, pan, etc.
      - change voice events will require a map from voice id to no
@@ -189,8 +196,6 @@ Todo by priority
        with others.
      - something like ptweb
        - can pin instruments to be drums. (list of pinned is global)
- - show measure num, set loop points
-   - will probably need some pixel font thing
  - would be real nice to click on a user and jump to their view
  - more inspiration from domino midi!
 
@@ -203,10 +208,6 @@ Aesthetics:
   - arcofdream's icon designs for the connect / disconnect menus
 
 Technical stuff:
- - factor out moo state from pxtn state
-   - can then preview notes at the time they're played
-     - this is important now that velocity is sticky. ppl should hear notes at
-       the right volume
  - server keeps its own state (e.g., active users) + running history (currently
    it plays back -everything-)
    - probably goes hand-in-hand with undo stack, which drawpile limits to
