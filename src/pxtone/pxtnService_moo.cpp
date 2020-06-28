@@ -304,6 +304,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 int32_t pxtnService::moo_tone_sample(pxtnUnit* p_u, void* data,
                                      int32_t buf_size,
                                      int32_t time_pan_index) const {
+  // TODO: Try to deduplicate this with _moo_PXTONE_SAMPLE
   if (!p_u) return 0;
   if (buf_size < _dst_ch_num) return 0;
 
