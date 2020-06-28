@@ -16,10 +16,12 @@ class PxtoneUnitIODevice : public QIODevice {
 
  signals:
   void MooError();
+  void ZeroLives();
 
  private:
   const pxtnService *m_pxtn;
   pxtnUnit *m_unit;
+  bool m_zero_lives;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);
 };

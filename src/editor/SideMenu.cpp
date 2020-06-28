@@ -28,7 +28,7 @@ SideMenu::SideMenu(QWidget* parent)
   connect(ui->stopBtn, &QPushButton::clicked, this,
           &SideMenu::stopButtonPressed);
   connect(ui->showAll, &QCheckBox::toggled, this, &SideMenu::showAllChanged);
-  connect(ui->units, signal, this, &SideMenu::selectedUnitChanged);
+  connect(ui->units, signal, this, &SideMenu::currentUnitChanged);
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
   connect(ui->hostBtn, &QPushButton::clicked, this,
@@ -64,6 +64,9 @@ SideMenu::SideMenu(QWidget* parent)
               QMessageBox::Yes)
         emit removeWoice(idx, ui->woiceList->currentItem()->text());
     }
+  });
+  connect(ui->woiceList, &QListWidget::itemActivated, [this](QListWidgetItem*) {
+    emit selectWoice(ui->woiceList->currentRow());
   });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();

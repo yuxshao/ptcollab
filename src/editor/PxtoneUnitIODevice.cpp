@@ -4,7 +4,7 @@
 
 PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
                                        pxtnUnit *unit)
-    : QIODevice(parent), m_pxtn(pxtn), m_unit(unit) {}
+    : QIODevice(parent), m_pxtn(pxtn), m_unit(unit), m_zero_lives(false) {}
 
 qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
   memset(data, 0, maxlen);
@@ -20,6 +20,13 @@ qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
     filled += result;
     if (result == 0) break;
   }
+
+  bool zero_lives = true;
+  for (int i = 0; i < m_unit->get_woice()->get_voice_num(); ++i)
+    if (m_unit->get_tone(i)->life_count != 0) zero_lives = false;
+  if (zero_lives && !m_zero_lives) emit ZeroLives();
+  m_zero_lives = zero_lives;
+
   return filled;
 }
 qint64 PxtoneUnitIODevice::writeData(const char *data, qint64 len) {

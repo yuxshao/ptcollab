@@ -102,7 +102,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_editor,
           &KeyboardEditor::setQuantYIndex);
 
-  connect(m_side_menu, &SideMenu::selectedUnitChanged, m_keyboard_editor,
+  connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_editor,
           &KeyboardEditor::setCurrentUnitNo);
   connect(m_side_menu, &SideMenu::showAllChanged, m_keyboard_editor,
           &KeyboardEditor::setShowAll);
@@ -157,6 +157,14 @@ EditorWindow::EditorWindow(QWidget *parent)
       return;
     }
     if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
+  });
+  connect(m_side_menu, &SideMenu::selectWoice, [this](int idx) {
+    // TODO: Adjust the length based off pitch and if the instrument loops or
+    // not.
+    NotePreview *note =
+        new NotePreview(&m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000,
+                        m_pxtn.Woice_Get(idx), this);
+    connect(note, &NotePreview::finished, note, &QObject::deleteLater);
   });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);

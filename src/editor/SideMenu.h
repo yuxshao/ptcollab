@@ -21,7 +21,7 @@ class SideMenu : public QWidget {
  signals:
   void quantXIndexUpdated(int);
   void quantYIndexUpdated(int);
-  void selectedUnitChanged(int);
+  void currentUnitChanged(int);
   void showAllChanged(bool);
   void playButtonPressed();
   void stopButtonPressed();
@@ -33,6 +33,7 @@ class SideMenu : public QWidget {
   // TODO: Maybe set up the UI so that you can also give a name
   void addWoice(QString filename);
   void removeWoice(int idx, QString name);
+  void selectWoice(int);
 
  public slots:
   void setQuantXIndex(int);

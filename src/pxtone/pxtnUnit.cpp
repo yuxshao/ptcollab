@@ -180,6 +180,8 @@ void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
                                                  p_vt->env_pos /
                                                  p_vi->env_release;
         p_vt->env_pos++;
+        // TODO: I think I can set life_count to 0 if env_pos > env_release. But
+        // not sure.
       }
     }
   }
