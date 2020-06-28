@@ -45,8 +45,8 @@ void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
 }
 
 /* A custom way to initialize a pxtnVOICETONE for separate playing. */
-void pxtnUnit::Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
-                                 float clock_rate, pxtnVOICETONE *vts) const {
+void pxtnUnit::Tone_Reset_Custom(float tempo, float clock_rate,
+                                 pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
   const pxtnVOICEINSTANCE *p_inst;
   const pxtnVOICEUNIT *p_vc;
@@ -59,17 +59,17 @@ void pxtnUnit::Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
     if (p_vc->voice_flags & PTV_VOICEFLAG_BEATFIT) {
       ofs_freq = (p_inst->smp_body_w * tempo) / (44100 * 60 * p_vc->tuning);
     } else {
-      ofs_freq = frequencies->Get(EVENTDEFAULT_BASICKEY - p_vc->basic_key) *
-                 p_vc->tuning;
+      ofs_freq =
+          pxtnPulse_Frequency::Get(EVENTDEFAULT_BASICKEY - p_vc->basic_key) *
+          p_vc->tuning;
     }
     vts[v] = pxtnVOICETONE((int32_t)(p_inst->env_release / clock_rate),
                            ofs_freq, p_inst->env_size != 0);
   }
 }
 
-void pxtnUnit::Tone_Reset(float tempo, pxtnPulse_Frequency *frequencies,
-                          float clock_rate) {
-  Tone_Reset_Custom(tempo, frequencies, clock_rate, _vts);
+void pxtnUnit::Tone_Reset(float tempo, float clock_rate) {
+  Tone_Reset_Custom(tempo, clock_rate, _vts);
 }
 
 bool pxtnUnit::set_woice(const pxtnWoice *p_woice) {

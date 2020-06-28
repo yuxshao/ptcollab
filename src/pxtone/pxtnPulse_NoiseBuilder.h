@@ -16,8 +16,6 @@ class pxtnPulse_NoiseBuilder {
   void _random_reset();
   short _random_get();
 
-  pxtnPulse_Frequency* _freq;
-
  public:
   pxtnPulse_NoiseBuilder();
   ~pxtnPulse_NoiseBuilder();

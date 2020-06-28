@@ -62,14 +62,7 @@ struct mooParams {
   int32_t bt_clock;
   int32_t bt_num;
 
-  // It's a singleton, but it maps key to frequency
-  pxtnPulse_Frequency *freq;
-
   mooParams();
-
-  void release();
-
-  bool init();
 
   void processEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e, int32_t clock,
                     int32_t dst_ch_num, int32_t dst_sps,

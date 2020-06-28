@@ -12,7 +12,6 @@ mooParams::mooParams() {
   bt_clock = 0;
   bt_num = 0;
 
-  freq = NULL;
   smp_end = 0;
 }
 
@@ -35,11 +34,9 @@ void pxtnService::_moo_constructor() {
 bool pxtnService::_moo_release() {
   if (!_moo_b_init) return false;
   _moo_b_init = false;
-  _moo_params.release();
   _moo_state.release();
   return true;
 }
-void mooParams::release() { SAFE_DELETE(freq); }
 void mooState::release() {
   if (group_smps) free(group_smps);
   group_smps = NULL;
@@ -50,7 +47,6 @@ void pxtnService::_moo_destructer() { _moo_release(); }
 bool pxtnService::_moo_init() {
   bool b_ret = false;
 
-  if (!_moo_params.init()) goto term;
   if (!_moo_state.init(_group_num)) goto term;
 
   _moo_b_init = true;
@@ -59,11 +55,6 @@ term:
   if (!b_ret) _moo_release();
 
   return b_ret;
-}
-
-bool mooParams::init() {
-  freq = new pxtnPulse_Frequency();
-  return (freq && freq->Init());
 }
 
 bool mooState::init(int32_t group_num) {
@@ -81,7 +72,7 @@ bool mooParams::resetVoiceOn(pxtnUnit* p_u, int32_t w,
   if (!p_wc) return false;
 
   p_u->set_woice(p_wc);
-  p_u->Tone_Reset(bt_tempo, freq, clock_rate);
+  p_u->Tone_Reset(bt_tempo, clock_rate);
 
   return true;
 }
@@ -283,7 +274,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 
   for (int32_t u = 0; u < _unit_num; u++) {
     int32_t key_now = _units[u]->Tone_Increment_Key();
-    _units[u]->Tone_Increment_Sample(_moo_params.freq->Get2(key_now) *
+    _units[u]->Tone_Increment_Sample(pxtnPulse_Frequency::Get2(key_now) *
                                      _moo_params.smp_stride);
   }
 
@@ -322,8 +313,7 @@ bool pxtnService::moo_get_pxtnVOICETONE(const pxtnUnit* p_u,
                                         pxtnVOICETONE* vts) const {
   if (!_moo_b_init) return false;
   if (!p_u) return false;
-  p_u->Tone_Reset_Custom(_moo_params.bt_tempo, _moo_params.freq,
-                         _moo_params.clock_rate, vts);
+  p_u->Tone_Reset_Custom(_moo_params.bt_tempo, _moo_params.clock_rate, vts);
 
   return true;
 }
@@ -337,7 +327,7 @@ int32_t pxtnService::moo_tone_sample_custom(const pxtnUnit* p_u,
   int32_t* bufs = new int32_t[_dst_ch_num];
   p_u->Tone_Sample_Custom(_dst_ch_num, _moo_params.smp_smooth, vts, bufs);
   p_u->Tone_Increment_Sample_Custom(
-      _moo_params.freq->Get2(key) * _moo_params.smp_stride, vts);
+      pxtnPulse_Frequency::Get2(key) * _moo_params.smp_stride, vts);
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
     int32_t work = bufs[ch];
     if (work > _moo_params.top) work = _moo_params.top;

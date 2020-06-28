@@ -102,14 +102,11 @@ void _incriment(_OSCILLATOR *p_osc, double incriment, const short *p_tbl_rand) {
 
 pxtnPulse_NoiseBuilder::pxtnPulse_NoiseBuilder() {
   _b_init = false;
-  _freq = NULL;
   for (int32_t i = 0; i < pxWAVETYPE_num; i++) _p_tables[i] = NULL;
 }
 
 pxtnPulse_NoiseBuilder::~pxtnPulse_NoiseBuilder() {
   _b_init = false;
-  if (_freq) delete _freq;
-  _freq = NULL;
   for (int32_t i = 0; i < pxWAVETYPE_num; i++)
     pxtnMem_free((void **)&_p_tables[i]);
 }
@@ -161,9 +158,6 @@ bool pxtnPulse_NoiseBuilder::Init() {
       {0, 0}, {_smp_num / 4, 128}, {_smp_num * 3 / 4, -128}, {_smp_num, 0}};
 
   if (_b_init) return true;
-
-  _freq = new pxtnPulse_Frequency();
-  if (!_freq->Init()) goto End;
 
   for (s = 0; s < pxWAVETYPE_num; s++) _p_tables[s] = NULL;
 
@@ -645,7 +639,8 @@ pxtnPulse_PCM *pxtnPulse_NoiseBuilder::BuildNoise(pxtnPulse_Noise *p_noise,
         if (po->bReverse) fre *= -1;
         fre *= po->volume;
 
-        _incriment(&pU->main, pU->main.incriment * _freq->Get((int32_t)fre),
+        _incriment(&pU->main,
+                   pU->main.incriment * pxtnPulse_Frequency::Get((int32_t)fre),
                    _p_tables[pxWAVETYPE_Random]);
         _incriment(&pU->freq, pU->freq.incriment, _p_tables[pxWAVETYPE_Random]);
         _incriment(&pU->volu, pU->volu.incriment, _p_tables[pxWAVETYPE_Random]);

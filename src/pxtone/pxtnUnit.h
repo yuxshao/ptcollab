@@ -48,10 +48,9 @@ class pxtnUnit {
 
   void Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
                            float offset_freq);
-  void Tone_Reset_Custom(float tempo, pxtnPulse_Frequency *frequencies,
-                         float clock_rate, pxtnVOICETONE *vts) const;
-  void Tone_Reset(float tempo, pxtnPulse_Frequency *frequencies,
-                  float clock_rate);
+  void Tone_Reset_Custom(float tempo, float clock_rate,
+                         pxtnVOICETONE *vts) const;
+  void Tone_Reset(float tempo, float clock_rate);
   void Tone_Envelope_Custom(pxtnVOICETONE *vts) const;
   void Tone_Envelope();
   void Tone_KeyOn();
