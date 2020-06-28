@@ -8,8 +8,8 @@
 #include "PxtoneUnitIODevice.h"
 
 constexpr int32_t LONG_ON_VALUE = 100000000;
-NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int pitch,
-                         int clock, int vel, QObject *parent)
+NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
+                         int pitch, int vel, QObject *parent)
     : QObject(parent), m_pxtn(pxtn), m_device(nullptr), m_audio(nullptr) {
   int32_t dst_sps, dst_ch_num;
   m_pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
@@ -38,11 +38,9 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int pitch,
   }
 
   m_device = new PxtoneUnitIODevice(this, m_pxtn, &m_unit);
-
-  m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
-
   m_device->open(QIODevice::ReadOnly);
 
+  m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
   m_audio->setVolume(1.0);
   m_audio->start(m_device);
 }

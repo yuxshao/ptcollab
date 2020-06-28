@@ -169,7 +169,7 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - instrument preview in file select / unit click
+ - instrument preview in (1) unit click (2) file select / unit click
    - idea: the pitch of the instrument preview could be determined by the last
      note pressed in a keyboard (that has yet been added). this can avoid
      complicating the file dialog. maybe.
@@ -256,6 +256,7 @@ Editor QoL:
    - Delete things. Don't strand the pointer
    - Adjust the length of ON
  - Scroll if clicking and on edge of pane
+ - Play audio while paused but seeking!
 
 Low priority:
  - Editor UI: Piano on the left

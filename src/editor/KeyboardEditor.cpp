@@ -687,7 +687,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   int quantized_pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
                         m_edit_state.m_quantize_pitch;
   int quantized_clock = quantize(clock, m_edit_state.m_quantize_clock);
-  NotePreview *note_preview = nullptr;
+  bool make_note_preview = false;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
     type = MouseEditState::Type::Seek;
@@ -697,36 +697,28 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         type = MouseEditState::Type::DeleteNote;
       else {
         type = MouseEditState::Type::SetNote;
-
-        auto maybe_unit_no =
-            m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-        if (maybe_unit_no != std::nullopt) {
-          qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
-          note_preview =
-              new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_pitch,
-                              quantized_clock, vel, this);
-        }
+        make_note_preview = true;
       }
     } else {
       if (event->button() == Qt::RightButton)
         type = MouseEditState::Type::DeleteOn;
       else {
         type = MouseEditState::Type::SetOn;
-        auto maybe_unit_no =
-            m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-        if (maybe_unit_no != std::nullopt) {
-          qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
-          note_preview =
-              new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_pitch,
-                              quantized_clock, vel, this);
-        }
+        make_note_preview = true;
       }
     }
   }
-  // TODO: This note preview thing is a bit jank in case unit changes. But
-  // it's fairly safe I think because the audio output itself cuts off if the
-  // unit disappears.
-  if (note_preview != nullptr) m_audio_note_preview = note_preview;
+  // TODO: Will note preview still work if the woice is deleted under our feet?
+  if (make_note_preview) {
+    auto maybe_unit_no =
+        m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+    if (maybe_unit_no != std::nullopt) {
+      qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
+      m_audio_note_preview =
+          new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_clock,
+                          quantized_pitch, vel, this);
+    }
+  }
   m_edit_state.mouse_edit_state = MouseEditState{
       type, m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
       pitch};

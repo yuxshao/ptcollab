@@ -8,7 +8,7 @@
 class NotePreview : public QObject {
   Q_OBJECT
  public:
-  NotePreview(const pxtnService *pxtn, int unit_no, int pitch, int clock,
+  NotePreview(const pxtnService *pxtn, int unit_no, int clock, int pitch,
               int vel, QObject *parent = nullptr);
   void setVel(int vel) { m_unit.Tone_Velocity(vel); }
   void suspend() { m_audio->suspend(); }
