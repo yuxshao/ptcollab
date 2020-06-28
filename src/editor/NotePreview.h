@@ -10,11 +10,13 @@ class NotePreview : public QObject {
  public:
   NotePreview(const pxtnService *pxtn, int unit_no, int pitch, int clock,
               int vel, QObject *parent = nullptr);
-  void setVel(int vel) { m_device->setVel(vel); }
+  void setVel(int vel) { m_unit.Tone_Velocity(vel); }
   void suspend() { m_audio->suspend(); }
   ~NotePreview();
 
  private:
+  const pxtnService *m_pxtn;
+  pxtnUnit m_unit;
   PxtoneUnitIODevice *m_device;
   QAudioOutput *m_audio;
 };
