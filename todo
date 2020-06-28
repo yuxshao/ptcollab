@@ -169,10 +169,12 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - instrument preview in (1) unit click (2) file select / unit click
+ - instrument preview in file select
    - idea: the pitch of the instrument preview could be determined by the last
      note pressed in a keyboard (that has yet been added). this can avoid
      complicating the file dialog. maybe.
+   - Add a 'stop all note previews' button
+   - Perhaps you could show a mini keyboard for previews under the woice list.
  - include that one other dll in the package for vcruntime
  - see other user's playhead optionally
  - select an interval, and operations (keyboard shortcuts) for
