@@ -77,17 +77,13 @@ bool mooParams::resetVoiceOn(pxtnUnit* p_u, int32_t w,
   return true;
 }
 
-bool pxtnService::_moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const {
-  if (!_moo_b_init) return false;
-  return _moo_params.resetVoiceOn(p_u, w, this);
-}
-
 bool pxtnService::_moo_InitUnitTone() {
   if (!_moo_b_init) return false;
   for (int32_t u = 0; u < _unit_num; u++) {
     pxtnUnit* p_u = Unit_Get_variable(u);
+    // TODO: Initializing a unit should not take 2 steps over 2 classes.
     p_u->Tone_Init();
-    _moo_ResetVoiceOn(p_u, EVENTDEFAULT_VOICENO);
+    _moo_params.resetVoiceOn(p_u, EVENTDEFAULT_VOICENO, this);
   }
   return true;
 }
@@ -311,32 +307,24 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 // get / set
 ///////////////////////
 
-bool pxtnService::moo_get_pxtnVOICETONE(const pxtnUnit* p_u,
-                                        pxtnVOICETONE* vts) const {
-  if (!_moo_b_init) return false;
-  if (!p_u) return false;
-  p_u->Tone_Reset_Custom(_moo_params.bt_tempo, _moo_params.clock_rate, vts);
-
-  return true;
-}
-
-int32_t pxtnService::moo_tone_sample_custom(const pxtnUnit* p_u,
-                                            pxtnVOICETONE* vts, void* data,
-                                            int32_t buf_size,
-                                            int32_t key) const {
+#include <QDebug>
+int32_t pxtnService::moo_tone_sample(pxtnUnit* p_u, void* data,
+                                     int32_t buf_size,
+                                     int32_t time_pan_index) const {
   if (!p_u) return 0;
   if (buf_size < _dst_ch_num) return 0;
-  int32_t* bufs = new int32_t[_dst_ch_num];
-  p_u->Tone_Sample_Custom(_dst_ch_num, _moo_params.smp_smooth, vts, bufs);
-  p_u->Tone_Increment_Sample_Custom(
-      pxtnPulse_Frequency::Get2(key) * _moo_params.smp_stride, vts);
+
+  p_u->Tone_Sample(false, _dst_ch_num, time_pan_index, _moo_params.smp_smooth);
+  int32_t key_now = p_u->Tone_Increment_Key();
+  p_u->Tone_Increment_Sample(pxtnPulse_Frequency::Get2(key_now) *
+                             _moo_params.smp_stride);
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
-    int32_t work = bufs[ch];
+    int32_t work = p_u->Tone_Supple_get(ch, time_pan_index);
     if (work > _moo_params.top) work = _moo_params.top;
     if (work < -_moo_params.top) work = -_moo_params.top;
     *((int16_t*)data + ch) = (int16_t)(work);
   }
-  delete[] bufs;
+
   return _dst_ch_num * sizeof(int16_t);
 }
 

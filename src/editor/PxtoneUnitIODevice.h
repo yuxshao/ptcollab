@@ -5,15 +5,14 @@
 #include "pxtone/pxtnService.h"
 #include "pxtone/pxtnWoice.h"
 
-/* An IO device for playing audio from a single voice separately from the moo
+/* An IO device for playing audio from a custom unit separately from the moo
  * stream. */
 class PxtoneUnitIODevice : public QIODevice {
   Q_OBJECT
 
  public:
-  PxtoneUnitIODevice(QObject *parent, pxtnService const *pxtn, int unit_no,
-                     int pitch);
-
+  PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn, int unit_no,
+                     int pitch, int clock, int vel);
   virtual ~PxtoneUnitIODevice() { close(); };
 
   void stopTone();
@@ -22,11 +21,9 @@ class PxtoneUnitIODevice : public QIODevice {
   void MooError();
 
  private:
-  pxtnService const *pxtn;
-  pxtnVOICETONE voice_tones[pxtnMAX_UNITCONTROLVOICE];
-
-  int unit_no;
-  int pitch;
+  const pxtnService *m_pxtn;
+  int m_unit_no, m_pitch, m_clock, m_vel;
+  pxtnUnit m_unit;
   bool on;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);

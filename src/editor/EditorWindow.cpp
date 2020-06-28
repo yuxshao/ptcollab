@@ -343,10 +343,14 @@ void EditorWindow::Host(bool load_file) {
                                         "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
-  QString filename =
-      load_file ? QFileDialog::getOpenFileName(this, "Open file", "",
-                                               "pxtone projects (*.ptcop)")
-                : "";
+  QString filename = "";
+  if (load_file) {
+    filename = QFileDialog::getOpenFileName(this, "Open file", "",
+                                            "pxtone projects (*.ptcop)");
+    // filename =
+    //    "/home/steven/Projects/Music/pxtone/Examples/for-web/basic-rect.ptcop";
+  }
+
   if (load_file && filename.length() == 0) return;
   bool ok;
   int port =

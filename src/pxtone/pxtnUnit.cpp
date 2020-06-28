@@ -246,11 +246,14 @@ void pxtnUnit::Tone_Sample(bool b_mute_by_unit, int32_t ch_num,
   Tone_Sample_Custom(ch_num, smooth_smp, _vts, _pan_time_bufs[time_pan_index]);
 }
 
+int32_t pxtnUnit::Tone_Supple_get(int32_t ch, int32_t time_pan_index) const {
+  int32_t idx = (time_pan_index - _pan_times[ch]) & (pxtnBUFSIZE_TIMEPAN - 1);
+  return _pan_time_bufs[idx][ch];
+}
 /* This dumps the time pan buffers into the group buffers */
 void pxtnUnit::Tone_Supple(int32_t *group_smps, int32_t ch,
                            int32_t time_pan_index) const {
-  int32_t idx = (time_pan_index - _pan_times[ch]) & (pxtnBUFSIZE_TIMEPAN - 1);
-  group_smps[_v_GROUPNO] += _pan_time_bufs[idx][ch];
+  group_smps[_v_GROUPNO] += Tone_Supple_get(ch, time_pan_index);
 }
 
 int pxtnUnit::Tone_Increment_Key() {

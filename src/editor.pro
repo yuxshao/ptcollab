@@ -36,6 +36,7 @@ HEADERS += \
            editor/EditorScrollArea.h \
            editor/EditorWindow.h \
            editor/KeyboardEditor.h \
+           editor/NotePreview.h \
            editor/PxtoneActionSynchronizer.h \
            editor/PxtoneIODevice.h \
            editor/PxtoneUnitIODevice.h \
@@ -81,6 +82,7 @@ SOURCES += main.cpp \
            editor/EditorScrollArea.cpp \
            editor/EditorWindow.cpp \
            editor/KeyboardEditor.cpp \
+           editor/NotePreview.cpp \
            editor/PxtoneActionSynchronizer.cpp \
            editor/PxtoneIODevice.cpp \
            editor/PxtoneUnitIODevice.cpp \

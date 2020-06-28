@@ -10,6 +10,7 @@
 #include "Animation.h"
 #include "DummySyncServer.h"
 #include "EditState.h"
+#include "NotePreview.h"
 #include "PxtoneActionSynchronizer.h"
 #include "pxtone/pxtnService.h"
 #include "server/Client.h"
@@ -58,14 +59,13 @@ class KeyboardEditor : public QWidget {
   void wheelEvent(QWheelEvent *event) override;
   void refreshSize();
   QSize sizeHint() const override;
-  QAudioOutput *make_audio(int pitch);
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
   bool m_show_all_units;
   int painted;
   EditState m_edit_state;
   QAudioOutput *m_audio_output;
-  QAudioOutput *m_audio_note_preview;
+  NotePreview *m_audio_note_preview;
   Animation *m_anim;
   Client *m_client;
   PxtoneActionSynchronizer *m_sync;

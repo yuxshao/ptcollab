@@ -257,10 +257,8 @@ class pxtnService {
   // Moo..
   //////////////
 
-  bool moo_get_pxtnVOICETONE(pxtnUnit const *p_u, pxtnVOICETONE *vts) const;
-  int32_t moo_tone_sample_custom(const pxtnUnit *p_u, pxtnVOICETONE *vts,
-                                 void *data, int32_t buf_size,
-                                 int32_t key) const;
+  int32_t moo_tone_sample(pxtnUnit *p_u, void *data, int32_t buf_size,
+                          int32_t time_pan_index) const;
 
   bool moo_is_valid_data() const;
   bool moo_is_end_vomit() const;

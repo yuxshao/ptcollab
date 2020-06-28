@@ -641,30 +641,6 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
   emit editStateChanged();
 }
 
-QAudioOutput *KeyboardEditor::make_audio(int pitch) {
-  // TODO: Deduplicate this sample setup
-  QAudioFormat format;
-  int channel_num = 2;
-  int sample_rate = 44100;
-  format.setSampleRate(sample_rate);
-  format.setChannelCount(channel_num);
-  format.setSampleSize(16);
-  format.setCodec("audio/pcm");
-  format.setByteOrder(QAudioFormat::LittleEndian);
-  format.setSampleType(QAudioFormat::SignedInt);
-  QAudioOutput *audio = new QAudioOutput(format, this);
-  auto maybe_unit_no =
-      m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-  if (maybe_unit_no != std::nullopt) {
-    PxtoneUnitIODevice *m_pxtn_device =
-        new PxtoneUnitIODevice(audio, m_pxtn, maybe_unit_no.value(), pitch);
-    m_pxtn_device->open(QIODevice::ReadOnly);
-
-    audio->setVolume(1.0);
-    audio->start(m_pxtn_device);
-  }
-  return audio;
-}
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
@@ -673,7 +649,10 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   if (m_pxtn->Unit_Num() == 0) return;
   int clock = event->localPos().x() * m_edit_state.scale.clockPerPx;
   int pitch = m_edit_state.scale.pitchOfY(event->localPos().y());
-  QAudioOutput *audio = nullptr;
+  int quantized_pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
+                        m_edit_state.m_quantize_pitch;
+  int quantized_clock = quantize(clock, m_edit_state.m_quantize_clock);
+  NotePreview *note_preview = nullptr;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
     type = MouseEditState::Type::Seek;
@@ -683,23 +662,36 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         type = MouseEditState::Type::DeleteNote;
       else {
         type = MouseEditState::Type::SetNote;
-        audio = make_audio(quantize(pitch, m_edit_state.m_quantize_pitch) +
-                           m_edit_state.m_quantize_pitch);
+
+        auto maybe_unit_no =
+            m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+        if (maybe_unit_no != std::nullopt) {
+          qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
+          note_preview =
+              new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_pitch,
+                              quantized_clock, vel, this);
+        }
       }
     } else {
       if (event->button() == Qt::RightButton)
         type = MouseEditState::Type::DeleteOn;
       else {
         type = MouseEditState::Type::SetOn;
-        audio = make_audio(quantize(pitch, m_edit_state.m_quantize_pitch) +
-                           m_edit_state.m_quantize_pitch);
+        auto maybe_unit_no =
+            m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+        if (maybe_unit_no != std::nullopt) {
+          qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
+          note_preview =
+              new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_pitch,
+                              quantized_clock, vel, this);
+        }
       }
     }
   }
   // TODO: This note preview thing is a bit jank in case unit changes. But
   // it's fairly safe I think because the audio output itself cuts off if the
   // unit disappears.
-  if (audio != nullptr) m_audio_note_preview = audio;
+  if (note_preview != nullptr) m_audio_note_preview = note_preview;
   m_edit_state.mouse_edit_state = MouseEditState{
       type, m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
       pitch};
