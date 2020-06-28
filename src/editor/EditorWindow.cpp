@@ -160,7 +160,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   connect(m_side_menu, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
-    // not.
+    // not. Also this is variable on tempo rn - fix that.
     NotePreview *note =
         new NotePreview(&m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000,
                         m_pxtn.Woice_Get(idx), this);
