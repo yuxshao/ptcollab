@@ -126,6 +126,7 @@ class pxtnService {
   pxtnWoice **_woices;
   int32_t _unit_max;
   int32_t _unit_num;
+  // TODO: The units are largely also part of the moo state, besides the name.
   pxtnUnit **_units;
 
   int32_t _group_num;

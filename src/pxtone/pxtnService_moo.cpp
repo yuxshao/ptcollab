@@ -198,6 +198,8 @@ void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
       break;
   }
 }
+// TODO: Could probably put this in _moo_state. Maybe make _moo_params a member
+// of it.
 bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
   if (!_moo_b_init) return false;
 
@@ -481,10 +483,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
   _moo_InitUnitTone();
 
   b_ret = true;
-  if (b_ret)
-    _moo_b_end_vomit = false;
-  else
-    _moo_b_end_vomit = true;
+  _moo_b_end_vomit = false;
 
   return b_ret;
 }
@@ -536,10 +535,7 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
   int32_t smp_w = 0;
 
   /*Testing what happens if mooing takes a long time
-   * int j = 0;
-  for (int i = 0; i < 100000000 * 0; ++i) {
-    j += i * i;
-  }*/
+   * int j = 0; for (int i = 0; i < 100000000 * 0; ++i) j += i * i; */
   /* No longer failing on remainder - we just return the filled size */
   // if( size % _dst_byte_per_smp ) return false;
 
