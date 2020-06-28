@@ -160,12 +160,15 @@ fill architecture could work well.
 2. Cleaner note params on new note
 3. See existing note velocity
 4. Render just the window, less expensive note velocity (no more sqrt / exps)
+5. Factor out moo state.
+  - Accurate note preview: proper state at time of note w/ params of note.
+  - Can still factor out more depending on what kind of preview to isolate.
+    Current setup just makes it easy to configure a unit and then just play.
 
 Todo by priority
 ----------------
- - factor out moo state
-   - instrument preview in file select / unit click
-   - accurate note preview with the proper state at time of note w/ params of note
+ - clean up some 'custom' moo fns, deduplicate some code
+ - instrument preview in file select / unit click
  - include that one other dll in the package for vcruntime
  - see other user's playhead optionally
  - select an interval, and operations (keyboard shortcuts) for
