@@ -20,6 +20,34 @@
 // w/ smart pointers.
 static constexpr int EVENT_MAX = 1000000;
 
+// TODO: Put this somewhere else, like in remote action or sth.
+AddWoice make_addWoice_from_path(const QString &path) {
+  QFileInfo fileinfo(path);
+  QString filename = fileinfo.fileName();
+  QString suffix = fileinfo.suffix().toLower();
+  pxtnWOICETYPE type;
+
+  if (suffix == "ptvoice")
+    type = pxtnWOICE_PTV;
+  else if (suffix == "ptnoise")
+    type = pxtnWOICE_PTN;
+  else if (suffix == "ogg" || suffix == "oga")
+    type = pxtnWOICE_OGGV;
+  else if (suffix == "wav")
+    type = pxtnWOICE_PCM;
+  else {
+    throw QString("Voice file (%1) has invalid extension (%2)")
+        .arg(filename)
+        .arg(suffix);
+  }
+  QFile file(path);
+  if (!file.open(QIODevice::ReadOnly))
+    throw QString("Could not open file (%1)").arg(filename);
+
+  QString name = fileinfo.baseName();
+  return AddWoice{type, name, file.readAll()};
+}
+
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
       m_pxtn_device(this, &m_pxtn),
@@ -28,6 +56,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_filename(""),
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
+      m_note_preview(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -122,35 +151,13 @@ EditorWindow::EditorWindow(QWidget *parent)
                     unit_name});
       });
   connect(m_side_menu, &SideMenu::addWoice, [this](QString path) {
-    QFileInfo fileinfo(path);
-    QString filename = fileinfo.fileName();
-    QString suffix = fileinfo.suffix().toLower();
-    pxtnWOICETYPE type;
-
-    if (suffix == "ptvoice")
-      type = pxtnWOICE_PTV;
-    else if (suffix == "ptnoise")
-      type = pxtnWOICE_PTN;
-    else if (suffix == "ogg" || suffix == "oga")
-      type = pxtnWOICE_OGGV;
-    else if (suffix == "wav")
-      type = pxtnWOICE_PCM;
-    else {
-      QMessageBox::critical(this, tr("Invalid file type"),
-                            tr("Voice file (%1) has invalid extension (%2)")
-                                .arg(filename)
-                                .arg(suffix));
-      return;
+    try {
+      m_client->sendAction(make_addWoice_from_path(path));
+    } catch (const QString &e) {
+      QMessageBox::critical(this, tr("Unable to add voice"), e);
     }
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly)) {
-      QMessageBox::critical(this, tr("Could not open file"),
-                            tr("Could not open file (%1)").arg(filename));
-      return;
-    }
-    QString name = fileinfo.baseName();
-    m_client->sendAction(AddWoice{type, name, file.readAll()});
   });
+
   connect(m_side_menu, &SideMenu::removeWoice, [this](int idx, QString name) {
     if (m_pxtn.Woice_Num() == 1) {
       QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));
@@ -158,13 +165,29 @@ EditorWindow::EditorWindow(QWidget *parent)
     }
     if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
   });
+  connect(m_side_menu, &SideMenu::candidateWoiceSelected, [this](QString path) {
+    try {
+      AddWoice a(make_addWoice_from_path(path));
+      std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
+      {
+        pxtnDescriptor d;
+        d.set_memory_r(a.data.constData(), a.data.size());
+        woice->read(&d, a.type);
+        m_pxtn.Woice_ReadyTone(woice);
+      }
+      // TODO: stop existing note preview on creation of new one in this case
+      m_note_preview = std::make_unique<NotePreview>(
+          &m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000, woice, this);
+    } catch (const QString &e) {
+      qDebug() << "Could not preview woice at path" << path << ". Error" << e;
+    }
+  });
   connect(m_side_menu, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
     // not. Also this is variable on tempo rn - fix that.
-    NotePreview *note =
-        new NotePreview(&m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000,
-                        m_pxtn.Woice_Get(idx), this);
-    connect(note, &NotePreview::finished, note, &QObject::deleteLater);
+    m_note_preview = std::make_unique<NotePreview>(&m_pxtn, EVENTDEFAULT_KEY,
+                                                   EVENTDEFAULT_VELOCITY, 48000,
+                                                   m_pxtn.Woice_Get(idx), this);
   });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);
@@ -194,7 +217,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         this, "Help",
         "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
         "horizontally.\nMiddle-click drag also "
-        "scrolls.\nAlt+Scroll to change quantization.\nShift+click to seek.");
+        "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
+        "seek.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });

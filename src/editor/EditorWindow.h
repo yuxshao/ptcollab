@@ -47,6 +47,7 @@ class EditorWindow : public QMainWindow {
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;
+  std::unique_ptr<NotePreview> m_note_preview;
 
   Ui::EditorWindow* ui;
   void togglePlayState();

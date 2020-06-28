@@ -1,6 +1,7 @@
 #ifndef SIDEMENU_H
 #define SIDEMENU_H
 
+#include <QFileDialog>
 #include <QStringListModel>
 #include <QWidget>
 
@@ -34,6 +35,7 @@ class SideMenu : public QWidget {
   void addWoice(QString filename);
   void removeWoice(int idx, QString name);
   void selectWoice(int);
+  void candidateWoiceSelected(QString filename);
 
  public slots:
   void setQuantXIndex(int);
@@ -49,6 +51,7 @@ class SideMenu : public QWidget {
  private:
   Ui::SideMenu *ui;
   QStringListModel *m_users;
+  QFileDialog *m_add_woice_dialog;
   SelectWoiceDialog *m_add_unit_dialog;
 };
 

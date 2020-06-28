@@ -405,10 +405,8 @@ pxtnERR pxtnService::Woice_read(int32_t idx, pxtnDescriptor *desc,
   return res;
 }
 
-pxtnERR pxtnService::Woice_ReadyTone(int32_t idx) {
-  if (!_b_init) return pxtnERR_INIT;
-  if (idx < 0 || idx >= _woice_num) return pxtnERR_param;
-  return _woices[idx]->Tone_Ready(_ptn_bldr, _dst_sps);
+pxtnERR pxtnService::Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) {
+  return woice->Tone_Ready(_ptn_bldr, _dst_sps);
 }
 
 bool pxtnService::Woice_Remove(int32_t idx) {

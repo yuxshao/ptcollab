@@ -253,9 +253,9 @@ bool PxtoneActionSynchronizer::applyAddWoice(const AddWoice &a, qint64 uid) {
   QString name(a.name);
   name.truncate(pxtnMAX_TUNEWOICENAME);
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
-  m_pxtn->Woice_Get_variable(woice_idx)->set_name_buf(
-      name.toStdString().c_str(), name.length());
-  m_pxtn->Woice_ReadyTone(woice_idx);
+  std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_idx);
+  woice->set_name_buf(name.toStdString().c_str(), name.length());
+  m_pxtn->Woice_ReadyTone(woice);
   return true;
 }
 

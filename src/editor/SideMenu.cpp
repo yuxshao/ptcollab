@@ -8,10 +8,18 @@
 
 #include "quantize.h"
 #include "ui_SideMenu.h"
+
+static QFileDialog* make_add_woice_dialog(QWidget* parent) {
+  return new QFileDialog(
+      parent, parent->tr("Add voice"), "",
+      parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
+}
+
 SideMenu::SideMenu(QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
+      m_add_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(new SelectWoiceDialog(this)) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
@@ -46,12 +54,15 @@ SideMenu::SideMenu(QWidget* parent)
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
-    QString filename = QFileDialog::getOpenFileName(
-        this, tr("Add voice"), "",
-        tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
-    if (filename != "") emit addWoice(filename);
+  connect(ui->addWoiceBtn, &QPushButton::clicked, m_add_woice_dialog,
+          &QDialog::show);
+  connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
+          &SideMenu::candidateWoiceSelected);
+  connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
+    for (const auto& filename : m_add_woice_dialog->selectedFiles())
+      if (filename != "") emit addWoice(filename);
   });
+
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
     int idx = ui->woiceList->currentRow();
     if (idx >= 0) {
@@ -65,6 +76,8 @@ SideMenu::SideMenu(QWidget* parent)
         emit removeWoice(idx, ui->woiceList->currentItem()->text());
     }
   });
+  // connect(ui->woiceList, &QListWidget::currentRowChanged, this,
+  //       &SideMenu::selectWoice);
   connect(ui->woiceList, &QListWidget::itemActivated, [this](QListWidgetItem*) {
     emit selectWoice(ui->woiceList->currentRow());
   });

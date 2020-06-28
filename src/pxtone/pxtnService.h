@@ -231,7 +231,7 @@ class pxtnService {
   std::shared_ptr<pxtnWoice> Woice_Get_variable(int32_t idx);
 
   pxtnERR Woice_read(int32_t idx, pxtnDescriptor *desc, pxtnWOICETYPE type);
-  pxtnERR Woice_ReadyTone(int32_t idx);
+  pxtnERR Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice);
   bool Woice_Remove(int32_t idx);
   bool Woice_Replace(int32_t old_place, int32_t new_place);
 
