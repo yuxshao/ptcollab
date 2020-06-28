@@ -14,7 +14,7 @@ pxtnUnit::pxtnUnit() {
 
 pxtnUnit::~pxtnUnit() {}
 
-void pxtnUnit::Tone_Init() {
+bool pxtnUnit::Tone_Init(const pxtnWoice *p_woice) {
   _v_GROUPNO = EVENTDEFAULT_GROUPNO;
   _v_VELOCITY = EVENTDEFAULT_VELOCITY;
   _v_VOLUME = EVENTDEFAULT_VOLUME;
@@ -26,6 +26,8 @@ void pxtnUnit::Tone_Init() {
     _pan_vols[i] = 64;
     _pan_times[i] = 0;
   }
+
+  return set_woice(p_woice);
 }
 
 void pxtnUnit::Tone_Clear() {

@@ -65,16 +65,8 @@ bool mooState::init(int32_t group_num) {
 // Units   ////////////////////////////////////
 ////////////////////////////////////////////////
 
-bool mooParams::resetVoiceOn(pxtnUnit* p_u, int32_t w,
-                             const pxtnService* pxtn) const {
-  const pxtnWoice* p_wc = pxtn->Woice_Get(w);
-
-  if (!p_wc) return false;
-
-  p_u->set_woice(p_wc);
+void mooParams::resetVoiceOn(pxtnUnit* p_u) const {
   p_u->Tone_Reset(bt_tempo, clock_rate);
-
-  return true;
 }
 
 bool pxtnService::_moo_InitUnitTone() {
@@ -82,8 +74,8 @@ bool pxtnService::_moo_InitUnitTone() {
   for (int32_t u = 0; u < _unit_num; u++) {
     pxtnUnit* p_u = Unit_Get_variable(u);
     // TODO: Initializing a unit should not take 2 steps over 2 classes.
-    p_u->Tone_Init();
-    _moo_params.resetVoiceOn(p_u, EVENTDEFAULT_VOICENO, this);
+    if (!p_u->Tone_Init(Woice_Get(EVENTDEFAULT_VOICENO))) return false;
+    _moo_params.resetVoiceOn(p_u);
   }
   return true;
 }
@@ -183,9 +175,10 @@ void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
     case EVENTKIND_REPEAT:
     case EVENTKIND_LAST:
       break;
-    case EVENTKIND_VOICENO:
-      resetVoiceOn(p_u, e->value, pxtn);
-      break;
+    case EVENTKIND_VOICENO: {
+      p_u->set_woice(pxtn->Woice_Get(e->value));
+      resetVoiceOn(p_u);
+    } break;
     case EVENTKIND_GROUPNO:
       p_u->Tone_GroupNo(e->value);
       break;

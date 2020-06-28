@@ -69,7 +69,7 @@ struct mooParams {
                     const pxtnService *pxtn) const;
 
   // TODO: maybe don't need to expose
-  bool resetVoiceOn(pxtnUnit *p_u, int32_t w, const pxtnService *pxtn) const;
+  void resetVoiceOn(pxtnUnit *p_u) const;
 };
 
 // Moo values that change as the song plays.

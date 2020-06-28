@@ -14,7 +14,7 @@ class PxtoneUnitIODevice : public QIODevice {
   PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn, int unit_no,
                      int pitch, int clock, int vel);
   virtual ~PxtoneUnitIODevice() { close(); };
-
+  void setVel(int vel) { m_unit.Tone_Velocity(vel); }
   void stopTone();
 
  signals:
@@ -22,9 +22,7 @@ class PxtoneUnitIODevice : public QIODevice {
 
  private:
   const pxtnService *m_pxtn;
-  int m_unit_no, m_pitch, m_clock, m_vel;
   pxtnUnit m_unit;
-  bool on;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);
 };

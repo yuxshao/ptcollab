@@ -327,7 +327,7 @@ void drawOngoingEdit(const EditState &state, QPainter &painter, int height,
                      brush.toQColor(128, true, alpha * alphaMultiplier),
                      state.scale);
 
-      if (mouse_edit_state.type != MouseEditState::Nothing)
+      if (mouse_edit_state.type == MouseEditState::SetOn)
         drawVelTooltip(painter, velocity, interval.start, pitch, brush,
                        state.scale, 255 * alphaMultiplier);
 
@@ -381,7 +381,8 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
               (mouse.current_pitch - state.pitch.value) / 200.0 /
                   scale.pitchPerPx) *
           0.4;
-      if (mouse.current_clock < on.end && mouse.current_clock >= on.start)
+      if (mouse.current_clock < on.end && mouse.current_clock >= on.start &&
+          mouse.type != MouseEditState::SetOn)
         alphaMultiplier += 0.6;
       drawVelTooltip(painter, state.velocity.value, interval.start,
                      state.pitch.value, brush, scale, alpha * alphaMultiplier);
@@ -719,6 +720,10 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
     state.start_clock = state.current_clock;
     state.start_pitch = state.current_pitch;
   }
+
+  if (m_audio_note_preview != nullptr)
+    m_audio_note_preview->setVel(
+        impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale));
   emit editStateChanged();
   event->ignore();
 }

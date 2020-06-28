@@ -12,11 +12,12 @@ PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
   int32_t dst_sps, dst_ch_num;
   m_pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
 
-  // TODO: Yeah, initing a unit for sampling is pretty bad right now.
-  m_unit.Tone_Init();
-  m_pxtn->moo_params()->resetVoiceOn(&m_unit, EVENTDEFAULT_VOICENO, m_pxtn);
-  for (const EVERECORD *e = m_pxtn->evels->get_Records(); e->clock <= clock;
-       ++e) {
+  // TODO: Initing a unit should not take 2 steps.
+  m_unit.Tone_Init(m_pxtn->Woice_Get(EVENTDEFAULT_VOICENO));
+  m_pxtn->moo_params()->resetVoiceOn(&m_unit);
+
+  for (const EVERECORD *e = m_pxtn->evels->get_Records();
+       e && e->clock <= clock; e = e->next) {
     if (e->unit_no == unit_no) {
       m_pxtn->moo_params()->processEvent(&m_unit, unit_no, e, clock, dst_sps,
                                          dst_ch_num, m_pxtn);

@@ -42,7 +42,7 @@ class pxtnUnit {
   pxtnUnit();
   ~pxtnUnit();
 
-  void Tone_Init();
+  bool Tone_Init(const pxtnWoice *p_woice);
 
   void Tone_Clear();
 

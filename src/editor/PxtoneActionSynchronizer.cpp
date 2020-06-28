@@ -218,11 +218,8 @@ bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   const char *unit_name_buf = unit_name_str.c_str();
   unit->set_name_buf(unit_name_buf, int32_t(unit_name_str.length()));
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
-  unit->Tone_Init();
-  // TODO: This is sort of bad to do, to use a private moo fn for the purposes
-  // of note previews. We really need to split out the moo state.
-  // PRobably wanna instead re-prep moo at the current time.
-  m_pxtn->moo_params()->resetVoiceOn(unit, a.woice_id, m_pxtn);
+  unit->Tone_Init(m_pxtn->Woice_Get(EVENTDEFAULT_VOICENO));
+  m_pxtn->moo_params()->resetVoiceOn(unit);
   return true;
 }
 
