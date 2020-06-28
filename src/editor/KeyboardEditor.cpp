@@ -134,9 +134,8 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                             this, tr("Could not remove voice"),
                             tr("Could not add remove %1").arg(s.name));
                       else
-                        // TODO: Not a great way to handle deleted
-                        // woices. But I'm not really sure how else. Probably
-                        // related to that task for separating out moo.
+                        // Refresh units using the woice.
+                        // (No refresh is also fine but just stale)
                         seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
                     },
                     [this, uid](const AddUnit &s) {
@@ -708,7 +707,6 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       }
     }
   }
-  // TODO: Will note preview still work if the woice is deleted under our feet?
   if (make_note_preview) {
     auto maybe_unit_no =
         m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);

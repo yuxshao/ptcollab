@@ -271,7 +271,7 @@ bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
   QString expected_name(a.name);
   expected_name.truncate(pxtnMAX_TUNEWOICENAME);
 
-  const pxtnWoice *woice = m_pxtn->Woice_Get(a.id);
+  std::shared_ptr<const pxtnWoice> woice = m_pxtn->Woice_Get(a.id);
   if (woice == nullptr) {
     qWarning() << "Received command to remove woice" << a.id
                << "that doesn't exist.";

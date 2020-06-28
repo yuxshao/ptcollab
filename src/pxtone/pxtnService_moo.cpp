@@ -86,7 +86,7 @@ void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
                              int32_t clock, int32_t dst_ch_num, int32_t dst_sps,
                              const pxtnService* pxtn) const {
   pxtnVOICETONE* p_tone;
-  const pxtnWoice* p_wc;
+  std::shared_ptr<const pxtnWoice> p_wc;
   const pxtnVOICEINSTANCE* p_vi;
 
   switch (e->kind) {

@@ -26,6 +26,8 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
     }
   }
 
+  // Because woices are shared ptrs we can be confident this won't break if the
+  // woice is deleted.
   m_unit.Tone_Key(pitch);
   m_unit.Tone_Velocity(vel);
   m_unit.Tone_KeyOn();

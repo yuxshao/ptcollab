@@ -123,7 +123,7 @@ class pxtnService {
   pxtnOverDrive **_ovdrvs;
   int32_t _woice_max;
   int32_t _woice_num;
-  pxtnWoice **_woices;
+  std::shared_ptr<pxtnWoice> *_woices;
   int32_t _unit_max;
   int32_t _unit_num;
   // TODO: The units are largely also part of the moo state, besides the name.
@@ -227,8 +227,8 @@ class pxtnService {
   // woice.
   int32_t Woice_Num() const;
   int32_t Woice_Max() const;
-  const pxtnWoice *Woice_Get(int32_t idx) const;
-  pxtnWoice *Woice_Get_variable(int32_t idx);
+  std::shared_ptr<const pxtnWoice> Woice_Get(int32_t idx) const;
+  std::shared_ptr<pxtnWoice> Woice_Get_variable(int32_t idx);
 
   pxtnERR Woice_read(int32_t idx, pxtnDescriptor *desc, pxtnWOICETYPE type);
   pxtnERR Woice_ReadyTone(int32_t idx);

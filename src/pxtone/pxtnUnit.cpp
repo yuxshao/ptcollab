@@ -14,7 +14,7 @@ pxtnUnit::pxtnUnit() {
 
 pxtnUnit::~pxtnUnit() {}
 
-bool pxtnUnit::Tone_Init(const pxtnWoice *p_woice) {
+bool pxtnUnit::Tone_Init(std::shared_ptr<const pxtnWoice> p_woice) {
   _v_GROUPNO = EVENTDEFAULT_GROUPNO;
   _v_VELOCITY = EVENTDEFAULT_VELOCITY;
   _v_VOLUME = EVENTDEFAULT_VOLUME;
@@ -54,7 +54,7 @@ void pxtnUnit::Tone_Reset_Custom(float tempo, float clock_rate,
   if (!_p_woice) return;
   const pxtnVOICEINSTANCE *p_inst;
   const pxtnVOICEUNIT *p_vc;
-  const pxtnWoice *p_wc = _p_woice;
+  std::shared_ptr<const pxtnWoice> p_wc = _p_woice;
   for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
     p_inst = p_wc->get_instance(v);
     p_vc = p_wc->get_voice(v);
@@ -76,7 +76,7 @@ void pxtnUnit::Tone_Reset(float tempo, float clock_rate) {
   Tone_Reset_Custom(tempo, clock_rate, _vts);
 }
 
-bool pxtnUnit::set_woice(const pxtnWoice *p_woice) {
+bool pxtnUnit::set_woice(std::shared_ptr<const pxtnWoice> p_woice) {
   if (!p_woice) return false;
   _p_woice = p_woice;
   _key_now = EVENTDEFAULT_KEY;
@@ -317,7 +317,9 @@ void pxtnUnit::Tone_Increment_Sample(float freq) {
   Tone_Increment_Sample_Custom(freq, _vts);
 }
 
-const pxtnWoice *pxtnUnit::get_woice() const { return _p_woice; }
+std::shared_ptr<const pxtnWoice> pxtnUnit::get_woice() const {
+  return _p_woice;
+}
 
 pxtnVOICETONE *pxtnUnit::get_tone(int32_t voice_idx) {
   return &_vts[voice_idx];

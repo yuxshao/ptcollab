@@ -34,7 +34,7 @@ class pxtnUnit {
   int32_t _v_GROUPNO;
   float _v_TUNING;
 
-  const pxtnWoice *_p_woice;
+  std::shared_ptr<const pxtnWoice> _p_woice;
 
   pxtnVOICETONE _vts[pxtnMAX_UNITCONTROLVOICE];
 
@@ -42,7 +42,7 @@ class pxtnUnit {
   pxtnUnit();
   ~pxtnUnit();
 
-  bool Tone_Init(const pxtnWoice *p_woice);
+  bool Tone_Init(std::shared_ptr<const pxtnWoice> p_woice);
 
   void Tone_Clear();
 
@@ -76,8 +76,8 @@ class pxtnUnit {
   void Tone_Increment_Sample_Custom(float freq, pxtnVOICETONE *vts) const;
   void Tone_Increment_Sample(float freq);
 
-  bool set_woice(const pxtnWoice *p_woice);
-  const pxtnWoice *get_woice() const;
+  bool set_woice(std::shared_ptr<const pxtnWoice> p_woice);
+  std::shared_ptr<const pxtnWoice> get_woice() const;
 
   bool set_name_buf(const char *name_buf, int32_t buf_size);
   const char *get_name_buf(int32_t *p_buf_size) const;

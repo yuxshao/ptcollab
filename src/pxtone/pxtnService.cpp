@@ -129,7 +129,7 @@ bool pxtnService::_release() {
     _ovdrvs = NULL;
   }
   if (_woices) {
-    for (int32_t i = 0; i < _woice_num; i++) SAFE_DELETE(_woices[i]);
+    for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
     free(_woices);
     _woices = NULL;
   }
@@ -203,12 +203,10 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
   _ovdrv_max = pxtnMAX_TUNEOVERDRIVESTRUCT;
 
   // woice
-  byte_size = sizeof(pxtnWoice *) * pxtnMAX_TUNEWOICESTRUCT;
-  if (!(_woices = (pxtnWoice **)malloc(byte_size))) {
+  if (!(_woices = new std::shared_ptr<pxtnWoice>[pxtnMAX_TUNEWOICESTRUCT])) {
     res = pxtnERR_memory;
     goto End;
   }
-  memset(_woices, 0, byte_size);
   _woice_max = pxtnMAX_TUNEWOICESTRUCT;
 
   // unit
@@ -377,12 +375,12 @@ bool pxtnService::OverDrive_ReadyTone(int32_t idx) {
 int32_t pxtnService::Woice_Num() const { return _b_init ? _woice_num : 0; }
 int32_t pxtnService::Woice_Max() const { return _b_init ? _woice_max : 0; }
 
-const pxtnWoice *pxtnService::Woice_Get(int32_t idx) const {
+std::shared_ptr<const pxtnWoice> pxtnService::Woice_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || idx >= _woice_num) return NULL;
   return _woices[idx];
 }
-pxtnWoice *pxtnService::Woice_Get_variable(int32_t idx) {
+std::shared_ptr<pxtnWoice> pxtnService::Woice_Get_variable(int32_t idx) {
   if (!_b_init) return NULL;
   if (idx < 0 || idx >= _woice_num) return NULL;
   return _woices[idx];
@@ -394,7 +392,7 @@ pxtnERR pxtnService::Woice_read(int32_t idx, pxtnDescriptor *desc,
   if (idx < 0 || idx >= _woice_max) return pxtnERR_param;
   if (idx > _woice_num) return pxtnERR_param;
   if (idx == _woice_num) {
-    _woices[idx] = new pxtnWoice();
+    _woices[idx] = std::make_shared<pxtnWoice>();
     _woice_num++;
   }
 
@@ -416,7 +414,7 @@ pxtnERR pxtnService::Woice_ReadyTone(int32_t idx) {
 bool pxtnService::Woice_Remove(int32_t idx) {
   if (!_b_init) return false;
   if (idx < 0 || idx >= _woice_num) return false;
-  SAFE_DELETE(_woices[idx]);
+  _woices[idx].reset();
   _woice_num--;
   for (int32_t i = idx; i < _woice_num; i++) _woices[i] = _woices[i + 1];
   _woices[_woice_num] = NULL;
@@ -426,7 +424,7 @@ bool pxtnService::Woice_Remove(int32_t idx) {
 bool pxtnService::Woice_Replace(int32_t old_place, int32_t new_place) {
   if (!_b_init) return false;
 
-  pxtnWoice *p_w = _woices[old_place];
+  std::shared_ptr<pxtnWoice> p_w = _woices[old_place];
   int32_t max_place = _woice_num - 1;
 
   if (new_place > max_place) new_place = max_place;
@@ -629,7 +627,7 @@ bool pxtnService::clear() {
   _delay_num = 0;
   for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_ovdrvs[i]);
   _ovdrv_num = 0;
-  for (int32_t i = 0; i < _woice_num; i++) SAFE_DELETE(_woices[i]);
+  for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
   _woice_num = 0;
   for (int32_t i = 0; i < _unit_num; i++) SAFE_DELETE(_units[i]);
   _unit_num = 0;
@@ -692,7 +690,7 @@ pxtnERR pxtnService::_io_Read_Woice(pxtnDescriptor *p_doc, pxtnWOICETYPE type) {
   if (!_woices) return pxtnERR_INIT;
   if (_woice_num >= _woice_max) return pxtnERR_woice_full;
 
-  pxtnWoice *woice = new pxtnWoice();
+  std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
 
   switch (type) {
     case pxtnWOICE_PCM:
@@ -725,7 +723,7 @@ pxtnERR pxtnService::_io_Read_Woice(pxtnDescriptor *p_doc, pxtnWOICETYPE type) {
   _woice_num++;
   res = pxtnOK;
 term:
-  if (res != pxtnOK) SAFE_DELETE(woice);
+  if (res != pxtnOK) woice.reset();
   return res;
 }
 
@@ -1013,7 +1011,7 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
 
   // woice
   for (int32_t w = 0; w < _woice_num; w++) {
-    pxtnWoice *p_w = _woices[w];
+    std::shared_ptr<pxtnWoice> p_w = _woices[w];
 
     switch (p_w->get_type()) {
       case pxtnWOICE_PCM:
