@@ -71,6 +71,11 @@ class KeyboardEditor : public QWidget {
   PxtoneActionSynchronizer *m_sync;
   int quantXIndex;
   int quantizeSelectionY;
+  // A bunch of things to give the illusion of a smooth playhead when there's a
+  // buffer.
+  int m_last_clock, m_last_seek, m_this_seek, m_hit_end_this_seek;
+  bool m_this_seek_caught_up;
+  QElapsedTimer timeSinceLastClock;
   bool m_test_activity;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   void refreshQuantSettings();

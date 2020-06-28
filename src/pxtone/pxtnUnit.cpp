@@ -46,7 +46,9 @@ void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
   p_tone->offset_freq = offset_freq;
 }
 
-/* A custom way to initialize a pxtnVOICETONE for separate playing. */
+/* A custom way to initialize a pxtnVOICETONE for separate playing. Used to be
+ * used for note previews, but now we just create a whole unit for previewing.
+ */
 void pxtnUnit::Tone_Reset_Custom(float tempo, float clock_rate,
                                  pxtnVOICETONE *vts) const {
   if (!_p_woice) return;

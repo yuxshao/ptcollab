@@ -56,7 +56,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   // Apparently this reduces latency in pulseaudio, but also makes
   // some sounds choppier
-  m_audio->setCategory("game");
+  // m_audio->setCategory("game");
   m_audio->setVolume(1.0);
 
   m_splitter = new QSplitter(Qt::Horizontal, this);

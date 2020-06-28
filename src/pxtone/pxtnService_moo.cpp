@@ -515,8 +515,8 @@ bool pxtnService::Moo(void* p_buf, int32_t size, int32_t* filled_size) {
 
   int32_t smp_w = 0;
 
-  /*Testing what happens if mooing takes a long time
-   * int j = 0; for (int i = 0; i < 100000000 * 0; ++i) j += i * i; */
+  // Testing what happens if mooing takes a long time
+  // for (int i = 0, j = 0; i < 20000000; ++i) j += i * i;
   /* No longer failing on remainder - we just return the filled size */
   // if( size % _dst_byte_per_smp ) return false;
 

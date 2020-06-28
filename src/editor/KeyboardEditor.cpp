@@ -57,6 +57,11 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_sync(new PxtoneActionSynchronizer(0, m_pxtn, this)),
       quantXIndex(0),
       quantizeSelectionY(0),
+      m_last_clock(0),
+      m_last_seek(0),
+      m_this_seek(0),
+      m_hit_end_this_seek(false),
+      m_this_seek_caught_up(false),
       m_test_activity(false),
       m_remote_edit_states() {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
@@ -459,24 +464,30 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) drawStates.emplace_back();
 
   painter.setPen(Qt::blue);
-  // TODO: usecs is choppy - it's an upper bound that gets worse with buffer
-  // size incrase. for longer songs though and lower end comps we probably do
-  // want a bigger buffer. The formula fixes the upper bound issue, but
-  // perhaps we can do some smoothing with a linear thing too. int
-  // bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
-
-  // int64_t usecs = m_audio_output->processedUSecs();
-  // usecs -= int64_t(m_audio_output->bufferSize()) * 1E6 / bytes_per_second;
-  // int clock = usecs * m_pxtn->master->get_beat_tempo() *
-  //          m_pxtn->master->get_beat_clock() / 60 / 1000000;
 
   int clock = m_pxtn->moo_get_now_clock();
-  /*int64_t offset_from_buffer =
-      m_audio_output->state() == QAudio::ActiveState
-          ? m_audio_output->bufferSize()  // - m_audio_output->bytesFree()
-          : 0;
-  clock -= offset_from_buffer * m_pxtn->master->get_beat_tempo() *
-           m_pxtn->master->get_beat_clock() / 60 / bytes_per_second;*/
+  // Some really hacky magic to get the playhead smoother given that
+  // there's a ton of buffering that makes it hard to actually tell where the
+  // playhead is accurately. We do this:
+  // 1. Subtract the buffer duration.
+  // 2. Track how long since the last (laggy) clock update and add.
+  // 3. Works most of the time, but leads to a wrong clock after a seek or at
+  // the end of a song, because it'll put the playhead before the repeat or the
+  // seek position.
+  // 4. To account for this, if we're before the current seek position, clamp to
+  // seek position. Also track if we've looped and render at the end of song
+  // instead of before repeat if so.
+  // 5. The tracking if we've looped or not is also necessary to tell if we've
+  // actually caught up to a seek.
+  int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
+  if (m_last_clock != clock) {
+    // Heuristic for counting the number of times we've looped since this seek
+    if (m_last_clock > clock && m_last_seek == m_this_seek)
+      ++m_hit_end_this_seek;
+    m_last_clock = clock;
+    timeSinceLastClock.restart();
+  }
+  if (m_last_seek != m_this_seek) m_last_seek = m_this_seek;
 
   int repeat_clock = m_pxtn->master->get_repeat_meas() *
                      m_pxtn->master->get_beat_num() *
@@ -484,8 +495,30 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   int last_clock = m_pxtn->master->get_beat_clock() *
                    m_pxtn->master->get_play_meas() *
                    m_pxtn->master->get_beat_num();
+
+  int64_t offset_from_buffer =
+      m_audio_output->bufferSize()  // - m_audio_output->bytesFree()
+      ;
+
+  double estimated_buffer_offset =
+      -offset_from_buffer / double(bytes_per_second);
+  if (m_audio_output->state() != QAudio::ActiveState)
+    timeSinceLastClock.restart();
+  else
+    estimated_buffer_offset += timeSinceLastClock.elapsed() / 1000.0;
+  clock += (last_clock - repeat_clock) * m_hit_end_this_seek;
+  clock += std::min(estimated_buffer_offset, 0.0) *
+           m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() /
+           60;
+  if (clock >= m_this_seek) m_this_seek_caught_up = true;
+  if (!m_this_seek_caught_up) clock = m_this_seek;
+
   if (clock >= last_clock)
     clock = (clock - repeat_clock) % (last_clock - repeat_clock) + repeat_clock;
+  // Because of offsetting it might seem like even though we've repeated the
+  // clock is before [repeat_clock]. So fix it here.
+  if (m_hit_end_this_seek && clock < repeat_clock)
+    clock += last_clock - repeat_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
@@ -588,7 +621,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
   // Draw the current player position
   painter.fillRect(clock / m_edit_state.scale.clockPerPx, 0, 1, size().height(),
-                   Qt::white);
+                   (m_this_seek_caught_up ? Qt::white : halfWhite));
 
   // Draw bars at the end of the piece
   painter.fillRect(last_clock / m_edit_state.scale.clockPerPx, 0, 1,
@@ -867,6 +900,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
       case MouseEditState::Seek: {
         seekMoo(m_pxtn, m_edit_state.mouse_edit_state.current_clock);
+        m_this_seek = m_edit_state.mouse_edit_state.current_clock;
+        m_this_seek_caught_up = false;
+        m_hit_end_this_seek = false;
       } break;
       case MouseEditState::Nothing:
         break;
