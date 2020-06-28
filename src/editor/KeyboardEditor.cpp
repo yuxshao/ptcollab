@@ -484,7 +484,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   int last_clock = m_pxtn->master->get_beat_clock() *
                    m_pxtn->master->get_play_meas() *
                    m_pxtn->master->get_beat_num();
-  clock = (clock - repeat_clock) % last_clock + repeat_clock;
+  if (clock >= last_clock)
+    clock = (clock - repeat_clock) % (last_clock - repeat_clock) + repeat_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
