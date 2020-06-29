@@ -180,9 +180,11 @@ Todo by priority
 ----------------
  - include that one other dll in the package for vcruntime
  - select an interval, and operations (keycmds) for
-   - transposing it up / down
+   - transposing it up / down (should be easy b/c undo is reverse transpose)
+   - cutting / copying / pasting / clearing
+     - cut should shift things back b/c the other can be copy + clear
    - moving selection left / right beat or measure
-   - cutting / copying / pasting
+     - should follow from copy paste
    - scaling / shifting vol, vel, other params (once those exist)
    - maybe shift click? but what if I don't want to move playhead?
      ctrl+shift+click? lines up with horizontal zoom!
@@ -229,12 +231,14 @@ Technical stuff:
      drawpile)
  - put hello in the protocol.
  - put ping in protocol
- - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
+ - placing notes is choppy in windows because of note preview lag. how to fix?
+   wasapi? miniaudio?
  - static build
 
 Editor functionality:
  - echo & overdrive
  - moving voices up and down
+ - At some point, gonna have to support selecting multiple voices
 
 Editor QoL:
  - Time bar at the top
@@ -278,6 +282,7 @@ Low priority:
  - Editor UI: Piano on the left
  - Misc UI: Recent connections dropdown
  - Custom icon for people's names?
+ - A chat
 
 Just general format? improvements:
  - A kind of meta instrument that changes depending on parameter or pitch
