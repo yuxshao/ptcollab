@@ -33,6 +33,7 @@ class SideMenu : public QWidget {
   // TODO: Maybe set up the UI so that you can also give a name
   void addWoice(QString filename);
   void removeWoice(int idx, QString name);
+  void changeWoice(int idx, QString name, QString filename);
   void selectWoice(int);
   void candidateWoiceSelected(QString filename);
 
@@ -51,6 +52,7 @@ class SideMenu : public QWidget {
   Ui::SideMenu *ui;
   QStringListModel *m_users;
   QFileDialog *m_add_woice_dialog;
+  QFileDialog *m_change_woice_dialog;
   QInputDialog *m_add_unit_dialog;
 };
 

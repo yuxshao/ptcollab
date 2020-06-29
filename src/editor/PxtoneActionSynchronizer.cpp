@@ -250,28 +250,21 @@ bool PxtoneActionSynchronizer::applyAddWoice(const AddWoice &a, qint64 uid) {
     qDebug() << "Woice_read error" << result;
     return false;
   }
-  QString name(a.name);
-  name.truncate(pxtnMAX_TUNEWOICENAME);
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
   std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_idx);
+
+  QString name(a.name);
+  name.truncate(pxtnMAX_TUNEWOICENAME);
   woice->set_name_buf(name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice);
   return true;
 }
 
-// TODO: Once you add the ability for units to change instruments,
-// you'll need a map for voices.
-bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
-                                                qint64 uid) {
-  (void)uid;
-  if (m_pxtn->Woice_Num() == 1) {
-    qWarning() << "Cannot remove last woice.";
-    return false;
-  }
+bool validateRemoveName(const RemoveWoice &a, const pxtnService *pxtn) {
   QString expected_name(a.name);
   expected_name.truncate(pxtnMAX_TUNEWOICENAME);
 
-  std::shared_ptr<const pxtnWoice> woice = m_pxtn->Woice_Get(a.id);
+  std::shared_ptr<const pxtnWoice> woice = pxtn->Woice_Get(a.id);
   if (woice == nullptr) {
     qWarning() << "Received command to remove woice" << a.id
                << "that doesn't exist.";
@@ -284,11 +277,46 @@ bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
                << "with mismatched name" << expected_name << actual_name;
     return false;
   }
+  return true;
+}
+// TODO: Once you add the ability for units to change instruments,
+// you'll need a map for voices.
+bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
+                                                qint64 uid) {
+  (void)uid;
+  if (m_pxtn->Woice_Num() == 1) {
+    qWarning() << "Cannot remove last woice.";
+    return false;
+  }
+  if (!validateRemoveName(a, m_pxtn)) return false;
 
   if (!m_pxtn->Woice_Remove(a.id)) {
-    qWarning() << "Could not remove woice" << a.id << expected_name;
+    qWarning() << "Could not remove woice" << a.id << a.name;
     return false;
   }
   m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
+  return true;
+}
+
+bool PxtoneActionSynchronizer::applyChangeWoice(const ChangeWoice &a,
+                                                qint64 uid) {
+  (void)uid;
+
+  if (!validateRemoveName(a.remove, m_pxtn)) return false;
+
+  // TODO: Remove duplication with add woice
+  pxtnDescriptor d;
+  d.set_memory_r(a.add.data.constData(), a.add.data.size());
+  std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(a.remove.id);
+  pxtnERR result = woice->read(&d, a.add.type);
+  if (result != pxtnOK) {
+    qDebug() << "Woice_read error" << result << a.remove.name;
+    return false;
+  }
+
+  QString name(a.add.name);
+  name.truncate(pxtnMAX_TUNEWOICENAME);
+  woice->set_name_buf(name.toStdString().c_str(), name.length());
+  m_pxtn->Woice_ReadyTone(woice);
   return true;
 }

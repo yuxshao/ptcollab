@@ -159,6 +159,16 @@ EditorWindow::EditorWindow(QWidget *parent)
     }
   });
 
+  connect(m_side_menu, &SideMenu::changeWoice,
+          [this](int idx, QString name, QString path) {
+            try {
+              m_client->sendAction(ChangeWoice{RemoveWoice{idx, name},
+                                               make_addWoice_from_path(path)});
+            } catch (const QString &e) {
+              QMessageBox::critical(this, tr("Unable to change voice"), e);
+            }
+          });
+
   connect(m_side_menu, &SideMenu::removeWoice, [this](int idx, QString name) {
     if (m_pxtn.Woice_Num() == 1) {
       QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));

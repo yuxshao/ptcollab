@@ -160,14 +160,33 @@ inline QTextStream &operator<<(QTextStream &out, const RemoveWoice &a) {
   return out;
 }
 
+// Sort of elegant a change represented by same data as remove then add.
+struct ChangeWoice {
+  RemoveWoice remove;
+  AddWoice add;
+};
+inline QDataStream &operator<<(QDataStream &out, const ChangeWoice &a) {
+  out << a.remove << a.add;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, ChangeWoice &a) {
+  in >> a.remove >> a.add;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const ChangeWoice &a) {
+  out << "ChangeWoice(remove=" << a.remove << ", add=" << a.add << ")";
+  return out;
+}
+
 inline QTextStream &operator<<(QTextStream &out, const EditState &a) {
   out << "EditState(c" << a.mouse_edit_state.current_clock << ", p"
       << a.mouse_edit_state.current_pitch << ")";
   return out;
 }
 
-using ClientAction = std::variant<EditAction, EditState, UndoRedo, AddUnit,
-                                  RemoveUnit, AddWoice, RemoveWoice>;
+using ClientAction =
+    std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
+                 RemoveWoice, ChangeWoice>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

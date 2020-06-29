@@ -137,6 +137,16 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                         // (No refresh is also fine but just stale)
                         seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
                     },
+                    [this, uid](const ChangeWoice &s) {
+                      bool success = m_sync->applyChangeWoice(s, uid);
+                      emit woicesChanged();
+                      if (!success && uid == m_sync->uid())
+                        QMessageBox::warning(
+                            this, tr("Could not change voice"),
+                            tr("Could not add change %1").arg(s.remove.name));
+                      else
+                        seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
+                    },
                     [this, uid](const AddUnit &s) {
                       bool success = m_sync->applyAddUnit(s, uid);
                       emit unitsChanged();

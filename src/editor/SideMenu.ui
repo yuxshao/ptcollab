@@ -183,6 +183,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="changeWoiceBtn">
+           <property name="text">
+            <string>Change</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="removeWoiceBtn">
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>

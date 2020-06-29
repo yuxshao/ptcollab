@@ -14,7 +14,7 @@ const QString WOICE_DIR_KEY("woice_dir");
 
 static QFileDialog* make_add_woice_dialog(QWidget* parent) {
   return new QFileDialog(
-      parent, parent->tr("Add voice"),
+      parent, parent->tr("Select voice"),
       QSettings().value(WOICE_DIR_KEY).toString(),
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
 }
@@ -24,6 +24,7 @@ SideMenu::SideMenu(QWidget* parent)
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
+      m_change_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(new QInputDialog(this)) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
@@ -68,9 +69,19 @@ SideMenu::SideMenu(QWidget* parent)
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->addWoiceBtn, &QPushButton::clicked, m_add_woice_dialog,
-          &QDialog::show);
+  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
+    QString dir(QSettings().value(WOICE_DIR_KEY).toString());
+    if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    m_add_woice_dialog->show();
+  });
+  connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
+    QString dir(QSettings().value(WOICE_DIR_KEY).toString());
+    if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    if (ui->woiceList->currentRow() >= 0) m_change_woice_dialog->show();
+  });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
+          &SideMenu::candidateWoiceSelected);
+  connect(m_change_woice_dialog, &QFileDialog::currentChanged, this,
           &SideMenu::candidateWoiceSelected);
 
   connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
@@ -78,6 +89,16 @@ SideMenu::SideMenu(QWidget* parent)
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
         emit addWoice(filename);
+      }
+  });
+
+  connect(m_change_woice_dialog, &QDialog::accepted, this, [this]() {
+    int idx = ui->woiceList->currentRow();
+    if (idx < 0 || !ui->woiceList->currentItem()) return;
+    for (const auto& filename : m_change_woice_dialog->selectedFiles())
+      if (filename != "") {
+        QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
+        emit changeWoice(idx, ui->woiceList->currentItem()->text(), filename);
       }
   });
 
