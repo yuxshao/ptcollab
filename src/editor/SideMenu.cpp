@@ -5,13 +5,17 @@
 #include <QFileDialog>
 #include <QList>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "quantize.h"
 #include "ui_SideMenu.h"
 
+const QString WOICE_DIR_KEY("woice_dir");
+
 static QFileDialog* make_add_woice_dialog(QWidget* parent) {
   return new QFileDialog(
-      parent, parent->tr("Add voice"), "",
+      parent, parent->tr("Add voice"),
+      QSettings().value(WOICE_DIR_KEY).toString(),
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
 }
 
@@ -71,7 +75,10 @@ SideMenu::SideMenu(QWidget* parent)
 
   connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
     for (const auto& filename : m_add_woice_dialog->selectedFiles())
-      if (filename != "") emit addWoice(filename);
+      if (filename != "") {
+        QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
+        emit addWoice(filename);
+      }
   });
 
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
@@ -107,8 +114,8 @@ SideMenu::SideMenu(QWidget* parent)
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {
-  // Really only this first one is necessary, since you can't add anything else
-  // without it.
+  // Really only this first one is necessary, since you can't add anything
+  // else without it.
   ui->addWoiceBtn->setEnabled(b);
   ui->removeWoiceBtn->setEnabled(b);
   ui->addUnitBtn->setEnabled(b);

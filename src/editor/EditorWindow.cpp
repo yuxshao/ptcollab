@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QSettings>
 #include <QSplitter>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
@@ -360,7 +361,7 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   m_keyboard_editor->updateGeometry();
   return true;
 }
-
+const QString PTCOP_DIR_KEY("ptcop_dir");
 void EditorWindow::Host(bool load_file) {
   if (m_server) {
     auto result = QMessageBox::question(this, "Server already running",
@@ -369,13 +370,19 @@ void EditorWindow::Host(bool load_file) {
   }
   QString filename = "";
   if (load_file) {
-    filename = QFileDialog::getOpenFileName(this, "Open file", "",
-                                            "pxtone projects (*.ptcop)");
+    QSettings settings;
+    filename = QFileDialog::getOpenFileName(
+        this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
+        "pxtone projects (*.ptcop)");
+
+    if (!filename.isEmpty())
+      settings.setValue(PTCOP_DIR_KEY, QFileInfo(filename).absolutePath());
+
     // filename =
     //    "/home/steven/Projects/Music/pxtone/Examples/for-web/basic-rect.ptcop";
   }
 
-  if (load_file && filename.length() == 0) return;
+  if (load_file && filename.isEmpty()) return;
   bool ok;
   int port =
       QInputDialog::getInt(this, "Port", "What port should this server run on?",
@@ -435,8 +442,14 @@ bool EditorWindow::saveToFile(QString filename) {
   return true;
 }
 void EditorWindow::saveAs() {
-  QString filename = QFileDialog::getSaveFileName(this, "Open file", "",
-                                                  "pxtone projects (*.ptcop)");
+  QSettings settings;
+  QString filename = QFileDialog::getSaveFileName(
+      this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
+      "pxtone projects (*.ptcop)");
+  if (filename.isEmpty()) return;
+
+  settings.setValue(PTCOP_DIR_KEY, QFileInfo(filename).absolutePath());
+
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   if (saveToFile(filename)) m_filename = filename;
 }

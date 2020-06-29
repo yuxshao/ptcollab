@@ -7,9 +7,15 @@
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
+
+  // For QSettings
+  a.setOrganizationName("ptcollab");
+  a.setOrganizationDomain("ptweb.me");
+  a.setApplicationName("pxtone collab");
+
   a.setApplicationVersion(QString(GIT_VERSION));
   QCommandLineParser parser;
-  parser.setApplicationDescription("pxtone collab");
+  parser.setApplicationDescription("A collaborative pxtone editor");
 
   parser.addHelpOption();
   parser.addVersionOption();
