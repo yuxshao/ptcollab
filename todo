@@ -169,10 +169,16 @@ fill architecture could work well.
 
 6/28
 1. Note previews 
+2. Small editor QoLs:
+   - append .ptcop to save.
+   - update add unit dialog to just use the selected voice.
+   - fix small bug in smooth playhead
+   - escape focuses the keyboard editor (is this really an improvement?)
 
 Todo by priority
 ----------------
  - include that one other dll in the package for vcruntime
+ - replace woice
  - select an interval, and operations (keyboard shortcuts) for
    - transposing it up / down
    - moving selection left / right beat or measure
