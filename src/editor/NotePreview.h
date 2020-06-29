@@ -17,6 +17,7 @@ class NotePreview : public QObject {
               QObject *parent = nullptr);
   void setVel(int vel) { m_unit.Tone_Velocity(vel); }
   void suspend() { m_audio->suspend(); }
+  ~NotePreview();
  signals:
   void finished();
 

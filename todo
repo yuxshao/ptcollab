@@ -211,6 +211,7 @@ Aesthetics:
   - qwerty midi input
   - tab system to edit multiple files at once / switch between sessions
   - arcofdream's icon designs for the connect / disconnect menus
+  - write / read shiftJIS in unit, woice names.
 
 Technical stuff:
  - server keeps its own state (e.g., active users) + running history (currently

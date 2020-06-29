@@ -67,3 +67,9 @@ NotePreview::NotePreview(const pxtnService *pxtn, int pitch, int vel,
                          int duration, std::shared_ptr<const pxtnWoice> woice,
                          QObject *parent)
     : NotePreview(pxtn, -1, -1, pitch, vel, duration, woice, parent) {}
+
+NotePreview::~NotePreview() {
+  // seems to fix a crash that'd happen if I change quickly between woices
+  // causing note previews.
+  suspend();
+}

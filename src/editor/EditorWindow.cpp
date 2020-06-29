@@ -185,9 +185,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
     // not. Also this is variable on tempo rn - fix that.
-    m_note_preview = std::make_unique<NotePreview>(&m_pxtn, EVENTDEFAULT_KEY,
-                                                   EVENTDEFAULT_VELOCITY, 48000,
-                                                   m_pxtn.Woice_Get(idx), this);
+    if (idx >= 0)
+      m_note_preview = std::make_unique<NotePreview>(
+          &m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000,
+          m_pxtn.Woice_Get(idx), this);
+    else
+      m_note_preview = nullptr;
   });
   connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
           &KeyboardEditor::removeCurrentUnit);

@@ -89,8 +89,8 @@ SideMenu::SideMenu(QWidget* parent)
       QMessageBox::warning(this, tr("Cannot remove voice"),
                            tr("Please select a valid voice to remove."));
   });
-  // connect(ui->woiceList, &QListWidget::currentRowChanged, this,
-  //       &SideMenu::selectWoice);
+  connect(ui->woiceList, &QListWidget::currentRowChanged, this,
+          &SideMenu::selectWoice);
   connect(ui->woiceList, &QListWidget::itemActivated, [this](QListWidgetItem*) {
     emit selectWoice(ui->woiceList->currentRow());
   });
