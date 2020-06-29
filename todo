@@ -243,6 +243,8 @@ Editor functionality:
 Editor QoL:
  - Time bar at the top
  - Don't scroll if last measure changes from some other user
+ - Click+scroll might still be good for adjusting velocity, because now mouse
+   isn't displaced like crazy when you change vel. 
  - follow playhead (seems low pri since no one suggested)
  - Better woice previews
    - idea: the pitch could be determined by the last note pressed in a keyboard
