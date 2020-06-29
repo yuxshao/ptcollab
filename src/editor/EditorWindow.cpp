@@ -264,6 +264,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_Escape:
       resetAndSuspendAudio();
+      m_keyboard_editor->setFocus(Qt::OtherFocusReason);
       break;
     case Qt::Key_W:
       m_keyboard_editor->cycleCurrentUnit(-1);
