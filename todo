@@ -172,14 +172,7 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - instrument preview in file select
-   - idea: the pitch of the instrument preview could be determined by the last
-     note pressed in a keyboard (that has yet been added). this can avoid
-     complicating the file dialog. maybe.
-   - Add a 'stop all note previews' button
-   - Perhaps you could show a mini keyboard for previews under the woice list.
  - include that one other dll in the package for vcruntime
- - see other user's playhead optionally
  - select an interval, and operations (keyboard shortcuts) for
    - transposing it up / down
    - moving selection left / right beat or measure
@@ -201,7 +194,6 @@ Todo by priority
        with others.
      - something like ptweb
        - can pin instruments to be drums. (list of pinned is global)
- - would be real nice to click on a user and jump to their view
  - more inspiration from domino midi!
 
 Misc todo by categories
@@ -230,6 +222,7 @@ Technical stuff:
      any expected situation where we don't expect roundtrip. prob. not if like
      drawpile)
  - put hello in the protocol.
+ - put ping in protocol
  - placing notes is choppy in windows because of note preview lag. how to fix? wasapi?
  - static build
 
@@ -241,10 +234,23 @@ Editor QoL:
  - Time bar at the top
  - Don't scroll if last measure changes from some other user
  - follow playhead (seems low pri since no one suggested)
- - Scroll if clicking and on edge of pane
+ - Better woice previews
+   - idea: the pitch could be determined by the last note pressed in a keyboard
+     (that has yet been added). this can avoid complicating the file dialog.
+   - Add a 'stop all note previews' button
+   - Perhaps you could show a mini keyboard for previews under the woice list.
+ - see other user's playhead optionally
+   - involves: messages for seeking, starting, stopping with clock at X
+   - would be real nice to click on a user and jump to their view
+     - client would match the seeks and play controls, slightly delaying
+       depending on clock desync.
+     - client view would also just centre on the other's cursor. prob. with
+       matching zoom; or, (harder, not much gain) match window bboxes
  - Play audio while paused but seeking!
  - Consider click+scroll to change velocity (difficult on trackpad, maybe offer
    alt)
+ - Scroll if clicking and on edge of pane
+   - Not too big a deal - if you need a big interval, zoom out
  - Speed things up.
    - Separate audio thread with locking.
    - Bounding boxes for the undos/redos
