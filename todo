@@ -167,6 +167,9 @@ fill architecture could work well.
 6. A tricky thing to get smooth playhead. Also renders better when there's a
    bigger buffer I think.
 
+6/28
+1. Note previews 
+
 Todo by priority
 ----------------
  - instrument preview in file select
@@ -235,10 +238,12 @@ Editor functionality:
 
 Editor QoL:
  - Time bar at the top
- - follow playhead (seems low pri since no on suggested)
- - Prefer click+scroll to change velocity
-   - This is difficult on trackpad.
-   - Instead, added some slack to velocity adjustment.
+ - Don't scroll if last measure changes from some other user
+ - follow playhead (seems low pri since no one suggested)
+ - Scroll if clicking and on edge of pane
+ - Play audio while paused but seeking!
+ - Consider click+scroll to change velocity (difficult on trackpad, maybe offer
+   alt)
  - Speed things up.
    - Separate audio thread with locking.
    - Bounding boxes for the undos/redos
@@ -248,17 +253,13 @@ Editor QoL:
          where you'd have to roll everything back anyway.
    - Indexes for searching through list fast
      - according to botb event limit is 500k in the regular editor; here the
-       limit is 1M.
-
-       could probably handle 1000 events with little lag (1000 events * 1000
-       actions = 1M iterations, not too much)
+       limit is 1M.  could probably handle 1000 events with little lag (1000
+       events * 1000 actions = 1M iterations, not too much)
  - don't blip when seeking and playing again (hard due to QAudioOutput behavior)
  - Edit while playing soundness (low priority, unlikely to hit)
    - Add things between last event and next (before / after now?)
    - Delete things. Don't strand the pointer
    - Adjust the length of ON
- - Scroll if clicking and on edge of pane
- - Play audio while paused but seeking!
 
 Low priority:
  - Editor UI: Piano on the left
