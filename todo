@@ -179,11 +179,12 @@ Todo by priority
 ----------------
  - include that one other dll in the package for vcruntime
  - replace woice
- - select an interval, and operations (keyboard shortcuts) for
+ - select an interval, and operations (keycmds) for
    - transposing it up / down
    - moving selection left / right beat or measure
    - cutting / copying / pasting
-   - selection can probably be done with shift click.
+   - maybe shift click? but what if I don't want to move playhead?
+     ctrl+shift+click? lines up with horizontal zoom!
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
