@@ -130,7 +130,7 @@ bool pxtnService::_release() {
   }
   if (_woices) {
     for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
-    free(_woices);
+    delete[] _woices;
     _woices = NULL;
   }
   if (_units) {
