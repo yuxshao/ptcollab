@@ -2,10 +2,9 @@
 #define SIDEMENU_H
 
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QStringListModel>
 #include <QWidget>
-
-#include "SelectWoiceDialog.h"
 
 namespace Ui {
 class SideMenu;
@@ -52,7 +51,7 @@ class SideMenu : public QWidget {
   Ui::SideMenu *ui;
   QStringListModel *m_users;
   QFileDialog *m_add_woice_dialog;
-  SelectWoiceDialog *m_add_unit_dialog;
+  QInputDialog *m_add_unit_dialog;
 };
 
 #endif  // SIDEMENU_H

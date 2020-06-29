@@ -20,12 +20,14 @@ SideMenu::SideMenu(QWidget* parent)
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
-      m_add_unit_dialog(new SelectWoiceDialog(this)) {
+      m_add_unit_dialog(new QInputDialog(this)) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
   for (auto [label, value] : quantizeYOptions)
     ui->quantY->addItem(label, value);
+  m_add_unit_dialog->setInputMode(QInputDialog::TextInput);
+  m_add_unit_dialog->setLabelText(tr("Unit name?"));
 
   void (QComboBox::*signal)(int) = &QComboBox::currentIndexChanged;
 
@@ -43,8 +45,16 @@ SideMenu::SideMenu(QWidget* parent)
           &SideMenu::hostButtonPressed);
   connect(ui->connectBtn, &QPushButton::clicked, this,
           &SideMenu::connectButtonPressed);
-  connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
-          &QDialog::open);
+  connect(ui->addUnitBtn, &QPushButton::clicked, [this]() {
+    if (ui->woiceList->currentItem() == nullptr)
+      QMessageBox::warning(this, tr("Cannot add unit"),
+                           tr("Please select a voice first to add a unit."));
+    else {
+      m_add_unit_dialog->setTextValue(
+          QString("u-%1").arg(ui->woiceList->currentItem()->text()));
+      m_add_unit_dialog->open();
+    }
+  });
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
     if (ui->units->count() > 0 &&
         QMessageBox::question(this, tr("Are you sure?"),
@@ -58,6 +68,7 @@ SideMenu::SideMenu(QWidget* parent)
           &QDialog::show);
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
           &SideMenu::candidateWoiceSelected);
+
   connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
     for (const auto& filename : m_add_woice_dialog->selectedFiles())
       if (filename != "") emit addWoice(filename);
@@ -65,7 +76,7 @@ SideMenu::SideMenu(QWidget* parent)
 
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
     int idx = ui->woiceList->currentRow();
-    if (idx >= 0) {
+    if (idx >= 0 && ui->woiceList->currentItem() != nullptr) {
       if (ui->woiceList->count() > 0 &&
           QMessageBox::question(
               this, tr("Are you sure?"),
@@ -74,7 +85,9 @@ SideMenu::SideMenu(QWidget* parent)
                   .arg(ui->woiceList->currentItem()->text())) ==
               QMessageBox::Yes)
         emit removeWoice(idx, ui->woiceList->currentItem()->text());
-    }
+    } else
+      QMessageBox::warning(this, tr("Cannot remove voice"),
+                           tr("Please select a valid voice to remove."));
   });
   // connect(ui->woiceList, &QListWidget::currentRowChanged, this,
   //       &SideMenu::selectWoice);
@@ -82,8 +95,8 @@ SideMenu::SideMenu(QWidget* parent)
     emit selectWoice(ui->woiceList->currentRow());
   });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
-    int idx = m_add_unit_dialog->getSelectedWoiceIndex();
-    QString name = m_add_unit_dialog->getUnitNameSelection();
+    QString name = m_add_unit_dialog->textValue();
+    int idx = ui->woiceList->currentRow();
     if (idx >= 0 && name != "")
       emit addUnit(idx, name);
     else
@@ -130,7 +143,6 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
 }
 
 void SideMenu::setWoiceList(QStringList woices) {
-  m_add_unit_dialog->setWoices(woices);
   ui->woiceList->clear();
   ui->woiceList->addItems(woices);
 }

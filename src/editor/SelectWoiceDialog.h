@@ -7,6 +7,7 @@ namespace Ui {
 class SelectWoiceDialog;
 }
 
+// Obsolete now that the main view includes a woice list.
 class SelectWoiceDialog : public QDialog {
   Q_OBJECT
 
@@ -16,9 +17,6 @@ class SelectWoiceDialog : public QDialog {
   int getSelectedWoiceIndex();
   QString getUnitNameSelection();
   ~SelectWoiceDialog();
-  // TODO: Probably also trigger audio preview on selection. Or just change it
-  // so that this just prompts for a unit name for the current selected woice
-  // instead of opening up a whole other dialog.
 
  private:
   Ui::SelectWoiceDialog *ui;
