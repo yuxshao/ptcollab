@@ -441,6 +441,7 @@ bool EditorWindow::saveToFile(QString filename) {
 void EditorWindow::saveAs() {
   QString filename = QFileDialog::getSaveFileName(this, "Open file", "",
                                                   "pxtone projects (*.ptcop)");
+  if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   if (saveToFile(filename)) m_filename = filename;
 }
 void EditorWindow::save() {
