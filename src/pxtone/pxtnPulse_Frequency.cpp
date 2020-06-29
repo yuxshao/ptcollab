@@ -65,7 +65,7 @@ constexpr double oct_table[_OCTAVE_NUM] = {
 };
 
 constexpr std::array<float, _TABLE_SIZE> compute_freq_table() {
-  std::array<float, _TABLE_SIZE> freq_table({0});
+  std::array<float, _TABLE_SIZE> freq_table = {0};
 
   constexpr double oct_x24 =
       _GetDivideOctaveRate(_KEY_PER_OCTAVE * _FREQUENCY_PER_KEY);
@@ -81,7 +81,8 @@ constexpr std::array<float, _TABLE_SIZE> compute_freq_table() {
   }
   return freq_table;
 }
-constexpr std::array<float, _TABLE_SIZE> _freq_table(compute_freq_table());
+// Not constexpr b/c of msvc17
+static std::array<float, _TABLE_SIZE> _freq_table(compute_freq_table());
 
 float pxtnPulse_Frequency::Get(int32_t key) {
   int32_t i;

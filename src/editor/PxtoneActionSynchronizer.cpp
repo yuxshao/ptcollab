@@ -99,7 +99,7 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
     m_log.emplace_back(uid, action.idx, reverse);
   }
 
-  m_remote_index += local_actions_to_drop;
+  m_remote_index += int(local_actions_to_drop);
 
   // Invalidate any previous undone actions by this user
   for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {

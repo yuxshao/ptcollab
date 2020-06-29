@@ -175,10 +175,10 @@ fill architecture could work well.
    - fix small bug in smooth playhead
    - escape focuses the keyboard editor (is this really an improvement?)
 3. Replace woice. (Was pretty painless, thanks to the variant setup earlier!)
+4. Package for windows
 
 Todo by priority
 ----------------
- - include that one other dll in the package for vcruntime
  - select an interval, and operations (keycmds) for
    - transposing it up / down (should be easy b/c undo is reverse transpose)
    - cutting / copying / pasting / clearing

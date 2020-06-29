@@ -138,6 +138,7 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   // Really only this first one is necessary, since you can't add anything
   // else without it.
   ui->addWoiceBtn->setEnabled(b);
+  ui->changeWoiceBtn->setEnabled(b);
   ui->removeWoiceBtn->setEnabled(b);
   ui->addUnitBtn->setEnabled(b);
   ui->removeUnitBtn->setEnabled(b);
