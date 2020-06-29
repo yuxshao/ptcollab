@@ -177,9 +177,7 @@ Todo by priority
    - transposing it up / down
    - moving selection left / right beat or measure
    - cutting / copying / pasting
-     - Workflow: Copy paste - maybe not that important b/c when writing with others you're
-       probably just going to be adding notes with them. it's much more like
-       doodling! Or at least, it is right now.
+   - selection can probably be done with shift click.
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
