@@ -249,12 +249,7 @@ void EditorWindow::togglePlayState() {
 }
 
 void EditorWindow::resetAndSuspendAudio() {
-  pxtnVOMITPREPARATION prep{};
-  prep.flags |= pxtnVOMITPREPFLAG_loop;
-  prep.start_pos_float = 0;
-  prep.master_volume = 0.80f;
-  bool success = m_pxtn.moo_preparation(&prep);
-  if (!success) qWarning() << "Moo preparation error";
+  m_keyboard_editor->seekPosition(0);
   m_audio->suspend();
 
   m_side_menu->setPlay(false);

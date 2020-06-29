@@ -50,6 +50,7 @@ class KeyboardEditor : public QWidget {
   void clearRemoteEditStates();
   void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
+  void seekPosition(int clock);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -73,7 +74,7 @@ class KeyboardEditor : public QWidget {
   int quantizeSelectionY;
   // A bunch of things to give the illusion of a smooth playhead when there's a
   // buffer.
-  int m_last_clock, m_last_seek, m_this_seek, m_hit_end_this_seek;
+  int m_last_clock, m_this_seek;
   bool m_this_seek_caught_up;
   QElapsedTimer timeSinceLastClock;
   bool m_test_activity;

@@ -84,6 +84,9 @@ struct mooState {
   // Next event
   const EVERECORD *p_eve;
 
+  // Number of times this moo has looped. For ptcollab bookkeeping.
+  int num_loop;
+
   mooState();
 
   void release();
@@ -275,6 +278,7 @@ class pxtnService {
   int32_t moo_get_end_clock() const;
   int32_t moo_get_sampling_offset() const;
   int32_t moo_get_sampling_end() const;
+  int32_t moo_get_num_loop();
 
   bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
 

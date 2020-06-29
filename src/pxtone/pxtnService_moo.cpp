@@ -18,6 +18,7 @@ mooParams::mooParams() {
 mooState::mooState() {
   group_smps = NULL;
   p_eve = NULL;
+  num_loop = 0;
 
   smp_count = 0;
 }
@@ -289,6 +290,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 
   if (_moo_state.smp_count >= _moo_params.smp_end) {
     if (!_moo_params.b_loop) return false;
+    ++_moo_state.num_loop;
     _moo_state.smp_count = _moo_params.smp_repeat;
     _moo_state.p_eve = evels->get_Records();
     _moo_InitUnitTone();
@@ -461,6 +463,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
   tones_clear();
 
   _moo_state.p_eve = evels->get_Records();
+  _moo_state.num_loop = 0;
 
   _moo_InitUnitTone();
 
@@ -480,6 +483,12 @@ int32_t pxtnService::moo_get_sampling_end() const {
   if (!_moo_b_init) return 0;
   if (_moo_b_end_vomit) return 0;
   return _moo_params.smp_end;
+}
+
+int32_t pxtnService::moo_get_num_loop() {
+  if (!_moo_b_init) return 0;
+  if (_moo_b_end_vomit) return 0;
+  return _moo_state.num_loop;
 }
 
 int32_t pxtnService::moo_get_total_sample() const {

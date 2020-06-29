@@ -38,7 +38,8 @@ void seekMoo(pxtnService *pxtn, int64_t clock) {
   prep.start_pos_sample = clock * 60 * 44100 / pxtn->master->get_beat_clock() /
                           pxtn->master->get_beat_tempo();
   prep.master_volume = 0.80f;
-  pxtn->moo_preparation(&prep);
+  bool success = pxtn->moo_preparation(&prep);
+  if (!success) qWarning() << "Moo preparation error";
 }
 
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
@@ -58,9 +59,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       quantXIndex(0),
       quantizeSelectionY(0),
       m_last_clock(0),
-      m_last_seek(0),
       m_this_seek(0),
-      m_hit_end_this_seek(false),
       m_this_seek_caught_up(false),
       m_test_activity(false),
       m_remote_edit_states() {
@@ -480,13 +479,9 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   // actually caught up to a seek.
   int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
   if (m_last_clock != clock) {
-    // Heuristic for counting the number of times we've looped since this seek
-    if (m_last_clock > clock && m_last_seek == m_this_seek)
-      ++m_hit_end_this_seek;
     m_last_clock = clock;
     timeSinceLastClock.restart();
   }
-  if (m_last_seek != m_this_seek) m_last_seek = m_this_seek;
 
   int repeat_clock = m_pxtn->master->get_repeat_meas() *
                      m_pxtn->master->get_beat_num() *
@@ -505,7 +500,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     timeSinceLastClock.restart();
   else
     estimated_buffer_offset += timeSinceLastClock.elapsed() / 1000.0;
-  clock += (last_clock - repeat_clock) * m_hit_end_this_seek;
+  clock += (last_clock - repeat_clock) * m_pxtn->moo_get_num_loop();
   clock += std::min(estimated_buffer_offset, 0.0) *
            m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() /
            60;
@@ -516,7 +511,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     clock = (clock - repeat_clock) % (last_clock - repeat_clock) + repeat_clock;
   // Because of offsetting it might seem like even though we've repeated the
   // clock is before [repeat_clock]. So fix it here.
-  if (m_hit_end_this_seek && clock < repeat_clock)
+  if (m_pxtn->moo_get_num_loop() > 0 && clock < repeat_clock)
     clock += last_clock - repeat_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
@@ -821,7 +816,11 @@ void KeyboardEditor::setQuantYIndex(int q) {
   refreshQuantSettings();
   emit editStateChanged();
 }
-
+void KeyboardEditor::seekPosition(int clock) {
+  seekMoo(m_pxtn, clock);
+  m_this_seek = clock;
+  m_this_seek_caught_up = false;
+}
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
@@ -888,12 +887,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                            m_edit_state.m_current_unit_id, clock_int.start,
                            clock_int.end});
         break;
-      case MouseEditState::Seek: {
-        seekMoo(m_pxtn, m_edit_state.mouse_edit_state.current_clock);
-        m_this_seek = m_edit_state.mouse_edit_state.current_clock;
-        m_this_seek_caught_up = false;
-        m_hit_end_this_seek = false;
-      } break;
+      case MouseEditState::Seek:
+        seekPosition(m_edit_state.mouse_edit_state.current_clock);
+        break;
       case MouseEditState::Nothing:
         break;
     }
