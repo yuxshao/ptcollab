@@ -19,7 +19,7 @@ QDataStream &operator>>(QDataStream &in, Interval &a);
 struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn };
   Type type;
-  qint32 base_velocity;
+  qreal base_velocity;
   qint32 start_clock;
   qint32 start_pitch;
   qint32 current_clock;

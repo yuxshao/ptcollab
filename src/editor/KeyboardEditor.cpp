@@ -251,7 +251,8 @@ static int lerp(double r, int a, int b) {
   if (r < 0) r = 0;
   return a + r * (b - a);
 }
-static int clamp(int x, int lo, int hi) {
+template<typename T>
+static T clamp(T x, T lo, T hi) {
   if (x < lo) return lo;
   if (x > hi) return hi;
   return x;
@@ -297,7 +298,7 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
   // Apply a sigmoid so that small changes in y hardly do anything
   delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
 
-  return clamp(round(state.base_velocity + delta / pixelsPerVelocity), 0,
+  return clamp(int(round(state.base_velocity + delta / pixelsPerVelocity)), 0,
                EVENTMAX_VELOCITY);
 }
 static QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
@@ -675,6 +676,13 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
     refreshQuantSettings();
     emit quantXIndexChanged(quantXIndex);
     event->accept();
+  } else if (m_edit_state.mouse_edit_state.type == MouseEditState::SetOn) {
+    auto &vel = m_edit_state.mouse_edit_state.base_velocity;
+    vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0, EVENTMAX_VELOCITY);
+    if (m_audio_note_preview != nullptr)
+      m_audio_note_preview->setVel(
+          impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale));
+    event->accept();
   }
 
   emit editStateChanged();
@@ -718,7 +726,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
     if (maybe_unit_no != std::nullopt) {
       qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
       m_audio_note_preview =
-          new NotePreview(m_pxtn, maybe_unit_no.value(), quantized_clock,
+        std::make_unique<NotePreview>(m_pxtn, maybe_unit_no.value(), quantized_clock,
                           quantized_pitch, vel, this);
     }
   }
@@ -836,11 +844,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
     event->ignore();
     return;
   }
-  if (m_audio_note_preview) {
-    m_audio_note_preview->suspend();
-    m_audio_note_preview->deleteLater();
-    m_audio_note_preview = nullptr;
-  }
+  if (m_audio_note_preview) m_audio_note_preview = nullptr;
   Interval clock_int(
       m_edit_state.mouse_edit_state.clock_int(m_edit_state.m_quantize_clock));
   int start_pitch = quantize(m_edit_state.mouse_edit_state.start_pitch,
@@ -868,7 +872,7 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
             impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale);
         actions.push_back({Action::ADD, EVENTKIND_VELOCITY,
                            m_edit_state.m_current_unit_id, clock_int.start,
-                           m_edit_state.mouse_edit_state.base_velocity});
+                           qint32(m_edit_state.mouse_edit_state.base_velocity)});
         actions.push_back({Action::ADD, EVENTKIND_KEY,
                            m_edit_state.m_current_unit_id, clock_int.start,
                            start_pitch});

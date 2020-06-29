@@ -176,6 +176,8 @@ fill architecture could work well.
    - escape focuses the keyboard editor (is this really an improvement?)
 3. Replace woice. (Was pretty painless, thanks to the variant setup earlier!)
 4. Package for windows, add icon
+5. Fix overlapping note previews if you had a trackpad and mouse.
+6. Click+scroll can also adjust velocity
 
 Todo by priority
 ----------------

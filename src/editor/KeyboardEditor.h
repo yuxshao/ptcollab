@@ -66,7 +66,7 @@ class KeyboardEditor : public QWidget {
   int painted;
   EditState m_edit_state;
   QAudioOutput *m_audio_output;
-  NotePreview *m_audio_note_preview;
+  std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   Client *m_client;
   PxtoneActionSynchronizer *m_sync;
