@@ -175,7 +175,7 @@ fill architecture could work well.
    - fix small bug in smooth playhead
    - escape focuses the keyboard editor (is this really an improvement?)
 3. Replace woice. (Was pretty painless, thanks to the variant setup earlier!)
-4. Package for windows
+4. Package for windows, add icon
 
 Todo by priority
 ----------------
@@ -288,13 +288,15 @@ Just general format? improvements:
  - A kind of meta instrument that changes depending on parameter or pitch
 
 Running thank-you list:
-1. Friends and family for supporting this!
-2. jaxcheese, neozoid, steedfarmer for testing out with me, making tunes
+0. Pixel for making such an awesome music software!
+1. Everyone involved in ptweb!
+2. Friends and family for supporting this!
+3. jaxcheese, neozoid, steedfarmer for testing out with me, making tunes
    together, and giving great feedback!
-3. steedfarmer for helping me hunt down this nasty networking bug!
-4. arcofdream for helping conceptualize the UI, giving feedback, and testing it
+4. steedfarmer for helping me hunt down this nasty networking bug!
+5. arcofdream for helping conceptualize the UI, giving feedback, and testing it
    out!
-5. arcofdream, nanoplink, easynam for general programming, UX discussion and
+6. arcofdream, nanoplink, easynam for general programming, UX discussion and
    consulting!
-6. jade for testing, finding UI bugs, and providing valuable suggestions!
-6. everyone in the pxtone discord servers!
+7. jade for testing, finding UI bugs, and providing valuable suggestions!
+7. everyone in the pxtone discord servers!
