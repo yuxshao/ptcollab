@@ -181,15 +181,39 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - select an interval, and operations (keycmds) for
-   - transposing it up / down (should be easy b/c undo is reverse transpose)
-   - cutting / copying / pasting / clearing
-     - cut should shift things back b/c the other can be copy + clear
-   - moving selection left / right beat or measure
-     - should follow from copy paste
-   - scaling / shifting vol, vel, other params (once those exist)
-   - maybe shift click? but what if I don't want to move playhead?
-     ctrl+shift+click? lines up with horizontal zoom!
+ - select an interval + multiple units
+   - ctrl+shift+click
+     - shift click by itself is not good b/c maybe don't want to move playhead
+     - shift+rclick maybe works but rclick is unintuitive.
+     - TODO: once you press down with ctrl+shift or shift it should stay in the
+       appropriate mode (make selection or seek) until release.
+     - prob. snap to quantize first, maybe add alt to snap to measure.
+   - paste destination determined by start of selection. if snap it should be
+     fine. (restrict to selection interval if nonzero? prob not bc ptcollage
+     doesn't)
+   - prob. just brighten the background? maybe the notes too a bit? so that
+     they're semi-on?
+ - select operations (keycmds) for
+   - transposing it up / down
+     - new prim. local action
+     - alt keybd up / down? ctrl modifier for octave.
+   - shifting / scaling velocity
+     - kbd u/d? (no alt b/c this could work for other params too)
+     - ctrl modifier for bigger increments.
+   - copying / pasting / clearing / shifting
+     - copying just takes the local state and puts in copy buffer. paste dumps buf
+       - problem: might miss someone else's edit that hasn't reached them yet.
+         but either way there's potential for desync one way or another.
+     - shifting should be separate prim action (don't use copy paste b/c
+       problem above might make things inconsistent)
+       - shifting can be local if action assumes destination is empty.
+     - cutting is then copy + clear + shift. insert is just shift + paste
+     - if paste unit set don't line up with copy units, paste the
+       'intersection' shifted by first unit.
+   - scaling / shifting vol, other params (once those exist)
+   - not gonna support drag / drop to start. ptcollage doesn't have it and it
+     seems complicated. gonna have to track against bounding boxes, drag state?
+     omg
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
