@@ -884,6 +884,7 @@ void KeyboardEditor::seekPosition(int clock) {
   m_this_seek = clock;
   m_this_seek_caught_up = false;
 }
+
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();

@@ -181,20 +181,6 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - select an interval
-   - ctrl+shift+click
-     - shift click by itself is not good b/c maybe don't want to move playhead
-     - shift+rclick maybe works but rclick is unintuitive.
-     - TODO: once you press down with ctrl+shift or shift it should stay in the
-       appropriate mode (make selection or seek) until release.
-     - prob. snap to quantize first, maybe add alt to snap to measure.
-   - paste destination determined by start of selection. if snap it should be
-     fine. (restrict to selection interval if nonzero? prob not bc ptcollage
-     doesn't)
-   - prob. just brighten the background? maybe the notes too a bit? so that
-     they're semi-on?
-   - escape deselects? backspace back to beginning?
- - select multiple units
  - select operations (keycmds) for
    - transposing it up / down
      - new prim. local action
@@ -216,6 +202,11 @@ Todo by priority
    - not gonna support drag / drop to start. ptcollage doesn't have it and it
      seems complicated. gonna have to track against bounding boxes, drag state?
      omg
+ - select multiple units
+   - even though it's redundant, probably will show dropdown (for current unit
+     and ops) as well as unit tab (for selecting which units to show / select).
+     unit tab items might have checkboxes! for mute, select, show. one of these
+     will just be the item's select state)
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
@@ -303,6 +294,12 @@ Editor QoL:
    - Add things between last event and next (before / after now?)
    - Delete things. Don't strand the pointer
    - Adjust the length of ON
+ - once you click with shift it should stay in seek mode until release.
+ - ctrl+shift+alt+click to select snap to measure? sounds a bit crazy honestly.
+ - maybe offer quant option for measure (instead of snap to measure select)
+ - note preview vel should not be adjustable if you're editing note instead of on
+ - allow zero selection interval, and restrict to selection interval if
+   nonzero? prob not bc ptcollage doesn't
 
 Low priority:
  - Editor UI: Piano on the left

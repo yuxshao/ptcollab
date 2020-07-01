@@ -232,7 +232,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
         "horizontally.\nMiddle-click drag also "
         "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
-        "seek.");
+        "seek.\nCtrl+click to modify note instead of on "
+        "values.\nCtrl+shift+click to select.\nShift+rclick to deselect.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
