@@ -776,8 +776,8 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   emit editStateChanged();
 }
 
-void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
-  MouseEditState &state = m_edit_state.mouse_edit_state;
+void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
+  MouseEditState &state = edit_state.mouse_edit_state;
   if (state.type == MouseEditState::Type::Nothing &&
       event->modifiers() & Qt::ShiftModifier) {
     state.type = MouseEditState::Type::Seek;
@@ -786,21 +786,21 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
       !(event->modifiers() & Qt::ShiftModifier)) {
     state.type = MouseEditState::Type::Nothing;
   }
-  // TODO: The edit state should just work in pixel coords. Enough
-  // places don't really care about the coord in pitch / clock
-  // m_edit_state.scale. Update: Okay maybe not because quantize is useful.
-  // Maybe we need more heavyweight abstr
 
-  state.current_clock = event->localPos().x() * m_edit_state.scale.clockPerPx;
-  state.current_pitch = m_edit_state.scale.pitchOfY(event->localPos().y());
+  state.current_clock = event->localPos().x() * edit_state.scale.clockPerPx;
+  state.current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
   if (state.type == MouseEditState::Type::Nothing) {
     state.start_clock = state.current_clock;
     state.start_pitch = state.current_pitch;
   }
+}
 
+void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
   if (m_audio_note_preview != nullptr)
     m_audio_note_preview->setVel(
         impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale));
+
+  updateStatePositions(m_edit_state, event);
   emit editStateChanged();
   event->ignore();
 }
@@ -958,10 +958,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
       // action.
       emit onEdit();
     }
-    m_edit_state.mouse_edit_state.type = (event->modifiers() & Qt::ShiftModifier
-                                              ? MouseEditState::Type::Seek
-                                              : MouseEditState::Type::Nothing);
   }
+  m_edit_state.mouse_edit_state.type = MouseEditState::Type::Nothing;
+  updateStatePositions(m_edit_state, event);
   emit editStateChanged();
   // TODO: maybe would be good to set it up so that edit state change is
   // bundled with the actual remote action
