@@ -725,24 +725,41 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
   emit editStateChanged();
 }
 
+void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
+  MouseEditState &state = edit_state.mouse_edit_state;
+  state.current_clock = event->localPos().x() * edit_state.scale.clockPerPx;
+  state.current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
+
+  if (state.type == MouseEditState::Type::Nothing ||
+      state.type == MouseEditState::Type::Seek) {
+    state.type = (event->modifiers() & Qt::ShiftModifier
+                      ? MouseEditState::Type::Seek
+                      : MouseEditState::Type::Nothing);
+    state.start_clock = state.current_clock;
+    state.start_pitch = state.current_pitch;
+  }
+}
+
 void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
   }
+
   if (m_pxtn->Unit_Num() == 0) return;
-  int clock = event->localPos().x() * m_edit_state.scale.clockPerPx;
-  int pitch = m_edit_state.scale.pitchOfY(event->localPos().y());
-  int quantized_pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
-                        m_edit_state.m_quantize_pitch;
-  int quantized_clock = quantize(clock, m_edit_state.m_quantize_clock);
+  updateStatePositions(m_edit_state, event);
+
   bool make_note_preview = false;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
-    if (event->modifiers() & Qt::ControlModifier)
+    if (event->modifiers() & Qt::ControlModifier &&
+        event->button() != Qt::RightButton)
       type = MouseEditState::Type::Select;
-    else
+    else {
+      if (event->button() == Qt::RightButton)
+        m_edit_state.mouse_edit_state.selection.reset();
       type = MouseEditState::Type::Seek;
+    }
   } else {
     if (event->modifiers() & Qt::ControlModifier) {
       if (event->button() == Qt::RightButton)
@@ -760,39 +777,26 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       }
     }
   }
+  m_edit_state.mouse_edit_state.type = type;
+
   if (make_note_preview) {
     auto maybe_unit_no =
         m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
     if (maybe_unit_no != std::nullopt) {
       qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
+
+      int pitch = m_edit_state.mouse_edit_state.current_pitch;
+      pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
+              m_edit_state.m_quantize_pitch;
+
+      int clock = m_edit_state.mouse_edit_state.current_clock;
+      clock = quantize(clock, m_edit_state.m_quantize_clock);
+
       m_audio_note_preview = std::make_unique<NotePreview>(
-          m_pxtn, maybe_unit_no.value(), quantized_clock, quantized_pitch, vel,
-          this);
+          m_pxtn, maybe_unit_no.value(), clock, pitch, vel, this);
     }
   }
-  m_edit_state.mouse_edit_state = MouseEditState{
-      type,  m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
-      pitch, m_edit_state.mouse_edit_state.selection};
   emit editStateChanged();
-}
-
-void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
-  MouseEditState &state = edit_state.mouse_edit_state;
-  if (state.type == MouseEditState::Type::Nothing &&
-      event->modifiers() & Qt::ShiftModifier) {
-    state.type = MouseEditState::Type::Seek;
-  }
-  if (state.type == MouseEditState::Type::Seek &&
-      !(event->modifiers() & Qt::ShiftModifier)) {
-    state.type = MouseEditState::Type::Nothing;
-  }
-
-  state.current_clock = event->localPos().x() * edit_state.scale.clockPerPx;
-  state.current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
-  if (state.type == MouseEditState::Type::Nothing) {
-    state.start_clock = state.current_clock;
-    state.start_pitch = state.current_pitch;
-  }
 }
 
 void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
@@ -944,7 +948,8 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                            clock_int.end});
         break;
       case MouseEditState::Seek:
-        seekPosition(m_edit_state.mouse_edit_state.current_clock);
+        if (event->button() & Qt::LeftButton)
+          seekPosition(m_edit_state.mouse_edit_state.current_clock);
         break;
       case MouseEditState::Select:
         m_edit_state.mouse_edit_state.selection.emplace(clock_int);
