@@ -251,7 +251,7 @@ static int lerp(double r, int a, int b) {
   if (r < 0) r = 0;
   return a + r * (b - a);
 }
-template<typename T>
+template <typename T>
 static T clamp(T x, T lo, T hi) {
   if (x < lo) return lo;
   if (x > hi) return hi;
@@ -290,6 +290,8 @@ static Brush brushes[] = {
     0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
 };
 constexpr int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
+static QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
+static QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
 
 int pixelsPerVelocity = 3;
 static double slack = 50;
@@ -301,8 +303,27 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
   return clamp(int(round(state.base_velocity + delta / pixelsPerVelocity)), 0,
                EVENTMAX_VELOCITY);
 }
-static QBrush halfWhite(QColor::fromRgb(255, 255, 255, 128));
 static qint32 arbitrarily_tall = 512;
+
+void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
+                   double alphaMultiplier) {
+  QColor c = slightTint;
+  c.setAlpha(c.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, interval.length(), height, c);
+  c = halfWhite;
+  c.setAlpha(c.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, 1, height, c);
+  painter.fillRect(interval.end, 0, 1, height, c);
+}
+
+void drawExistingSelection(QPainter &painter, const EditState &state,
+                           qint32 height, double alphaMultiplier) {
+  if (state.mouse_edit_state.selection.has_value()) {
+    Interval interval{state.mouse_edit_state.selection.value() /
+                      state.scale.clockPerPx};
+    drawSelection(painter, interval, height, alphaMultiplier * 0.8);
+  }
+}
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                     const Brush &brush, const Scale &scale, qint32 alpha) {
@@ -314,8 +335,9 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                    scale.pitchToY(pitch) - arbitrarily_tall, arbitrarily_tall,
                    arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
 }
-void drawOngoingEdit(const EditState &state, QPainter &painter, int height,
-                     double alphaMultiplier) {
+void drawOngoingAction(const EditState &state, QPainter &painter, int height,
+                       double alphaMultiplier,
+                       double selectionAlphaMultiplier) {
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
@@ -351,6 +373,11 @@ void drawOngoingEdit(const EditState &state, QPainter &painter, int height,
                        0, 1, height,
                        QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
       break;
+    case MouseEditState::Type::Select: {
+      Interval interval(mouse_edit_state.clock_int(state.m_quantize_clock) /
+                        state.scale.clockPerPx);
+      drawSelection(painter, interval, height, selectionAlphaMultiplier);
+    } break;
   }
 }
 
@@ -585,21 +612,30 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     }
   }
 
-  // Draw ongoing edits
+  // Draw existing selections
+
+  // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
     if (uid == m_sync->uid()) continue;
     if (remote_state.state.has_value()) {
       const EditState &state = remote_state.state.value();
-      double alphaMultiplier =
-          (state.m_current_unit_id == m_edit_state.m_current_unit_id ? 0.7
-                                                                     : 0.3);
+      bool same_unit =
+          state.m_current_unit_id == m_edit_state.m_current_unit_id;
+      double alphaMultiplier = (same_unit ? 0.7 : 0.3);
+      double selectionAlphaMultiplier = (same_unit ? 0.5 : 0.3);
       EditState adjusted_state(state);
       adjusted_state.scale = m_edit_state.scale;
-      drawOngoingEdit(adjusted_state, painter, size().height(),
-                      alphaMultiplier);
+
+      // TODO: colour other's existing selections (or identify somehow. maybe
+      // name tag?)
+      drawExistingSelection(painter, state, size().height(),
+                            selectionAlphaMultiplier);
+      drawOngoingAction(adjusted_state, painter, size().height(),
+                        alphaMultiplier, selectionAlphaMultiplier);
     }
   }
-  drawOngoingEdit(m_edit_state, painter, size().height(), 1);
+  drawExistingSelection(painter, m_edit_state, size().height(), 1);
+  drawOngoingAction(m_edit_state, painter, size().height(), 1, 1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
@@ -678,7 +714,8 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
     event->accept();
   } else if (m_edit_state.mouse_edit_state.type == MouseEditState::SetOn) {
     auto &vel = m_edit_state.mouse_edit_state.base_velocity;
-    vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0, EVENTMAX_VELOCITY);
+    vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0,
+                        EVENTMAX_VELOCITY);
     if (m_audio_note_preview != nullptr)
       m_audio_note_preview->setVel(
           impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale));
@@ -702,7 +739,10 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   bool make_note_preview = false;
   MouseEditState::Type type;
   if (event->modifiers() & Qt::ShiftModifier) {
-    type = MouseEditState::Type::Seek;
+    if (event->modifiers() & Qt::ControlModifier)
+      type = MouseEditState::Type::Select;
+    else
+      type = MouseEditState::Type::Seek;
   } else {
     if (event->modifiers() & Qt::ControlModifier) {
       if (event->button() == Qt::RightButton)
@@ -725,14 +765,14 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
     if (maybe_unit_no != std::nullopt) {
       qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
-      m_audio_note_preview =
-        std::make_unique<NotePreview>(m_pxtn, maybe_unit_no.value(), quantized_clock,
-                          quantized_pitch, vel, this);
+      m_audio_note_preview = std::make_unique<NotePreview>(
+          m_pxtn, maybe_unit_no.value(), quantized_clock, quantized_pitch, vel,
+          this);
     }
   }
   m_edit_state.mouse_edit_state = MouseEditState{
-      type, m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
-      pitch};
+      type,  m_edit_state.mouse_edit_state.base_velocity, clock, pitch, clock,
+      pitch, m_edit_state.mouse_edit_state.selection};
   emit editStateChanged();
 }
 
@@ -771,6 +811,7 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote:
+    case MouseEditState::Type::Select:
       break;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::Seek:
@@ -870,9 +911,10 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
                            clock_int.length()});
         m_edit_state.mouse_edit_state.base_velocity =
             impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale);
-        actions.push_back({Action::ADD, EVENTKIND_VELOCITY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           qint32(m_edit_state.mouse_edit_state.base_velocity)});
+        actions.push_back(
+            {Action::ADD, EVENTKIND_VELOCITY, m_edit_state.m_current_unit_id,
+             clock_int.start,
+             qint32(m_edit_state.mouse_edit_state.base_velocity)});
         actions.push_back({Action::ADD, EVENTKIND_KEY,
                            m_edit_state.m_current_unit_id, clock_int.start,
                            start_pitch});
@@ -903,6 +945,9 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
         break;
       case MouseEditState::Seek:
         seekPosition(m_edit_state.mouse_edit_state.current_clock);
+        break;
+      case MouseEditState::Select:
+        m_edit_state.mouse_edit_state.selection.emplace(clock_int);
         break;
       case MouseEditState::Nothing:
         break;

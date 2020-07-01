@@ -1,6 +1,7 @@
 #ifndef EDITSTATE_H
 #define EDITSTATE_H
 #include <QObject>
+
 int quantize(int v, int q);
 struct Interval {
   qint32 start;
@@ -14,16 +15,23 @@ struct Interval {
 inline Interval interval_intersect(const Interval &a, const Interval &b) {
   return {std::max(a.start, b.start), std::min(a.end, b.end)};
 }
+inline Interval operator/(const Interval &a, const qreal b) {
+  return {qint32(a.start / b), qint32(a.end / b)};
+}
+inline Interval operator*(const Interval &a, const qreal b) {
+  return {qint32(a.start * b), qint32(a.end * b)};
+}
 QDataStream &operator<<(QDataStream &out, const Interval &a);
 QDataStream &operator>>(QDataStream &in, Interval &a);
 struct MouseEditState {
-  enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn };
+  enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn, Select };
   Type type;
   qreal base_velocity;
   qint32 start_clock;
   qint32 start_pitch;
   qint32 current_clock;
   qint32 current_pitch;
+  std::optional<Interval> selection;
   Interval clock_int(qint32 quantize) const;
 };
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a);

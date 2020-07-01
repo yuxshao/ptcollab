@@ -181,7 +181,7 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - select an interval + multiple units
+ - select an interval
    - ctrl+shift+click
      - shift click by itself is not good b/c maybe don't want to move playhead
      - shift+rclick maybe works but rclick is unintuitive.
@@ -193,6 +193,8 @@ Todo by priority
      doesn't)
    - prob. just brighten the background? maybe the notes too a bit? so that
      they're semi-on?
+   - escape deselects? backspace back to beginning?
+ - select multiple units
  - select operations (keycmds) for
    - transposing it up / down
      - new prim. local action

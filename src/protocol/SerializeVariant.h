@@ -49,9 +49,28 @@ QDataStream &operator<<(QDataStream &out, const std::variant<Args...> &a) {
   std::visit([&out](const auto &v) { out << v; }, a);
   return out;
 }
+template <typename T>
+QDataStream &operator<<(QDataStream &out, const std::optional<T> &a) {
+  qint8 has_value = a.has_value();
+  out << has_value;
+  if (has_value != 0) out << a.value();
+  return out;
+}
+template <typename T>
+QDataStream &operator>>(QDataStream &in, std::optional<T> &a) {
+  qint8 has_value;
+  in >> has_value;
+
+  if (has_value != 0) {
+    T value;
+    in >> value;
+    a.emplace(value);
+  } else
+    a.reset();
+  return in;
+}
 
 #include <QTextStream>
-#include <typeinfo>
 
 template <typename... Args>
 QTextStream &operator<<(QTextStream &out, const std::variant<Args...> &a) {
