@@ -33,7 +33,7 @@ QDataStream &operator<<(QDataStream &out, const MouseEditState &a) {
 
 QDataStream &operator>>(QDataStream &in, MouseEditState &a) {
   qint8 type_int;
-  in >> type_int >> a.start_clock >> a.base_velocity >> a.current_clock >>
+  in >> type_int >> a.base_velocity >> a.start_clock >> a.current_clock >>
       a.start_pitch >> a.current_pitch;
   a.type = MouseEditState::Type(type_int);
   return in;
