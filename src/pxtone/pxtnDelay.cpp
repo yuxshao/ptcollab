@@ -133,7 +133,7 @@ pxtnERR pxtnDelay::Read(pxtnDescriptor *p_doc) {
 
   if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
   if (!p_doc->r(&dela, sizeof(_DELAYSTRUCT), 1)) return pxtnERR_desc_r;
-  if (dela.unit >= DELAYUNIT_max) return pxtnERR_fmt_unknown;
+  if (dela.unit > DELAYUNIT_max) return pxtnERR_fmt_unknown;
 
   _unit = (DELAYUNIT)dela.unit;
   _freq = dela.freq;
