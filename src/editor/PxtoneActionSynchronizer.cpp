@@ -11,10 +11,10 @@ PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
       m_remote_index(0) {}
 
 EditAction PxtoneActionSynchronizer::applyLocalAction(
-    const std::list<Action> &action) {
+    const std::list<Action::Primitive> &action) {
   bool widthChanged = false;
   m_uncommitted.push_back(
-      apply_actions_and_get_undo(action, m_pxtn, &widthChanged, m_unit_id_map));
+      Action::apply_and_get_undo(action, m_pxtn, &widthChanged, m_unit_id_map));
   if (widthChanged) emit measureNumChanged();
   // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   // qDebug() << "New action";
@@ -70,14 +70,14 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
     for (auto uncommitted = m_uncommitted.rbegin();
          uncommitted != m_uncommitted.rend(); ++uncommitted) {
       // int start_size = uncommitted->size();
-      *uncommitted = apply_actions_and_get_undo(*uncommitted, m_pxtn,
+      *uncommitted = Action::apply_and_get_undo(*uncommitted, m_pxtn,
                                                 &widthChanged, m_unit_id_map);
       // qDebug() << "undoing local size(" << start_size << uncommitted->size()
       //         << ") index(" << i-- << ")";
     }
 
     // apply the committed action
-    std::list<Action> reverse = apply_actions_and_get_undo(
+    std::list<Action::Primitive> reverse = Action::apply_and_get_undo(
         action.action, m_pxtn, &widthChanged, m_unit_id_map);
 
     if (local_actions_to_drop >= m_uncommitted.size())
@@ -88,9 +88,9 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
       m_uncommitted.erase(m_uncommitted.begin(), it_end);
     }
     // redo each of the uncommitted actions forwards
-    for (std::list<Action> &uncommitted : m_uncommitted) {
+    for (std::list<Action::Primitive> &uncommitted : m_uncommitted) {
       // int start_size = uncommitted.size();
-      uncommitted = apply_actions_and_get_undo(uncommitted, m_pxtn,
+      uncommitted = Action::apply_and_get_undo(uncommitted, m_pxtn,
                                                &widthChanged, m_unit_id_map);
       // qDebug() << "redoing local size(" << start_size << uncommitted.size()
       //         << ") index(" << i++ << ")";
@@ -154,7 +154,7 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
   bool widthChanged = false;
   for (auto uncommitted = m_uncommitted.rbegin();
        uncommitted != m_uncommitted.rend(); ++uncommitted) {
-    *uncommitted = apply_actions_and_get_undo(*uncommitted, m_pxtn,
+    *uncommitted = Action::apply_and_get_undo(*uncommitted, m_pxtn,
                                               &widthChanged, m_unit_id_map);
   }
 
@@ -167,24 +167,24 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
     while (it != target) {
       if (it->state == LoggedAction::UndoState::DONE) {
         qDebug() << "Temporarily undoing " << it->uid << it->idx;
-        it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn,
+        it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn,
                                                  &widthChanged, m_unit_id_map);
         temporarily_undone.push_front(&(*it));
       }
       ++it;
     }
-    it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn, &widthChanged,
+    it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn, &widthChanged,
                                              m_unit_id_map);
     it->state = (it->state == LoggedAction::UNDONE ? LoggedAction::DONE
                                                    : LoggedAction::UNDONE);
     ;
     for (LoggedAction *it : temporarily_undone)
-      it->reverse = apply_actions_and_get_undo(it->reverse, m_pxtn,
+      it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn,
                                                &widthChanged, m_unit_id_map);
   }
 
-  for (std::list<Action> &uncommitted : m_uncommitted) {
-    uncommitted = apply_actions_and_get_undo(uncommitted, m_pxtn, &widthChanged,
+  for (std::list<Action::Primitive> &uncommitted : m_uncommitted) {
+    uncommitted = Action::apply_and_get_undo(uncommitted, m_pxtn, &widthChanged,
                                              m_unit_id_map);
   }
 

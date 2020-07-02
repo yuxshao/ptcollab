@@ -11,14 +11,6 @@
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/SerializeVariant.h"
 
-// boilerplate for std::visit
-template <class... Ts>
-struct overloaded : Ts... {
-  using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
 inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
   return out;
 }
@@ -26,7 +18,7 @@ inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
 
 struct EditAction {
   qint64 idx;
-  std::list<Action> action;
+  std::list<Action::Primitive> action;
 };
 inline QDataStream &operator<<(QDataStream &out, const EditAction &a) {
   out << a.idx << quint64(a.action.size());
@@ -40,7 +32,7 @@ inline QDataStream &operator>>(QDataStream &in, EditAction &a) {
   if (size > 30) qWarning() << "Abnormally large editaction size" << size;
   if (in.status() != QDataStream::Ok) return in;
   for (size_t i = 0; i < size; ++i) {
-    Action action;
+    Action::Primitive action;
     in >> action;
     if (in.status() != QDataStream::Ok) return in;
     a.action.push_back(action);
@@ -243,15 +235,6 @@ inline QDataStream &operator>>(QDataStream &in, ServerAction &a) {
 }
 inline QTextStream &operator<<(QTextStream &out, const ServerAction &a) {
   out << "ServerAction(u" << a.uid << ", " << a.action << ")";
-  return out;
-}
-
-template <typename T>
-inline QDebug &operator<<(QDebug &out, const T &a) {
-  QString s;
-  QTextStream ts(&s);
-  ts << a;
-  out << s;
   return out;
 }
 

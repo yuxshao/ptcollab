@@ -11,6 +11,9 @@ class EditorScrollArea : public QScrollArea {
   EditorScrollArea(QWidget *parent);
   void wheelEvent(QWheelEvent *event) override;
 
+ protected:
+  void keyPressEvent(QKeyEvent *event) override;
+
  private:
   bool middleDown;
   QPoint lastPos;

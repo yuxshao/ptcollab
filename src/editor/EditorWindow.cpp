@@ -326,6 +326,13 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           event->modifiers() & Qt::ShiftModifier)
         m_keyboard_editor->removeCurrentUnit();
       break;
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+      Direction dir =
+          (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
+      bool wide = (event->modifiers() & Qt::ControlModifier);
+      m_keyboard_editor->transposeSelection(dir, wide);
+      break;
   }
 }
 

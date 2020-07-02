@@ -885,6 +885,37 @@ void KeyboardEditor::seekPosition(int clock) {
   m_this_seek_caught_up = false;
 }
 
+void KeyboardEditor::transposeSelection(Direction dir, bool wide) {
+  if (m_edit_state.mouse_edit_state.selection.has_value()) {
+    int offset;
+    switch (dir) {
+      case Direction::UP:
+        offset = 1;
+        break;
+      case Direction::DOWN:
+        offset = -1;
+        break;
+    }
+    offset *= PITCH_PER_KEY;
+    if (wide) offset *= 12;
+
+    Interval interval(m_edit_state.mouse_edit_state.selection.value());
+
+    using namespace Action;
+    std::list<Primitive> as;
+    EVENTKIND kind = EVENTKIND_KEY;
+    qint32 unit = m_edit_state.m_current_unit_id;
+    int32_t key_at_start = m_pxtn->evels->get_Value(interval.start, unit, kind);
+    int32_t key_at_end = m_pxtn->evels->get_Value(interval.end, unit, kind);
+    as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
+    as.push_back({kind, unit, interval.start, Add{key_at_start}});
+    as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
+    as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
+    as.push_back({kind, unit, interval.end, Add{key_at_end}});
+    m_client->sendAction(m_sync->applyLocalAction(as));
+  }
+}
+
 void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
@@ -899,54 +930,37 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
 
   if (m_pxtn->Unit_Num() > 0) {
-    std::list<Action> actions;
+    using namespace Action;
+    std::list<Primitive> actions;
     switch (m_edit_state.mouse_edit_state.type) {
       case MouseEditState::SetOn:
-        actions.push_back({Action::DELETE, EVENTKIND_ON,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::DELETE, EVENTKIND_VELOCITY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::DELETE, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::ADD, EVENTKIND_ON,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.length()});
-        m_edit_state.mouse_edit_state.base_velocity =
-            impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale);
-        actions.push_back(
-            {Action::ADD, EVENTKIND_VELOCITY, m_edit_state.m_current_unit_id,
-             clock_int.start,
-             qint32(m_edit_state.mouse_edit_state.base_velocity)});
-        actions.push_back({Action::ADD, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           start_pitch});
-        break;
       case MouseEditState::DeleteOn:
-        actions.push_back({Action::DELETE, EVENTKIND_ON,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::DELETE, EVENTKIND_VELOCITY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::DELETE, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
+        actions.push_back({EVENTKIND_ON, m_edit_state.m_current_unit_id,
+                           clock_int.start, Delete{clock_int.end}});
+        actions.push_back({EVENTKIND_VELOCITY, m_edit_state.m_current_unit_id,
+                           clock_int.start, Delete{clock_int.end}});
+        actions.push_back({EVENTKIND_KEY, m_edit_state.m_current_unit_id,
+                           clock_int.start, Delete{clock_int.end}});
+        if (m_edit_state.mouse_edit_state.type == MouseEditState::SetOn) {
+          actions.push_back({EVENTKIND_ON, m_edit_state.m_current_unit_id,
+                             clock_int.start, Add{clock_int.length()}});
+          qint32 vel = impliedVelocity(m_edit_state.mouse_edit_state,
+                                       m_edit_state.scale);
+          m_edit_state.mouse_edit_state.base_velocity = vel;
+          actions.push_back({EVENTKIND_VELOCITY, m_edit_state.m_current_unit_id,
+                             clock_int.start, Add{vel}});
+          actions.push_back({EVENTKIND_KEY, m_edit_state.m_current_unit_id,
+                             clock_int.start, Add{start_pitch}});
+        }
         break;
       case MouseEditState::SetNote:
-        actions.push_back({Action::DELETE, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
-        actions.push_back({Action::ADD, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           start_pitch});
-        break;
       case MouseEditState::DeleteNote:
-        actions.push_back({Action::DELETE, EVENTKIND_KEY,
-                           m_edit_state.m_current_unit_id, clock_int.start,
-                           clock_int.end});
+        actions.push_back({EVENTKIND_KEY, m_edit_state.m_current_unit_id,
+                           clock_int.start, Delete{clock_int.end}});
+
+        if (m_edit_state.mouse_edit_state.type == MouseEditState::SetNote)
+          actions.push_back({EVENTKIND_KEY, m_edit_state.m_current_unit_id,
+                             clock_int.start, Add{start_pitch}});
         break;
       case MouseEditState::Seek:
         if (event->button() & Qt::LeftButton)

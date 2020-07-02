@@ -99,3 +99,6 @@ void EditorScrollArea::wheelEvent(QWheelEvent *event) {
 
   QScrollArea::wheelEvent(event);
 }
+
+// So keys like up / down work with the editor.
+void EditorScrollArea::keyPressEvent(QKeyEvent *event) { event->ignore(); }

@@ -179,15 +179,19 @@ fill architecture could work well.
 5. Fix overlapping note previews if you had a trackpad and mouse.
 6. Click+scroll can also adjust velocity
 
+6/30
+1. Selection
+
+7/1
+1. Transpose with selection. But at what cost? Undos are a bit jank with the
+   mechanism for existing undos. (Perhaps undoing a tranpose should always
+   cause the transpose op to go at the end? Though I don't think it'd play well
+   with the sync setup.)
+
 Todo by priority
 ----------------
  - select operations (keycmds) for
-   - transposing it up / down
-     - new prim. local action
-     - alt keybd up / down? ctrl modifier for octave.
    - shifting / scaling velocity
-     - kbd u/d? (no alt b/c this could work for other params too)
-     - ctrl modifier for bigger increments.
    - copying / pasting / clearing / shifting
      - copying just takes the local state and puts in copy buffer. paste dumps buf
        - problem: might miss someone else's edit that hasn't reached them yet.
@@ -263,6 +267,8 @@ Editor QoL:
  - Time bar at the top
  - Don't scroll if last measure changes from some other user
  - follow playhead (seems low pri since no one suggested)
+ - ctrl+shift+click is a bit much to do a selection. but ctrl click is note
+   tool. Maybe it shouldn't be a modifier but a mode? tools seem reasonable.
  - Better woice previews
    - idea: the pitch could be determined by the last note pressed in a keyboard
      (that has yet been added). this can avoid complicating the file dialog.
@@ -305,6 +311,8 @@ Low priority:
  - Editor UI: Piano on the left
  - Misc UI: Recent connections dropdown
  - Custom icon for people's names?
+ - scale selections by time (with no quantize), then quantize
+ - Undo transpose make less jank
  - A chat
 
 Just general format? improvements:

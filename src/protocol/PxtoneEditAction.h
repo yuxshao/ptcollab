@@ -8,7 +8,26 @@
 #include <set>
 #include <vector>
 
+#include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnService.h"
+
+// boilerplate for std::visit
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+template <typename T>
+inline QDebug &operator<<(QDebug &out, const T &a) {
+  QString s;
+  QTextStream ts(&s);
+  ts << a;
+  out << s;
+  return out;
+}
+
 // Because unit nos are fixed in pxtone, we have to maintain this mapping so
 // that actions are still valid past unit additions / deletions / moves.
 class UnitIdMap {
@@ -59,32 +78,50 @@ QDataStream &read_as_qint8(QDataStream &in, T &x) {
   return in;
 }
 
-struct Action {
-  enum Type { ADD, DELETE };  // Add implicitly means add to an empty space
-  Type type;
+namespace Action {
+
+// Assumes this is overwriting nothing
+struct Add {
+  qint32 value;
+};
+inline QTextStream &operator<<(QTextStream &out, const Add &a) {
+  out << "add(" << a.value << ")";
+  return out;
+}
+struct Delete {
+  qint32 end_clock;
+};
+inline QTextStream &operator<<(QTextStream &out, const Delete &a) {
+  out << "Delete(" << a.end_clock << ")";
+  return out;
+}
+struct Shift {
+  qint32 end_clock;
+  qint32 offset;
+};
+inline QTextStream &operator<<(QTextStream &out, const Shift &a) {
+  out << "Shift(" << a.end_clock << ", " << a.offset << ")";
+  return out;
+}
+struct Primitive {
   EVENTKIND kind;
   qint32 unit_id;
   qint32 start_clock;
-  qint32 end_clock_or_value;  // end clock if delete, value if add
-  void perform(pxtnService *pxtn, bool *widthChanged,
-               const UnitIdMap &map) const;
-  std::list<Action> get_undo(const pxtnService *pxtn,
-                             const UnitIdMap &map) const;
-  void print() const;
+  std::variant<Add, Delete, Shift> type;
 };
-QDataStream &operator<<(QDataStream &out, const Action &a);
-QDataStream &operator>>(QDataStream &in, Action &a);
+inline QTextStream &operator<<(QTextStream &out, const Primitive &a) {
+  out << "Primitive(" << EVENTKIND_names[a.kind] << ", u" << a.unit_id << ", "
+      << a.start_clock << ", " << a.type << ")";
+  return out;
+}
+QDataStream &operator<<(QDataStream &out, const Primitive &a);
+QDataStream &operator>>(QDataStream &in, Primitive &a);
 
 // You have to compute the undo at the time the original action was applied in
 // the case of collaborative editing. You can't compute it beforehand.
-//
-// I guess what I really want is a
-// std::vector<Action> pxtnEvelist::apply(const std::vector<Action> &actions)
-// That gives me the undo result.
-
-std::list<Action> apply_actions_and_get_undo(const std::list<Action> &actions,
-                                             pxtnService *pxtn,
-                                             bool *widthChanged,
-                                             const UnitIdMap &map);
+std::list<Primitive> apply_and_get_undo(const std::list<Primitive> &actions,
+                                        pxtnService *pxtn, bool *widthChanged,
+                                        const UnitIdMap &map);
+}  // namespace Action
 
 #endif  // PXTONEEDITACTION_H

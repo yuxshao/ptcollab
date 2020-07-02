@@ -15,6 +15,8 @@
 #include "pxtone/pxtnService.h"
 #include "server/Client.h"
 
+enum struct Direction { UP, DOWN };
+
 struct RemoteEditState {
   std::optional<EditState> state;
   QString user;
@@ -51,6 +53,7 @@ class KeyboardEditor : public QWidget {
   void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
   void seekPosition(int clock);
+  void transposeSelection(Direction dir, bool wide);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
