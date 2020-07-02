@@ -233,7 +233,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         "horizontally.\nMiddle-click drag also "
         "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
         "seek.\nCtrl+click to modify note instead of on "
-        "values.\nCtrl+shift+click to select.\nShift+rclick to deselect.");
+        "values.\nCtrl+shift+click to select.\nShift+rclick to deselect.\nWith "
+        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
@@ -331,7 +332,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       Direction dir =
           (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
       bool wide = (event->modifiers() & Qt::ControlModifier);
-      m_keyboard_editor->transposeSelection(dir, wide);
+      bool shift = (event->modifiers() & Qt::ShiftModifier);
+      m_keyboard_editor->transposeSelection(dir, wide, shift);
       break;
   }
 }

@@ -33,9 +33,9 @@ void perform(const Primitive &a, pxtnService *pxtn, bool *widthChanged,
                                                      unit_no, a.kind);
                         },
                         [&](const Shift &b) {
-                          pxtn->evels->Record_Value_Change(
-                              a.start_clock, b.end_clock, unit_no,
-                              EVENTKIND_KEY, b.offset);
+                          pxtn->evels->Record_Value_Change(a.start_clock,
+                                                           b.end_clock, unit_no,
+                                                           a.kind, b.offset);
                         }},
              a.type);
 }

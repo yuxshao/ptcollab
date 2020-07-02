@@ -885,7 +885,7 @@ void KeyboardEditor::seekPosition(int clock) {
   m_this_seek_caught_up = false;
 }
 
-void KeyboardEditor::transposeSelection(Direction dir, bool wide) {
+void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
   if (m_edit_state.mouse_edit_state.selection.has_value()) {
     int offset;
     switch (dir) {
@@ -896,22 +896,30 @@ void KeyboardEditor::transposeSelection(Direction dir, bool wide) {
         offset = -1;
         break;
     }
-    offset *= PITCH_PER_KEY;
-    if (wide) offset *= 12;
-
+    EVENTKIND kind;
+    if (shift) {
+      kind = EVENTKIND_KEY;
+      offset *= PITCH_PER_KEY * (wide ? 12 : 1);
+    } else {
+      kind = EVENTKIND_VELOCITY;
+      offset *= (wide ? 16 : 4);
+    }
     Interval interval(m_edit_state.mouse_edit_state.selection.value());
 
     using namespace Action;
     std::list<Primitive> as;
-    EVENTKIND kind = EVENTKIND_KEY;
     qint32 unit = m_edit_state.m_current_unit_id;
-    int32_t key_at_start = m_pxtn->evels->get_Value(interval.start, unit, kind);
-    int32_t key_at_end = m_pxtn->evels->get_Value(interval.end, unit, kind);
-    as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
-    as.push_back({kind, unit, interval.start, Add{key_at_start}});
+    if (kind != EVENTKIND_VELOCITY) {
+      int32_t start_val = m_pxtn->evels->get_Value(interval.start, unit, kind);
+      as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
+      as.push_back({kind, unit, interval.start, Add{start_val}});
+    }
     as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
-    as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
-    as.push_back({kind, unit, interval.end, Add{key_at_end}});
+    if (kind != EVENTKIND_VELOCITY) {
+      int32_t end_val = m_pxtn->evels->get_Value(interval.end, unit, kind);
+      as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
+      as.push_back({kind, unit, interval.end, Add{end_val}});
+    }
     m_client->sendAction(m_sync->applyLocalAction(as));
   }
 }

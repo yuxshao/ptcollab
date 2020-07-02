@@ -186,13 +186,15 @@ fill architecture could work well.
 1. Transpose with selection. But at what cost? Undos are a bit jank with the
    mechanism for existing undos. (Perhaps undoing a tranpose should always
    cause the transpose op to go at the end? Though I don't think it'd play well
-   with the sync setup.)
+   with the sync setup. Another option: vertical shifts are tracked in separate
+   d/s (interval tree of offsets representing offset over time) and modify set
+   values as postprocessing. This might be a good solution for hshifts too.)
+2. Shift+u/d to transpose, else shift vel. Ctrl for wide shift.
 
 Todo by priority
 ----------------
  - select operations (keycmds) for
-   - shifting / scaling velocity
-   - copying / pasting / clearing / shifting
+   - copying / pasting / clearing / hshifting
      - copying just takes the local state and puts in copy buffer. paste dumps buf
        - problem: might miss someone else's edit that hasn't reached them yet.
          but either way there's potential for desync one way or another.
@@ -204,8 +206,7 @@ Todo by priority
        'intersection' shifted by first unit.
    - scaling / shifting vol, other params (once those exist)
    - not gonna support drag / drop to start. ptcollage doesn't have it and it
-     seems complicated. gonna have to track against bounding boxes, drag state?
-     omg
+     seems complicated. bounding boxes, drag state? omg
  - select multiple units
    - even though it's redundant, probably will show dropdown (for current unit
      and ops) as well as unit tab (for selecting which units to show / select).

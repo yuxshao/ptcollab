@@ -53,7 +53,7 @@ class KeyboardEditor : public QWidget {
   void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
   void seekPosition(int clock);
-  void transposeSelection(Direction dir, bool wide);
+  void transposeSelection(Direction dir, bool wide, bool shift);
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
