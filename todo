@@ -293,6 +293,8 @@ Editor QoL:
      - according to botb event limit is 500k in the regular editor; here the
        limit is 1M.  could probably handle 1000 events with little lag (1000
        events * 1000 actions = 1M iterations, not too much)
+   - Pastes are slow for big songs b/c have to traverse whole evelist for each
+     action. Maybe give a hint?
  - don't blip when seeking and playing again (hard due to QAudioOutput behavior)
  - Edit while playing soundness (low priority, unlikely to hit)
    - Add things between last event and next (before / after now?)

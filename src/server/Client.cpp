@@ -60,10 +60,10 @@ void Client::sendAction(const ClientAction &m) {
                  << "), stream_status(" << m_write_stream.status() << ")";
     }
   } else {
-    qDebug() << "Not sending action while socket is not ready" << m;
+    /*qDebug() << "Not sending action while socket is not ready" << m;
     qDebug() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
              << m_socket->isValid() << "), state(" << m_socket->state()
-             << "), error(" << m_socket->errorString() << ")";
+             << "), error(" << m_socket->errorString() << ")";*/
   }
 }
 
