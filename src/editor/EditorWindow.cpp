@@ -433,6 +433,7 @@ void EditorWindow::Host(bool load_file) {
   if (m_server) {
     delete m_server;
     m_server = nullptr;
+    m_server_status->setText("Not hosting");
     qDebug() << "Stopped old server";
   }
   try {
@@ -452,8 +453,6 @@ void EditorWindow::Host(bool load_file) {
     return;
   }
   m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
-  connect(m_server, &QObject::destroyed,
-          [this]() { m_server_status->setText("Not hosting"); });
   m_filename = filename;
 
   m_client->connectToServer("localhost", port, username);
