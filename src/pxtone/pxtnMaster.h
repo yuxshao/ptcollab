@@ -36,6 +36,7 @@ class pxtnMaster {
   int32_t get_repeat_meas() const;
   int32_t get_last_meas() const;
   int32_t get_last_clock() const;
+  int32_t get_clock_num() const;
   int32_t get_play_meas() const;
 
   void set_meas_num(int32_t meas_num);

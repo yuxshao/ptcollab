@@ -292,7 +292,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_editor->cycleCurrentUnit(1);
       break;
     case Qt::Key_A:
-      m_keyboard_editor->toggleShowAllUnits();
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_editor->selectAll();
+      else
+        m_keyboard_editor->toggleShowAllUnits();
       break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);

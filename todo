@@ -191,6 +191,9 @@ fill architecture could work well.
    values as postprocessing. This might be a good solution for hshifts too.)
 2. Shift+u/d to transpose, else shift vel. Ctrl for wide shift.
 
+7/2
+1. Select all
+
 Todo by priority
 ----------------
  - select operations (keycmds) for

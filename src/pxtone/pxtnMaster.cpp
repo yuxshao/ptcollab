@@ -36,11 +36,16 @@ int32_t pxtnMaster::get_beat_num() const { return _beat_num; }
 float pxtnMaster::get_beat_tempo() const { return _beat_tempo; }
 int32_t pxtnMaster::get_beat_clock() const { return _beat_clock; }
 int32_t pxtnMaster::get_meas_num() const { return _meas_num; }
+
 int32_t pxtnMaster::get_repeat_meas() const { return _repeat_meas; }
 int32_t pxtnMaster::get_last_meas() const { return _last_meas; }
 
 int32_t pxtnMaster::get_last_clock() const {
   return _last_meas * _beat_clock * _beat_num;
+}
+
+int32_t pxtnMaster::get_clock_num() const {
+  return _meas_num * _beat_clock * _beat_num;
 }
 
 int32_t pxtnMaster::get_play_meas() const {

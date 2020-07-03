@@ -885,6 +885,12 @@ void KeyboardEditor::seekPosition(int clock) {
   m_this_seek_caught_up = false;
 }
 
+void KeyboardEditor::selectAll() {
+  m_edit_state.mouse_edit_state.selection.emplace(
+      Interval{0, m_pxtn->master->get_clock_num()});
+  emit editStateChanged();
+}
+
 void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
   if (m_edit_state.mouse_edit_state.selection.has_value()) {
     int offset;
@@ -915,7 +921,8 @@ void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
       as.push_back({kind, unit, interval.start, Add{start_val}});
     }
     as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
-    if (kind != EVENTKIND_VELOCITY) {
+    if (kind != EVENTKIND_VELOCITY &&
+        interval.end < m_pxtn->master->get_clock_num()) {
       int32_t end_val = m_pxtn->evels->get_Value(interval.end, unit, kind);
       as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
       as.push_back({kind, unit, interval.end, Add{end_val}});
