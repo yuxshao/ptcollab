@@ -26,6 +26,7 @@ class Clipboard {
   std::list<Action::Primitive> makePaste(const std::set<int> &unit_nos,
                                          qint32 start_clock,
                                          const UnitIdMap &map);
+  qint32 copyLength() { return m_copy_length; }
 };
 
 #endif  // CLIPBOARD_H
