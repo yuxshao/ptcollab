@@ -56,7 +56,9 @@ class KeyboardEditor : public QWidget {
   void seekPosition(int clock);
   void selectAll();
   void transposeSelection(Direction dir, bool wide, bool shift);
-  void copy();
+  void cutSelection();
+  void copySelection();
+  void clearSelection();
   void paste();
 
  private:

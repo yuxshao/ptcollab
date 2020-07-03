@@ -299,7 +299,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_editor->toggleShowAllUnits();
       break;
     case Qt::Key_C:
-      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->copy();
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_editor->copySelection();
       break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);
@@ -320,6 +321,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_V:
       if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->paste();
       break;
+    case Qt::Key_X:
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_editor->cutSelection();
+      break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
         if (event->modifiers() & Qt::ShiftModifier)
@@ -336,6 +341,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (event->modifiers() & Qt::ControlModifier &&
           event->modifiers() & Qt::ShiftModifier)
         m_keyboard_editor->removeCurrentUnit();
+      break;
+    case Qt::Key_Delete:
+      m_keyboard_editor->clearSelection();
       break;
     case Qt::Key_Up:
     case Qt::Key_Down:

@@ -1007,12 +1007,30 @@ void KeyboardEditor::removeCurrentUnit() {
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
 }
 
-void KeyboardEditor::copy() {
+void KeyboardEditor::copySelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
   if (!unit_no.has_value()) return;
   m_clipboard.copy({unit_no.value()},
                    m_edit_state.mouse_edit_state.selection.value());
+}
+
+void KeyboardEditor::clearSelection() {
+  if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
+  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+  if (!unit_no.has_value()) return;
+  std::list<Action::Primitive> actions = m_clipboard.makeClear(
+      {unit_no.value()}, m_edit_state.mouse_edit_state.selection.value(),
+      m_sync->unitIdMap());
+  if (actions.size() > 0) {
+    m_client->sendAction(m_sync->applyLocalAction(actions));
+    emit onEdit();
+  }
+}
+
+void KeyboardEditor::cutSelection() {
+  copySelection();
+  clearSelection();
 }
 
 void KeyboardEditor::paste() {

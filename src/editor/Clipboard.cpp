@@ -69,3 +69,20 @@ std::list<Action::Primitive> Clipboard::makePaste(
   }
   return actions;
 }
+
+// TODO: Maybe shouldn't be here? Doesn't actually use clipboard state ATM
+std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
+                                                  const Interval &range,
+                                                  const UnitIdMap &map) {
+  using namespace Action;
+  std::list<Primitive> actions;
+  // TODO: Dedup with makePaste
+  for (const int &unit_no : unit_nos) {
+    if (map.numUnits() <= unit_no) continue;
+    qint32 unit_id = map.noToId(unit_no);
+    for (const EVENTKIND &kind : kinds_to_copy)
+      actions.emplace_back(
+          Primitive{kind, unit_id, range.start, Delete{range.end}});
+  }
+  return actions;
+}
