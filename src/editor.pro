@@ -32,10 +32,12 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/Animation.h \
            editor/AudioFormat.h \
+           editor/Clipboard.h \
            editor/DummySyncServer.h \
            editor/EditState.h \
            editor/EditorScrollArea.h \
            editor/EditorWindow.h \
+           editor/Interval.h \
            editor/KeyboardEditor.h \
            editor/NotePreview.h \
            editor/PxtoneActionSynchronizer.h \
@@ -79,10 +81,12 @@ FORMS += \
 SOURCES += main.cpp \
            editor/Animation.cpp \
            editor/AudioFormat.cpp \
+           editor/Clipboard.cpp \
            editor/DummySyncServer.cpp \
            editor/EditState.cpp \
            editor/EditorScrollArea.cpp \
            editor/EditorWindow.cpp \
+           editor/Interval.cpp \
            editor/KeyboardEditor.cpp \
            editor/NotePreview.cpp \
            editor/PxtoneActionSynchronizer.cpp \

@@ -279,6 +279,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       resetAndSuspendAudio();
       m_keyboard_editor->setFocus(Qt::OtherFocusReason);
       break;
+      // TODO: Sort these keys
     case Qt::Key_W:
       m_keyboard_editor->cycleCurrentUnit(-1);
       break;
@@ -297,6 +298,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       else
         m_keyboard_editor->toggleShowAllUnits();
       break;
+    case Qt::Key_C:
+      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->copy();
+      break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);
       break;
@@ -312,6 +316,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (event->modifiers() & Qt::ShiftModifier) {
         m_keyboard_editor->toggleTestActivity();
       }
+      break;
+    case Qt::Key_V:
+      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->paste();
       break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {

@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "Animation.h"
+#include "Clipboard.h"
 #include "DummySyncServer.h"
 #include "EditState.h"
 #include "NotePreview.h"
@@ -55,6 +56,8 @@ class KeyboardEditor : public QWidget {
   void seekPosition(int clock);
   void selectAll();
   void transposeSelection(Direction dir, bool wide, bool shift);
+  void copy();
+  void paste();
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -63,6 +66,7 @@ class KeyboardEditor : public QWidget {
   void paintEvent(QPaintEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
   void refreshSize();
+  void refreshQuantSettings();
   QSize sizeHint() const override;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
@@ -83,7 +87,7 @@ class KeyboardEditor : public QWidget {
   QElapsedTimer timeSinceLastClock;
   bool m_test_activity;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
-  void refreshQuantSettings();
+  Clipboard m_clipboard;
 };
 
 #endif  // KEYBOARDEDITOR_H

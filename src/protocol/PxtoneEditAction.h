@@ -35,6 +35,7 @@ class UnitIdMap {
   UnitIdMap(const pxtnService *pxtn) : m_next_id(0) {
     for (int32_t i = 0; i < pxtn->Unit_Num(); ++i) addUnit();
   }
+  qint32 numUnits() const { return m_no_to_id.size(); }
   qint32 noToId(qint32 no) const { return m_no_to_id[no]; };
   std::optional<qint32> idToNo(qint32 id) const {
     auto it = m_id_to_no.find(id);

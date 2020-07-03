@@ -194,19 +194,16 @@ fill architecture could work well.
 7/2
 1. Select all
 
+7/3
+1. Copy and paste for one unit
+
 Todo by priority
 ----------------
  - select operations (keycmds) for
-   - copying / pasting / clearing / hshifting
-     - copying just takes the local state and puts in copy buffer. paste dumps buf
-       - problem: might miss someone else's edit that hasn't reached them yet.
-         but either way there's potential for desync one way or another.
-     - shifting should be separate prim action (don't use copy paste b/c
-       problem above might make things inconsistent)
+   - clearing / hshifting
+     - shifting should be separate prim action from copy paste
        - shifting can be local if action assumes destination is empty.
      - cutting is then copy + clear + shift. insert is just shift + paste
-     - if paste unit set don't line up with copy units, paste the
-       'intersection' shifted by first unit.
    - scaling / shifting vol, other params (once those exist)
    - not gonna support drag / drop to start. ptcollage doesn't have it and it
      seems complicated. bounding boxes, drag state? omg
@@ -310,6 +307,9 @@ Editor QoL:
  - note preview vel should not be adjustable if you're editing note instead of on
  - allow zero selection interval, and restrict to selection interval if
    nonzero? prob not bc ptcollage doesn't
+ - copy / paste improvements
+   - maybe slight desync in case haven't seen others' edit? but sort of inevitable.
+   - also copy start vol / pan values / tails of an on event.
 
 Low priority:
  - Editor UI: Piano on the left

@@ -4,7 +4,6 @@
 
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnEvelist.h"
-int quantize(int v, int q) { return (v / q) * q; }
 
 Interval MouseEditState::clock_int(int q) const {
   int begin = std::min(start_clock, current_clock);
@@ -18,14 +17,6 @@ EditState::EditState()
       m_current_unit_id(0),
       m_quantize_clock(1),
       m_quantize_pitch(1) {}
-
-QDataStream &operator<<(QDataStream &out, const Interval &a) {
-  return (out << a.start << a.end);
-}
-
-QDataStream &operator>>(QDataStream &in, Interval &a) {
-  return (in >> a.start >> a.end);
-}
 
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a) {
   return (out << qint8(a.type) << a.base_velocity << a.start_clock

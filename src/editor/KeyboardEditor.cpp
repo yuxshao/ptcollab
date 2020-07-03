@@ -62,7 +62,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_this_seek(0),
       m_this_seek_caught_up(false),
       m_test_activity(false),
-      m_remote_edit_states() {
+      m_remote_edit_states(),
+      m_clipboard(m_pxtn) {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
   m_audio_output->setNotifyInterval(10);
@@ -1004,4 +1005,25 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
 void KeyboardEditor::removeCurrentUnit() {
   if (m_pxtn->Unit_Num() > 0)
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
+}
+
+void KeyboardEditor::copy() {
+  if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
+  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+  if (!unit_no.has_value()) return;
+  m_clipboard.copy({unit_no.value()},
+                   m_edit_state.mouse_edit_state.selection.value());
+}
+
+void KeyboardEditor::paste() {
+  if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
+  qint32 start = m_edit_state.mouse_edit_state.selection.value().start;
+  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+  if (!unit_no.has_value()) return;
+  std::list<Action::Primitive> actions =
+      m_clipboard.makePaste({unit_no.value()}, start, m_sync->unitIdMap());
+  if (actions.size() > 0) {
+    m_client->sendAction(m_sync->applyLocalAction(actions));
+    emit onEdit();
+  }
 }
