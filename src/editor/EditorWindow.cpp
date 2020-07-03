@@ -134,12 +134,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_editor,
           &KeyboardEditor::setCurrentUnitNo);
-  connect(m_side_menu, &SideMenu::showAllChanged, m_keyboard_editor,
-          &KeyboardEditor::setShowAll);
   connect(m_keyboard_editor, &KeyboardEditor::currentUnitNoChanged, m_side_menu,
-          &SideMenu::setSelectedUnit);
-  connect(m_keyboard_editor, &KeyboardEditor::showAllChanged, m_side_menu,
-          &SideMenu::setShowAll);
+          &SideMenu::setCurrentUnit);
   connect(m_keyboard_editor, &KeyboardEditor::onEdit,
           [=]() { m_side_menu->setModified(true); });
   connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
@@ -357,9 +353,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void EditorWindow::refreshSideMenuUnits() {
-  std::vector<QString> units;
+  QStringList units;
   for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
-    units.push_back(QString(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
+    units.append(m_pxtn.Unit_Get(i)->get_name_buf(nullptr));
   m_side_menu->setUnits(units);
 }
 

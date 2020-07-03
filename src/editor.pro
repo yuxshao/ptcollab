@@ -45,6 +45,7 @@ HEADERS += \
            editor/PxtoneUnitIODevice.h \
            editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
+           editor/UnitListModel.h \
            editor/quantize.h \
            protocol/Data.h \
            protocol/Hello.h \
@@ -94,6 +95,7 @@ SOURCES += main.cpp \
            editor/PxtoneUnitIODevice.cpp \
            editor/SelectWoiceDialog.cpp \
            editor/SideMenu.cpp \
+           editor/UnitListModel.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \

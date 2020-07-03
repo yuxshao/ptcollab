@@ -22,7 +22,6 @@ class SideMenu : public QWidget {
   void quantXIndexUpdated(int);
   void quantYIndexUpdated(int);
   void currentUnitChanged(int);
-  void showAllChanged(bool);
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();
@@ -36,13 +35,14 @@ class SideMenu : public QWidget {
   void changeWoice(int idx, QString name, QString filename);
   void selectWoice(int);
   void candidateWoiceSelected(QString filename);
+  void selectedUnitsChanged(QList<qint32> idx);
 
  public slots:
   void setQuantXIndex(int);
   void setQuantYIndex(int);
-  void setShowAll(bool);
-  void setUnits(std::vector<QString> const &units);
-  void setSelectedUnit(int);
+  void setUnits(QStringList const &units);
+  // void setSelectedUnits(QList<qint32> idx);
+  void setCurrentUnit(int);
   void setPlay(bool);
   void setModified(bool);
   void setUserList(QList<std::pair<qint64, QString>> users);

@@ -228,6 +228,8 @@ Todo by priority
 Misc todo by categories
 -----------------------
 Aesthetics:
+  - The units view is not pretty right now. Unit should have mute icon, visible
+    icon, copyable icon. One unit should be selected at a time.
   - customizable piano roll colours
   - qwerty midi input
   - tab system to edit multiple files at once / switch between sessions

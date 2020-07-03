@@ -42,8 +42,7 @@ SideMenu::SideMenu(QWidget* parent)
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
           &SideMenu::stopButtonPressed);
-  connect(ui->showAll, &QCheckBox::toggled, this, &SideMenu::showAllChanged);
-  connect(ui->units, signal, this, &SideMenu::currentUnitChanged);
+  connect(ui->unitCombo, signal, this, &SideMenu::currentUnitChanged);
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
   connect(ui->hostBtn, &QPushButton::clicked, this,
@@ -61,13 +60,23 @@ SideMenu::SideMenu(QWidget* parent)
     }
   });
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
-    if (ui->units->count() > 0 &&
+    if (ui->unitCombo->count() > 0 &&
         QMessageBox::question(this, tr("Are you sure?"),
                               tr("Are you sure you want to delete the unit "
                                  "(%1)? This cannot be undone.")
-                                  .arg(ui->units->currentText())) ==
+                                  .arg(ui->unitCombo->currentText())) ==
             QMessageBox::Yes)
       emit removeUnit();
+  });
+  connect(ui->unitList, &QListWidget::itemSelectionChanged, [this]() {
+    /* QList<int> ids;
+     for (const auto& x : ui->unitList->selectedItems()) {
+       bool ok = true;
+       ids.append(x->data(Qt::UserRole).toInt(&ok));
+       if (!ok) qWarning() << "Could not get item selection";
+     }
+
+     emit selectedUnitsChanged(ids);*/
   });
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
@@ -148,14 +157,15 @@ SideMenu::~SideMenu() { delete ui; }
 
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }
 void SideMenu::setQuantYIndex(int i) { ui->quantY->setCurrentIndex(i); }
-void SideMenu::setShowAll(bool b) {
-  ui->showAll->setCheckState(b ? Qt::Checked : Qt::Unchecked);
-}
-void SideMenu::setUnits(std::vector<QString> const& units) {
-  unsigned long long index = ui->units->currentIndex();
-  ui->units->clear();
-  for (auto& u : units) ui->units->addItem(u);
-  if (index < units.size()) ui->units->setCurrentIndex(index);
+
+void SideMenu::setUnits(QStringList const& units) {
+  int index = ui->unitCombo->currentIndex();
+  ui->unitCombo->clear();
+  ui->unitCombo->addItems(units);
+  if (index < units.size()) ui->unitCombo->setCurrentIndex(index);
+
+  ui->unitList->clear();
+  ui->unitList->addItems(units);
 };
 void SideMenu::setModified(bool modified) {
   if (modified)
@@ -176,7 +186,7 @@ void SideMenu::setWoiceList(QStringList woices) {
   ui->woiceList->addItems(woices);
 }
 
-void SideMenu::setSelectedUnit(int u) { ui->units->setCurrentIndex(u); }
+void SideMenu::setCurrentUnit(int u) { ui->unitCombo->setCurrentIndex(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)
     ui->playBtn->setText("Pause (SPC)");
