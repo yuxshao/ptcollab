@@ -245,7 +245,7 @@ void pxtnUnit::Tone_Sample(bool b_mute_by_unit, int32_t ch_num,
 
   if (b_mute_by_unit && !_bPlayed) {
     for (int32_t ch = 0; ch < ch_num; ch++)
-      _pan_time_bufs[ch][time_pan_index] = 0;
+      _pan_time_bufs[time_pan_index][ch] = 0;
     return;
   }
 
