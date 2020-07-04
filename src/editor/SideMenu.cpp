@@ -36,14 +36,10 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
   m_add_unit_dialog->setLabelText(tr("Unit name?"));
 
   ui->unitList->setModel(m_units);
-  QHeaderView* header = ui->unitList->verticalHeader();
-  header->setMinimumSectionSize(24);
-  header->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-  header = ui->unitList->horizontalHeader();
-  header->setMinimumSectionSize(24);
-  header->setSectionResizeMode(QHeaderView::ResizeToContents);
-  header->setStretchLastSection(true);
+  ui->unitList->verticalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
+  ui->unitList->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
 
   void (QComboBox::*signal)(int) = &QComboBox::currentIndexChanged;
 
