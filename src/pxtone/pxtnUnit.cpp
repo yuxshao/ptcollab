@@ -8,6 +8,7 @@
 pxtnUnit::pxtnUnit() {
   _bPlayed = true;
   _bOperated = true;
+  _bVisible = true;
   strcpy(_name_buf, "no name");
   _name_size = int32_t(strlen(_name_buf));
 }
@@ -103,10 +104,11 @@ bool pxtnUnit::is_name_buf() const {
   return false;
 }
 
+void pxtnUnit::set_visible(bool b) { _bVisible = b; }
 void pxtnUnit::set_operated(bool b) { _bOperated = b; }
-
 void pxtnUnit::set_played(bool b) { _bPlayed = b; }
 
+bool pxtnUnit::get_visible() const { return _bVisible; }
 bool pxtnUnit::get_operated() const { return _bOperated; }
 bool pxtnUnit::get_played() const { return _bPlayed; }
 

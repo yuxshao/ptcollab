@@ -151,8 +151,9 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                         seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
                     },
                     [this, uid](const AddUnit &s) {
+                      m_units->beginAdd();
                       bool success = m_sync->applyAddUnit(s, uid);
-                      m_units->add(UnitListItem(s.unit_name));
+                      m_units->endAdd();
                       if (uid == m_sync->uid() && success) {
                         m_edit_state.m_current_unit_id =
                             m_sync->unitIdMap().noToId(m_pxtn->Unit_Num() - 1);
@@ -162,9 +163,10 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                     [this, uid](const RemoveUnit &s) {
                       auto current_unit_no = m_sync->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
+                      m_units->beginRemove(current_unit_no.value());
                       m_sync->applyRemoveUnit(s, uid);
+                      m_units->endRemove();
                       if (current_unit_no != std::nullopt) {
-                        m_units->remove(current_unit_no.value());
                         if (m_pxtn->Unit_Num() <= current_unit_no.value() &&
                             m_pxtn->Unit_Num() > 0) {
                           m_edit_state.m_current_unit_id =

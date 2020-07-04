@@ -13,6 +13,7 @@ class pxtnUnit {
   void operator=(const pxtnUnit &src) = delete;
   pxtnUnit(const pxtnUnit &src) = delete;
 
+  bool _bVisible;
   bool _bOperated;
   bool _bPlayed;
   char _name_buf[pxtnMAX_TUNEUNITNAME + 1];
@@ -85,8 +86,10 @@ class pxtnUnit {
 
   pxtnVOICETONE *get_tone(int32_t voice_idx);
 
+  void set_visible(bool b);
   void set_operated(bool b);
   void set_played(bool b);
+  bool get_visible() const;
   bool get_operated() const;
   bool get_played() const;
 

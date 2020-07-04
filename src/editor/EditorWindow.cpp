@@ -85,7 +85,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
-  m_units = new UnitListModel(this);
+  m_units = new UnitListModel(&m_pxtn, this);
   m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client, m_units);
   connect(
       m_client, &Client::connected,
@@ -360,6 +360,7 @@ void EditorWindow::refreshSideMenuWoices() {
 
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
+  m_units->beginRefresh();
   if (desc.get_size_bytes() > 0) {
     if (m_pxtn.read(&desc) != pxtnOK) {
       qWarning() << "Error reading pxtone data from descriptor";
@@ -372,16 +373,13 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
     qWarning() << "Error getting tones ready";
     return false;
   }
+  m_units->endRefresh();
   resetAndSuspendAudio();
 
   m_pxtn_device.open(QIODevice::ReadOnly);
   m_audio->start(&m_pxtn_device);
   m_audio->suspend();
 
-  QList<UnitListItem> units;
-  for (int i = 0; i < m_pxtn.Unit_Num(); ++i)
-    units.append(UnitListItem(m_pxtn.Unit_Get(i)->get_name_buf(nullptr)));
-  m_units->set(units);
   refreshSideMenuWoices();
 
   m_keyboard_editor->updateGeometry();

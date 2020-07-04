@@ -3,6 +3,9 @@
 
 #include <QAbstractTableModel>
 
+#include "protocol/UnitIdMap.h"
+#include "pxtone/pxtnService.h"
+
 enum struct UnitListColumn { Visible, Muted, Name, MAX = Name };
 
 struct UnitListItem {
@@ -19,37 +22,26 @@ struct UnitListItem {
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
 
-  QList<UnitListItem> m_items;
+  const pxtnService *m_pxtn;
 
  public:
-  const QList<UnitListItem> items() { return m_items; };
-  void setItem(int index, const UnitListItem &item) {
-    m_items[index] = item;
-
-    QModelIndex topLeft = createIndex(index, 0);
-    QModelIndex bottomRight = createIndex(index, int(UnitListColumn::MAX));
-    dataChanged(topLeft, bottomRight);
+  // TODO: Perhaps we could change it so that indeed all unit edit ops go
+  // through here. It's just... so leaky though. Technically it could go through
+  // somewhere else.
+  void beginAdd() {
+    beginInsertRows(QModelIndex(), m_pxtn->Unit_Num(), m_pxtn->Unit_Num());
   }
-  void add(const UnitListItem &item) {
-    beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
-    m_items.append(item);
-    endInsertRows();
-  };
-  void remove(int index) {
-    beginRemoveRows(QModelIndex(), index, index);
-    m_items.removeAt(index);
-    endRemoveRows();
-  };
-  void set(const QList<UnitListItem> &items) {
-    beginResetModel();
-    m_items = items;
-    endResetModel();
-  }
-  UnitListModel(QObject *parent = nullptr) : QAbstractTableModel(parent){};
+  void endAdd() { endInsertRows(); };
+  void beginRemove(int index) { beginRemoveRows(QModelIndex(), index, index); };
+  void endRemove() { endRemoveRows(); }
+  void beginRefresh() { beginResetModel(); }
+  void endRefresh() { endResetModel(); }
+  UnitListModel(pxtnService *pxtn, QObject *parent = nullptr)
+      : QAbstractTableModel(parent), m_pxtn(pxtn){};
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_items.length();
+    return m_pxtn->Unit_Num();
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
@@ -59,16 +51,17 @@ class UnitListModel : public QAbstractTableModel {
                 int role = Qt::DisplayRole) const override {
     if (!index.isValid()) return QVariant();
 
-    const UnitListItem &item = m_items.at(index.row());
+    const pxtnUnit *unit = m_pxtn->Unit_Get(index.row());
     switch (UnitListColumn(index.column())) {
       case UnitListColumn::Visible:
-        if (role == Qt::CheckStateRole) return item.visible;
+        if (role == Qt::CheckStateRole) return unit->get_visible();
         break;
       case UnitListColumn::Muted:
-        if (role == Qt::CheckStateRole) return item.muted;
+        if (role == Qt::CheckStateRole) return !(unit->get_played());
         break;
       case UnitListColumn::Name:
-        if (role == Qt::DisplayRole) return item.name;
+        if (role == Qt::DisplayRole)
+          return QString(unit->get_name_buf(nullptr));
         break;
     }
     return QVariant();
