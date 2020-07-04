@@ -43,7 +43,8 @@ void seekMoo(pxtnService *pxtn, int64_t clock) {
 }
 
 KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                               Client *client, QScrollArea *parent)
+                               Client *client, UnitListModel *units,
+                               QScrollArea *parent)
     : QWidget(parent),
       m_pxtn(pxtn),
       m_timer(new QElapsedTimer),
@@ -63,7 +64,8 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       m_this_seek_caught_up(false),
       m_test_activity(false),
       m_remote_edit_states(),
-      m_clipboard(m_pxtn) {
+      m_clipboard(m_pxtn),
+      m_units(units) {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
   m_audio_output->setNotifyInterval(10);
@@ -150,7 +152,7 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const AddUnit &s) {
                       bool success = m_sync->applyAddUnit(s, uid);
-                      emit unitsChanged();
+                      m_units->add(UnitListItem(s.unit_name));
                       if (uid == m_sync->uid() && success) {
                         m_edit_state.m_current_unit_id =
                             m_sync->unitIdMap().noToId(m_pxtn->Unit_Num() - 1);
@@ -161,15 +163,17 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                       auto current_unit_no = m_sync->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
                       m_sync->applyRemoveUnit(s, uid);
-                      if (current_unit_no != std::nullopt &&
-                          m_pxtn->Unit_Num() <= current_unit_no.value() &&
-                          m_pxtn->Unit_Num() > 0) {
-                        m_edit_state.m_current_unit_id =
-                            m_sync->unitIdMap().noToId(current_unit_no.value() -
-                                                       1);
-                        emit currentUnitNoChanged(current_unit_no.value() - 1);
+                      if (current_unit_no != std::nullopt) {
+                        m_units->remove(current_unit_no.value());
+                        if (m_pxtn->Unit_Num() <= current_unit_no.value() &&
+                            m_pxtn->Unit_Num() > 0) {
+                          m_edit_state.m_current_unit_id =
+                              m_sync->unitIdMap().noToId(
+                                  current_unit_no.value() - 1);
+                          emit currentUnitNoChanged(current_unit_no.value() -
+                                                    1);
+                        }
                       }
-
                       emit unitsChanged();
                     }},
 
@@ -509,11 +513,11 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   // 1. Subtract the buffer duration.
   // 2. Track how long since the last (laggy) clock update and add.
   // 3. Works most of the time, but leads to a wrong clock after a seek or at
-  // the end of a song, because it'll put the playhead before the repeat or the
-  // seek position.
-  // 4. To account for this, if we're before the current seek position, clamp to
-  // seek position. Also track if we've looped and render at the end of song
-  // instead of before repeat if so.
+  // the end of a song, because it'll put the playhead before the repeat or
+  // the seek position.
+  // 4. To account for this, if we're before the current seek position, clamp
+  // to seek position. Also track if we've looped and render at the end of
+  // song instead of before repeat if so.
   // 5. The tracking if we've looped or not is also necessary to tell if we've
   // actually caught up to a seek.
   int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second

@@ -13,6 +13,7 @@
 #include "EditState.h"
 #include "NotePreview.h"
 #include "PxtoneActionSynchronizer.h"
+#include "UnitListModel.h"
 #include "pxtone/pxtnService.h"
 #include "server/Client.h"
 
@@ -27,7 +28,8 @@ class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
   explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                          Client *client, QScrollArea *parent = nullptr);
+                          Client *client, UnitListModel *units,
+                          QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void toggleShowAllUnits();
   void loadHistory(QList<ServerAction> &history);
@@ -90,6 +92,7 @@ class KeyboardEditor : public QWidget {
   bool m_test_activity;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   Clipboard m_clipboard;
+  UnitListModel *m_units;
 };
 
 #endif  // KEYBOARDEDITOR_H

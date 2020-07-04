@@ -6,6 +6,8 @@
 #include <QStringListModel>
 #include <QWidget>
 
+#include "UnitListModel.h"
+
 namespace Ui {
 class SideMenu;
 }
@@ -14,7 +16,7 @@ class SideMenu : public QWidget {
   Q_OBJECT
 
  public:
-  explicit SideMenu(QWidget *parent = nullptr);
+  explicit SideMenu(UnitListModel *units, QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   ~SideMenu();
 
@@ -40,7 +42,6 @@ class SideMenu : public QWidget {
  public slots:
   void setQuantXIndex(int);
   void setQuantYIndex(int);
-  void setUnits(QStringList const &units);
   // void setSelectedUnits(QList<qint32> idx);
   void setCurrentUnit(int);
   void setPlay(bool);
@@ -54,6 +55,7 @@ class SideMenu : public QWidget {
   QFileDialog *m_add_woice_dialog;
   QFileDialog *m_change_woice_dialog;
   QInputDialog *m_add_unit_dialog;
+  UnitListModel *m_units;
 };
 
 #endif  // SIDEMENU_H

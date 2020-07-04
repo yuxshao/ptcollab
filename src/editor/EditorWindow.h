@@ -13,6 +13,7 @@
 #include "KeyboardEditor.h"
 #include "PxtoneIODevice.h"
 #include "SideMenu.h"
+#include "UnitListModel.h"
 #include "pxtone/pxtnService.h"
 #include "server/BroadcastServer.h"
 #include "server/Client.h"
@@ -47,6 +48,8 @@ class EditorWindow : public QMainWindow {
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;
+  UnitListModel* m_units;
+
   std::unique_ptr<NotePreview> m_note_preview;
 
   Ui::EditorWindow* ui;
@@ -56,7 +59,6 @@ class EditorWindow : public QMainWindow {
   void save();
   void saveAs();
   bool loadDescriptor(pxtnDescriptor& desc);
-  void refreshSideMenuUnits();
   void refreshSideMenuWoices();
 };
 #endif  // MAINWINDOW_H

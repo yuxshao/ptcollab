@@ -52,6 +52,7 @@ HEADERS += \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \
            protocol/SerializeVariant.h \
+           protocol/UnitIdMap.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -100,6 +101,7 @@ SOURCES += main.cpp \
            protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \
            protocol/RemoteAction.cpp \
+           protocol/UnitIdMap.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \

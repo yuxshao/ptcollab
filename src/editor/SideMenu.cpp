@@ -19,13 +19,14 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
 }
 
-SideMenu::SideMenu(QWidget* parent)
+SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
-      m_add_unit_dialog(new QInputDialog(this)) {
+      m_add_unit_dialog(new QInputDialog(this)),
+      m_units(units) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -33,6 +34,16 @@ SideMenu::SideMenu(QWidget* parent)
     ui->quantY->addItem(label, value);
   m_add_unit_dialog->setInputMode(QInputDialog::TextInput);
   m_add_unit_dialog->setLabelText(tr("Unit name?"));
+
+  ui->unitList->setModel(m_units);
+  QHeaderView* header = ui->unitList->horizontalHeader();
+  header->setMinimumSectionSize(24);
+  for (int c = 0; c < header->count() - 1; ++c) {
+    header->setSectionResizeMode(c, QHeaderView::ResizeToContents);
+  }
+  header->setSectionResizeMode(header->count() - 1, QHeaderView::Stretch);
+  // ui->unitList->setColumnWidth(0, 10);
+  // qDebug() << ui->unitList->columnWidth(0);
 
   void (QComboBox::*signal)(int) = &QComboBox::currentIndexChanged;
 
@@ -68,16 +79,7 @@ SideMenu::SideMenu(QWidget* parent)
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->unitList, &QListWidget::itemSelectionChanged, [this]() {
-    /* QList<int> ids;
-     for (const auto& x : ui->unitList->selectedItems()) {
-       bool ok = true;
-       ids.append(x->data(Qt::UserRole).toInt(&ok));
-       if (!ok) qWarning() << "Could not get item selection";
-     }
 
-     emit selectedUnitsChanged(ids);*/
-  });
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
     if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
@@ -158,15 +160,6 @@ SideMenu::~SideMenu() { delete ui; }
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }
 void SideMenu::setQuantYIndex(int i) { ui->quantY->setCurrentIndex(i); }
 
-void SideMenu::setUnits(QStringList const& units) {
-  int index = ui->unitCombo->currentIndex();
-  ui->unitCombo->clear();
-  ui->unitCombo->addItems(units);
-  if (index < units.size()) ui->unitCombo->setCurrentIndex(index);
-
-  ui->unitList->clear();
-  ui->unitList->addItems(units);
-};
 void SideMenu::setModified(bool modified) {
   if (modified)
     ui->saveBtn->setText("Save locally* (C-s)");
