@@ -203,6 +203,12 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - unit table
+   - current unit depends on selection
+   - visible depends on checked
+   - don't highlight things that aren't playing
+   - maybe things that are selected could be outlined? not sure b/c the vel
+     thing is weird
  - select multiple units and do select ops on them
    - even though it's redundant, probably will show dropdown (for current unit
      and ops) as well as unit tab (for selecting which units to show / select).

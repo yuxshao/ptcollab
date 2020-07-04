@@ -34,7 +34,7 @@ QList<std::pair<qint64, QString>> getUserList(
 // int64_t(m_edit_state.mouse_edit_state.current_clock)
 void seekMoo(pxtnService *pxtn, int64_t clock) {
   pxtnVOMITPREPARATION prep{};
-  prep.flags |= pxtnVOMITPREPFLAG_loop;
+  prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
   prep.start_pos_sample = clock * 60 * 44100 / pxtn->master->get_beat_clock() /
                           pxtn->master->get_beat_tempo();
   prep.master_volume = 0.80f;
