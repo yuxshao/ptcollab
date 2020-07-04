@@ -36,6 +36,7 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
   m_add_unit_dialog->setLabelText(tr("Unit name?"));
 
   ui->unitList->setModel(m_units);
+  ui->unitList->setItemDelegate(new UnitListDelegate);
   ui->unitList->verticalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);
   ui->unitList->horizontalHeader()->setSectionResizeMode(

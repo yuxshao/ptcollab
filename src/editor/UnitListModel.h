@@ -1,7 +1,7 @@
 #ifndef UNITLISTMODEL_H
 #define UNITLISTMODEL_H
-
 #include <QAbstractTableModel>
+#include <QStyledItemDelegate>
 
 #include "protocol/UnitIdMap.h"
 #include "pxtone/pxtnService.h"
@@ -19,9 +19,6 @@ struct UnitListItem {
 
 #include <QDebug>
 
-inline Qt::CheckState checked_of_bool(bool b) {
-  return b ? Qt::Checked : Qt::Unchecked;
-}
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
 
@@ -57,6 +54,19 @@ class UnitListModel : public QAbstractTableModel {
   Qt::ItemFlags flags(const QModelIndex &index) const override;
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role) const override;
+};
+
+class UnitListDelegate : public QStyledItemDelegate {
+  Q_OBJECT
+  QModelIndex m_last_index;
+  Qt::CheckState m_last_set_checked;
+
+ public:
+  void paint(QPainter *painter, const QStyleOptionViewItem &option,
+             const QModelIndex &index) const override;
+  bool editorEvent(QEvent *event, QAbstractItemModel *model,
+                   const QStyleOptionViewItem &option,
+                   const QModelIndex &index) override;
 };
 
 #endif  // UNITLISTMODEL_H

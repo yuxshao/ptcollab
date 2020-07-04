@@ -1,5 +1,14 @@
 #include "UnitListModel.h"
 
+#include <QEvent>
+#include <QPainter>
+
+inline Qt::CheckState checked_of_bool(bool b) {
+  return b ? Qt::Checked : Qt::Unchecked;
+}
+inline Qt::CheckState flip_checked(Qt::CheckState c) {
+  return (c == Qt::Checked ? Qt::Unchecked : Qt::Checked);
+}
 QVariant UnitListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();
 
@@ -74,3 +83,57 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
   }
   return QVariant();
 }
+
+void UnitListDelegate::paint(QPainter *painter,
+                             const QStyleOptionViewItem &option,
+                             const QModelIndex &index) const {
+  // TODO: Draw a speaker & eye icon!
+  /*if (!index.isValid()) return;
+  switch (UnitListColumn(index.column())) {
+    case UnitListColumn::Visible:
+    case UnitListColumn::Muted:
+      if (index.data(Qt::CheckStateRole) == Qt::Checked) {
+        painter->fillRect(option.rect, Qt::black);
+        return;
+      }
+      break;
+    case UnitListColumn::Name:
+      break;
+  }*/
+
+  QStyledItemDelegate::paint(painter, option, index);
+}
+bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
+                                   const QStyleOptionViewItem &option,
+                                   const QModelIndex &index) {
+  if (!index.isValid()) return false;
+  switch (UnitListColumn(index.column())) {
+    case UnitListColumn::Visible:
+    case UnitListColumn::Muted:
+      switch (event->type()) {
+        case QEvent::MouseButtonPress: {
+          Qt::CheckState state =
+              qvariant_cast<Qt::CheckState>(index.data(Qt::CheckStateRole));
+          m_last_index = index;
+          m_last_set_checked = flip_checked(state);
+          model->setData(index, m_last_set_checked, Qt::CheckStateRole);
+          return true;
+        }
+
+        case QEvent::MouseMove: {
+          if (index.row() != m_last_index.row() &&
+              index.column() == m_last_index.column()) {
+            m_last_index = index;
+            model->setData(index, m_last_set_checked, Qt::CheckStateRole);
+          }
+        }
+
+        default:
+          break;
+      }
+      return false;
+    case UnitListColumn::Name:
+      break;
+  }
+  return QStyledItemDelegate::editorEvent(event, model, option, index);
+};
