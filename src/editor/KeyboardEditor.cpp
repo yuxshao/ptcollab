@@ -928,18 +928,20 @@ void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
 
     using namespace Action;
     std::list<Primitive> as;
-    qint32 unit = m_edit_state.m_current_unit_id;
-    if (kind != EVENTKIND_VELOCITY) {
-      int32_t start_val = m_pxtn->evels->get_Value(interval.start, unit, kind);
-      as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
-      as.push_back({kind, unit, interval.start, Add{start_val}});
-    }
-    as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
-    if (kind != EVENTKIND_VELOCITY &&
-        interval.end < m_pxtn->master->get_clock_num()) {
-      int32_t end_val = m_pxtn->evels->get_Value(interval.end, unit, kind);
-      as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
-      as.push_back({kind, unit, interval.end, Add{end_val}});
+    for (qint32 unit : selectedUnitNos()) {
+      if (kind != EVENTKIND_VELOCITY) {
+        int32_t start_val =
+            m_pxtn->evels->get_Value(interval.start, unit, kind);
+        as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
+        as.push_back({kind, unit, interval.start, Add{start_val}});
+      }
+      as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
+      if (kind != EVENTKIND_VELOCITY &&
+          interval.end < m_pxtn->master->get_clock_num()) {
+        int32_t end_val = m_pxtn->evels->get_Value(interval.end, unit, kind);
+        as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
+        as.push_back({kind, unit, interval.end, Add{end_val}});
+      }
     }
     m_client->sendAction(m_sync->applyLocalAction(as));
   }
@@ -1020,20 +1022,25 @@ void KeyboardEditor::removeCurrentUnit() {
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
 }
 
+std::set<int> KeyboardEditor::selectedUnitNos() {
+  std::set<int> unit_nos;
+  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+  if (unit_no.has_value()) unit_nos.insert(unit_no.value());
+
+  for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
+    if (m_pxtn->Unit_Get(i)->get_operated()) unit_nos.insert(i);
+  return unit_nos;
+}
 void KeyboardEditor::copySelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
-  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-  if (!unit_no.has_value()) return;
-  m_clipboard.copy({unit_no.value()},
+  m_clipboard.copy(selectedUnitNos(),
                    m_edit_state.mouse_edit_state.selection.value());
 }
 
 void KeyboardEditor::clearSelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
-  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-  if (!unit_no.has_value()) return;
   std::list<Action::Primitive> actions = m_clipboard.makeClear(
-      {unit_no.value()}, m_edit_state.mouse_edit_state.selection.value(),
+      selectedUnitNos(), m_edit_state.mouse_edit_state.selection.value(),
       m_sync->unitIdMap());
   if (actions.size() > 0) {
     m_client->sendAction(m_sync->applyLocalAction(actions));
@@ -1049,10 +1056,8 @@ void KeyboardEditor::cutSelection() {
 void KeyboardEditor::paste() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   Interval &selection = m_edit_state.mouse_edit_state.selection.value();
-  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
-  if (!unit_no.has_value()) return;
   std::list<Action::Primitive> actions = m_clipboard.makePaste(
-      {unit_no.value()}, selection.start, m_sync->unitIdMap());
+      selectedUnitNos(), selection.start, m_sync->unitIdMap());
   if (actions.size() > 0) {
     m_client->sendAction(m_sync->applyLocalAction(actions));
     emit onEdit();

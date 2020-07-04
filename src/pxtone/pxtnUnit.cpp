@@ -7,7 +7,7 @@
 
 pxtnUnit::pxtnUnit() {
   _bPlayed = true;
-  _bOperated = true;
+  _bOperated = false;
   _bVisible = true;
   strcpy(_name_buf, "no name");
   _name_size = int32_t(strlen(_name_buf));

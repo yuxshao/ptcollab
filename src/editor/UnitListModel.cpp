@@ -22,6 +22,10 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
       if (role == Qt::CheckStateRole)
         return checked_of_bool(!unit->get_played());
       break;
+    case UnitListColumn::Select:
+      if (role == Qt::CheckStateRole)
+        return checked_of_bool(unit->get_operated());
+      break;
     case UnitListColumn::Name:
       if (role == Qt::DisplayRole) return QString(unit->get_name_buf(nullptr));
       break;
@@ -46,6 +50,14 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
         return true;
       }
       return false;
+    case UnitListColumn::Select:
+      if (role == Qt::CheckStateRole) {
+        unit->set_operated(value.toInt() == Qt::Checked);
+        dataChanged(index.siblingAtColumn(0),
+                    index.siblingAtColumn(columnCount() - 1));
+        return true;
+      }
+      return false;
     case UnitListColumn::Name:
       return false;
   }
@@ -58,6 +70,7 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
     case UnitListColumn::Muted:
+    case UnitListColumn::Select:
       f |= Qt::ItemIsUserCheckable;
       f &= ~Qt::ItemIsSelectable;
       break;
@@ -73,13 +86,12 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
     switch (UnitListColumn(section)) {
       case UnitListColumn::Visible:
         return "V";
-        break;
       case UnitListColumn::Muted:
         return "M";
-        break;
+      case UnitListColumn::Select:
+        return "S";
       case UnitListColumn::Name:
         return "Name";
-        break;
     }
   }
   return QVariant();
@@ -101,6 +113,13 @@ void UnitListDelegate::paint(QPainter *painter,
     case UnitListColumn::Name:
       break;
   }*/
+  if (index.siblingAtColumn(int(UnitListColumn::Select))
+          .data(Qt::CheckStateRole) == Qt::Checked) {
+    // A bit jank for a light highlight
+    QColor c = option.palette.highlight().color();
+    c.setAlphaF(0.3);
+    painter->fillRect(option.rect, c);
+  }
 
   QStyledItemDelegate::paint(painter, option, index);
 }
@@ -111,6 +130,7 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
     case UnitListColumn::Muted:
+    case UnitListColumn::Select:
       switch (event->type()) {
         case QEvent::MouseButtonPress: {
           Qt::CheckState state =

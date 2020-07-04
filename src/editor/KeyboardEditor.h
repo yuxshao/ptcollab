@@ -69,6 +69,7 @@ class KeyboardEditor : public QWidget {
   void refreshSize();
   void refreshQuantSettings();
   QSize sizeHint() const override;
+  std::set<int> selectedUnitNos();
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
   int painted;
