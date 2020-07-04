@@ -31,7 +31,6 @@ class KeyboardEditor : public QWidget {
                           Client *client, UnitListModel *units,
                           QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
-  void toggleShowAllUnits();
   void loadHistory(QList<ServerAction> &history);
   void setUid(qint64 uid);
   void resetUnitIdMap();
@@ -40,7 +39,6 @@ class KeyboardEditor : public QWidget {
   void currentUnitNoChanged(int);
   void unitsChanged();
   void woicesChanged();
-  void showAllChanged(bool);
   void onEdit();
   void editStateChanged();
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
@@ -51,7 +49,6 @@ class KeyboardEditor : public QWidget {
   void setQuantYIndex(int);
   void setCurrentUnitNo(int);
   void removeCurrentUnit();
-  void setShowAll(bool);
   void clearRemoteEditStates();
   void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
@@ -74,7 +71,6 @@ class KeyboardEditor : public QWidget {
   QSize sizeHint() const override;
   pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
-  bool m_show_all_units;
   int painted;
   EditState m_edit_state;
   QAudioOutput *m_audio_output;

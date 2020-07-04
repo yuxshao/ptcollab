@@ -48,7 +48,6 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
     : QWidget(parent),
       m_pxtn(pxtn),
       m_timer(new QElapsedTimer),
-      m_show_all_units(false),
       painted(0),
       m_audio_output(audio_output),
       m_audio_note_preview(nullptr),
@@ -570,7 +569,13 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
-    int alpha = (matchingUnit || m_show_all_units ? 255 : 64);
+    int alpha;
+    if (matchingUnit)
+      alpha = 255;
+    else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+      alpha = 64;
+    else
+      alpha = 0;
     switch (e->kind) {
       case EVENTKIND_ON:
         // Draw the last block of the previous on event if there's one to
@@ -608,7 +613,13 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
       DrawState &state = drawStates[unit_no];
       const Brush &brush = brushes[unit_id % NUM_BRUSHES];
       bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
-      int alpha = (matchingUnit || m_show_all_units ? 255 : 64);
+      int alpha;
+      if (matchingUnit)
+        alpha = 255;
+      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+        alpha = 64;
+      else
+        alpha = 0;
 
       drawStateSegment(painter, state,
                        {state.pitch.clock, state.ongoingOnEvent.value().end},
@@ -848,17 +859,10 @@ void KeyboardEditor::setCurrentUnitNo(int unit_no) {
   emit editStateChanged();
 }
 
-void KeyboardEditor::setShowAll(bool b) { m_show_all_units = b; }
-
 void KeyboardEditor::clearRemoteEditStates() {
   m_remote_edit_states.clear();
 
   emit userListChanged(getUserList(m_remote_edit_states));
-}
-
-void KeyboardEditor::toggleShowAllUnits() {
-  m_show_all_units = !m_show_all_units;
-  emit showAllChanged(m_show_all_units);
 }
 
 void KeyboardEditor::loadHistory(QList<ServerAction> &history) {

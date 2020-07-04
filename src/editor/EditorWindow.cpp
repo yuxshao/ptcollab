@@ -291,8 +291,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_editor->selectAll();
-      else
-        m_keyboard_editor->toggleShowAllUnits();
       break;
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
