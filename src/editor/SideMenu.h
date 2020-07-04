@@ -43,7 +43,7 @@ class SideMenu : public QWidget {
   void setQuantXIndex(int);
   void setQuantYIndex(int);
   // void setSelectedUnits(QList<qint32> idx);
-  void setCurrentUnit(int);
+  void setCurrentUnit(int unit_no);
   void setPlay(bool);
   void setModified(bool);
   void setUserList(QList<std::pair<qint64, QString>> users);

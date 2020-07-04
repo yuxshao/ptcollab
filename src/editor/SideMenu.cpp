@@ -53,7 +53,12 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
           &SideMenu::stopButtonPressed);
-  connect(ui->unitCombo, signal, this, &SideMenu::currentUnitChanged);
+  connect(ui->unitList->selectionModel(),
+          &QItemSelectionModel::currentRowChanged,
+          [this](const QModelIndex& current, const QModelIndex& previous) {
+            (void)previous;
+            emit currentUnitChanged(current.row());
+          });
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
   connect(ui->hostBtn, &QPushButton::clicked, this,
@@ -71,11 +76,14 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
     }
   });
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
-    if (ui->unitCombo->count() > 0 &&
+    QVariant data = ui->unitList->currentIndex()
+                        .siblingAtColumn(int(UnitListColumn::Name))
+                        .data();
+    if (data.canConvert<QString>() &&
         QMessageBox::question(this, tr("Are you sure?"),
                               tr("Are you sure you want to delete the unit "
                                  "(%1)? This cannot be undone.")
-                                  .arg(ui->unitCombo->currentText())) ==
+                                  .arg(data.value<QString>())) ==
             QMessageBox::Yes)
       emit removeUnit();
   });
@@ -179,7 +187,7 @@ void SideMenu::setWoiceList(QStringList woices) {
   ui->woiceList->addItems(woices);
 }
 
-void SideMenu::setCurrentUnit(int u) { ui->unitCombo->setCurrentIndex(u); }
+void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)
     ui->playBtn->setText("Pause (SPC)");

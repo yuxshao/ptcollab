@@ -229,7 +229,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
         "seek.\nCtrl+click to modify note instead of on "
         "values.\nCtrl+shift+click to select.\nShift+rclick to deselect.\nWith "
-        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.");
+        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
+        "cycle unit.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });

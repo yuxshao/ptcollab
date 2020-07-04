@@ -204,6 +204,7 @@ fill architecture could work well.
 Todo by priority
 ----------------
  - unit table
+   - when adding a unit it needs to be more clear what woice to use. just too disjoint rn
    - current unit depends on selection
    - visible depends on checked
    - don't highlight things that aren't playing

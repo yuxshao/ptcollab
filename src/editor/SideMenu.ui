@@ -86,7 +86,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -108,7 +108,11 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QListWidget" name="woiceList"/>
+        <widget class="QListWidget" name="woiceList">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -124,6 +128,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="changeWoiceBtn">
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="text">
             <string>Change</string>
            </property>
@@ -150,6 +157,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QTableView" name="unitList">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -163,24 +173,6 @@
           <enum>Qt::NoPen</enum>
          </property>
         </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Current (W/S)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="unitCombo">
-           <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
