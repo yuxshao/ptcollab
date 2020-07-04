@@ -25,15 +25,13 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
-      m_add_unit_dialog(new QInputDialog(this)),
+      m_add_unit_dialog(new SelectWoiceDialog(this)),
       m_units(units) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
   for (auto [label, value] : quantizeYOptions)
     ui->quantY->addItem(label, value);
-  m_add_unit_dialog->setInputMode(QInputDialog::TextInput);
-  m_add_unit_dialog->setLabelText(tr("Unit name?"));
 
   ui->unitList->setModel(m_units);
   ui->unitList->setItemDelegate(new UnitListDelegate);
@@ -62,16 +60,8 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
           &SideMenu::hostButtonPressed);
   connect(ui->connectBtn, &QPushButton::clicked, this,
           &SideMenu::connectButtonPressed);
-  connect(ui->addUnitBtn, &QPushButton::clicked, [this]() {
-    if (ui->woiceList->currentItem() == nullptr)
-      QMessageBox::warning(this, tr("Cannot add unit"),
-                           tr("Please select a voice first to add a unit."));
-    else {
-      m_add_unit_dialog->setTextValue(
-          QString("u-%1").arg(ui->woiceList->currentItem()->text()));
-      m_add_unit_dialog->open();
-    }
-  });
+  connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
+          &QDialog::open);
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {
     QVariant data = ui->unitList->currentIndex()
                         .siblingAtColumn(int(UnitListColumn::Name))
@@ -139,8 +129,8 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
     emit selectWoice(ui->woiceList->currentRow());
   });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
-    QString name = m_add_unit_dialog->textValue();
-    int idx = ui->woiceList->currentRow();
+    QString name = m_add_unit_dialog->getUnitNameSelection();
+    int idx = m_add_unit_dialog->getSelectedWoiceIndex();
     if (idx >= 0 && name != "")
       emit addUnit(idx, name);
     else
@@ -182,6 +172,7 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
 void SideMenu::setWoiceList(QStringList woices) {
   ui->woiceList->clear();
   ui->woiceList->addItems(woices);
+  m_add_unit_dialog->setWoices(woices);
 }
 
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }

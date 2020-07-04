@@ -6,6 +6,7 @@
 #include <QStringListModel>
 #include <QWidget>
 
+#include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 
 namespace Ui {
@@ -54,7 +55,7 @@ class SideMenu : public QWidget {
   QStringListModel *m_users;
   QFileDialog *m_add_woice_dialog;
   QFileDialog *m_change_woice_dialog;
-  QInputDialog *m_add_unit_dialog;
+  SelectWoiceDialog *m_add_unit_dialog;
   UnitListModel *m_units;
 };
 

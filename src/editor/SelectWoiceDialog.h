@@ -8,6 +8,8 @@ class SelectWoiceDialog;
 }
 
 // Obsolete now that the main view includes a woice list.
+// 2020-07-04 Update: Not obsolete now that woice list is not always visilbe
+// when adding unit.
 class SelectWoiceDialog : public QDialog {
   Q_OBJECT
 

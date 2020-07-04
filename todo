@@ -207,11 +207,11 @@ fill architecture could work well.
 1. Make it easier to check / uncheck
 2. Don't highlight / grey muted things out
 3. Transpose, copy / paste multiple units
+4. Reinstate the add unit dialog.
 
 Todo by priority
 ----------------
  - make it easier to change selection / visible / mute. shortcut for solo?
- - when adding a unit it needs to be more clear what woice to use. just too disjoint rn
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
