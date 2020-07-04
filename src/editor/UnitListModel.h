@@ -51,80 +51,12 @@ class UnitListModel : public QAbstractTableModel {
     return int(UnitListColumn::MAX) + 1;
   }
   QVariant data(const QModelIndex &index,
-                int role = Qt::DisplayRole) const override {
-    if (!index.isValid()) return QVariant();
-
-    const pxtnUnit *unit = m_pxtn->Unit_Get(index.row());
-    switch (UnitListColumn(index.column())) {
-      case UnitListColumn::Visible:
-        if (role == Qt::CheckStateRole)
-          return checked_of_bool(unit->get_visible());
-        break;
-      case UnitListColumn::Muted:
-        if (role == Qt::CheckStateRole)
-          return checked_of_bool(!unit->get_played());
-        break;
-      case UnitListColumn::Name:
-        if (role == Qt::DisplayRole)
-          return QString(unit->get_name_buf(nullptr));
-        break;
-    }
-    return QVariant();
-  }
+                int role = Qt::DisplayRole) const override;
   bool setData(const QModelIndex &index, const QVariant &value,
-               int role = Qt::EditRole) override {
-    if (!checkIndex(index)) return false;
-    pxtnUnit *unit = m_pxtn->Unit_Get_variable(index.row());
-    switch (UnitListColumn(index.column())) {
-      case UnitListColumn::Visible:
-        if (role == Qt::CheckStateRole) {
-          unit->set_visible(value.toInt() == Qt::Checked);
-          return true;
-        }
-        return false;
-      case UnitListColumn::Muted:
-        if (role == Qt::CheckStateRole) {
-          unit->set_played(!(value.toInt() == Qt::Checked));
-          return true;
-        }
-        return false;
-      case UnitListColumn::Name:
-        return false;
-    }
-    return false;
-  }
-
-  Qt::ItemFlags flags(const QModelIndex &index) const override {
-    Qt::ItemFlags f = QAbstractTableModel::flags(index);
-    if (!checkIndex(index)) return f;
-    switch (UnitListColumn(index.column())) {
-      case UnitListColumn::Visible:
-      case UnitListColumn::Muted:
-        f |= Qt::ItemIsUserCheckable;
-        break;
-      case UnitListColumn::Name:
-        break;
-    }
-    return f;
-  }
-
+               int role = Qt::EditRole) override;
+  Qt::ItemFlags flags(const QModelIndex &index) const override;
   QVariant headerData(int section, Qt::Orientation orientation,
-                      int role) const override {
-    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-      switch (UnitListColumn(section)) {
-        case UnitListColumn::Visible:
-          return "V";
-          break;
-        case UnitListColumn::Muted:
-          return "M";
-          break;
-        case UnitListColumn::Name:
-          return "Name";
-          break;
-      }
-    }
-    return QVariant();
-  }
+                      int role) const override;
 };
 
 #endif  // UNITLISTMODEL_H
