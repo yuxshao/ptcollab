@@ -203,11 +203,13 @@ fill architecture could work well.
 4. Unit list table - current unit depends on selection; mute / visible depend
    on checked
 
+7/4
+1. Make it easier to check / uncheck
+
 Todo by priority
 ----------------
  - unit table
    - when adding a unit it needs to be more clear what woice to use. just too disjoint rn
-   - make it easier to check / uncheck
    - don't highlight things that aren't playing
  - select multiple units and do select ops on them
    - even though it's redundant, probably will show dropdown (for current unit

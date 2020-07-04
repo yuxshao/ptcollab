@@ -59,6 +59,7 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
     case UnitListColumn::Visible:
     case UnitListColumn::Muted:
       f |= Qt::ItemIsUserCheckable;
+      f &= ~Qt::ItemIsSelectable;
       break;
     case UnitListColumn::Name:
       break;
