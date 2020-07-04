@@ -205,12 +205,12 @@ fill architecture could work well.
 
 7/4
 1. Make it easier to check / uncheck
+2. Don't highlight / grey muted things out
 
 Todo by priority
 ----------------
  - unit table
    - when adding a unit it needs to be more clear what woice to use. just too disjoint rn
-   - don't highlight things that aren't playing
  - select multiple units and do select ops on them
    - even though it's redundant, probably will show dropdown (for current unit
      and ops) as well as unit tab (for selecting which units to show / select).

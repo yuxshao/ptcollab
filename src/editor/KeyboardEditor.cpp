@@ -411,12 +411,14 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                       const Interval &segment, const Interval &bounds,
                       const Brush &brush, qint32 alpha, const Scale &scale,
                       qint32 current_clock, const MouseEditState &mouse,
-                      bool drawTooltip) {
+                      bool drawTooltip, bool muted) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
   if (interval_intersect(interval, bounds).empty()) return;
-  QColor color =
-      brush.toQColor(state.velocity.value, on.contains(current_clock), alpha);
+  QColor color = brush.toQColor(state.velocity.value,
+                                on.contains(current_clock) && !muted, alpha);
+  if (muted)
+    color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
   paintBlock(state.pitch.value, interval, painter, color, scale);
   if (interval.start == on.start) {
     paintHighlight(state.pitch.value, interval.start, painter,
@@ -576,6 +578,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
       alpha = 64;
     else
       alpha = 0;
+    bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
     switch (e->kind) {
       case EVENTKIND_ON:
         // Draw the last block of the previous on event if there's one to
@@ -583,7 +586,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
         if (state.ongoingOnEvent.has_value())
           drawStateSegment(painter, state, {state.pitch.clock, e->clock},
                            clockBounds, brush, alpha, m_edit_state.scale, clock,
-                           m_edit_state.mouse_edit_state, matchingUnit);
+                           m_edit_state.mouse_edit_state, matchingUnit, muted);
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
@@ -595,7 +598,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
         if (state.ongoingOnEvent.has_value()) {
           drawStateSegment(painter, state, {state.pitch.clock, e->clock},
                            clockBounds, brush, alpha, m_edit_state.scale, clock,
-                           m_edit_state.mouse_edit_state, matchingUnit);
+                           m_edit_state.mouse_edit_state, matchingUnit, muted);
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -620,11 +623,11 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
         alpha = 64;
       else
         alpha = 0;
-
+      bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
       drawStateSegment(painter, state,
                        {state.pitch.clock, state.ongoingOnEvent.value().end},
                        clockBounds, brush, alpha, m_edit_state.scale, clock,
-                       m_edit_state.mouse_edit_state, matchingUnit);
+                       m_edit_state.mouse_edit_state, matchingUnit, muted);
 
       state.ongoingOnEvent.reset();
     }
