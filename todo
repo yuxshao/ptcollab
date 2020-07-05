@@ -211,7 +211,6 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - make it easier to change selection / visible / mute. shortcut for solo?
  - Tempo, time signature controls
  - show measure num, set loop points
    - will probably need some pixel font thing
@@ -270,6 +269,7 @@ Editor functionality:
 Editor QoL:
  - Time bar at the top
  - Don't scroll if last measure changes from some other user
+ - v to solo visible. s to solo playing? - overrides checkboxes.
  - follow playhead (seems low pri since no one suggested)
  - ctrl+shift+click is a bit much to do a selection. but ctrl click is note
    tool. Maybe it shouldn't be a modifier but a mode? tools seem reasonable.

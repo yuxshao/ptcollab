@@ -9,10 +9,6 @@ mooParams::mooParams() {
 
   fade_fade = 0;
   master_vol = 1.0f;
-  bt_clock = 0;
-  bt_num = 0;
-
-  smp_end = 0;
 }
 
 mooState::mooState() {
@@ -85,7 +81,7 @@ bool pxtnService::_moo_InitUnitTone() {
 // This note duration cutting is for the smoothing near the end of a note.
 void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
                              int32_t clock, int32_t dst_ch_num, int32_t dst_sps,
-                             const pxtnService* pxtn) const {
+                             int32_t smp_end, const pxtnService* pxtn) const {
   pxtnVOICETONE* p_tone;
   std::shared_ptr<const pxtnWoice> p_wc;
   const pxtnVOICEINSTANCE* p_vi;
@@ -123,9 +119,13 @@ void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
             }
           }
           /* end the note at the end of the song if there's no next note */
-          if (!next) max_life_count2 = smp_end - (int32_t)(clock * clock_rate);
-          /* end the note at the next note otherwise. */
-          else
+          if (!next) {
+            if (smp_end == -1)
+              max_life_count2 = max_life_count1;
+            else
+              max_life_count2 = smp_end - (int32_t)(clock * clock_rate);
+            /* end the note at the next note otherwise. */
+          } else
             max_life_count2 = (int32_t)((next->clock - clock) * clock_rate);
           /* finally, take min of both */
           if (max_life_count1 < max_life_count2)
@@ -188,6 +188,7 @@ void mooParams::processEvent(pxtnUnit* p_u, int32_t u, const EVERECORD* e,
       break;
   }
 }
+#include <QDebug>
 // TODO: Could probably put this in _moo_state. Maybe make _moo_params a member
 // of it.
 bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
@@ -200,9 +201,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
 
   /* Adding constant update to moo_smp_end since we might be editing while
    * playing */
-  _moo_params.smp_end =
-      (int32_t)((double)master->get_play_meas() * _moo_params.bt_num *
-                _moo_params.bt_clock * _moo_params.clock_rate);
+  int32_t smp_end = ((double)master->get_play_meas() * master->get_beat_num() *
+                     master->get_beat_clock() * _moo_params.clock_rate);
 
   /* Notify all the units of events that occurred since the last time increment
      and adjust sampling parameters accordingly */
@@ -217,7 +217,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
        _moo_state.p_eve = _moo_state.p_eve->next) {
     int32_t u = _moo_state.p_eve->unit_no;
     _moo_params.processEvent(_units[u], u, _moo_state.p_eve, clock, _dst_ch_num,
-                             _dst_sps, this);
+                             _dst_sps, smp_end, this);
   }
 
   // sampling..
@@ -288,10 +288,12 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data) {
       _moo_params.fade_fade = 0;
   }
 
-  if (_moo_state.smp_count >= _moo_params.smp_end) {
+  if (_moo_state.smp_count >= moo_get_end_clock() * _moo_params.clock_rate) {
     if (!_moo_params.b_loop) return false;
     ++_moo_state.num_loop;
-    _moo_state.smp_count = _moo_params.smp_repeat;
+    _moo_state.smp_count =
+        master->get_this_clock(master->get_repeat_meas(), 0, 0) *
+        _moo_params.clock_rate;
     _moo_state.p_eve = evels->get_Records();
     _moo_InitUnitTone();
   }
@@ -344,9 +346,7 @@ int32_t pxtnService::moo_get_now_clock() const {
 
 int32_t pxtnService::moo_get_end_clock() const {
   if (!_moo_b_init) return 0;
-  if (_moo_params.clock_rate)
-    return (int32_t)(_moo_params.smp_end / _moo_params.clock_rate);
-  return 0;
+  return master->get_this_clock(master->get_play_meas(), 0, 0);
 }
 
 bool pxtnService::moo_set_mute_by_unit(bool b) {
@@ -395,8 +395,6 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
   int32_t start_sample = 0;
   float start_float = 0;
 
-  int32_t meas_end = master->get_play_meas();
-  int32_t meas_repeat = master->get_repeat_meas();
   float fadein_sec = 0;
 
   if (p_prep) {
@@ -404,8 +402,9 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
     start_sample = p_prep->start_pos_sample;
     start_float = p_prep->start_pos_float;
 
-    if (p_prep->meas_end) meas_end = p_prep->meas_end;
-    if (p_prep->meas_repeat) meas_repeat = p_prep->meas_repeat;
+    // TODO: Maybe put them to use?
+    // if (p_prep->meas_end) meas_end = p_prep->meas_end;
+    // if (p_prep->meas_repeat) meas_repeat = p_prep->meas_repeat;
     if (p_prep->fadein_sec) fadein_sec = p_prep->fadein_sec;
 
     if (p_prep->flags & pxtnVOMITPREPFLAG_unit_mute)
@@ -422,37 +421,25 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
 
   /* _dst_sps is like samples to seconds. it's set in pxtnService.cpp
      constructor, comes from Main.cpp. 44100 is passed to both this & xaudio. */
-  _moo_params.bt_clock = master->get_beat_clock(); /* clock ticks per beat */
-  _moo_params.bt_num = master->get_beat_num();
-  _moo_params.bt_tempo = master->get_beat_tempo();
   /* samples per clock tick */
-  _moo_params.clock_rate =
-      (float)(60.0f * (double)_dst_sps /
-              ((double)_moo_params.bt_tempo * (double)_moo_params.bt_clock));
+  _moo_params.clock_rate = (float)(60.0f * (double)_dst_sps /
+                                   ((double)master->get_beat_tempo() *
+                                    (double)master->get_beat_clock()));
   _moo_params.smp_stride = (44100.0f / _dst_sps);
   _moo_params.top = 0x7fff;
 
   _moo_state.time_pan_index = 0;
 
-  _moo_params.smp_end =
-      (int32_t)((double)meas_end * (double)_moo_params.bt_num *
-                (double)_moo_params.bt_clock * _moo_params.clock_rate);
-  _moo_params.smp_repeat =
-      (int32_t)((double)meas_repeat * (double)_moo_params.bt_num *
-                (double)_moo_params.bt_clock * _moo_params.clock_rate);
+  int32_t smp_start;
+  if (start_float)
+    smp_start = (int32_t)((float)moo_get_total_sample() * start_float);
+  else if (start_sample)
+    smp_start = start_sample;
+  else
+    smp_start =
+        master->get_this_clock(start_meas, 0, 0) * _moo_params.clock_rate;
 
-  if (start_float) {
-    _moo_params.smp_start =
-        (int32_t)((float)moo_get_total_sample() * start_float);
-  } else if (start_sample) {
-    _moo_params.smp_start = start_sample;
-  } else {
-    _moo_params.smp_start =
-        (int32_t)((double)start_meas * (double)_moo_params.bt_num *
-                  (double)_moo_params.bt_clock * _moo_params.clock_rate);
-  }
-
-  _moo_state.smp_count = _moo_params.smp_start;
+  _moo_state.smp_count = smp_start;
   _moo_params.smp_smooth = _dst_sps / 250;  // (0.004sec) // (0.010sec)
 
   if (fadein_sec > 0)
@@ -482,7 +469,7 @@ int32_t pxtnService::moo_get_sampling_offset() const {
 int32_t pxtnService::moo_get_sampling_end() const {
   if (!_moo_b_init) return 0;
   if (_moo_b_end_vomit) return 0;
-  return _moo_params.smp_end;
+  return master->get_this_clock(master->get_play_meas(), 0, 0);
 }
 
 int32_t pxtnService::moo_get_num_loop() {

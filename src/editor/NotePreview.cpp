@@ -25,7 +25,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
          e && e->clock <= clock; e = e->next) {
       if (e->unit_no == unit_no) {
         m_pxtn->moo_params()->processEvent(&m_unit, unit_no, e, clock, dst_sps,
-                                           dst_ch_num, m_pxtn);
+                                           dst_ch_num, -1, m_pxtn);
       }
     }
 

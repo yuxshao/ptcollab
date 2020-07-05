@@ -42,10 +42,7 @@ struct mooParams {
 
   // How many samples at the tail end of the note to use to fade to silence?
   int32_t smp_smooth;
-  float clock_rate;    // as the sample
-  int32_t smp_start;   // Where was this moo initialized?
-  int32_t smp_end;     // What's the last sample number in the song?
-  int32_t smp_repeat;  // What sample # is the repeat?
+  float clock_rate;  // as the sample /// (clock per sample)
 
   // Some fade params. Not looked into it much yet
   int32_t fade_count;
@@ -58,14 +55,10 @@ struct mooParams {
 
   float bt_tempo;
 
-  // for make now-meas
-  int32_t bt_clock;
-  int32_t bt_num;
-
   mooParams();
 
   void processEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e, int32_t clock,
-                    int32_t dst_ch_num, int32_t dst_sps,
+                    int32_t dst_ch_num, int32_t dst_sps, int32_t smp_num,
                     const pxtnService *pxtn) const;
 
   // TODO: maybe don't need to expose
