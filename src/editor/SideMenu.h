@@ -39,6 +39,8 @@ class SideMenu : public QWidget {
   void selectWoice(int);
   void candidateWoiceSelected(QString filename);
   void selectedUnitsChanged(QList<qint32> idx);
+  void beatsChanged(int tempo);
+  void tempoChanged(int beats);
 
  public slots:
   void setQuantXIndex(int);
@@ -49,6 +51,8 @@ class SideMenu : public QWidget {
   void setModified(bool);
   void setUserList(QList<std::pair<qint64, QString>> users);
   void setWoiceList(QStringList);
+  void setTempo(int tempo);
+  void setBeats(int beats);
 
  private:
   Ui::SideMenu *ui;

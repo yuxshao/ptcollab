@@ -98,6 +98,30 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
       }
   });
 
+  connect(ui->tempoField, &QLineEdit::editingFinished, [this]() {
+    bool ok;
+    int tempo = ui->tempoField->text().toInt(&ok);
+    if (!ok || tempo < 20 || tempo > 600)
+      QMessageBox::critical(this, tr("Invalid tempo"),
+                            tr("Tempo must be number between 20 and 600"));
+    else {
+      ui->tempoField->setText(QString(tempo));
+      emit tempoChanged(tempo);
+    }
+  });
+
+  connect(ui->beatsField, &QLineEdit::editingFinished, [this]() {
+    bool ok;
+    int beats = ui->beatsField->text().toInt(&ok);
+    if (!ok || beats < 1 || beats > 16)
+      QMessageBox::critical(this, tr("Invalid beats"),
+                            tr("Beats must be number between 1 and 16"));
+    else {
+      setBeats(beats);
+      emit beatsChanged(beats);
+    }
+  });
+
   connect(m_change_woice_dialog, &QDialog::accepted, this, [this]() {
     int idx = ui->woiceList->currentRow();
     if (idx < 0 || !ui->woiceList->currentItem()) return;
@@ -148,6 +172,8 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->removeWoiceBtn->setEnabled(b);
   ui->addUnitBtn->setEnabled(b);
   ui->removeUnitBtn->setEnabled(b);
+  ui->tempoField->setEnabled(b);
+  ui->beatsField->setEnabled(b);
 }
 
 SideMenu::~SideMenu() { delete ui; }
@@ -173,6 +199,13 @@ void SideMenu::setWoiceList(QStringList woices) {
   ui->woiceList->clear();
   ui->woiceList->addItems(woices);
   m_add_unit_dialog->setWoices(woices);
+}
+
+void SideMenu::setTempo(int tempo) {
+  ui->tempoField->setText(QString("%1").arg(tempo));
+}
+void SideMenu::setBeats(int beats) {
+  ui->beatsField->setText(QString("%1").arg(beats));
 }
 
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }

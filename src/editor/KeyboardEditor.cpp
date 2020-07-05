@@ -115,6 +115,14 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                     [this, uid](const UndoRedo &s) {
                       m_sync->applyUndoRedo(s, uid);
                     },
+                    [this, uid](const TempoChange &s) {
+                      if (m_sync->applyTempoChange(s, uid))
+                        emit tempoBeatChanged();
+                    },
+                    [this, uid](const BeatChange &s) {
+                      if (m_sync->applyBeatChange(s, uid))
+                        emit tempoBeatChanged();
+                    },
                     [this, uid](const AddWoice &s) {
                       bool success = m_sync->applyAddWoice(s, uid);
                       emit woicesChanged();

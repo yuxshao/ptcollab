@@ -63,6 +63,7 @@ struct mooParams {
 
   // TODO: maybe don't need to expose
   void resetVoiceOn(pxtnUnit *p_u) const;
+  void adjustClockRate(float rate) { clock_rate = rate; };
 };
 
 // Moo values that change as the song plays.
@@ -85,6 +86,9 @@ struct mooState {
   void release();
 
   bool init(int32_t group_num);
+  void adjustTempo(int32_t old_tempo, int32_t new_tempo) {
+    smp_count = ((long long)smp_count) * old_tempo / new_tempo;
+  }
 };
 
 typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
@@ -259,6 +263,19 @@ class pxtnService {
   bool moo_is_valid_data() const;
   bool moo_is_end_vomit() const;
   const mooParams *moo_params() const { return &_moo_params; }
+  void adjustTempo(int32_t new_tempo) {
+    _moo_state.adjustTempo(master->get_beat_tempo(), new_tempo);
+    master->Set(master->get_beat_num(), new_tempo, master->get_beat_clock());
+    _moo_params.adjustClockRate((float)(60.0f * (double)_dst_sps /
+                                        ((double)master->get_beat_tempo() *
+                                         (double)master->get_beat_clock())));
+  }
+  void adjustBeatNum(int32_t beat_num) {
+    int32_t evels_max_clock = evels->get_Max_Clock();
+    master->Set(beat_num, master->get_beat_tempo(), master->get_beat_clock());
+    if (evels_max_clock > master->get_this_clock(master->get_last_meas(), 0, 0))
+      master->AdjustMeasNum(evels_max_clock);
+  }
 
   bool moo_set_mute_by_unit(bool b);
   bool moo_set_loop(bool b);

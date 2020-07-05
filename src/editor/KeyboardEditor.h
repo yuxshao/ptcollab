@@ -39,6 +39,7 @@ class KeyboardEditor : public QWidget {
   void currentUnitNoChanged(int);
   void unitsChanged();
   void woicesChanged();
+  void tempoBeatChanged();
   void onEdit();
   void editStateChanged();
   void userListChanged(const QList<std::pair<qint64, QString>> &users);

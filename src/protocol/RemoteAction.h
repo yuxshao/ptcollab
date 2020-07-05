@@ -174,9 +174,40 @@ inline QTextStream &operator<<(QTextStream &out, const EditState &a) {
   return out;
 }
 
+struct TempoChange {
+  qint32 tempo;
+};
+inline QDataStream &operator<<(QDataStream &out, const TempoChange &a) {
+  out << a.tempo;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, TempoChange &a) {
+  in >> a.tempo;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const TempoChange &a) {
+  out << "TempoChange(" << a.tempo << ")";
+  return out;
+}
+struct BeatChange {
+  qint32 beat;
+};
+inline QDataStream &operator<<(QDataStream &out, const BeatChange &a) {
+  out << a.beat;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, BeatChange &a) {
+  in >> a.beat;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const BeatChange &a) {
+  out << "BeatChange(" << a.beat << ")";
+  return out;
+}
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
-                 RemoveWoice, ChangeWoice>;
+                 RemoveWoice, ChangeWoice, TempoChange, BeatChange>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

@@ -241,6 +241,21 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
   }
 }
 
+bool PxtoneActionSynchronizer::applyTempoChange(const TempoChange &a,
+                                                qint64 uid) {
+  (void)uid;
+  if (a.tempo < 20 || a.tempo > 600) return false;
+  m_pxtn->adjustTempo(a.tempo);
+  return true;
+}
+
+bool PxtoneActionSynchronizer::applyBeatChange(const BeatChange &a,
+                                               qint64 uid) {
+  (void)uid;
+  if (a.beat < 1 || a.beat > 16) return false;
+  m_pxtn->adjustBeatNum(a.beat);
+  return true;
+}
 bool PxtoneActionSynchronizer::applyAddWoice(const AddWoice &a, qint64 uid) {
   (void)uid;
   pxtnDescriptor d;

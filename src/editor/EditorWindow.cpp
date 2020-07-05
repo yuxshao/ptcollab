@@ -142,6 +142,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
           &SideMenu::setUserList);
 
+  connect(m_side_menu, &SideMenu::tempoChanged,
+          [this](int tempo) { m_client->sendAction(TempoChange{tempo}); });
+  connect(m_side_menu, &SideMenu::beatsChanged,
+          [this](int beat) { m_client->sendAction(BeatChange{beat}); });
   connect(
       m_side_menu, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
         m_client->sendAction(
@@ -205,6 +209,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(m_keyboard_editor, &KeyboardEditor::woicesChanged, this,
           &EditorWindow::refreshSideMenuWoices);
+  connect(m_keyboard_editor, &KeyboardEditor::tempoBeatChanged, this,
+          &EditorWindow::refreshSideMenuTempoBeat);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &EditorWindow::togglePlayState);
   connect(m_side_menu, &SideMenu::stopButtonPressed, this,
@@ -357,6 +363,11 @@ void EditorWindow::refreshSideMenuWoices() {
   m_side_menu->setWoiceList(QStringList(woices));
 }
 
+void EditorWindow::refreshSideMenuTempoBeat() {
+  m_side_menu->setTempo(m_pxtn.master->get_beat_tempo());
+  m_side_menu->setBeats(m_pxtn.master->get_beat_num());
+}
+
 bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_units->beginRefresh();
@@ -380,6 +391,7 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   m_audio->suspend();
 
   refreshSideMenuWoices();
+  refreshSideMenuTempoBeat();
 
   m_keyboard_editor->updateGeometry();
   return true;
