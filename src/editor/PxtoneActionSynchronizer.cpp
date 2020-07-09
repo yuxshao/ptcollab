@@ -57,6 +57,22 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
     need_to_undo = true;
     local_actions_to_drop = 0;
   }
+
+  // Invalidate any previous undone actions by this user
+  for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
+    if (it->uid == uid) switch (it->state) {
+        case LoggedAction::UNDONE:
+          it->state = LoggedAction::GONE;
+          break;
+        case LoggedAction::GONE:
+          break;
+        case LoggedAction::DONE:
+          // break out of the outer for with a goto
+          goto exit_loop;
+      }
+  }
+exit_loop:
+
   if (!need_to_undo) {
     // The server told us that our local action was applied! Put it in the
     // log, but no need to apply any actions since that was already
@@ -101,20 +117,6 @@ void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
 
   m_remote_index += int(local_actions_to_drop);
 
-  // Invalidate any previous undone actions by this user
-  for (auto it = m_log.rbegin(); it != m_log.rend(); ++it) {
-    if (it->uid == uid) switch (it->state) {
-        case LoggedAction::UNDONE:
-          it->state = LoggedAction::GONE;
-          break;
-        case LoggedAction::GONE:
-          break;
-        case LoggedAction::DONE:
-          // break out of the outer for with a goto
-          goto exit_loop;
-      }
-  }
-exit_loop:
   // qDebug() << "m_log size" << m_log.size();
 
   if (widthChanged) emit measureNumChanged();
