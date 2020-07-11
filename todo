@@ -218,15 +218,13 @@ fill architecture could work well.
 2. Forbid selecting below time 0
 3. Change a thing that could've caused crash on server connect.
 4. Changed 'muted' column to 'played' since the checked = muted was a bit unintuitive
+5. Outline selected notes on chosen units and show their vel.
 
 Todo by priority
 ----------------
- - make selection more obvious
-   - highlight all selected notes on chosen units?
-   - show vel of all selected notes?
+ - C-d deselect. Maybe just click somewhere to deselect? Idk
  - preview different pitches / velocities (say, just using last note) so your
    ear doesn't break
- - C-d deselect. Maybe just click somewhere to deselect? Idk
  - clean up startup code, make sure it doesn't break?
  - show measure num, set loop points
    - will probably need some pixel font thing

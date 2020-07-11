@@ -249,10 +249,24 @@ static void paintAtClockPitch(int clock, int pitch, int widthInPx,
                    rowHeight * 2 / 3, brush);
 }
 
+static void drawAtClockPitch(int clock, int pitch, int widthInPx,
+                             QPainter &painter, const Scale &scale) {
+  int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
+  painter.drawRect(clock / scale.clockPerPx - 1,
+                   scale.pitchToY(pitch) + rowHeight / 6 - 1, widthInPx + 1,
+                   rowHeight * 2 / 3 + 1);
+}
+
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
                        const QBrush &brush, const Scale &scale) {
   paintAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
                     painter, brush, scale);
+}
+
+static void drawBlock(int pitch, const Interval &segment, QPainter &painter,
+                      const Scale &scale) {
+  drawAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
+                   painter, scale);
 }
 
 static void paintHighlight(int pitch, int clock, QPainter &painter,
@@ -416,10 +430,12 @@ double smoothDistance(double dy, double dx) {
   return std::max(0.0, 1 / (r + 1));
 }
 void drawStateSegment(QPainter &painter, const DrawState &state,
-                      const Interval &segment, const Interval &bounds,
-                      const Brush &brush, qint32 alpha, const Scale &scale,
-                      qint32 current_clock, const MouseEditState &mouse,
-                      bool drawTooltip, bool muted) {
+                      const Interval &segment,
+                      const std::optional<Interval> &selection,
+                      const Interval &bounds, const Brush &brush, qint32 alpha,
+                      const Scale &scale, qint32 current_clock,
+                      const MouseEditState &mouse, bool drawTooltip,
+                      bool muted) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
   if (interval_intersect(interval, bounds).empty()) return;
@@ -441,8 +457,18 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
       if (mouse.current_clock < on.end && mouse.current_clock >= on.start &&
           mouse.type != MouseEditState::SetOn)
         alphaMultiplier += 0.6;
+      else if (selection.has_value() && selection.value().contains(on.start))
+        alphaMultiplier += 0.3;
       drawVelTooltip(painter, state.velocity.value, interval.start,
                      state.pitch.value, brush, scale, alpha * alphaMultiplier);
+    }
+  }
+  if (selection.has_value()) {
+    Interval selection_segment =
+        interval_intersect(selection.value(), interval);
+    if (!selection_segment.empty()) {
+      painter.setPen(brush.toQColor(EVENTDEFAULT_VELOCITY, true, alpha));
+      drawBlock(state.pitch.value, selection_segment, painter, scale);
     }
   }
 }
@@ -571,6 +597,10 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
   // TODO: Draw the current unit at the top.
+  std::optional<Interval> selection = std::nullopt;
+  std::set<int> selected_unit_nos = selectedUnitNos();
+  if (m_edit_state.mouse_edit_state.selection.has_value())
+    selection = m_edit_state.mouse_edit_state.selection.value();
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
        e = e->next) {
     if (e->clock > clockBounds.end) break;
@@ -579,6 +609,10 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
+    std::optional<Interval> thisSelection = std::nullopt;
+    if (selection.has_value() &&
+        selected_unit_nos.find(unit_no) != selected_unit_nos.end())
+      thisSelection = selection;
     int alpha;
     if (matchingUnit)
       alpha = 255;
@@ -593,7 +627,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
         // draw.
         if (state.ongoingOnEvent.has_value())
           drawStateSegment(painter, state, {state.pitch.clock, e->clock},
-                           clockBounds, brush, alpha, m_edit_state.scale, clock,
+                           thisSelection, clockBounds, brush, alpha,
+                           m_edit_state.scale, clock,
                            m_edit_state.mouse_edit_state, matchingUnit, muted);
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
@@ -605,7 +640,8 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
           drawStateSegment(painter, state, {state.pitch.clock, e->clock},
-                           clockBounds, brush, alpha, m_edit_state.scale, clock,
+                           thisSelection, clockBounds, brush, alpha,
+                           m_edit_state.scale, clock,
                            m_edit_state.mouse_edit_state, matchingUnit, muted);
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
@@ -632,10 +668,14 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
       else
         alpha = 0;
       bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-      drawStateSegment(painter, state,
-                       {state.pitch.clock, state.ongoingOnEvent.value().end},
-                       clockBounds, brush, alpha, m_edit_state.scale, clock,
-                       m_edit_state.mouse_edit_state, matchingUnit, muted);
+      std::optional<Interval> thisSelection = std::nullopt;
+      if (selection.has_value() &&
+          selected_unit_nos.find(unit_no) != selected_unit_nos.end())
+        thisSelection = selection;
+      drawStateSegment(
+          painter, state, {state.pitch.clock, state.ongoingOnEvent.value().end},
+          thisSelection, clockBounds, brush, alpha, m_edit_state.scale, clock,
+          m_edit_state.mouse_edit_state, matchingUnit, muted);
 
       state.ongoingOnEvent.reset();
     }
@@ -1040,6 +1080,7 @@ std::set<int> KeyboardEditor::selectedUnitNos() {
     if (m_pxtn->Unit_Get(i)->get_operated()) unit_nos.insert(i);
   return unit_nos;
 }
+
 void KeyboardEditor::copySelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   m_clipboard.copy(selectedUnitNos(),
