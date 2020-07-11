@@ -826,8 +826,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
         event->button() != Qt::RightButton)
       type = MouseEditState::Type::Select;
     else {
-      if (event->button() == Qt::RightButton)
-        m_edit_state.mouse_edit_state.selection.reset();
+      if (event->button() == Qt::RightButton) deselect();
       type = MouseEditState::Type::Seek;
     }
   } else {
@@ -952,6 +951,10 @@ void KeyboardEditor::selectAll() {
   m_edit_state.mouse_edit_state.selection.emplace(
       Interval{0, m_pxtn->master->get_clock_num()});
   emit editStateChanged();
+}
+
+void KeyboardEditor::deselect() {
+  m_edit_state.mouse_edit_state.selection.reset();
 }
 
 void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {

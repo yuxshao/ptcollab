@@ -219,13 +219,12 @@ fill architecture could work well.
 3. Change a thing that could've caused crash on server connect.
 4. Changed 'muted' column to 'played' since the checked = muted was a bit unintuitive
 5. Outline selected notes on chosen units and show their vel.
+6. Ctrl+D to deselect
 
 Todo by priority
 ----------------
- - C-d deselect. Maybe just click somewhere to deselect? Idk
  - preview different pitches / velocities (say, just using last note) so your
    ear doesn't break
- - clean up startup code, make sure it doesn't break?
  - show measure num, set loop points
    - will probably need some pixel font thing
  - keyboard on left side of piano roll (probably will help in figuring out how

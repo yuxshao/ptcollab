@@ -234,7 +234,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         "horizontally.\nMiddle-click drag also "
         "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
         "seek.\nCtrl+click to modify note instead of on "
-        "values.\nCtrl+shift+click to select.\nShift+rclick to deselect.\nWith "
+        "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
+        "deselect.\nWith "
         "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
         "cycle unit.");
   });
@@ -301,6 +302,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_editor->copySelection();
+      break;
+    case Qt::Key_D:
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_editor->deselect();
       break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);
