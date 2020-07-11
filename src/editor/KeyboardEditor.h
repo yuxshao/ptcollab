@@ -27,7 +27,7 @@ struct RemoteEditState {
 class KeyboardEditor : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
+  explicit KeyboardEditor(pxtnService *pxtn, QAudioOutput **audio_output,
                           Client *client, UnitListModel *units,
                           QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
@@ -45,6 +45,7 @@ class KeyboardEditor : public QWidget {
   void editStateChanged();
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
   void quantXIndexChanged(int);
+  void seeked();
 
  public slots:
   void setQuantXIndex(int);
@@ -77,7 +78,7 @@ class KeyboardEditor : public QWidget {
   QElapsedTimer *m_timer;
   int painted;
   EditState m_edit_state;
-  QAudioOutput *m_audio_output;
+  QAudioOutput **m_audio_output;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   Client *m_client;
