@@ -221,6 +221,7 @@ fill architecture could work well.
 5. Outline selected notes on chosen units and show their vel.
 6. Ctrl+D to deselect
 7. Preview at different pitches / velocities based off last note input
+8. Smaller audio blip after a seek. 
 
 Todo by priority
 ----------------
