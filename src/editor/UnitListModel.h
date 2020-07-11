@@ -6,7 +6,7 @@
 #include "protocol/UnitIdMap.h"
 #include "pxtone/pxtnService.h"
 
-enum struct UnitListColumn { Visible, Muted, Select, Name, MAX = Name };
+enum struct UnitListColumn { Visible, Played, Select, Name, MAX = Name };
 
 struct UnitListItem {
   bool visible;

@@ -217,6 +217,7 @@ fill architecture could work well.
 1. Fix selection rendering weird if zooms differ
 2. Forbid selecting below time 0
 3. Change a thing that could've caused crash on server connect.
+4. Changed 'muted' column to 'played' since the checked = muted was a bit unintuitive
 
 Todo by priority
 ----------------
