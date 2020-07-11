@@ -25,7 +25,7 @@ ServerSession::ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid)
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
-// TODO: Include history, sessions, data in hello
+// TODO: Include history, sessions, data in hello as a 'server history state'
 void ServerSession::sendHello(const QByteArray &data,
                               const QList<ServerAction> &history,
                               const QMap<qint64, QString> &sessions) {

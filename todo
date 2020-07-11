@@ -216,6 +216,7 @@ fill architecture could work well.
 7/10
 1. Fix selection rendering weird if zooms differ
 2. Forbid selecting below time 0
+3. Change a thing that could've caused crash on server connect.
 
 Todo by priority
 ----------------

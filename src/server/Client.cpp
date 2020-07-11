@@ -111,13 +111,17 @@ void Client::tryToStart() {
   QMap<qint64, QString> sessions;
 
   m_read_stream.startTransaction();
-
-  m_read_stream >> hello;
-  if (!hello.isValid()) qFatal("Invalid hello response");
-  m_uid = hello.uid();
-
-  m_read_stream >> data >> history >> sessions;
+  m_read_stream >> hello >> data >> history >> sessions;
   if (!m_read_stream.commitTransaction()) return;
+
+  if (!hello.isValid()) {
+    qWarning("Invalid hello response. Disconnecting.");
+    emit errorOccurred(
+        tr("Invalid hello response from server. Disconnecting."));
+    m_socket->disconnectFromHost();
+    return;
+  }
+  m_uid = hello.uid();
 
   qDebug() << "Received history of size" << history.size();
 
