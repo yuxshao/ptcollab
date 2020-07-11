@@ -213,9 +213,13 @@ fill architecture could work well.
 7/9
 1. Fix an undo bug hopefully (undone were not invalidated by a new write)
 
+7/10
+1. Fix selection rendering weird if zooms differ
+
 Todo by priority
 ----------------
- - fix selection rendering weird if zooms differ
+ - forbid selecting below time 0
+ - make sure startup doesn't break too
  - make selection more obvious
    - highlight all selected notes on chosen units?
    - show vel of all selected notes?

@@ -657,7 +657,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
 
       // TODO: colour other's existing selections (or identify somehow. maybe
       // name tag?)
-      drawExistingSelection(painter, state, size().height(),
+      drawExistingSelection(painter, adjusted_state, size().height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, painter, size().height(),
                         alphaMultiplier, selectionAlphaMultiplier);
