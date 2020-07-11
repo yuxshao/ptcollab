@@ -3,7 +3,7 @@
 #include <QDebug>
 
 PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
-                                       pxtnUnit *unit)
+                                       pxtnUnitTone *unit)
     : QIODevice(parent), m_pxtn(pxtn), m_unit(unit), m_zero_lives(false) {}
 
 qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {

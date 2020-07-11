@@ -11,7 +11,8 @@ class PxtoneUnitIODevice : public QIODevice {
   Q_OBJECT
 
  public:
-  PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn, pxtnUnit *unit);
+  PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
+                     pxtnUnitTone *unit);
   virtual ~PxtoneUnitIODevice() { close(); };
 
  signals:
@@ -20,7 +21,7 @@ class PxtoneUnitIODevice : public QIODevice {
 
  private:
   const pxtnService *m_pxtn;
-  pxtnUnit *m_unit;
+  pxtnUnitTone *m_unit;
   bool m_zero_lives;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);

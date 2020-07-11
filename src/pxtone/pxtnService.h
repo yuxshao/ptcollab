@@ -1,6 +1,8 @@
 #ifndef pxtnService_H
 #define pxtnService_H
 
+#include <vector>
+
 #include "./pxtn.h"
 #include "./pxtnDelay.h"
 #include "./pxtnDescriptor.h"
@@ -44,10 +46,6 @@ struct mooParams {
   int32_t smp_smooth;
   float clock_rate;  // as the sample /// (clock per sample)
 
-  // Some fade params. Not looked into it much yet
-  int32_t fade_count;
-  int32_t fade_max;
-  int32_t fade_fade;
   float master_vol;
 
   int32_t top;  // max pcm value allowed
@@ -57,12 +55,12 @@ struct mooParams {
 
   mooParams();
 
-  void processEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e, int32_t clock,
-                    int32_t dst_ch_num, int32_t dst_sps, int32_t smp_num,
-                    const pxtnService *pxtn) const;
+  void processEvent(pxtnUnitTone *p_u, int32_t u, const EVERECORD *e,
+                    int32_t clock, int32_t dst_ch_num, int32_t dst_sps,
+                    int32_t smp_num, const pxtnService *pxtn) const;
 
   // TODO: maybe don't need to expose
-  void resetVoiceOn(pxtnUnit *p_u) const;
+  void resetVoiceOn(pxtnUnitTone *p_u) const;
   void adjustClockRate(float rate) { clock_rate = rate; };
 };
 
@@ -71,6 +69,7 @@ struct mooState {
   // Buffers that units write to for group operations
   int32_t *group_smps;
   int32_t time_pan_index;
+  bool end_vomit;
 
   // Current sample position
   int32_t smp_count;
@@ -81,6 +80,13 @@ struct mooState {
   // Number of times this moo has looped. For ptcollab bookkeeping.
   int num_loop;
 
+  int32_t fade_max;    // How long the fade lasts. (maybe could go in params)
+  int32_t fade_count;  // How far into the fade we are.
+  int32_t fade_fade;   // Fading in our out?
+
+  // Buffers for each unit
+  std::vector<pxtnUnitTone> units;
+
   mooState();
 
   void release();
@@ -89,6 +95,12 @@ struct mooState {
   void adjustTempo(int32_t old_tempo, int32_t new_tempo) {
     smp_count = ((long long)smp_count) * old_tempo / new_tempo;
   }
+
+  bool resetUnits(size_t unit_num, std::shared_ptr<const pxtnWoice> woice,
+                  const mooParams &moo_params);
+
+  bool addUnit(std::shared_ptr<const pxtnWoice> woice,
+               const mooParams &moo_params);
 };
 
 typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
@@ -172,14 +184,11 @@ class pxtnService {
   bool _moo_init();
   bool _moo_release();
 
-  bool _moo_ResetVoiceOn(pxtnUnit *p_u, int32_t w) const;
-  bool _moo_InitUnitTone();
-  void _moo_ProcessEvent(pxtnUnit *p_u, int32_t u, const EVERECORD *e,
-                         int32_t clock);
-  bool _moo_PXTONE_SAMPLE(void *p_data);
-
+  bool _moo_InitUnitTone(mooState &moo_state) const;
   pxtnSampledCallback _sampled_proc;
   void *_sampled_user;
+
+  bool _moo_PXTONE_SAMPLE(void *p_data, mooState &moo_state) const;
 
  public:
   pxtnService();
@@ -257,11 +266,15 @@ class pxtnService {
   // Moo..
   //////////////
 
-  int32_t moo_tone_sample(pxtnUnit *p_u, void *data, int32_t buf_size,
+  bool MooCustom(mooState &moo_state, void *p_buf, int32_t size,
+                 int32_t *filled_size = nullptr) const;
+
+  bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
+
+  int32_t moo_tone_sample(pxtnUnitTone *p_u, void *data, int32_t buf_size,
                           int32_t time_pan_index) const;
 
   bool moo_is_valid_data() const;
-  bool moo_is_end_vomit() const;
   const mooParams *moo_params() const { return &_moo_params; }
   void adjustTempo(int32_t new_tempo) {
     _moo_state.adjustTempo(master->get_beat_tempo(), new_tempo);
@@ -279,7 +292,7 @@ class pxtnService {
 
   bool moo_set_mute_by_unit(bool b);
   bool moo_set_loop(bool b);
-  bool moo_set_fade(int32_t fade, float sec);
+  bool moo_set_fade(int32_t fade, float sec, mooState &moo_state) const;
   bool moo_set_master_volume(float v);
 
   int32_t moo_get_total_sample() const;
@@ -291,8 +304,6 @@ class pxtnService {
   int32_t moo_get_num_loop();
 
   bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
-
-  bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,

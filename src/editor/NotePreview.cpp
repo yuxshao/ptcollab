@@ -12,12 +12,11 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
                          int pitch, int vel, int duration,
                          std::shared_ptr<const pxtnWoice> starting_woice,
                          QObject *parent)
-    : QObject(parent), m_pxtn(pxtn) {
+    : QObject(parent), m_pxtn(pxtn), m_unit(starting_woice) {
   int32_t dst_sps, dst_ch_num;
   m_pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
 
   // TODO: Initing a unit should not take 2 steps.
-  m_unit.Tone_Init(starting_woice);
   m_pxtn->moo_params()->resetVoiceOn(&m_unit);
 
   if (unit_no != -1)

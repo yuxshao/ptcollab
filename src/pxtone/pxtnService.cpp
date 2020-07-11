@@ -267,7 +267,8 @@ pxtnERR pxtnService::tones_ready() {
 bool pxtnService::tones_clear() {
   if (!_b_init) return false;
   for (int32_t i = 0; i < _delay_num; i++) _delays[i]->Tone_Clear();
-  for (int32_t i = 0; i < _unit_num; i++) _units[i]->Tone_Clear();
+  for (size_t i = 0; i < _moo_state.units.size(); i++)
+    _moo_state.units[i].Tone_Clear();
   return true;
 }
 
@@ -464,6 +465,7 @@ bool pxtnService::Unit_AddNew() {
   if (_unit_num >= _unit_max) return false;
   _units[_unit_num] = new pxtnUnit();
   _unit_num++;
+  _moo_state.addUnit(Woice_Get(EVENTDEFAULT_VOICENO), _moo_params);
   return true;
 }
 

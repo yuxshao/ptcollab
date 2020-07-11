@@ -8,17 +8,10 @@
 #include "./pxtnMax.h"
 #include "./pxtnWoice.h"
 
-class pxtnUnit {
+/// Note: I extracted out the stuff related to playing a unit into a separate
+/// struct, so that this can be outside of the pxtnService state.
+class pxtnUnitTone {
  private:
-  void operator=(const pxtnUnit &src) = delete;
-  pxtnUnit(const pxtnUnit &src) = delete;
-
-  bool _bVisible;
-  bool _bOperated;
-  bool _bPlayed;
-  char _name_buf[pxtnMAX_TUNEUNITNAME + 1];
-  int32_t _name_size;
-
   //    TUNEUNITTONESTRUCT
   int32_t _key_now;
   int32_t _key_start;
@@ -40,10 +33,7 @@ class pxtnUnit {
   pxtnVOICETONE _vts[pxtnMAX_UNITCONTROLVOICE];
 
  public:
-  pxtnUnit();
-  ~pxtnUnit();
-
-  bool Tone_Init(std::shared_ptr<const pxtnWoice> p_woice);
+  pxtnUnitTone(std::shared_ptr<const pxtnWoice> p_woice);
 
   void Tone_Clear();
 
@@ -68,7 +58,8 @@ class pxtnUnit {
 
   void Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
                           pxtnVOICETONE *vts, int32_t *bufs) const;
-  void Tone_Sample(bool b_mute_by_unit, int32_t ch_num, int32_t time_pan_index,
+  // TODO: mute has changed
+  void Tone_Sample(bool b_mute, int32_t ch_num, int32_t time_pan_index,
                    int32_t smooth_smp);
   int32_t Tone_Supple_get(int32_t ch, int32_t time_pan_index) const;
   void Tone_Supple(int32_t *group_smps, int32_t ch_num,
@@ -80,11 +71,27 @@ class pxtnUnit {
   bool set_woice(std::shared_ptr<const pxtnWoice> p_woice);
   std::shared_ptr<const pxtnWoice> get_woice() const;
 
+  pxtnVOICETONE *get_tone(int32_t voice_idx);
+};
+
+class pxtnUnit {
+ private:
+  void operator=(const pxtnUnit &src) = delete;
+  pxtnUnit(const pxtnUnit &src) = delete;
+
+  bool _bVisible;
+  bool _bOperated;
+  bool _bPlayed;
+  char _name_buf[pxtnMAX_TUNEUNITNAME + 1];
+  int32_t _name_size;
+
+ public:
+  pxtnUnit();
+  ~pxtnUnit();
+
   bool set_name_buf(const char *name_buf, int32_t buf_size);
   const char *get_name_buf(int32_t *p_buf_size) const;
   bool is_name_buf() const;
-
-  pxtnVOICETONE *get_tone(int32_t voice_idx);
 
   void set_visible(bool b);
   void set_operated(bool b);

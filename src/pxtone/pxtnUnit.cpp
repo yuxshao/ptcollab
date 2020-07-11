@@ -15,7 +15,7 @@ pxtnUnit::pxtnUnit() {
 
 pxtnUnit::~pxtnUnit() {}
 
-bool pxtnUnit::Tone_Init(std::shared_ptr<const pxtnWoice> p_woice) {
+pxtnUnitTone::pxtnUnitTone(std::shared_ptr<const pxtnWoice> p_woice) {
   _v_GROUPNO = EVENTDEFAULT_GROUPNO;
   _v_VELOCITY = EVENTDEFAULT_VELOCITY;
   _v_VOLUME = EVENTDEFAULT_VOLUME;
@@ -28,16 +28,16 @@ bool pxtnUnit::Tone_Init(std::shared_ptr<const pxtnWoice> p_woice) {
     _pan_times[i] = 0;
   }
 
-  return set_woice(p_woice);
+  if (!set_woice(p_woice)) throw "Voice is null";
 }
 
-void pxtnUnit::Tone_Clear() {
+void pxtnUnitTone::Tone_Clear() {
   memset(_pan_time_bufs, 0,
          sizeof(int) * pxtnBUFSIZE_TIMEPAN * pxtnMAX_CHANNEL);
 }
 
-void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
-                                   float offset_freq) {
+void pxtnUnitTone::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
+                                       float offset_freq) {
   pxtnVOICETONE *p_tone = &_vts[voice_idx];
   p_tone->life_count = 0;
   p_tone->on_count = 0;
@@ -50,8 +50,8 @@ void pxtnUnit::Tone_Reset_and_2prm(int32_t voice_idx, int32_t env_rls_clock,
 /* A custom way to initialize a pxtnVOICETONE for separate playing. Used to be
  * used for note previews, but now we just create a whole unit for previewing.
  */
-void pxtnUnit::Tone_Reset_Custom(float tempo, float clock_rate,
-                                 pxtnVOICETONE *vts) const {
+void pxtnUnitTone::Tone_Reset_Custom(float tempo, float clock_rate,
+                                     pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
   const pxtnVOICEINSTANCE *p_inst;
   const pxtnVOICEUNIT *p_vc;
@@ -73,11 +73,11 @@ void pxtnUnit::Tone_Reset_Custom(float tempo, float clock_rate,
   }
 }
 
-void pxtnUnit::Tone_Reset(float tempo, float clock_rate) {
+void pxtnUnitTone::Tone_Reset(float tempo, float clock_rate) {
   Tone_Reset_Custom(tempo, clock_rate, _vts);
 }
 
-bool pxtnUnit::set_woice(std::shared_ptr<const pxtnWoice> p_woice) {
+bool pxtnUnitTone::set_woice(std::shared_ptr<const pxtnWoice> p_woice) {
   if (!p_woice) return false;
   _p_woice = p_woice;
   _key_now = EVENTDEFAULT_KEY;
@@ -112,23 +112,23 @@ bool pxtnUnit::get_visible() const { return _bVisible; }
 bool pxtnUnit::get_operated() const { return _bOperated; }
 bool pxtnUnit::get_played() const { return _bPlayed; }
 
-void pxtnUnit::Tone_ZeroLives() {
+void pxtnUnitTone::Tone_ZeroLives() {
   for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++) _vts[i].life_count = 0;
 }
 
-void pxtnUnit::Tone_KeyOn() {
+void pxtnUnitTone::Tone_KeyOn() {
   _key_now = _key_start + _key_margin;
   _key_start = _key_now;
   _key_margin = 0;
 }
 
-void pxtnUnit::Tone_Key(int32_t key) {
+void pxtnUnitTone::Tone_Key(int32_t key) {
   _key_start = _key_now;
   _key_margin = key - _key_start;
   _portament_sample_pos = 0;
 }
 
-void pxtnUnit::Tone_Pan_Volume(int32_t ch, int32_t pan) {
+void pxtnUnitTone::Tone_Pan_Volume(int32_t ch, int32_t pan) {
   _pan_vols[0] = 64;
   _pan_vols[1] = 64;
   if (ch == 2) {
@@ -139,7 +139,7 @@ void pxtnUnit::Tone_Pan_Volume(int32_t ch, int32_t pan) {
   }
 }
 
-void pxtnUnit::Tone_Pan_Time(int32_t ch, int32_t pan, int32_t sps) {
+void pxtnUnitTone::Tone_Pan_Time(int32_t ch, int32_t pan, int32_t sps) {
   _pan_times[0] = 0;
   _pan_times[1] = 0;
 
@@ -156,12 +156,12 @@ void pxtnUnit::Tone_Pan_Time(int32_t ch, int32_t pan, int32_t sps) {
   }
 }
 
-void pxtnUnit::Tone_Velocity(int32_t val) { _v_VELOCITY = val; }
-void pxtnUnit::Tone_Volume(int32_t val) { _v_VOLUME = val; }
-void pxtnUnit::Tone_Portament(int32_t val) { _portament_sample_num = val; }
-void pxtnUnit::Tone_GroupNo(int32_t val) { _v_GROUPNO = val; }
-void pxtnUnit::Tone_Tuning(float val) { _v_TUNING = val; }
-void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
+void pxtnUnitTone::Tone_Velocity(int32_t val) { _v_VELOCITY = val; }
+void pxtnUnitTone::Tone_Volume(int32_t val) { _v_VOLUME = val; }
+void pxtnUnitTone::Tone_Portament(int32_t val) { _portament_sample_num = val; }
+void pxtnUnitTone::Tone_GroupNo(int32_t val) { _v_GROUPNO = val; }
+void pxtnUnitTone::Tone_Tuning(float val) { _v_TUNING = val; }
+void pxtnUnitTone::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
 
   /* In practice there are at most 2 voice nums */
@@ -188,13 +188,13 @@ void pxtnUnit::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
     }
   }
 }
-void pxtnUnit::Tone_Envelope() { Tone_Envelope_Custom(_vts); }
+void pxtnUnitTone::Tone_Envelope() { Tone_Envelope_Custom(_vts); }
 
 /* This sets up the buffers local to the unit for time pans (_pan_time_bufs) */
 /* added [Tone_sample_custom] because [Tone_sample] by default modifies the
  * pxtnVOICETONE associated with the actual unit during playback. */
-void pxtnUnit::Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
-                                  pxtnVOICETONE *vts, int32_t *bufs) const {
+void pxtnUnitTone::Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
+                                      pxtnVOICETONE *vts, int32_t *bufs) const {
   for (int32_t ch = 0; ch < pxtnMAX_CHANNEL; ch++) {
     int32_t time_pan_buf = 0;
 
@@ -241,11 +241,11 @@ void pxtnUnit::Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
   }
 }
 
-void pxtnUnit::Tone_Sample(bool b_mute_by_unit, int32_t ch_num,
-                           int32_t time_pan_index, int32_t smooth_smp) {
+void pxtnUnitTone::Tone_Sample(bool b_mute, int32_t ch_num,
+                               int32_t time_pan_index, int32_t smooth_smp) {
   if (!_p_woice) return;
 
-  if (b_mute_by_unit && !_bPlayed) {
+  if (b_mute) {
     for (int32_t ch = 0; ch < ch_num; ch++)
       _pan_time_bufs[time_pan_index][ch] = 0;
     return;
@@ -254,17 +254,18 @@ void pxtnUnit::Tone_Sample(bool b_mute_by_unit, int32_t ch_num,
   Tone_Sample_Custom(ch_num, smooth_smp, _vts, _pan_time_bufs[time_pan_index]);
 }
 
-int32_t pxtnUnit::Tone_Supple_get(int32_t ch, int32_t time_pan_index) const {
+int32_t pxtnUnitTone::Tone_Supple_get(int32_t ch,
+                                      int32_t time_pan_index) const {
   int32_t idx = (time_pan_index - _pan_times[ch]) & (pxtnBUFSIZE_TIMEPAN - 1);
   return _pan_time_bufs[idx][ch];
 }
 /* This dumps the time pan buffers into the group buffers */
-void pxtnUnit::Tone_Supple(int32_t *group_smps, int32_t ch,
-                           int32_t time_pan_index) const {
+void pxtnUnitTone::Tone_Supple(int32_t *group_smps, int32_t ch,
+                               int32_t time_pan_index) const {
   group_smps[_v_GROUPNO] += Tone_Supple_get(ch, time_pan_index);
 }
 
-int pxtnUnit::Tone_Increment_Key() {
+int pxtnUnitTone::Tone_Increment_Key() {
   // prtament..
   if (_portament_sample_num && _key_margin) {
     if (_portament_sample_pos < _portament_sample_num) {
@@ -283,8 +284,8 @@ int pxtnUnit::Tone_Increment_Key() {
   return _key_now;
 }
 
-void pxtnUnit::Tone_Increment_Sample_Custom(float freq,
-                                            pxtnVOICETONE *vts) const {
+void pxtnUnitTone::Tone_Increment_Sample_Custom(float freq,
+                                                pxtnVOICETONE *vts) const {
   if (!_p_woice) return;
 
   /* Up to two voices (the ones you see in ptvoice) */
@@ -317,15 +318,15 @@ void pxtnUnit::Tone_Increment_Sample_Custom(float freq,
   }
 }
 
-void pxtnUnit::Tone_Increment_Sample(float freq) {
+void pxtnUnitTone::Tone_Increment_Sample(float freq) {
   Tone_Increment_Sample_Custom(freq, _vts);
 }
 
-std::shared_ptr<const pxtnWoice> pxtnUnit::get_woice() const {
+std::shared_ptr<const pxtnWoice> pxtnUnitTone::get_woice() const {
   return _p_woice;
 }
 
-pxtnVOICETONE *pxtnUnit::get_tone(int32_t voice_idx) {
+pxtnVOICETONE *pxtnUnitTone::get_tone(int32_t voice_idx) {
   return &_vts[voice_idx];
 }
 

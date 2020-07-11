@@ -27,7 +27,7 @@ class NotePreview : public QObject {
               std::shared_ptr<const pxtnWoice> starting_woice,
               QObject *parent = nullptr);
   const pxtnService *m_pxtn;
-  pxtnUnit m_unit;
+  pxtnUnitTone m_unit;
   PxtoneUnitIODevice *m_device;
   QAudioOutput *m_audio;
 };
