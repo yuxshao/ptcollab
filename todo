@@ -215,17 +215,17 @@ fill architecture could work well.
 
 7/10
 1. Fix selection rendering weird if zooms differ
+2. Forbid selecting below time 0
 
 Todo by priority
 ----------------
- - forbid selecting below time 0
- - make sure startup doesn't break too
  - make selection more obvious
    - highlight all selected notes on chosen units?
    - show vel of all selected notes?
  - preview different pitches / velocities (say, just using last note) so your
    ear doesn't break
  - C-d deselect. Maybe just click somewhere to deselect? Idk
+ - clean up startup code, make sure it doesn't break?
  - show measure num, set loop points
    - will probably need some pixel font thing
  - keyboard on left side of piano roll (probably will help in figuring out how
@@ -345,8 +345,8 @@ Running thank-you list:
 0. Pixel for making such an awesome music software!
 1. Everyone involved in ptweb!
 2. Friends and family for supporting this!
-3. jaxcheese, neozoid, steedfarmer for testing out with me, making tunes
-   together, and giving great feedback!
+3. jaxcheese, neozoid, steedfarmer, ewangreen for testing out with me, making
+   tunes together, and giving great feedback!
 4. steedfarmer for helping me hunt down this nasty networking bug!
 5. arcofdream for helping conceptualize the UI, giving feedback, and testing it
    out!

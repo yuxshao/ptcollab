@@ -756,7 +756,8 @@ void KeyboardEditor::wheelEvent(QWheelEvent *event) {
 
 void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
-  state.current_clock = event->localPos().x() * edit_state.scale.clockPerPx;
+  state.current_clock =
+      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
   state.current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
 
   if (state.type == MouseEditState::Type::Nothing ||
