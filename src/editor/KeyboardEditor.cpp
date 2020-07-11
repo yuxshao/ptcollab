@@ -857,6 +857,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       int pitch = m_edit_state.mouse_edit_state.current_pitch;
       pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
               m_edit_state.m_quantize_pitch;
+      m_edit_state.mouse_edit_state.last_pitch = pitch;
 
       int clock = m_edit_state.mouse_edit_state.current_clock;
       clock = quantize(clock, m_edit_state.m_quantize_clock);

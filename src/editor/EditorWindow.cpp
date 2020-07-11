@@ -189,7 +189,9 @@ EditorWindow::EditorWindow(QWidget *parent)
       }
       // TODO: stop existing note preview on creation of new one in this case
       m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000, woice, this);
+          &m_pxtn, m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
+          m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
+          woice, this);
     } catch (const QString &e) {
       qDebug() << "Could not preview woice at path" << path << ". Error" << e;
     }
@@ -199,7 +201,8 @@ EditorWindow::EditorWindow(QWidget *parent)
     // not. Also this is variable on tempo rn - fix that.
     if (idx >= 0)
       m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, EVENTDEFAULT_KEY, EVENTDEFAULT_VELOCITY, 48000,
+          &m_pxtn, m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
+          m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
           m_pxtn.Woice_Get(idx), this);
     else
       m_note_preview = nullptr;

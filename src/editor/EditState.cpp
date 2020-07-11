@@ -11,23 +11,23 @@ Interval MouseEditState::clock_int(int q) const {
   return {quantize(begin, q), quantize(end, q) + q};
 }
 EditState::EditState()
-    : mouse_edit_state({MouseEditState::Type::Nothing, EVENTDEFAULT_VELOCITY, 0,
-                        0, 0, 0, std::nullopt}),
+    : mouse_edit_state({MouseEditState::Type::Nothing, EVENTDEFAULT_VELOCITY,
+                        EVENTDEFAULT_KEY, 0, 0, 0, 0, std::nullopt}),
       scale(),
       m_current_unit_id(0),
       m_quantize_clock(1),
       m_quantize_pitch(1) {}
 
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a) {
-  return (out << qint8(a.type) << a.base_velocity << a.start_clock
-              << a.current_clock << a.start_pitch << a.current_pitch
-              << a.selection);
+  return (out << qint8(a.type) << a.base_velocity << a.last_pitch
+              << a.start_clock << a.current_clock << a.start_pitch
+              << a.current_pitch << a.selection);
 }
 
 QDataStream &operator>>(QDataStream &in, MouseEditState &a) {
   qint8 type_int;
-  in >> type_int >> a.base_velocity >> a.start_clock >> a.current_clock >>
-      a.start_pitch >> a.current_pitch >> a.selection;
+  in >> type_int >> a.base_velocity >> a.last_pitch >> a.start_clock >>
+      a.current_clock >> a.start_pitch >> a.current_pitch >> a.selection;
   a.type = MouseEditState::Type(type_int);
   return in;
 }

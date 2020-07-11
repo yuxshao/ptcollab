@@ -8,6 +8,7 @@ struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn, Select };
   Type type;
   qreal base_velocity;
+  qint32 last_pitch;
   qint32 start_clock;
   qint32 start_pitch;
   qint32 current_clock;

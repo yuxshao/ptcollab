@@ -34,6 +34,7 @@ class KeyboardEditor : public QWidget {
   void loadHistory(QList<ServerAction> &history);
   void setUid(qint64 uid);
   void resetUnitIdMap();
+  const EditState &edit_state() { return m_edit_state; };
 
  signals:
   void currentUnitNoChanged(int);
@@ -83,11 +84,13 @@ class KeyboardEditor : public QWidget {
   PxtoneActionSynchronizer *m_sync;
   int quantXIndex;
   int quantizeSelectionY;
+
   // A bunch of things to give the illusion of a smooth playhead when there's a
   // buffer.
   int m_last_clock, m_this_seek;
   bool m_this_seek_caught_up;
   QElapsedTimer timeSinceLastClock;
+
   bool m_test_activity;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   Clipboard m_clipboard;
