@@ -11,14 +11,7 @@ pxtnDelay::pxtnDelay() {
   _group = 0;
   _rate = 33.0;
   _freq = 3.f;
-  _smp_num = 0;
-  _offset = 0;
-  _rate_s32 = 100;
-
-  memset(_bufs, 0, sizeof(_bufs));
 }
-
-pxtnDelay::~pxtnDelay() { Tone_Release(); }
 
 DELAYUNIT pxtnDelay::get_unit() const { return _unit; }
 int32_t pxtnDelay::get_group() const { return _group; }
@@ -39,66 +32,53 @@ bool pxtnDelay::switch_played() {
   return _b_played;
 }
 
-void pxtnDelay::Tone_Release() {
-  for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++)
-    pxtnMem_free((void **)&_bufs[i]);
+pxtnDelayTone::pxtnDelayTone(const pxtnDelay &delay, int32_t beat_num,
+                             float beat_tempo, int32_t sps) {
   _smp_num = 0;
-}
+  _offset = 0;
+  _rate_s32 = 100;
 
-pxtnERR pxtnDelay::Tone_Ready(int32_t beat_num, float beat_tempo, int32_t sps) {
-  Tone_Release();
-
-  pxtnERR res = pxtnERR_VOID;
-
-  if (_freq && _rate) {
+  if (delay.get_freq() && delay.get_rate()) {
     _offset = 0;
-    _rate_s32 = (int32_t)_rate;  // /100;
+    _rate_s32 = (int32_t)delay.get_rate();  // /100;
 
-    switch (_unit) {
+    switch (delay.get_unit()) {
       case DELAYUNIT_Beat:
-        _smp_num = (int32_t)(sps * 60 / beat_tempo / _freq);
+        _smp_num = (int32_t)(sps * 60 / beat_tempo / delay.get_freq());
         break;
       case DELAYUNIT_Meas:
-        _smp_num = (int32_t)(sps * 60 * beat_num / beat_tempo / _freq);
+        _smp_num =
+            (int32_t)(sps * 60 * beat_num / beat_tempo / delay.get_freq());
         break;
       case DELAYUNIT_Second:
-        _smp_num = (int32_t)(sps / _freq);
+        _smp_num = (int32_t)(sps / delay.get_freq());
         break;
     }
 
-    for (int32_t c = 0; c < pxtnMAX_CHANNEL; c++) {
-      if (!pxtnMem_zero_alloc((void **)&_bufs[c], _smp_num * sizeof(int32_t))) {
-        res = pxtnERR_memory;
-        goto term;
-      }
-    }
+    for (int32_t c = 0; c < pxtnMAX_CHANNEL; c++)
+      _bufs[c] = std::make_unique<int32_t[]>(_smp_num);
+    Tone_Clear();
   }
-
-  res = pxtnOK;
-term:
-
-  if (res != pxtnOK) Tone_Release();
-
-  return res;
 }
 
-void pxtnDelay::Tone_Supple(int32_t ch, int32_t *group_smps) {
+void pxtnDelayTone::Tone_Supple(const pxtnDelay &delay, int32_t ch,
+                                int32_t *group_smps) {
   if (!_smp_num) return;
   int32_t a = _bufs[ch][_offset] * _rate_s32 / 100;
-  if (_b_played) group_smps[_group] += a;
-  _bufs[ch][_offset] = group_smps[_group];
+  if (delay.get_played()) group_smps[delay.get_group()] += a;
+  _bufs[ch][_offset] = group_smps[delay.get_group()];
 }
 
-void pxtnDelay::Tone_Increment() {
+void pxtnDelayTone::Tone_Increment() {
   if (!_smp_num) return;
   if (++_offset >= _smp_num) _offset = 0;
 }
 
-void pxtnDelay::Tone_Clear() {
+void pxtnDelayTone::Tone_Clear() {
   if (!_smp_num) return;
   int32_t def = 0;  // ..
   for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++)
-    memset(_bufs[i], def, _smp_num * sizeof(int32_t));
+    memset(_bufs[i].get(), def, _smp_num * sizeof(int32_t));
 }
 
 // (12byte) =================

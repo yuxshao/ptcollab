@@ -86,6 +86,7 @@ struct mooState {
 
   // Buffers for each unit
   std::vector<pxtnUnitTone> units;
+  std::vector<pxtnDelayTone> delays;
 
   mooState();
 
@@ -127,12 +128,10 @@ class pxtnService {
 
   pxtnPulse_NoiseBuilder *_ptn_bldr;
 
-  int32_t _delay_max;
-  int32_t _delay_num;
-  pxtnDelay **_delays;
-  int32_t _ovdrv_max;
-  int32_t _ovdrv_num;
-  pxtnOverDrive **_ovdrvs;
+  size_t _delay_max;
+  std::vector<pxtnDelay> _delays;
+  size_t _ovdrv_max;
+  std::vector<pxtnOverDrive> _ovdrvs;
   int32_t _woice_max;
   int32_t _woice_num;
   std::shared_ptr<pxtnWoice> *_woices;

@@ -28,6 +28,8 @@ class pxtnOverDrive {
 
  public:
   pxtnOverDrive();
+  pxtnOverDrive(pxtnOverDrive &&) noexcept = default;
+  pxtnOverDrive &operator=(pxtnOverDrive &&) noexcept = default;
   ~pxtnOverDrive();
 
   void Tone_Ready();

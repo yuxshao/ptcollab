@@ -229,6 +229,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
   for (; moo_state.p_eve && moo_state.p_eve->clock <= clock;
        moo_state.p_eve = moo_state.p_eve->next) {
     int32_t u = moo_state.p_eve->unit_no;
+    // TODO: Be robust to if there's a mention of a new unit. Generate the new
+    // unit on the fly?
     _moo_params.processEvent(&moo_state.units[u], u, moo_state.p_eve, clock,
                              _dst_ch_num, _dst_sps, smp_end, this);
   }
@@ -247,10 +249,13 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
       moo_state.units[u].Tone_Supple(moo_state.group_smps, ch,
                                      moo_state.time_pan_index);
     /* Add overdrive, delay to group buffer */
-    for (int32_t o = 0; o < _ovdrv_num; o++)
-      _ovdrvs[o]->Tone_Supple(moo_state.group_smps);
-    for (int32_t d = 0; d < _delay_num; d++)
-      _delays[d]->Tone_Supple(ch, moo_state.group_smps);
+    for (size_t o = 0; o < _ovdrvs.size(); o++)
+      _ovdrvs[o].Tone_Supple(moo_state.group_smps);
+    for (size_t d = 0; d < _delays.size(); d++) {
+      // TODO: Be robust to if there's a new delay. Generate new delay on the
+      // fly?
+      moo_state.delays[d].Tone_Supple(_delays[d], ch, moo_state.group_smps);
+    }
 
     /* Add group samples together for final */
     // collect.
@@ -285,7 +290,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
   }
 
   // delay
-  for (int32_t d = 0; d < _delay_num; d++) _delays[d]->Tone_Increment();
+  for (size_t d = 0; d < moo_state.delays.size(); d++)
+    moo_state.delays[d].Tone_Increment();
 
   // fade out
   if (moo_state.fade_fade < 0) {

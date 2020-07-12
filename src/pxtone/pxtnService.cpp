@@ -91,10 +91,8 @@ pxtnService::pxtnService() {
   master = NULL;
   evels = NULL;
 
-  _delays = NULL;
-  _delay_max = _delay_num = 0;
-  _ovdrvs = NULL;
-  _ovdrv_max = _ovdrv_num = 0;
+  _delay_max = 0;
+  _ovdrv_max = 0;
   _woices = NULL;
   _woice_max = _woice_num = 0;
   _units = NULL;
@@ -118,16 +116,8 @@ bool pxtnService::_release() {
   SAFE_DELETE(master);
   SAFE_DELETE(evels);
   SAFE_DELETE(_ptn_bldr);
-  if (_delays) {
-    for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_delays[i]);
-    free(_delays);
-    _delays = NULL;
-  }
-  if (_ovdrvs) {
-    for (int32_t i = 0; i < _ovdrv_num; i++) SAFE_DELETE(_ovdrvs[i]);
-    free(_ovdrvs);
-    _ovdrvs = NULL;
-  }
+  _delays.clear();
+  _ovdrvs.clear();
   if (_woices) {
     for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
     delete[] _woices;
@@ -185,21 +175,9 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
   }
 
   // delay
-  byte_size = sizeof(pxtnDelay *) * pxtnMAX_TUNEDELAYSTRUCT;
-  if (!(_delays = (pxtnDelay **)malloc(byte_size))) {
-    res = pxtnERR_memory;
-    goto End;
-  }
-  memset(_delays, 0, byte_size);
   _delay_max = pxtnMAX_TUNEDELAYSTRUCT;
 
   // over-drive
-  byte_size = sizeof(pxtnOverDrive *) * pxtnMAX_TUNEOVERDRIVESTRUCT;
-  if (!(_ovdrvs = (pxtnOverDrive **)malloc(byte_size))) {
-    res = pxtnERR_memory;
-    goto End;
-  }
-  memset(_ovdrvs, 0, byte_size);
   _ovdrv_max = pxtnMAX_TUNEOVERDRIVESTRUCT;
 
   // woice
@@ -250,13 +228,11 @@ pxtnERR pxtnService::tones_ready() {
   int32_t beat_num = master->get_beat_num();
   float beat_tempo = master->get_beat_tempo();
 
-  for (int32_t i = 0; i < _delay_num; i++) {
-    res = _delays[i]->Tone_Ready(beat_num, beat_tempo, _dst_sps);
-    if (res != pxtnOK) return res;
-  }
-  for (int32_t i = 0; i < _ovdrv_num; i++) {
-    _ovdrvs[i]->Tone_Ready();
-  }
+  _moo_state.delays.clear();
+  for (size_t i = 0; i < _delays.size(); i++)
+    _moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
+
+  for (size_t i = 0; i < _ovdrvs.size(); i++) _ovdrvs[i].Tone_Ready();
   for (int32_t i = 0; i < _woice_num; i++) {
     res = _woices[i]->Tone_Ready(_ptn_bldr, _dst_sps);
     if (res != pxtnOK) return res;
@@ -266,7 +242,8 @@ pxtnERR pxtnService::tones_ready() {
 
 bool pxtnService::tones_clear() {
   if (!_b_init) return false;
-  for (int32_t i = 0; i < _delay_num; i++) _delays[i]->Tone_Clear();
+  for (size_t i = 0; i < _moo_state.delays.size(); i++)
+    _moo_state.delays[i].Tone_Clear();
   for (size_t i = 0; i < _moo_state.units.size(); i++)
     _moo_state.units[i].Tone_Clear();
   return true;
@@ -276,96 +253,89 @@ bool pxtnService::tones_clear() {
 // Delay..
 // ---------------------------
 
-int32_t pxtnService::Delay_Num() const { return _b_init ? _delay_num : 0; }
+int32_t pxtnService::Delay_Num() const { return _b_init ? _delays.size() : 0; }
 int32_t pxtnService::Delay_Max() const { return _b_init ? _delay_max : 0; }
 
 bool pxtnService::Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
                             int32_t group) {
   if (!_b_init) return false;
-  if (idx >= _delay_num) return false;
-  _delays[idx]->Set(unit, freq, rate, group);
+  if (size_t(idx) >= _delays.size()) return false;
+  _delays[idx].Set(unit, freq, rate, group);
   return true;
 }
 
 bool pxtnService::Delay_Add(DELAYUNIT unit, float freq, float rate,
                             int32_t group) {
   if (!_b_init) return false;
-  if (_delay_num >= _delay_max) return false;
-  _delays[_delay_num] = new pxtnDelay();
-  _delays[_delay_num]->Set(unit, freq, rate, group);
-  _delay_num++;
+  if (_delays.size() >= _delay_max) return false;
+  _delays.emplace_back();
+  _delays.rbegin()->Set(unit, freq, rate, group);
   return true;
 }
 
 bool pxtnService::Delay_Remove(int32_t idx) {
   if (!_b_init) return false;
-  if (idx >= _delay_num) return false;
-
-  SAFE_DELETE(_delays[idx]);
-  _delay_num--;
-  for (int32_t i = idx; i < _delay_num; i++) _delays[i] = _delays[i + 1];
-  _delays[_delay_num] = NULL;
+  if (size_t(idx) >= _delays.size()) return false;
+  _delays.erase(_delays.begin() + idx);
   return true;
 }
 
 pxtnDelay *pxtnService::Delay_Get(int32_t idx) {
   if (!_b_init) return NULL;
-  if (idx < 0 || idx >= _delay_num) return NULL;
-  return _delays[idx];
+  if (idx < 0 || size_t(idx) >= _delays.size()) return NULL;
+  return &_delays[idx];
 }
 
 pxtnERR pxtnService::Delay_ReadyTone(int32_t idx) {
   if (!_b_init) return pxtnERR_INIT;
-  if (idx < 0 || idx >= _delay_num) return pxtnERR_param;
-  return _delays[idx]->Tone_Ready(master->get_beat_num(),
-                                  master->get_beat_tempo(), _dst_sps);
+  if (idx < 0 || size_t(idx) >= _moo_state.delays.size()) return pxtnERR_param;
+  _moo_state.delays[idx] = pxtnDelayTone(_delays[idx], master->get_beat_num(),
+                                         master->get_beat_tempo(), _dst_sps);
+  return pxtnOK;
 }
 
 // ---------------------------
 // Over Drive..
 // ---------------------------
 
-int32_t pxtnService::OverDrive_Num() const { return _b_init ? _ovdrv_num : 0; }
+int32_t pxtnService::OverDrive_Num() const {
+  return _b_init ? _ovdrvs.size() : 0;
+}
 int32_t pxtnService::OverDrive_Max() const { return _b_init ? _ovdrv_max : 0; }
 
 bool pxtnService::OverDrive_Set(int32_t idx, float cut, float amp,
                                 int32_t group) {
   if (!_b_init) return false;
-  if (idx >= _ovdrv_num) return false;
-  _ovdrvs[idx]->Set(cut, amp, group);
+  if (size_t(idx) >= _ovdrvs.size()) return false;
+  _ovdrvs[idx].Set(cut, amp, group);
   return true;
 }
 
 bool pxtnService::OverDrive_Add(float cut, float amp, int32_t group) {
   if (!_b_init) return false;
-  if (_ovdrv_num >= _ovdrv_max) return false;
-  _ovdrvs[_ovdrv_num] = new pxtnOverDrive();
-  _ovdrvs[_ovdrv_num]->Set(cut, amp, group);
-  _ovdrv_num++;
+  if (_ovdrvs.size() >= _ovdrv_max) return false;
+  _ovdrvs.emplace_back();
+  _ovdrvs.rbegin()->Set(cut, amp, group);
   return true;
 }
 
 bool pxtnService::OverDrive_Remove(int32_t idx) {
   if (!_b_init) return false;
-  if (idx >= _ovdrv_num) return false;
-
-  SAFE_DELETE(_ovdrvs[idx]);
-  _ovdrv_num--;
-  for (int32_t i = idx; i < _ovdrv_num; i++) _ovdrvs[i] = _ovdrvs[i + 1];
-  _ovdrvs[_ovdrv_num] = NULL;
+  if (size_t(idx) >= _ovdrvs.size()) return false;
+  _ovdrvs.erase(_ovdrvs.begin() + idx);
   return true;
 }
 
 pxtnOverDrive *pxtnService::OverDrive_Get(int32_t idx) {
   if (!_b_init) return NULL;
-  if (idx < 0 || idx >= _ovdrv_num) return NULL;
-  return _ovdrvs[idx];
+  if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
+  return &_ovdrvs[idx];
 }
 
 bool pxtnService::OverDrive_ReadyTone(int32_t idx) {
   if (!_b_init) return false;
-  if (idx < 0 || idx >= _ovdrv_num) return false;
-  _ovdrvs[idx]->Tone_Ready();
+  if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return false;
+  _ovdrvs[idx].Tone_Ready();
   return true;
 }
 
@@ -623,10 +593,8 @@ bool pxtnService::clear() {
 
   evels->Clear();
 
-  for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_delays[i]);
-  _delay_num = 0;
-  for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_ovdrvs[i]);
-  _ovdrv_num = 0;
+  _delays.clear();
+  _ovdrvs.clear();
   for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
   _woice_num = 0;
   for (int32_t i = 0; i < _unit_num; i++) SAFE_DELETE(_units[i]);
@@ -643,43 +611,30 @@ bool pxtnService::clear() {
 
 pxtnERR pxtnService::_io_Read_Delay(pxtnDescriptor *p_doc) {
   if (!_b_init) return pxtnERR_INIT;
-  if (!_delays) return pxtnERR_INIT;
-  if (_delay_num >= _delay_max) return pxtnERR_fmt_unknown;
+  if (_delays.size() >= _delay_max) return pxtnERR_fmt_unknown;
 
   pxtnERR res = pxtnERR_VOID;
-  pxtnDelay *delay = new pxtnDelay();
+  _delays.emplace_back();
 
-  res = delay->Read(p_doc);
+  res = _delays.rbegin()->Read(p_doc);
   if (res != pxtnOK) goto term;
   res = pxtnOK;
 term:
-  if (res == pxtnOK) {
-    _delays[_delay_num] = delay;
-    _delay_num++;
-  } else {
-    SAFE_DELETE(delay);
-  }
+  if (res != pxtnOK) _delays.pop_back();
   return res;
 }
 
 pxtnERR pxtnService::_io_Read_OverDrive(pxtnDescriptor *p_doc) {
   if (!_b_init) return pxtnERR_INIT;
-  if (!_ovdrvs) return pxtnERR_INIT;
-  if (_ovdrv_num >= _ovdrv_max) return pxtnERR_fmt_unknown;
+  if (_ovdrvs.size() >= _ovdrv_max) return pxtnERR_fmt_unknown;
 
   pxtnERR res = pxtnERR_VOID;
-  pxtnOverDrive *ovdrv = new pxtnOverDrive();
-  res = ovdrv->Read(p_doc);
+  _ovdrvs.emplace_back();
+  res = _ovdrvs.rbegin()->Read(p_doc);
   if (res != pxtnOK) goto term;
   res = pxtnOK;
 term:
-  if (res == pxtnOK) {
-    _ovdrvs[_ovdrv_num] = ovdrv;
-    _ovdrv_num++;
-  } else {
-    SAFE_DELETE(ovdrv);
-  }
-
+  if (res != pxtnOK) _ovdrvs.pop_back();
   return res;
 }
 
@@ -986,24 +941,24 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
   }
 
   // delay
-  for (int32_t d = 0; d < _delay_num; d++) {
+  for (size_t d = 0; d < _delays.size(); d++) {
     if (!p_doc->w_asfile(_code_effeDELA, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!_delays[d]->Write(p_doc)) {
+    if (!_delays[d].Write(p_doc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
   }
 
   // overdrive
-  for (int32_t o = 0; o < _ovdrv_num; o++) {
+  for (size_t o = 0; o < _ovdrvs.size(); o++) {
     if (!p_doc->w_asfile(_code_effeOVER, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!_ovdrvs[o]->Write(p_doc)) {
+    if (!_ovdrvs[o].Write(p_doc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
@@ -1159,8 +1114,8 @@ pxtnERR pxtnService::_ReadTuneItems(pxtnDescriptor *p_doc) {
         if (res != pxtnOK) goto term;
         break;
       case _TAG_Event_V5:
-        /* The big event list reader. Loops over chunks and fills a linked list
-         * of data with them. */
+        /* The big event list reader. Loops over chunks and fills a linked
+         * list of data with them. */
         res = evels->io_Read(p_doc);
         if (res != pxtnOK) goto term;
         break;
