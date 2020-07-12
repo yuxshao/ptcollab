@@ -169,7 +169,6 @@ class pxtnService {
   //////////////
   bool _moo_b_valid_data;
   bool _moo_b_end_vomit;
-  bool _moo_b_init;
 
   mooParams _moo_params;
   mooState _moo_state;
@@ -177,9 +176,6 @@ class pxtnService {
   pxtnERR _init(int32_t fix_evels_num, bool b_edit);
   bool _release();
   pxtnERR _pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count);
-
-  void _moo_constructor();
-  void _moo_init();
 
   bool _moo_InitUnitTone(mooState &moo_state) const;
   pxtnSampledCallback _sampled_proc;
@@ -301,6 +297,8 @@ class pxtnService {
   int32_t moo_get_num_loop();
 
   bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
+  bool moo_preparation_custom(const pxtnVOMITPREPARATION *p_prep,
+                              mooState &moo_state);
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,

@@ -102,8 +102,6 @@ pxtnService::pxtnService() {
 
   _sampled_proc = NULL;
   _sampled_user = NULL;
-
-  _moo_constructor();
 }
 
 bool pxtnService::_release() {
@@ -195,8 +193,6 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
   _unit_max = pxtnMAX_TUNEUNITSTRUCT;
 
   _group_num = pxtnMAX_TUNEGROUPNUM;
-
-  _moo_init();
 
   if (fix_evels_num) _moo_b_valid_data = true;
 

@@ -18,19 +18,6 @@ mooState::mooState() {
   end_vomit = true;
 }
 
-void pxtnService::_moo_constructor() {
-  _moo_b_init = false;
-
-  _moo_b_valid_data = false;
-  _moo_params = mooParams();
-  _moo_state = mooState();
-}
-
-void pxtnService::_moo_init() {
-  _moo_state.resetGroups(_group_num);
-  _moo_b_init = true;
-}
-
 void mooState::resetGroups(int32_t group_num) {
   group_smps.clear();
   group_smps.resize(group_num, 0);
@@ -63,7 +50,6 @@ void mooParams::resetVoiceOn(pxtnUnitTone* p_u) const {
 }
 
 bool pxtnService::_moo_InitUnitTone(mooState& moo_state) const {
-  if (!_moo_b_init) return false;
   return moo_state.resetUnits(_unit_num, Woice_Get(EVENTDEFAULT_VOICENO),
                               _moo_params);
 }
@@ -183,8 +169,6 @@ void mooParams::processEvent(pxtnUnitTone* p_u, int32_t u, const EVERECORD* e,
 // TODO: Could probably put this in _moo_state. Maybe make _moo_params a member
 // of it.
 bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
-  if (!_moo_b_init) return false;
-
   // envelope..
   for (size_t u = 0; u < moo_state.units.size(); u++)
     moo_state.units[u].Tone_Envelope();
@@ -326,38 +310,30 @@ int32_t pxtnService::moo_tone_sample(pxtnUnitTone* p_u, void* data,
   return _dst_ch_num * sizeof(int16_t);
 }
 
-bool pxtnService::moo_is_valid_data() const {
-  if (!_moo_b_init) return false;
-  return _moo_b_valid_data;
-}
+bool pxtnService::moo_is_valid_data() const { return _moo_b_valid_data; }
 
 /* This place might be a chance to allow variable tempo songs */
 int32_t pxtnService::moo_get_now_clock() const {
-  if (!_moo_b_init) return 0;
   if (_moo_params.clock_rate)
     return (int32_t)(_moo_state.smp_count / _moo_params.clock_rate);
   return 0;
 }
 
 int32_t pxtnService::moo_get_end_clock() const {
-  if (!_moo_b_init) return 0;
   return master->get_this_clock(master->get_play_meas(), 0, 0);
 }
 
 bool pxtnService::moo_set_mute_by_unit(bool b) {
-  if (!_moo_b_init) return false;
   _moo_params.b_mute_by_unit = b;
   return true;
 }
 bool pxtnService::moo_set_loop(bool b) {
-  if (!_moo_b_init) return false;
   _moo_params.b_loop = b;
   return true;
 }
 
 bool pxtnService::moo_set_fade(int32_t fade, float sec,
                                mooState& moo_state) const {
-  if (!_moo_b_init) return false;
   moo_state.fade_max = (int32_t)((float)_dst_sps * sec) >> 8;
   if (fade < 0) {
     moo_state.fade_fade = -1;
@@ -379,10 +355,10 @@ bool pxtnService::moo_set_fade(int32_t fade, float sec,
 ////////////////////////////
 
 // preparation
-bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
-  if (!_moo_b_init || !_moo_b_valid_data || !_dst_ch_num || !_dst_sps ||
-      !_dst_byte_per_smp) {
-    _moo_state.end_vomit = true;
+bool pxtnService::moo_preparation_custom(const pxtnVOMITPREPARATION* p_prep,
+                                         mooState& moo_state) {
+  if (!_moo_b_valid_data || !_dst_ch_num || !_dst_sps || !_dst_byte_per_smp) {
+    moo_state.end_vomit = true;
     return false;
   }
 
@@ -425,7 +401,8 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
   _moo_params.smp_stride = (44100.0f / _dst_sps);
   _moo_params.top = 0x7fff;
 
-  _moo_state.time_pan_index = 0;
+  moo_state.time_pan_index = 0;
+  moo_state.resetGroups(_group_num);
 
   int32_t smp_start;
   if (start_float)
@@ -436,29 +413,32 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
     smp_start =
         master->get_this_clock(start_meas, 0, 0) * _moo_params.clock_rate;
 
-  _moo_state.smp_count = smp_start;
+  moo_state.smp_count = smp_start;
   _moo_params.smp_smooth = _dst_sps / 250;  // (0.004sec) // (0.010sec)
 
   if (fadein_sec > 0)
-    moo_set_fade(1, fadein_sec, _moo_state);
+    moo_set_fade(1, fadein_sec, moo_state);
   else
-    moo_set_fade(0, 0, _moo_state);
+    moo_set_fade(0, 0, moo_state);
 
   tones_clear();
 
-  _moo_state.p_eve = evels->get_Records();
-  _moo_state.num_loop = 0;
+  moo_state.p_eve = evels->get_Records();
+  moo_state.num_loop = 0;
 
-  _moo_InitUnitTone(_moo_state);
+  _moo_InitUnitTone(moo_state);
 
   b_ret = true;
-  _moo_state.end_vomit = false;
+  moo_state.end_vomit = false;
 
   return b_ret;
 }
 
+bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
+  return moo_preparation_custom(p_prep, _moo_state);
+}
+
 int32_t pxtnService::moo_get_num_loop() {
-  if (!_moo_b_init) return 0;
   if (_moo_state.end_vomit) return 0;
   return _moo_state.num_loop;
 }
@@ -476,7 +456,6 @@ int32_t pxtnService::moo_get_total_sample() const {
 }
 
 bool pxtnService::moo_set_master_volume(float v) {
-  if (!_moo_b_init) return false;
   if (v < 0) v = 0;
   if (v > 1) v = 1;
   _moo_params.master_vol = v;
@@ -490,7 +469,7 @@ bool pxtnService::moo_set_master_volume(float v) {
 bool pxtnService::MooCustom(mooState& moo_state, void* p_buf, int32_t size,
                             int32_t* filled_size) const {
   if (filled_size) *filled_size = 0;
-  if (!_moo_b_init) return false;
+
   if (!_moo_b_valid_data) return false;
   if (moo_state.end_vomit) return false;
 
