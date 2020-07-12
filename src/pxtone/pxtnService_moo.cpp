@@ -421,7 +421,7 @@ bool pxtnService::moo_preparation_custom(const pxtnVOMITPREPARATION* p_prep,
   else
     moo_set_fade(0, 0, moo_state);
 
-  tones_clear();
+  moo_state.tones_clear();
 
   moo_state.p_eve = evels->get_Records();
   moo_state.num_loop = 0;

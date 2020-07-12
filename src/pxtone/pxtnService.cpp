@@ -231,13 +231,9 @@ pxtnERR pxtnService::tones_ready() {
   return pxtnOK;
 }
 
-bool pxtnService::tones_clear() {
-  if (!_b_init) return false;
-  for (size_t i = 0; i < _moo_state.delays.size(); i++)
-    _moo_state.delays[i].Tone_Clear();
-  for (size_t i = 0; i < _moo_state.units.size(); i++)
-    _moo_state.units[i].Tone_Clear();
-  return true;
+void mooState::tones_clear() {
+  for (size_t i = 0; i < delays.size(); i++) delays[i].Tone_Clear();
+  for (size_t i = 0; i < units.size(); i++) units[i].Tone_Clear();
 }
 
 // ---------------------------

@@ -102,6 +102,8 @@ struct mooState {
 
   bool addUnit(std::shared_ptr<const pxtnWoice> woice,
                const mooParams &moo_params);
+
+  void tones_clear();
 };
 
 typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
@@ -168,7 +170,6 @@ class pxtnService {
   // vomit..
   //////////////
   bool _moo_b_valid_data;
-  bool _moo_b_end_vomit;
 
   mooParams _moo_params;
   mooState _moo_state;
@@ -203,7 +204,6 @@ class pxtnService {
   int32_t get_last_error_id() const;
 
   pxtnERR tones_ready();
-  bool tones_clear();
 
   int32_t Group_Num() const;
 
