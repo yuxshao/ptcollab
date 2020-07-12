@@ -66,6 +66,7 @@ struct mooParams {
 
 // Moo values that change as the song plays.
 struct mooState {
+  mooParams params;
   // Buffers that units write to for group operations
   std::vector<int32_t> group_smps;
   int32_t time_pan_index;
@@ -97,11 +98,8 @@ struct mooState {
   }
 
   void resetGroups(int32_t group_num);
-  bool resetUnits(size_t unit_num, std::shared_ptr<const pxtnWoice> woice,
-                  const mooParams &moo_params);
-
-  bool addUnit(std::shared_ptr<const pxtnWoice> woice,
-               const mooParams &moo_params);
+  bool resetUnits(size_t unit_num, std::shared_ptr<const pxtnWoice> woice);
+  bool addUnit(std::shared_ptr<const pxtnWoice> woice);
 
   void tones_clear();
 };
@@ -171,9 +169,6 @@ class pxtnService {
   //////////////
   bool _moo_b_valid_data;
 
-  mooParams _moo_params;
-  mooState _moo_state;
-
   pxtnERR _init(int32_t fix_evels_num, bool b_edit);
   bool _release();
   pxtnERR _pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count);
@@ -203,7 +198,7 @@ class pxtnService {
 
   int32_t get_last_error_id() const;
 
-  pxtnERR tones_ready();
+  pxtnERR tones_ready(mooState &moo_state);
 
   int32_t Group_Num() const;
 
@@ -212,9 +207,10 @@ class pxtnService {
   int32_t Delay_Max() const;
   bool Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
                  int32_t group);
-  bool Delay_Add(DELAYUNIT unit, float freq, float rate, int32_t group);
-  bool Delay_Remove(int32_t idx);
-  pxtnERR Delay_ReadyTone(int32_t idx);
+  bool Delay_Add(DELAYUNIT unit, float freq, float rate, int32_t group,
+                 mooState &moo_state);
+  bool Delay_Remove(int32_t idx, mooState &moo_state);
+  pxtnERR Delay_ReadyTone(int32_t idx, mooState &moo_state) const;
   pxtnDelay *Delay_Get(int32_t idx);
 
   // over drive.
@@ -244,7 +240,7 @@ class pxtnService {
   pxtnUnit *Unit_Get_variable(int32_t idx);
 
   bool Unit_Remove(int32_t idx);
-  bool Unit_Replace(int32_t old_place, int32_t new_place);
+  bool Unit_Replace(int32_t old_place, int32_t new_place, mooState &moo_state);
   bool Unit_AddNew();
   bool Unit_SetOpratedAll(bool b);
   bool Unit_Solo(int32_t idx);
@@ -259,22 +255,22 @@ class pxtnService {
   // Moo..
   //////////////
 
-  bool MooCustom(mooState &moo_state, void *p_buf, int32_t size,
-                 int32_t *filled_size = nullptr) const;
+  bool Moo(mooState &moo_state, void *p_buf, int32_t size,
+           int32_t *filled_size = nullptr) const;
 
-  bool Moo(void *p_buf, int32_t size, int32_t *filled_size = nullptr);
-
-  int32_t moo_tone_sample(pxtnUnitTone *p_u, void *data, int32_t buf_size,
+  int32_t moo_tone_sample(pxtnUnitTone *p_u, const mooParams &params,
+                          void *data, int32_t buf_size,
                           int32_t time_pan_index) const;
 
   bool moo_is_valid_data() const;
-  const mooParams *moo_params() const { return &_moo_params; }
-  void adjustTempo(int32_t new_tempo) {
-    _moo_state.adjustTempo(master->get_beat_tempo(), new_tempo);
+  // TODO: Adjust delays here
+  void adjustTempo(int32_t new_tempo, mooState &moo_state) {
+    moo_state.adjustTempo(master->get_beat_tempo(), new_tempo);
     master->Set(master->get_beat_num(), new_tempo, master->get_beat_clock());
-    _moo_params.adjustClockRate((float)(60.0f * (double)_dst_sps /
-                                        ((double)master->get_beat_tempo() *
-                                         (double)master->get_beat_clock())));
+    moo_state.params.adjustClockRate(
+        (float)(60.0f * (double)_dst_sps /
+                ((double)master->get_beat_tempo() *
+                 (double)master->get_beat_clock())));
   }
   void adjustBeatNum(int32_t beat_num) {
     int32_t evels_max_clock = evels->get_Max_Clock();
@@ -290,15 +286,14 @@ class pxtnService {
 
   int32_t moo_get_total_sample() const;
 
-  int32_t moo_get_now_clock() const;
+  int32_t moo_get_now_clock(mooState &moo_state) const;
   int32_t moo_get_end_clock() const;
   int32_t moo_get_sampling_offset() const;
   int32_t moo_get_sampling_end() const;
-  int32_t moo_get_num_loop();
+  int32_t moo_get_num_loop() const;
 
-  bool moo_preparation(const pxtnVOMITPREPARATION *p_build);
-  bool moo_preparation_custom(const pxtnVOMITPREPARATION *p_prep,
-                              mooState &moo_state);
+  bool moo_preparation(const pxtnVOMITPREPARATION *p_prep,
+                       mooState &moo_state) const;
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,

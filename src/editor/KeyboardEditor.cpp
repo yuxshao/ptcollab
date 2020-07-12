@@ -32,21 +32,22 @@ QList<std::pair<qint64, QString>> getUserList(
   return list;
 }
 // int64_t(m_edit_state.mouse_edit_state.current_clock)
-void seekMoo(pxtnService *pxtn, int64_t clock) {
+void seekMoo(const pxtnService *pxtn, mooState *moo_state, int64_t clock) {
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
   prep.start_pos_sample = clock * 60 * 44100 / pxtn->master->get_beat_clock() /
                           pxtn->master->get_beat_tempo();
   prep.master_volume = 0.80f;
-  bool success = pxtn->moo_preparation(&prep);
+  bool success = pxtn->moo_preparation(&prep, *moo_state);
   if (!success) qWarning() << "Moo preparation error";
 }
 
-KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
-                               Client *client, UnitListModel *units,
-                               QScrollArea *parent)
+KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
+                               QAudioOutput *audio_output, Client *client,
+                               UnitListModel *units, QScrollArea *parent)
     : QWidget(parent),
       m_pxtn(pxtn),
+      m_moo_state(moo_state),
       m_timer(new QElapsedTimer),
       painted(0),
       m_audio_output(audio_output),
@@ -55,7 +56,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
       // TODO: we probably don't want to have the editor own the client haha.
       // Need some loose coupling thing.
       m_client(client),
-      m_sync(new PxtoneActionSynchronizer(0, m_pxtn, this)),
+      m_sync(new PxtoneActionSynchronizer(0, pxtn, moo_state, this)),
       quantXIndex(0),
       quantizeSelectionY(0),
       m_last_clock(0),
@@ -145,7 +146,8 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                       else
                         // Refresh units using the woice.
                         // (No refresh is also fine but just stale)
-                        seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
+                        seekMoo(m_pxtn, m_moo_state,
+                                m_pxtn->moo_get_now_clock(*m_moo_state));
                     },
                     [this, uid](const ChangeWoice &s) {
                       bool success = m_sync->applyChangeWoice(s, uid);
@@ -155,7 +157,8 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
                             this, tr("Could not change voice"),
                             tr("Could not add change %1").arg(s.remove.name));
                       else
-                        seekMoo(m_pxtn, m_pxtn->moo_get_now_clock());
+                        seekMoo(m_pxtn, m_moo_state,
+                                m_pxtn->moo_get_now_clock(*m_moo_state));
                     },
                     [this, uid](const AddUnit &s) {
                       m_units->beginAdd();
@@ -543,7 +546,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
 
   painter.setPen(Qt::blue);
 
-  int clock = m_pxtn->moo_get_now_clock();
+  int clock = m_pxtn->moo_get_now_clock(*m_moo_state);
   // Some really hacky magic to get the playhead smoother given that
   // there's a ton of buffering that makes it hard to actually tell where the
   // playhead is accurately. We do this:
@@ -580,7 +583,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     timeSinceLastClock.restart();
   else
     estimated_buffer_offset += timeSinceLastClock.elapsed() / 1000.0;
-  clock += (last_clock - repeat_clock) * m_pxtn->moo_get_num_loop();
+  clock += (last_clock - repeat_clock) * m_moo_state->num_loop;
   clock += std::min(estimated_buffer_offset, 0.0) *
            m_pxtn->master->get_beat_tempo() * m_pxtn->master->get_beat_clock() /
            60;
@@ -591,7 +594,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
     clock = (clock - repeat_clock) % (last_clock - repeat_clock) + repeat_clock;
   // Because of offsetting it might seem like even though we've repeated the
   // clock is before [repeat_clock]. So fix it here.
-  if (m_pxtn->moo_get_num_loop() > 0 && clock < repeat_clock)
+  if (m_moo_state->num_loop > 0 && clock < repeat_clock)
     clock += last_clock - repeat_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
@@ -863,7 +866,8 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
       clock = quantize(clock, m_edit_state.m_quantize_clock);
 
       m_audio_note_preview = std::make_unique<NotePreview>(
-          m_pxtn, maybe_unit_no.value(), clock, pitch, vel, this);
+          m_pxtn, &m_moo_state->params, maybe_unit_no.value(), clock, pitch,
+          vel, this);
     }
   }
   emit editStateChanged();
@@ -943,7 +947,7 @@ void KeyboardEditor::setQuantYIndex(int q) {
   emit editStateChanged();
 }
 void KeyboardEditor::seekPosition(int clock) {
-  seekMoo(m_pxtn, clock);
+  seekMoo(m_pxtn, m_moo_state, clock);
   m_this_seek = clock;
   m_this_seek_caught_up = false;
 }

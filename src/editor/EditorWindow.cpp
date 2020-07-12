@@ -51,7 +51,7 @@ AddWoice make_addWoice_from_path(const QString &path) {
 
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
-      m_pxtn_device(this, &m_pxtn),
+      m_pxtn_device(this, &m_pxtn, &m_moo_state),
       m_server(nullptr),
       m_client(new Client(this)),
       m_filename(""),
@@ -86,7 +86,9 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_units = new UnitListModel(&m_pxtn, this);
-  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client, m_units);
+  m_keyboard_editor =
+      new KeyboardEditor(&m_pxtn, &m_moo_state, m_audio, m_client, m_units);
+
   connect(
       m_client, &Client::connected,
       [this](pxtnDescriptor &desc, QList<ServerAction> &history, qint64 uid) {
@@ -189,7 +191,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       }
       // TODO: stop existing note preview on creation of new one in this case
       m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
+          &m_pxtn, &m_moo_state.params,
+          m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
           m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
           woice, this);
     } catch (const QString &e) {
@@ -201,7 +204,8 @@ EditorWindow::EditorWindow(QWidget *parent)
     // not. Also this is variable on tempo rn - fix that.
     if (idx >= 0)
       m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
+          &m_pxtn, &m_moo_state.params,
+          m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
           m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
           m_pxtn.Woice_Get(idx), this);
     else
@@ -387,7 +391,7 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   }
   // TODO: this unit ID map should be much closer to the service.
   m_keyboard_editor->resetUnitIdMap();
-  if (m_pxtn.tones_ready() != pxtnOK) {
+  if (m_pxtn.tones_ready(m_moo_state) != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;
   }

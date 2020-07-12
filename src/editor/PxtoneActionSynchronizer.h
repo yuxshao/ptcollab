@@ -24,7 +24,8 @@ struct LoggedAction {
 class PxtoneActionSynchronizer : public QObject {
   Q_OBJECT
  public:
-  PxtoneActionSynchronizer(int uid, pxtnService *pxtn, QObject *parent);
+  PxtoneActionSynchronizer(int uid, pxtnService *pxtn, mooState *moo_state,
+                           QObject *parent);
 
   // rename to applyAndGetEditAction and applyEditAction
   EditAction applyLocalAction(const std::list<Action::Primitive> &action);
@@ -51,6 +52,7 @@ class PxtoneActionSynchronizer : public QObject {
  private:
   qint64 m_uid;
   pxtnService *m_pxtn;
+  mooState *m_moo_state;
   std::vector<LoggedAction> m_log;
   std::list<std::list<Action::Primitive>> m_uncommitted;
   UnitIdMap m_unit_id_map;

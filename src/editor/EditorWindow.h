@@ -38,6 +38,7 @@ class EditorWindow : public QMainWindow {
   void keyPressEvent(QKeyEvent* event);
   QAudioOutput* m_audio;
   KeyboardEditor* m_keyboard_editor;
+  mooState m_moo_state;
   pxtnService m_pxtn;
   EditorScrollArea* m_scroll_area;
   PxtoneIODevice m_pxtn_device;

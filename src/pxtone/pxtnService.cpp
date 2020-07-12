@@ -8,6 +8,8 @@
 
 #include "./pxtnService.h"
 
+#include <algorithm>
+
 #include "./pxtn.h"
 
 #define _VERSIONSIZE 16
@@ -212,16 +214,16 @@ bool pxtnService::AdjustMeasNum() {
 
 int32_t pxtnService::Group_Num() const { return _b_init ? _group_num : 0; }
 
-pxtnERR pxtnService::tones_ready() {
+pxtnERR pxtnService::tones_ready(mooState &moo_state) {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;
   int32_t beat_num = master->get_beat_num();
   float beat_tempo = master->get_beat_tempo();
 
-  _moo_state.delays.clear();
+  moo_state.delays.clear();
   for (size_t i = 0; i < _delays.size(); i++)
-    _moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
+    moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
 
   for (size_t i = 0; i < _ovdrvs.size(); i++) _ovdrvs[i].Tone_Ready();
   for (int32_t i = 0; i < _woice_num; i++) {
@@ -252,18 +254,22 @@ bool pxtnService::Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
 }
 
 bool pxtnService::Delay_Add(DELAYUNIT unit, float freq, float rate,
-                            int32_t group) {
+                            int32_t group, mooState &moo_state) {
   if (!_b_init) return false;
   if (_delays.size() >= _delay_max) return false;
   _delays.emplace_back();
   _delays.rbegin()->Set(unit, freq, rate, group);
+  moo_state.delays.emplace_back(*_delays.rbegin(), master->get_beat_num(),
+                                master->get_beat_tempo(), _dst_sps);
   return true;
 }
 
-bool pxtnService::Delay_Remove(int32_t idx) {
+bool pxtnService::Delay_Remove(int32_t idx, mooState &moo_state) {
   if (!_b_init) return false;
   if (size_t(idx) >= _delays.size()) return false;
   _delays.erase(_delays.begin() + idx);
+  if (size_t(idx) < moo_state.delays.size())
+    moo_state.delays.erase(moo_state.delays.begin() + idx);
   return true;
 }
 
@@ -273,11 +279,12 @@ pxtnDelay *pxtnService::Delay_Get(int32_t idx) {
   return &_delays[idx];
 }
 
-pxtnERR pxtnService::Delay_ReadyTone(int32_t idx) {
+pxtnERR pxtnService::Delay_ReadyTone(int32_t idx, mooState &moo_state) const {
   if (!_b_init) return pxtnERR_INIT;
-  if (idx < 0 || size_t(idx) >= _moo_state.delays.size()) return pxtnERR_param;
-  _moo_state.delays[idx] = pxtnDelayTone(_delays[idx], master->get_beat_num(),
-                                         master->get_beat_tempo(), _dst_sps);
+  if (idx < 0 || size_t(idx) >= moo_state.delays.size()) return pxtnERR_param;
+  // TODO: Call this upon beat num or beat tempo change
+  moo_state.delays[idx] = pxtnDelayTone(_delays[idx], master->get_beat_num(),
+                                        master->get_beat_tempo(), _dst_sps);
   return pxtnOK;
 }
 
@@ -422,7 +429,6 @@ bool pxtnService::Unit_AddNew() {
   if (_unit_num >= _unit_max) return false;
   _units[_unit_num] = new pxtnUnit();
   _unit_num++;
-  _moo_state.addUnit(Woice_Get(EVENTDEFAULT_VOICENO), _moo_params);
   return true;
 }
 
@@ -433,10 +439,12 @@ bool pxtnService::Unit_Remove(int32_t idx) {
   _unit_num--;
   for (int32_t i = idx; i < _unit_num; i++) _units[i] = _units[i + 1];
   _units[_unit_num] = NULL;
+
   return true;
 }
 
-bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place) {
+bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place,
+                               mooState &moo_state) {
   if (!_b_init) return false;
 
   pxtnUnit *p_w = _units[old_place];
@@ -455,6 +463,14 @@ bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place) {
     }
   }
   _units[new_place] = p_w;
+
+  // TODO: Perhaps this should just not be part of pxtnService.
+  // In the case of adding a unit, we need custom woice setting anyway.
+  if (moo_state.units.size() > size_t(std::max(old_place, new_place)))
+    std::rotate(moo_state.units.begin() + std::min(old_place, new_place),
+                moo_state.units.begin() +
+                    (old_place < new_place ? old_place + 1 : new_place),
+                moo_state.units.begin() + std::max(old_place, new_place));
   return true;
 }
 

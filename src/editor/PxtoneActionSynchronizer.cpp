@@ -3,10 +3,12 @@
 #include <QDebug>
 #include <QDialog>
 PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
+                                                   mooState *moo_state,
                                                    QObject *parent)
     : QObject(parent),
       m_uid(uid),
       m_pxtn(pxtn),
+      m_moo_state(moo_state),
       m_unit_id_map(pxtn),
       m_remote_index(0) {}
 
@@ -211,6 +213,7 @@ bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
     qWarning("Could not add another unit.");
     return false;
   }
+  m_moo_state->addUnit(m_pxtn->Woice_Get(a.woice_id));
 
   m_unit_id_map.addUnit();
   int unit_no = m_pxtn->Unit_Num() - 1;
@@ -236,16 +239,17 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
   if (!m_pxtn->Unit_Remove(unit_no)) {
     qWarning("Could not remove unit.");
     return;
-  } else {
-    m_unit_id_map.removeUnit(unit_no);
   }
+  m_unit_id_map.removeUnit(unit_no);
+  if (m_moo_state->units.size() > size_t(unit_no))
+    m_moo_state->units.erase(m_moo_state->units.begin() + unit_no);
 }
 
 bool PxtoneActionSynchronizer::applyTempoChange(const TempoChange &a,
                                                 qint64 uid) {
   (void)uid;
   if (a.tempo < 20 || a.tempo > 600) return false;
-  m_pxtn->adjustTempo(a.tempo);
+  m_pxtn->adjustTempo(a.tempo, *m_moo_state);
   return true;
 }
 

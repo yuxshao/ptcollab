@@ -7,9 +7,12 @@
 #include "NotePreview.h"
 #include "PxtoneUnitIODevice.h"
 
+// TODO: m_unit should probably be not a member variable but an r-value passed
+// to the child.
 constexpr int32_t LONG_ON_VALUE = 100000000;
-NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
-                         int pitch, int vel, int duration,
+NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
+                         int unit_no, int clock, int pitch, int vel,
+                         int duration,
                          std::shared_ptr<const pxtnWoice> starting_woice,
                          QObject *parent)
     : QObject(parent), m_pxtn(pxtn), m_unit(starting_woice) {
@@ -17,14 +20,14 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
   m_pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
 
   // TODO: Initing a unit should not take 2 steps.
-  m_pxtn->moo_params()->resetVoiceOn(&m_unit);
+  moo_params->resetVoiceOn(&m_unit);
 
   if (unit_no != -1)
     for (const EVERECORD *e = m_pxtn->evels->get_Records();
          e && e->clock <= clock; e = e->next) {
       if (e->unit_no == unit_no) {
-        m_pxtn->moo_params()->processEvent(&m_unit, unit_no, e, clock, dst_sps,
-                                           dst_ch_num, -1, m_pxtn);
+        moo_params->processEvent(&m_unit, unit_no, e, clock, dst_sps,
+                                 dst_ch_num, -1, m_pxtn);
       }
     }
 
@@ -44,7 +47,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
     tone->life_count = duration + woice->get_instance(i)->env_release;
   }
 
-  m_device = new PxtoneUnitIODevice(this, m_pxtn, &m_unit);
+  m_device = new PxtoneUnitIODevice(this, m_pxtn, moo_params, &m_unit);
   m_device->open(QIODevice::ReadOnly);
 
   m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
@@ -53,19 +56,22 @@ NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
   connect(m_device, &PxtoneUnitIODevice::ZeroLives, this,
           &NotePreview::finished);
 }
-NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
-                         int pitch, int vel, QObject *parent)
-    : NotePreview(pxtn, unit_no, clock, pitch, vel, LONG_ON_VALUE,
+NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
+                         int unit_no, int clock, int pitch, int vel,
+                         QObject *parent)
+    : NotePreview(pxtn, moo_params, unit_no, clock, pitch, vel, LONG_ON_VALUE,
                   pxtn->Woice_Get(EVENTDEFAULT_VOICENO), parent) {}
 
-NotePreview::NotePreview(const pxtnService *pxtn, int unit_no, int clock,
-                         QObject *parent)
-    : NotePreview(pxtn, unit_no, clock, -1, -1, parent){};
+NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
+                         int unit_no, int clock, QObject *parent)
+    : NotePreview(pxtn, moo_params, unit_no, clock, -1, -1, parent){};
 
-NotePreview::NotePreview(const pxtnService *pxtn, int pitch, int vel,
-                         int duration, std::shared_ptr<const pxtnWoice> woice,
+NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
+                         int pitch, int vel, int duration,
+                         std::shared_ptr<const pxtnWoice> woice,
                          QObject *parent)
-    : NotePreview(pxtn, -1, -1, pitch, vel, duration, woice, parent) {}
+    : NotePreview(pxtn, moo_params, -1, -1, pitch, vel, duration, woice,
+                  parent) {}
 
 NotePreview::~NotePreview() {
   // seems to fix a crash that'd happen if I change quickly between woices

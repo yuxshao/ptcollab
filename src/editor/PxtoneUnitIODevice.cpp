@@ -3,8 +3,13 @@
 #include <QDebug>
 
 PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
+                                       const mooParams *moo_params,
                                        pxtnUnitTone *unit)
-    : QIODevice(parent), m_pxtn(pxtn), m_unit(unit), m_zero_lives(false) {}
+    : QIODevice(parent),
+      m_pxtn(pxtn),
+      m_moo_params(moo_params),
+      m_unit(unit),
+      m_zero_lives(false) {}
 
 qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
   memset(data, 0, maxlen);
@@ -14,8 +19,8 @@ qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
   int32_t time_pan_index = 0;
   while (filled < maxlen) {
     m_unit->Tone_Envelope();
-    int result = m_pxtn->moo_tone_sample(m_unit, data + filled, maxlen - filled,
-                                         time_pan_index);
+    int result = m_pxtn->moo_tone_sample(m_unit, *m_moo_params, data + filled,
+                                         maxlen - filled, time_pan_index);
     time_pan_index = (time_pan_index + 1) & (pxtnBUFSIZE_TIMEPAN - 1);
     filled += result;
     if (result == 0) break;
