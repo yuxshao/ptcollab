@@ -58,7 +58,6 @@ class pxtnUnitTone {
 
   void Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,
                           pxtnVOICETONE *vts, int32_t *bufs) const;
-  // TODO: mute has changed
   void Tone_Sample(bool b_mute, int32_t ch_num, int32_t time_pan_index,
                    int32_t smooth_smp);
   int32_t Tone_Supple_get(int32_t ch, int32_t time_pan_index) const;

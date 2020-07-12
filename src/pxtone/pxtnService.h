@@ -67,7 +67,7 @@ struct mooParams {
 // Moo values that change as the song plays.
 struct mooState {
   // Buffers that units write to for group operations
-  int32_t *group_smps;
+  std::vector<int32_t> group_smps;
   int32_t time_pan_index;
   bool end_vomit;
 
@@ -92,11 +92,11 @@ struct mooState {
 
   void release();
 
-  bool init(int32_t group_num);
   void adjustTempo(int32_t old_tempo, int32_t new_tempo) {
     smp_count = ((long long)smp_count) * old_tempo / new_tempo;
   }
 
+  void resetGroups(int32_t group_num);
   bool resetUnits(size_t unit_num, std::shared_ptr<const pxtnWoice> woice,
                   const mooParams &moo_params);
 
@@ -179,9 +179,7 @@ class pxtnService {
   pxtnERR _pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count);
 
   void _moo_constructor();
-  void _moo_destructer();
-  bool _moo_init();
-  bool _moo_release();
+  void _moo_init();
 
   bool _moo_InitUnitTone(mooState &moo_state) const;
   pxtnSampledCallback _sampled_proc;

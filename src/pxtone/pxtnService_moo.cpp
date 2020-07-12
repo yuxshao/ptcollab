@@ -11,7 +11,6 @@ mooParams::mooParams() {
 }
 
 mooState::mooState() {
-  group_smps = NULL;
   p_eve = NULL;
   num_loop = 0;
   smp_count = 0;
@@ -27,34 +26,14 @@ void pxtnService::_moo_constructor() {
   _moo_state = mooState();
 }
 
-bool pxtnService::_moo_release() {
-  if (!_moo_b_init) return false;
-  _moo_b_init = false;
-  _moo_state.release();
-  return true;
-}
-void mooState::release() {
-  if (group_smps) free(group_smps);
-  group_smps = NULL;
-}
-
-void pxtnService::_moo_destructer() { _moo_release(); }
-
-bool pxtnService::_moo_init() {
-  bool b_ret = false;
-
-  if (!_moo_state.init(_group_num)) goto term;
-
+void pxtnService::_moo_init() {
+  _moo_state.resetGroups(_group_num);
   _moo_b_init = true;
-  b_ret = true;
-term:
-  if (!b_ret) _moo_release();
-
-  return b_ret;
 }
 
-bool mooState::init(int32_t group_num) {
-  return pxtnMem_zero_alloc((void**)&group_smps, sizeof(int32_t) * group_num);
+void mooState::resetGroups(int32_t group_num) {
+  group_smps.clear();
+  group_smps.resize(group_num, 0);
 }
 
 bool mooState::resetUnits(size_t unit_num,
@@ -246,15 +225,16 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
     for (int32_t g = 0; g < _group_num; g++) moo_state.group_smps[g] = 0;
     /* Sample the units into a group buffer */
     for (size_t u = 0; u < moo_state.units.size(); u++)
-      moo_state.units[u].Tone_Supple(moo_state.group_smps, ch,
+      moo_state.units[u].Tone_Supple(moo_state.group_smps.data(), ch,
                                      moo_state.time_pan_index);
     /* Add overdrive, delay to group buffer */
     for (size_t o = 0; o < _ovdrvs.size(); o++)
-      _ovdrvs[o].Tone_Supple(moo_state.group_smps);
+      _ovdrvs[o].Tone_Supple(moo_state.group_smps.data());
     for (size_t d = 0; d < _delays.size(); d++) {
       // TODO: Be robust to if there's a new delay. Generate new delay on the
       // fly?
-      moo_state.delays[d].Tone_Supple(_delays[d], ch, moo_state.group_smps);
+      moo_state.delays[d].Tone_Supple(_delays[d], ch,
+                                      moo_state.group_smps.data());
     }
 
     /* Add group samples together for final */
@@ -477,18 +457,6 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep) {
   return b_ret;
 }
 
-int32_t pxtnService::moo_get_sampling_offset() const {
-  if (!_moo_b_init) return 0;
-  if (_moo_state.end_vomit) return 0;
-  return _moo_state.smp_count;
-}
-
-int32_t pxtnService::moo_get_sampling_end() const {
-  if (!_moo_b_init) return 0;
-  if (_moo_state.end_vomit) return 0;
-  return master->get_this_clock(master->get_play_meas(), 0, 0);
-}
-
 int32_t pxtnService::moo_get_num_loop() {
   if (!_moo_b_init) return 0;
   if (_moo_state.end_vomit) return 0;
@@ -559,8 +527,6 @@ bool pxtnService::MooCustom(mooState& moo_state, void* p_buf, int32_t size,
   }
 
   if (_sampled_proc) {
-    // int32_t clock = (int32_t)( _dyn_moo_state.smp_count /
-    // _moo_state.clock_rate );
     if (!_sampled_proc(_sampled_user, this)) {
       moo_state.end_vomit = true;
       goto term;

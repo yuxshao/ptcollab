@@ -110,8 +110,6 @@ bool pxtnService::_release() {
   if (!_b_init) return false;
   _b_init = false;
 
-  _moo_destructer();
-
   SAFE_DELETE(text);
   SAFE_DELETE(master);
   SAFE_DELETE(evels);
@@ -198,10 +196,7 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
 
   _group_num = pxtnMAX_TUNEGROUPNUM;
 
-  if (!_moo_init()) {
-    res = pxtnERR_moo_init;
-    goto End;
-  }
+  _moo_init();
 
   if (fix_evels_num) _moo_b_valid_data = true;
 
