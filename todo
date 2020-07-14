@@ -225,6 +225,7 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - seems like it takes forever to do the audio reset now?
  - show measure num, set loop points
    - will probably need some pixel font thing
  - keyboard on left side of piano roll (probably will help in figuring out how

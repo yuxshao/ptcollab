@@ -1,7 +1,7 @@
 #ifndef EDITSTATE_H
 #define EDITSTATE_H
 #include <QObject>
-
+#include <optional>
 #include "Interval.h"
 
 struct MouseEditState {
