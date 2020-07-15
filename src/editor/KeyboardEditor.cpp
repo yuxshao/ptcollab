@@ -56,7 +56,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
       // TODO: we probably don't want to have the editor own the client haha.
       // Need some loose coupling thing.
       m_client(client),
-      m_sync(new PxtoneActionSynchronizer(0, pxtn, moo_state, this)),
+      m_sync(new PxtoneController(0, pxtn, moo_state, this)),
       quantXIndex(0),
       quantizeSelectionY(0),
       m_last_clock(0),
@@ -87,7 +87,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
 
   connect(this, &KeyboardEditor::editStateChanged,
           [this]() { m_client->sendAction(m_edit_state); });
-  connect(m_sync, &PxtoneActionSynchronizer::measureNumChanged,
+  connect(m_sync, &PxtoneController::measureNumChanged,
           [this]() { updateGeometry(); });
 }
 

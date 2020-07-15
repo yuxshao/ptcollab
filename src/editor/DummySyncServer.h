@@ -3,7 +3,7 @@
 
 #include <list>
 
-#include "PxtoneActionSynchronizer.h"
+#include "PxtoneController.h"
 
 // Commit actions x seconds after they were written.
 // Pretend there's another user mirroring your exact actions y seconds after
@@ -11,7 +11,7 @@
 class DummySyncServer {
  public:
   // TODO: What if sync is destroyed?
-  DummySyncServer(PxtoneActionSynchronizer *sync, float commit_lag_s,
+  DummySyncServer(PxtoneController *sync, float commit_lag_s,
                   float mirror_lag_s);
 
   void receiveAction(const std::list<Action::Primitive> &action);
@@ -19,7 +19,7 @@ class DummySyncServer {
   void receiveRedo();
 
  private:
-  PxtoneActionSynchronizer *m_sync;
+  PxtoneController *m_sync;
   float m_commit_lag_s;
   float m_mirror_lag_s;
   std::list<EditAction> m_pending_commit;

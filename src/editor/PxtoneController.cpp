@@ -1,10 +1,9 @@
-#include "PxtoneActionSynchronizer.h"
+#include "PxtoneController.h"
 
 #include <QDebug>
 #include <QDialog>
-PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
-                                                   mooState *moo_state,
-                                                   QObject *parent)
+PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
+                                   mooState *moo_state, QObject *parent)
     : QObject(parent),
       m_uid(uid),
       m_pxtn(pxtn),
@@ -12,7 +11,7 @@ PxtoneActionSynchronizer::PxtoneActionSynchronizer(int uid, pxtnService *pxtn,
       m_unit_id_map(pxtn),
       m_remote_index(0) {}
 
-EditAction PxtoneActionSynchronizer::applyLocalAction(
+EditAction PxtoneController::applyLocalAction(
     const std::list<Action::Primitive> &action) {
   bool widthChanged = false;
   m_uncommitted.push_back(
@@ -23,11 +22,10 @@ EditAction PxtoneActionSynchronizer::applyLocalAction(
   return EditAction{qint64(m_remote_index + m_uncommitted.size() - 1), action};
 }
 
-void PxtoneActionSynchronizer::setUid(qint64 uid) { m_uid = uid; }
-qint64 PxtoneActionSynchronizer::uid() { return m_uid; }
+void PxtoneController::setUid(qint64 uid) { m_uid = uid; }
+qint64 PxtoneController::uid() { return m_uid; }
 
-void PxtoneActionSynchronizer::applyRemoteAction(const EditAction &action,
-                                                 qint64 uid) {
+void PxtoneController::applyRemoteAction(const EditAction &action, qint64 uid) {
   // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   // qDebug() << "Received action" << action.idx << "from user" << uid;
   bool widthChanged = false;
@@ -124,7 +122,7 @@ exit_loop:
   if (widthChanged) emit measureNumChanged();
 }
 
-void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
+void PxtoneController::applyUndoRedo(const UndoRedo &r, qint64 uid) {
   qDebug() << "Applying undo / redo";
   if (m_log.size() == 0) {
     qDebug() << "No actions in the log. Doing nothing.";
@@ -198,7 +196,7 @@ void PxtoneActionSynchronizer::applyUndoRedo(const UndoRedo &r, qint64 uid) {
 // TODO: Could probably also make adding and deleting units undoable. The main
 // thing is they'd have to be added to the log. And a record of a delete needs
 // to include the notes that were deleted with it.
-bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
+bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
   if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
@@ -226,8 +224,7 @@ bool PxtoneActionSynchronizer::applyAddUnit(const AddUnit &a, qint64 uid) {
   return true;
 }
 
-void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
-                                               qint64 uid) {
+void PxtoneController::applyRemoveUnit(const RemoveUnit &a, qint64 uid) {
   (void)uid;
   auto unit_no_maybe = m_unit_id_map.idToNo(a.unit_id);
   if (unit_no_maybe == std::nullopt) {
@@ -245,22 +242,20 @@ void PxtoneActionSynchronizer::applyRemoveUnit(const RemoveUnit &a,
     m_moo_state->units.erase(m_moo_state->units.begin() + unit_no);
 }
 
-bool PxtoneActionSynchronizer::applyTempoChange(const TempoChange &a,
-                                                qint64 uid) {
+bool PxtoneController::applyTempoChange(const TempoChange &a, qint64 uid) {
   (void)uid;
   if (a.tempo < 20 || a.tempo > 600) return false;
   m_pxtn->adjustTempo(a.tempo, *m_moo_state);
   return true;
 }
 
-bool PxtoneActionSynchronizer::applyBeatChange(const BeatChange &a,
-                                               qint64 uid) {
+bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
   (void)uid;
   if (a.beat < 1 || a.beat > 16) return false;
   m_pxtn->adjustBeatNum(a.beat);
   return true;
 }
-bool PxtoneActionSynchronizer::applyAddWoice(const AddWoice &a, qint64 uid) {
+bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   (void)uid;
   pxtnDescriptor d;
   d.set_memory_r(a.data.constData(), a.data.size());
@@ -300,8 +295,7 @@ bool validateRemoveName(const RemoveWoice &a, const pxtnService *pxtn) {
 }
 // TODO: Once you add the ability for units to change instruments,
 // you'll need a map for voices.
-bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
-                                                qint64 uid) {
+bool PxtoneController::applyRemoveWoice(const RemoveWoice &a, qint64 uid) {
   (void)uid;
   if (m_pxtn->Woice_Num() == 1) {
     qWarning() << "Cannot remove last woice.";
@@ -317,8 +311,7 @@ bool PxtoneActionSynchronizer::applyRemoveWoice(const RemoveWoice &a,
   return true;
 }
 
-bool PxtoneActionSynchronizer::applyChangeWoice(const ChangeWoice &a,
-                                                qint64 uid) {
+bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
   (void)uid;
 
   if (!validateRemoveName(a.remove, m_pxtn)) return false;

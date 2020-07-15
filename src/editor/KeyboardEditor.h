@@ -12,7 +12,7 @@
 #include "DummySyncServer.h"
 #include "EditState.h"
 #include "NotePreview.h"
-#include "PxtoneActionSynchronizer.h"
+#include "PxtoneController.h"
 #include "UnitListModel.h"
 #include "pxtone/pxtnService.h"
 #include "server/Client.h"
@@ -82,7 +82,7 @@ class KeyboardEditor : public QWidget {
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   Client *m_client;
-  PxtoneActionSynchronizer *m_sync;
+  PxtoneController *m_sync;
   int quantXIndex;
   int quantizeSelectionY;
 

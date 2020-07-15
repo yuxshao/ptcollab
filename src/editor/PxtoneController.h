@@ -1,5 +1,5 @@
-#ifndef PXTONEACTIONSYNCHRONIZER_H
-#define PXTONEACTIONSYNCHRONIZER_H
+#ifndef PXTONECONTROLLER_H
+#define PXTONECONTROLLER_H
 #include <QObject>
 #include <list>
 
@@ -21,11 +21,11 @@ struct LoggedAction {
       : state(DONE), uid(uid), idx(idx), reverse(reverse) {}
 };
 
-class PxtoneActionSynchronizer : public QObject {
+class PxtoneController : public QObject {
   Q_OBJECT
  public:
-  PxtoneActionSynchronizer(int uid, pxtnService *pxtn, mooState *moo_state,
-                           QObject *parent);
+  PxtoneController(int uid, pxtnService *pxtn, mooState *moo_state,
+                   QObject *parent);
 
   // rename to applyAndGetEditAction and applyEditAction
   EditAction applyLocalAction(const std::list<Action::Primitive> &action);
@@ -59,4 +59,4 @@ class PxtoneActionSynchronizer : public QObject {
   int m_remote_index;
 };
 
-#endif  // PXTONEACTIONSYNCHRONIZER_H
+#endif  // PXTONECONTROLLER_H
