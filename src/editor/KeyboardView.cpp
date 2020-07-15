@@ -1,4 +1,4 @@
-#include "KeyboardEditor.h"
+#include "KeyboardView.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -20,7 +20,7 @@ int one_over_last_clock(pxtnService const *pxtn) {
          pxtn->master->get_beat_num();
 }
 
-QSize KeyboardEditor::sizeHint() const {
+QSize KeyboardView::sizeHint() const {
   return QSize(one_over_last_clock(m_pxtn) / m_edit_state.scale.clockPerPx,
                m_edit_state.scale.pitchToY(EVENTMIN_KEY));
 }
@@ -42,7 +42,7 @@ void seekMoo(const pxtnService *pxtn, mooState *moo_state, int64_t clock) {
   if (!success) qWarning() << "Moo preparation error";
 }
 
-KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
+KeyboardView::KeyboardView(pxtnService *pxtn, mooState *moo_state,
                                QAudioOutput *audio_output, Client *client,
                                UnitListModel *units, QScrollArea *parent)
     : QWidget(parent),
@@ -83,9 +83,9 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
   connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
   // connect(m_audio_output, SIGNAL(notify()), SLOT(update()));
   connect(m_client, &Client::receivedAction, this,
-          &KeyboardEditor::processRemoteAction);
+          &KeyboardView::processRemoteAction);
 
-  connect(this, &KeyboardEditor::editStateChanged,
+  connect(this, &KeyboardView::editStateChanged,
           [this]() { m_client->sendAction(m_edit_state); });
   connect(m_sync, &PxtoneController::measureNumChanged,
           [this]() { updateGeometry(); });
@@ -95,7 +95,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
 // that events that involve reading from a pxtnDescriptor can't be made const
 // easily and also be serializable from a file in the same type. Perhaps if the
 // pxtone API had a 'read descriptor' separate from a 'write descriptor'...
-void KeyboardEditor::processRemoteAction(const ServerAction &a) {
+void KeyboardView::processRemoteAction(const ServerAction &a) {
   qint64 uid = a.uid;
   std::visit(
       overloaded{
@@ -209,7 +209,7 @@ void KeyboardEditor::processRemoteAction(const ServerAction &a) {
       a.action);
 }
 
-void KeyboardEditor::toggleTestActivity() {
+void KeyboardView::toggleTestActivity() {
   m_test_activity = !m_test_activity;
 }
 
@@ -478,7 +478,7 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
 // TODO: Make an FPS tracker singleton
 static qreal iFps;
 constexpr int WINDOW_BOUND_SLACK = 32;
-void KeyboardEditor::paintEvent(QPaintEvent *event) {
+void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
   QPainter painter(this);
@@ -752,7 +752,7 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
   }
 }
 
-void KeyboardEditor::wheelEvent(QWheelEvent *event) {
+void KeyboardView::wheelEvent(QWheelEvent *event) {
   qreal delta = event->angleDelta().y();
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {
@@ -813,7 +813,7 @@ void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
   }
 }
 
-void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
+void KeyboardView::mousePressEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
@@ -873,7 +873,7 @@ void KeyboardEditor::mousePressEvent(QMouseEvent *event) {
   emit editStateChanged();
 }
 
-void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
+void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
   if (m_audio_note_preview != nullptr)
     m_audio_note_preview->setVel(
         impliedVelocity(m_edit_state.mouse_edit_state, m_edit_state.scale));
@@ -883,7 +883,7 @@ void KeyboardEditor::mouseMoveEvent(QMouseEvent *event) {
   event->ignore();
 }
 
-void KeyboardEditor::cycleCurrentUnit(int offset) {
+void KeyboardView::cycleCurrentUnit(int offset) {
   switch (m_edit_state.mouse_edit_state.type) {
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
@@ -907,7 +907,7 @@ void KeyboardEditor::cycleCurrentUnit(int offset) {
   }
 }
 
-void KeyboardEditor::setCurrentUnitNo(int unit_no) {
+void KeyboardView::setCurrentUnitNo(int unit_no) {
   // qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
   //         << m_sync->unitIdMap().noToId(unit_no);
   m_edit_state.m_current_unit_id = m_sync->unitIdMap().noToId(unit_no);
@@ -915,54 +915,54 @@ void KeyboardEditor::setCurrentUnitNo(int unit_no) {
   emit editStateChanged();
 }
 
-void KeyboardEditor::clearRemoteEditStates() {
+void KeyboardView::clearRemoteEditStates() {
   m_remote_edit_states.clear();
 
   emit userListChanged(getUserList(m_remote_edit_states));
 }
 
-void KeyboardEditor::loadHistory(QList<ServerAction> &history) {
+void KeyboardView::loadHistory(QList<ServerAction> &history) {
   for (ServerAction &a : history) processRemoteAction(a);
 }
 
-void KeyboardEditor::setUid(qint64 uid) { m_sync->setUid(uid); }
+void KeyboardView::setUid(qint64 uid) { m_sync->setUid(uid); }
 
-void KeyboardEditor::resetUnitIdMap() { m_sync->resetUnitIdMap(); }
+void KeyboardView::resetUnitIdMap() { m_sync->resetUnitIdMap(); }
 
-void KeyboardEditor::refreshQuantSettings() {
+void KeyboardView::refreshQuantSettings() {
   m_edit_state.m_quantize_clock =
       m_pxtn->master->get_beat_clock() / quantizeXOptions[quantXIndex].second;
   m_edit_state.m_quantize_pitch =
       PITCH_PER_KEY / quantizeYOptions[quantizeSelectionY].second;
 }
 
-void KeyboardEditor::setQuantXIndex(int q) {
+void KeyboardView::setQuantXIndex(int q) {
   quantXIndex = q;
   refreshQuantSettings();
   emit editStateChanged();
 }
-void KeyboardEditor::setQuantYIndex(int q) {
+void KeyboardView::setQuantYIndex(int q) {
   quantizeSelectionY = q;
   refreshQuantSettings();
   emit editStateChanged();
 }
-void KeyboardEditor::seekPosition(int clock) {
+void KeyboardView::seekPosition(int clock) {
   seekMoo(m_pxtn, m_moo_state, clock);
   m_this_seek = clock;
   m_this_seek_caught_up = false;
 }
 
-void KeyboardEditor::selectAll() {
+void KeyboardView::selectAll() {
   m_edit_state.mouse_edit_state.selection.emplace(
       Interval{0, m_pxtn->master->get_clock_num()});
   emit editStateChanged();
 }
 
-void KeyboardEditor::deselect() {
+void KeyboardView::deselect() {
   m_edit_state.mouse_edit_state.selection.reset();
 }
 
-void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
+void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
   if (m_edit_state.mouse_edit_state.selection.has_value()) {
     int offset;
     switch (dir) {
@@ -1004,7 +1004,7 @@ void KeyboardEditor::transposeSelection(Direction dir, bool wide, bool shift) {
   }
 }
 
-void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
+void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
@@ -1074,12 +1074,12 @@ void KeyboardEditor::mouseReleaseEvent(QMouseEvent *event) {
   // bundled with the actual remote action
 }
 
-void KeyboardEditor::removeCurrentUnit() {
+void KeyboardView::removeCurrentUnit() {
   if (m_pxtn->Unit_Num() > 0)
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
 }
 
-std::set<int> KeyboardEditor::selectedUnitNos() {
+std::set<int> KeyboardView::selectedUnitNos() {
   std::set<int> unit_nos;
   auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
   if (unit_no.has_value()) unit_nos.insert(unit_no.value());
@@ -1089,13 +1089,13 @@ std::set<int> KeyboardEditor::selectedUnitNos() {
   return unit_nos;
 }
 
-void KeyboardEditor::copySelection() {
+void KeyboardView::copySelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   m_clipboard.copy(selectedUnitNos(),
                    m_edit_state.mouse_edit_state.selection.value());
 }
 
-void KeyboardEditor::clearSelection() {
+void KeyboardView::clearSelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   std::list<Action::Primitive> actions = m_clipboard.makeClear(
       selectedUnitNos(), m_edit_state.mouse_edit_state.selection.value(),
@@ -1106,12 +1106,12 @@ void KeyboardEditor::clearSelection() {
   }
 }
 
-void KeyboardEditor::cutSelection() {
+void KeyboardView::cutSelection() {
   copySelection();
   clearSelection();
 }
 
-void KeyboardEditor::paste() {
+void KeyboardView::paste() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   Interval &selection = m_edit_state.mouse_edit_state.selection.value();
   std::list<Action::Primitive> actions = m_clipboard.makePaste(

@@ -10,7 +10,7 @@
 
 #include "EditState.h"
 #include "EditorScrollArea.h"
-#include "KeyboardEditor.h"
+#include "KeyboardView.h"
 #include "PxtoneIODevice.h"
 #include "SideMenu.h"
 #include "UnitListModel.h"
@@ -37,7 +37,7 @@ class EditorWindow : public QMainWindow {
   void Host(bool load_file);
   void keyPressEvent(QKeyEvent* event);
   QAudioOutput* m_audio;
-  KeyboardEditor* m_keyboard_editor;
+  KeyboardView* m_keyboard_view;
   mooState m_moo_state;
   pxtnService m_pxtn;
   EditorScrollArea* m_scroll_area;

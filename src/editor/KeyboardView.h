@@ -1,5 +1,5 @@
-#ifndef KEYBOARDEDITOR_H
-#define KEYBOARDEDITOR_H
+#ifndef KEYBOARDVIEW_H
+#define KEYBOARDVIEW_H
 
 #include <QAudioOutput>
 #include <QElapsedTimer>
@@ -24,12 +24,12 @@ struct RemoteEditState {
   QString user;
 };
 
-class KeyboardEditor : public QWidget {
+class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardEditor(pxtnService *pxtn, mooState *moo_state,
-                          QAudioOutput *audio_output, Client *client,
-                          UnitListModel *units, QScrollArea *parent = nullptr);
+  explicit KeyboardView(pxtnService *pxtn, mooState *moo_state,
+                        QAudioOutput *audio_output, Client *client,
+                        UnitListModel *units, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void loadHistory(QList<ServerAction> &history);
   void setUid(qint64 uid);
@@ -98,4 +98,4 @@ class KeyboardEditor : public QWidget {
   UnitListModel *m_units;
 };
 
-#endif  // KEYBOARDEDITOR_H
+#endif  // KEYBOARDVIEW_H

@@ -86,8 +86,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_units = new UnitListModel(&m_pxtn, this);
-  m_keyboard_editor =
-      new KeyboardEditor(&m_pxtn, &m_moo_state, m_audio, m_client, m_units);
+  m_keyboard_view =
+      new KeyboardView(&m_pxtn, &m_moo_state, m_audio, m_client, m_units);
 
   connect(
       m_client, &Client::connected,
@@ -99,12 +99,12 @@ EditorWindow::EditorWindow(QWidget *parent)
         QMessageBox::information(this, "Connected", "Connected to server.");
         m_side_menu->setEditWidgetsEnabled(true);
         loadDescriptor(desc);
-        m_keyboard_editor->setUid(uid);
-        m_keyboard_editor->loadHistory(history);
+        m_keyboard_view->setUid(uid);
+        m_keyboard_view->loadHistory(history);
       });
   connect(m_client, &Client::disconnected, [this]() {
     m_client_status->setText(tr("Not connected"));
-    m_keyboard_editor->clearRemoteEditStates();
+    m_keyboard_view->clearRemoteEditStates();
     QMessageBox::information(this, "Disconnected", "Disconnected from server.");
   });
   connect(m_client, &Client::errorOccurred, [this](QString error) {
@@ -115,7 +115,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_client_status);
 
   m_scroll_area = new EditorScrollArea(m_splitter);
-  m_scroll_area->setWidget(m_keyboard_editor);
+  m_scroll_area->setWidget(m_keyboard_view);
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
 
@@ -126,22 +126,22 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter->addWidget(m_scroll_area);
   m_splitter->setSizes(QList{10, 10000});
 
-  connect(m_side_menu, &SideMenu::quantXIndexUpdated, m_keyboard_editor,
-          &KeyboardEditor::setQuantXIndex);
-  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_editor,
-          &KeyboardEditor::setQuantYIndex);
-  connect(m_keyboard_editor, &KeyboardEditor::quantXIndexChanged, m_side_menu,
+  connect(m_side_menu, &SideMenu::quantXIndexUpdated, m_keyboard_view,
+          &KeyboardView::setQuantXIndex);
+  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_view,
+          &KeyboardView::setQuantYIndex);
+  connect(m_keyboard_view, &KeyboardView::quantXIndexChanged, m_side_menu,
           &SideMenu::setQuantXIndex);
-  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_editor,
-          &KeyboardEditor::setQuantYIndex);
+  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_view,
+          &KeyboardView::setQuantYIndex);
 
-  connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_editor,
-          &KeyboardEditor::setCurrentUnitNo);
-  connect(m_keyboard_editor, &KeyboardEditor::currentUnitNoChanged, m_side_menu,
+  connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_view,
+          &KeyboardView::setCurrentUnitNo);
+  connect(m_keyboard_view, &KeyboardView::currentUnitNoChanged, m_side_menu,
           &SideMenu::setCurrentUnit);
-  connect(m_keyboard_editor, &KeyboardEditor::onEdit,
+  connect(m_keyboard_view, &KeyboardView::onEdit,
           [=]() { m_side_menu->setModified(true); });
-  connect(m_keyboard_editor, &KeyboardEditor::userListChanged, m_side_menu,
+  connect(m_keyboard_view, &KeyboardView::userListChanged, m_side_menu,
           &SideMenu::setUserList);
 
   connect(m_side_menu, &SideMenu::tempoChanged,
@@ -192,8 +192,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       // TODO: stop existing note preview on creation of new one in this case
       m_note_preview = std::make_unique<NotePreview>(
           &m_pxtn, &m_moo_state.params,
-          m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
-          m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
+          m_keyboard_view->edit_state().mouse_edit_state.last_pitch,
+          m_keyboard_view->edit_state().mouse_edit_state.base_velocity, 48000,
           woice, this);
     } catch (const QString &e) {
       qDebug() << "Could not preview woice at path" << path << ". Error" << e;
@@ -205,18 +205,18 @@ EditorWindow::EditorWindow(QWidget *parent)
     if (idx >= 0)
       m_note_preview = std::make_unique<NotePreview>(
           &m_pxtn, &m_moo_state.params,
-          m_keyboard_editor->edit_state().mouse_edit_state.last_pitch,
-          m_keyboard_editor->edit_state().mouse_edit_state.base_velocity, 48000,
+          m_keyboard_view->edit_state().mouse_edit_state.last_pitch,
+          m_keyboard_view->edit_state().mouse_edit_state.base_velocity, 48000,
           m_pxtn.Woice_Get(idx), this);
     else
       m_note_preview = nullptr;
   });
-  connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_editor,
-          &KeyboardEditor::removeCurrentUnit);
+  connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_view,
+          &KeyboardView::removeCurrentUnit);
 
-  connect(m_keyboard_editor, &KeyboardEditor::woicesChanged, this,
+  connect(m_keyboard_view, &KeyboardView::woicesChanged, this,
           &EditorWindow::refreshSideMenuWoices);
-  connect(m_keyboard_editor, &KeyboardEditor::tempoBeatChanged, this,
+  connect(m_keyboard_view, &KeyboardView::tempoBeatChanged, this,
           &EditorWindow::refreshSideMenuTempoBeat);
   connect(m_side_menu, &SideMenu::playButtonPressed, this,
           &EditorWindow::togglePlayState);
@@ -272,7 +272,7 @@ void EditorWindow::togglePlayState() {
 }
 
 void EditorWindow::resetAndSuspendAudio() {
-  m_keyboard_editor->seekPosition(0);
+  m_keyboard_view->seekPosition(0);
   m_audio->suspend();
 
   m_side_menu->setPlay(false);
@@ -287,11 +287,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_Escape:
       resetAndSuspendAudio();
-      m_keyboard_editor->setFocus(Qt::OtherFocusReason);
+      m_keyboard_view->setFocus(Qt::OtherFocusReason);
       break;
       // TODO: Sort these keys
     case Qt::Key_W:
-      m_keyboard_editor->cycleCurrentUnit(-1);
+      m_keyboard_view->cycleCurrentUnit(-1);
       break;
     case Qt::Key_S:
       if (event->modifiers() & Qt::ControlModifier) {
@@ -300,19 +300,18 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         else
           save();
       } else
-        m_keyboard_editor->cycleCurrentUnit(1);
+        m_keyboard_view->cycleCurrentUnit(1);
       break;
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_editor->selectAll();
+        m_keyboard_view->selectAll();
       break;
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_editor->copySelection();
+        m_keyboard_view->copySelection();
       break;
     case Qt::Key_D:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_editor->deselect();
+      if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->deselect();
       break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);
@@ -327,15 +326,15 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
-        m_keyboard_editor->toggleTestActivity();
+        m_keyboard_view->toggleTestActivity();
       }
       break;
     case Qt::Key_V:
-      if (event->modifiers() & Qt::ControlModifier) m_keyboard_editor->paste();
+      if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->paste();
       break;
     case Qt::Key_X:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_editor->cutSelection();
+        m_keyboard_view->cutSelection();
       break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
@@ -352,10 +351,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Backspace:
       if (event->modifiers() & Qt::ControlModifier &&
           event->modifiers() & Qt::ShiftModifier)
-        m_keyboard_editor->removeCurrentUnit();
+        m_keyboard_view->removeCurrentUnit();
       break;
     case Qt::Key_Delete:
-      m_keyboard_editor->clearSelection();
+      m_keyboard_view->clearSelection();
       break;
     case Qt::Key_Up:
     case Qt::Key_Down:
@@ -363,7 +362,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
       bool wide = (event->modifiers() & Qt::ControlModifier);
       bool shift = (event->modifiers() & Qt::ShiftModifier);
-      m_keyboard_editor->transposeSelection(dir, wide, shift);
+      m_keyboard_view->transposeSelection(dir, wide, shift);
       break;
   }
 }
@@ -390,7 +389,7 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
     }
   }
   // TODO: this unit ID map should be much closer to the service.
-  m_keyboard_editor->resetUnitIdMap();
+  m_keyboard_view->resetUnitIdMap();
   if (m_pxtn.tones_ready(m_moo_state) != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;
@@ -405,7 +404,7 @@ bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
   refreshSideMenuWoices();
   refreshSideMenuTempoBeat();
 
-  m_keyboard_editor->updateGeometry();
+  m_keyboard_view->updateGeometry();
   return true;
 }
 const QString PTCOP_DIR_KEY("ptcop_dir");
