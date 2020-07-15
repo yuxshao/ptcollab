@@ -45,6 +45,7 @@ class EditorWindow : public QMainWindow {
   QSplitter* m_splitter;
   SideMenu* m_side_menu;
   BroadcastServer* m_server;
+  PxtoneController* m_controller;
   Client* m_client;
   QString m_filename;
   QLabel* m_server_status;

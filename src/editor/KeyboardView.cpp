@@ -42,9 +42,10 @@ void seekMoo(const pxtnService *pxtn, mooState *moo_state, int64_t clock) {
   if (!success) qWarning() << "Moo preparation error";
 }
 
-KeyboardView::KeyboardView(pxtnService *pxtn, mooState *moo_state,
-                               QAudioOutput *audio_output, Client *client,
-                               UnitListModel *units, QScrollArea *parent)
+KeyboardView::KeyboardView(const pxtnService *pxtn, mooState *moo_state,
+                           QAudioOutput *audio_output,
+                           PxtoneController *controller, Client *client,
+                           UnitListModel *units, QScrollArea *parent)
     : QWidget(parent),
       m_pxtn(pxtn),
       m_moo_state(moo_state),
@@ -56,7 +57,7 @@ KeyboardView::KeyboardView(pxtnService *pxtn, mooState *moo_state,
       // TODO: we probably don't want to have the editor own the client haha.
       // Need some loose coupling thing.
       m_client(client),
-      m_sync(new PxtoneController(0, pxtn, moo_state, this)),
+      m_controller(controller),
       quantXIndex(0),
       quantizeSelectionY(0),
       m_last_clock(0),
@@ -87,7 +88,7 @@ KeyboardView::KeyboardView(pxtnService *pxtn, mooState *moo_state,
 
   connect(this, &KeyboardView::editStateChanged,
           [this]() { m_client->sendAction(m_edit_state); });
-  connect(m_sync, &PxtoneController::measureNumChanged,
+  connect(m_controller, &PxtoneController::measureNumChanged,
           [this]() { updateGeometry(); });
 }
 
@@ -111,35 +112,35 @@ void KeyboardView::processRemoteAction(const ServerAction &a) {
                         it->second.state.emplace(s);
                     },
                     [this, uid](const EditAction &s) {
-                      m_sync->applyRemoteAction(s, uid);
+                      m_controller->applyRemoteAction(s, uid);
                     },
                     [this, uid](const UndoRedo &s) {
-                      m_sync->applyUndoRedo(s, uid);
+                      m_controller->applyUndoRedo(s, uid);
                     },
                     [this, uid](const TempoChange &s) {
-                      if (m_sync->applyTempoChange(s, uid))
+                      if (m_controller->applyTempoChange(s, uid))
                         emit tempoBeatChanged();
                     },
                     [this, uid](const BeatChange &s) {
-                      if (m_sync->applyBeatChange(s, uid))
+                      if (m_controller->applyBeatChange(s, uid))
                         emit tempoBeatChanged();
                     },
                     [this, uid](const AddWoice &s) {
-                      bool success = m_sync->applyAddWoice(s, uid);
+                      bool success = m_controller->applyAddWoice(s, uid);
                       emit woicesChanged();
                       if (!success) {
                         qWarning() << "Could not add voice" << s.name
                                    << "from user" << uid;
-                        if (uid == m_sync->uid())
+                        if (uid == m_controller->uid())
                           QMessageBox::warning(
                               this, tr("Could not add voice"),
                               tr("Could not add voice %1").arg(s.name));
                       }
                     },
                     [this, uid](const RemoveWoice &s) {
-                      bool success = m_sync->applyRemoveWoice(s, uid);
+                      bool success = m_controller->applyRemoveWoice(s, uid);
                       emit woicesChanged();
-                      if (!success && uid == m_sync->uid())
+                      if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             this, tr("Could not remove voice"),
                             tr("Could not add remove %1").arg(s.name));
@@ -150,9 +151,9 @@ void KeyboardView::processRemoteAction(const ServerAction &a) {
                                 m_pxtn->moo_get_now_clock(*m_moo_state));
                     },
                     [this, uid](const ChangeWoice &s) {
-                      bool success = m_sync->applyChangeWoice(s, uid);
+                      bool success = m_controller->applyChangeWoice(s, uid);
                       emit woicesChanged();
-                      if (!success && uid == m_sync->uid())
+                      if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             this, tr("Could not change voice"),
                             tr("Could not add change %1").arg(s.remove.name));
@@ -162,25 +163,26 @@ void KeyboardView::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const AddUnit &s) {
                       m_units->beginAdd();
-                      bool success = m_sync->applyAddUnit(s, uid);
+                      bool success = m_controller->applyAddUnit(s, uid);
                       m_units->endAdd();
-                      if (uid == m_sync->uid() && success) {
+                      if (uid == m_controller->uid() && success) {
                         m_edit_state.m_current_unit_id =
-                            m_sync->unitIdMap().noToId(m_pxtn->Unit_Num() - 1);
+                            m_controller->unitIdMap().noToId(
+                                m_pxtn->Unit_Num() - 1);
                         emit currentUnitNoChanged(m_pxtn->Unit_Num() - 1);
                       }
                     },
                     [this, uid](const RemoveUnit &s) {
-                      auto current_unit_no = m_sync->unitIdMap().idToNo(
+                      auto current_unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
                       m_units->beginRemove(current_unit_no.value());
-                      m_sync->applyRemoveUnit(s, uid);
+                      m_controller->applyRemoveUnit(s, uid);
                       m_units->endRemove();
                       if (current_unit_no != std::nullopt) {
                         if (m_pxtn->Unit_Num() <= current_unit_no.value() &&
                             m_pxtn->Unit_Num() > 0) {
                           m_edit_state.m_current_unit_id =
-                              m_sync->unitIdMap().noToId(
+                              m_controller->unitIdMap().noToId(
                                   current_unit_no.value() - 1);
                           emit currentUnitNoChanged(current_unit_no.value() -
                                                     1);
@@ -209,9 +211,7 @@ void KeyboardView::processRemoteAction(const ServerAction &a) {
       a.action);
 }
 
-void KeyboardView::toggleTestActivity() {
-  m_test_activity = !m_test_activity;
-}
+void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
 
 struct LastEvent {
   int clock;
@@ -608,7 +608,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
        e = e->next) {
     if (e->clock > clockBounds.end) break;
     int unit_no = e->unit_no;
-    qint32 unit_id = m_sync->unitIdMap().noToId(unit_no);
+    qint32 unit_id = m_controller->unitIdMap().noToId(unit_no);
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
@@ -659,7 +659,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // After all the events there might be some blocks that are pending a draw.
   for (uint unit_no = 0; unit_no < drawStates.size(); ++unit_no) {
     if (drawStates[unit_no].ongoingOnEvent.has_value()) {
-      qint32 unit_id = m_sync->unitIdMap().noToId(unit_no);
+      qint32 unit_id = m_controller->unitIdMap().noToId(unit_no);
       DrawState &state = drawStates[unit_no];
       const Brush &brush = brushes[unit_id % NUM_BRUSHES];
       bool matchingUnit = (unit_id == m_edit_state.m_current_unit_id);
@@ -688,7 +688,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
-    if (uid == m_sync->uid()) continue;
+    if (uid == m_controller->uid()) continue;
     if (remote_state.state.has_value()) {
       const EditState &state = remote_state.state.value();
       bool same_unit =
@@ -711,7 +711,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_remote_edit_states) {
-    if (uid == m_sync->uid()) continue;
+    if (uid == m_controller->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       state.scale = m_edit_state.scale;  // Position according to our scale
@@ -726,9 +726,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   {
     QString my_username = "";
-    auto it = m_remote_edit_states.find(m_sync->uid());
+    auto it = m_remote_edit_states.find(m_controller->uid());
     if (it != m_remote_edit_states.end()) my_username = it->second.user;
-    drawCursor(m_edit_state, painter, Qt::white, my_username, m_sync->uid());
+    drawCursor(m_edit_state, painter, Qt::white, my_username,
+               m_controller->uid());
   }
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
@@ -853,7 +854,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
   if (make_note_preview) {
     auto maybe_unit_no =
-        m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+        m_controller->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
     if (maybe_unit_no != std::nullopt) {
       qint32 vel = m_edit_state.mouse_edit_state.base_velocity;
 
@@ -894,13 +895,14 @@ void KeyboardView::cycleCurrentUnit(int offset) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::Seek:
       auto maybe_unit_no =
-          m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+          m_controller->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
       if (maybe_unit_no == std::nullopt) break;
       qint32 unit_no = nonnegative_modulo(maybe_unit_no.value() + offset,
                                           m_pxtn->Unit_Num());
       // qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
       //         << m_sync->unitIdMap().noToId(unit_no);
-      m_edit_state.m_current_unit_id = m_sync->unitIdMap().noToId(unit_no);
+      m_edit_state.m_current_unit_id =
+          m_controller->unitIdMap().noToId(unit_no);
       emit currentUnitNoChanged(unit_no);
       emit editStateChanged();
       break;
@@ -910,7 +912,7 @@ void KeyboardView::cycleCurrentUnit(int offset) {
 void KeyboardView::setCurrentUnitNo(int unit_no) {
   // qDebug() << "Changing unit id" << m_edit_state.m_current_unit_id
   //         << m_sync->unitIdMap().noToId(unit_no);
-  m_edit_state.m_current_unit_id = m_sync->unitIdMap().noToId(unit_no);
+  m_edit_state.m_current_unit_id = m_controller->unitIdMap().noToId(unit_no);
 
   emit editStateChanged();
 }
@@ -925,9 +927,9 @@ void KeyboardView::loadHistory(QList<ServerAction> &history) {
   for (ServerAction &a : history) processRemoteAction(a);
 }
 
-void KeyboardView::setUid(qint64 uid) { m_sync->setUid(uid); }
+void KeyboardView::setUid(qint64 uid) { m_controller->setUid(uid); }
 
-void KeyboardView::resetUnitIdMap() { m_sync->resetUnitIdMap(); }
+void KeyboardView::resetUnitIdMap() { m_controller->resetUnitIdMap(); }
 
 void KeyboardView::refreshQuantSettings() {
   m_edit_state.m_quantize_clock =
@@ -1000,7 +1002,7 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
         as.push_back({kind, unit, interval.end, Add{end_val}});
       }
     }
-    m_client->sendAction(m_sync->applyLocalAction(as));
+    m_client->sendAction(m_controller->applyLocalAction(as));
   }
 }
 
@@ -1061,7 +1063,7 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     if (actions.size() > 0) {
-      m_client->sendAction(m_sync->applyLocalAction(actions));
+      m_client->sendAction(m_controller->applyLocalAction(actions));
       // TODO: Change this to like, when the synchronizer receives an
       // action.
       emit onEdit();
@@ -1081,7 +1083,8 @@ void KeyboardView::removeCurrentUnit() {
 
 std::set<int> KeyboardView::selectedUnitNos() {
   std::set<int> unit_nos;
-  auto unit_no = m_sync->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
+  auto unit_no =
+      m_controller->unitIdMap().idToNo(m_edit_state.m_current_unit_id);
   if (unit_no.has_value()) unit_nos.insert(unit_no.value());
 
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
@@ -1099,9 +1102,9 @@ void KeyboardView::clearSelection() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   std::list<Action::Primitive> actions = m_clipboard.makeClear(
       selectedUnitNos(), m_edit_state.mouse_edit_state.selection.value(),
-      m_sync->unitIdMap());
+      m_controller->unitIdMap());
   if (actions.size() > 0) {
-    m_client->sendAction(m_sync->applyLocalAction(actions));
+    m_client->sendAction(m_controller->applyLocalAction(actions));
     emit onEdit();
   }
 }
@@ -1115,9 +1118,9 @@ void KeyboardView::paste() {
   if (!m_edit_state.mouse_edit_state.selection.has_value()) return;
   Interval &selection = m_edit_state.mouse_edit_state.selection.value();
   std::list<Action::Primitive> actions = m_clipboard.makePaste(
-      selectedUnitNos(), selection.start, m_sync->unitIdMap());
+      selectedUnitNos(), selection.start, m_controller->unitIdMap());
   if (actions.size() > 0) {
-    m_client->sendAction(m_sync->applyLocalAction(actions));
+    m_client->sendAction(m_controller->applyLocalAction(actions));
     emit onEdit();
   }
   selection.end = selection.start + m_clipboard.copyLength();

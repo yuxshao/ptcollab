@@ -27,8 +27,9 @@ struct RemoteEditState {
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardView(pxtnService *pxtn, mooState *moo_state,
-                        QAudioOutput *audio_output, Client *client,
+  explicit KeyboardView(const pxtnService *pxtn, mooState *moo_state,
+                        QAudioOutput *audio_output,
+                        PxtoneController *controller, Client *client,
                         UnitListModel *units, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
   void loadHistory(QList<ServerAction> &history);
@@ -82,7 +83,7 @@ class KeyboardView : public QWidget {
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   Client *m_client;
-  PxtoneController *m_sync;
+  PxtoneController *m_controller;
   int quantXIndex;
   int quantizeSelectionY;
 

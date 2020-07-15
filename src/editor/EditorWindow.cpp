@@ -86,8 +86,9 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_units = new UnitListModel(&m_pxtn, this);
-  m_keyboard_view =
-      new KeyboardView(&m_pxtn, &m_moo_state, m_audio, m_client, m_units);
+  m_controller = new PxtoneController(0, &m_pxtn, &m_moo_state, this);
+  m_keyboard_view = new KeyboardView(&m_pxtn, &m_moo_state, m_audio,
+                                     m_controller, m_client, m_units);
 
   connect(
       m_client, &Client::connected,
