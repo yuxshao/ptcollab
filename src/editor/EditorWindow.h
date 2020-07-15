@@ -30,8 +30,6 @@ class EditorWindow : public QMainWindow {
   EditorWindow(QWidget* parent = nullptr);
   ~EditorWindow();
 
- public slots:
-  void resetAudio();
  private slots:
   void connectToHost();
 

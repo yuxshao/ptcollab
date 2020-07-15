@@ -86,9 +86,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_units = new UnitListModel(&m_pxtn, this);
-  m_keyboard_editor = new KeyboardEditor(&m_pxtn, &m_audio, m_client, m_units);
-  connect(m_keyboard_editor, &KeyboardEditor::seeked, this,
-          &EditorWindow::resetAudio);
+  m_keyboard_editor = new KeyboardEditor(&m_pxtn, m_audio, m_client, m_units);
   connect(
       m_client, &Client::connected,
       [this](pxtnDescriptor &desc, QList<ServerAction> &history, qint64 uid) {
@@ -267,22 +265,6 @@ void EditorWindow::togglePlayState() {
     m_audio->suspend();
     m_side_menu->setPlay(false);
   }
-}
-
-// Since stopping and starting an audio stream after a seek leaves a blip at the
-// end of the previous position, we sometimes have to 'drain' the buffer by
-// creating a new audio output.
-void EditorWindow::resetAudio() {
-  qDebug() << "Reset audio";
-  bool isSuspended = true;
-  if (m_audio) {
-    if (m_audio->state() != QAudio::SuspendedState) isSuspended = false;
-    m_audio->stop();
-    m_audio->deleteLater();
-  }
-  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
-  m_audio->start(&m_pxtn_device);
-  if (isSuspended) m_audio->suspend();
 }
 
 void EditorWindow::resetAndSuspendAudio() {

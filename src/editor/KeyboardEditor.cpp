@@ -42,7 +42,7 @@ void seekMoo(pxtnService *pxtn, int64_t clock) {
   if (!success) qWarning() << "Moo preparation error";
 }
 
-KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput **audio_output,
+KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput *audio_output,
                                Client *client, UnitListModel *units,
                                QScrollArea *parent)
     : QWidget(parent),
@@ -67,6 +67,7 @@ KeyboardEditor::KeyboardEditor(pxtnService *pxtn, QAudioOutput **audio_output,
       m_units(units) {
   m_edit_state.m_quantize_clock = pxtn->master->get_beat_clock();
   m_edit_state.m_quantize_pitch = PITCH_PER_KEY;
+  m_audio_output->setNotifyInterval(10);
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
   m_anim->setEndValue(360);
@@ -570,11 +571,12 @@ void KeyboardEditor::paintEvent(QPaintEvent *event) {
                    m_pxtn->master->get_beat_num();
 
   int64_t offset_from_buffer =
-      (*m_audio_output ? (*m_audio_output)->bufferSize() : 0);
+      m_audio_output->bufferSize()  // - m_audio_output->bytesFree()
+      ;
 
   double estimated_buffer_offset =
       -offset_from_buffer / double(bytes_per_second);
-  if (*m_audio_output && (*m_audio_output)->state() != QAudio::ActiveState)
+  if (m_audio_output->state() != QAudio::ActiveState)
     timeSinceLastClock.restart();
   else
     estimated_buffer_offset += timeSinceLastClock.elapsed() / 1000.0;
@@ -942,7 +944,6 @@ void KeyboardEditor::setQuantYIndex(int q) {
 }
 void KeyboardEditor::seekPosition(int clock) {
   seekMoo(m_pxtn, clock);
-  emit seeked();
   m_this_seek = clock;
   m_this_seek_caught_up = false;
 }

@@ -223,6 +223,9 @@ fill architecture could work well.
 7. Preview at different pitches / velocities based off last note input
 8. Smaller audio blip after a seek. 
 
+7/14
+1. Undo this smaller blip thing because it causes windows to be incredibly slow.
+
 Todo by priority
 ----------------
  - seems like it takes forever to do the audio reset now?
