@@ -11,6 +11,7 @@
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
+#include "ParamView.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 
@@ -42,16 +43,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
 
-  m_scroll_area = new EditorScrollArea(m_splitter);
+  m_side_menu = new PxtoneSideMenu(m_client, m_units, this);
+  m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
+  m_splitter->addWidget(m_side_menu);
+  m_splitter->addWidget(m_key_splitter);
+  m_splitter->setSizes(QList{10, 10000});
+
+  m_scroll_area = new EditorScrollArea(m_key_splitter);
   m_scroll_area->setWidget(m_keyboard_view);
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
 
-  m_side_menu = new PxtoneSideMenu(m_client, m_units, this);
-
-  m_splitter->addWidget(m_side_menu);
-  m_splitter->addWidget(m_scroll_area);
-  m_splitter->setSizes(QList{10, 10000});
+  // TODO: Make member var
+  EditorScrollArea *m_param_scroll_area = new EditorScrollArea(m_key_splitter);
+  m_param_scroll_area->setWidget(new ParamView(m_client, m_param_scroll_area));
+  m_key_splitter->addWidget(m_scroll_area);
+  m_key_splitter->addWidget(m_param_scroll_area);
+  m_key_splitter->setSizes(QList{10000, 10});
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);

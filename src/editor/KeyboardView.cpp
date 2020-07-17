@@ -25,6 +25,7 @@ void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
                      quantizeXOptions[s.m_quantize_clock_idx].second;
   m_quantize_pitch =
       PITCH_PER_KEY / quantizeYOptions[s.m_quantize_pitch_idx].second;
+  scale = s.scale;
 }
 
 QSize KeyboardView::sizeHint() const {
@@ -51,10 +52,13 @@ KeyboardView::KeyboardView(PxtoneClient *client, QScrollArea *parent)
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
   setMouseTracking(true);
-
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
+
   connect(m_client, &PxtoneClient::editStateChanged,
-          [this](const EditState &s) { m_edit_state.update(m_pxtn, s); });
+          [this](const EditState &s) {
+            if (!(m_edit_state.scale == s.scale)) updateGeometry();
+            m_edit_state.update(m_pxtn, s);
+          });
   connect(m_client, &PxtoneClient::measureNumChanged,
           [this]() { updateGeometry(); });
   connect(m_client, &PxtoneClient::seeked, [this](int clock) {
@@ -633,8 +637,6 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
       });
     }
 
-    // TODO: Maybe have to update geometry whenever scale changes.
-    updateGeometry();
     event->accept();
   } else if (event->modifiers() & Qt::AltModifier) {
     // In this case, alt flips the scroll direction.

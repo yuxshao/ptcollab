@@ -41,6 +41,7 @@ class EditorWindow : public QMainWindow {
   mooState m_moo_state;
   EditorScrollArea* m_scroll_area;
   QSplitter* m_splitter;
+  QSplitter* m_key_splitter;
   PxtoneSideMenu* m_side_menu;
   BroadcastServer* m_server;
   PxtoneClient* m_client;

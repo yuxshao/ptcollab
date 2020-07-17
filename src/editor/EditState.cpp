@@ -5,6 +5,11 @@
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnEvelist.h"
 
+bool operator==(const Scale &x, const Scale &y) {
+  return x.clockPerPx == y.clockPerPx && x.pitchPerPx == y.pitchPerPx &&
+         x.pitchOffset == y.pitchOffset && x.noteHeight == y.noteHeight;
+}
+
 Interval MouseEditState::clock_int(int q) const {
   int begin = std::min(start_clock, current_clock);
   int end = std::max(start_clock, current_clock);

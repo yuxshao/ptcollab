@@ -40,6 +40,7 @@ HEADERS += \
            editor/Interval.h \
            editor/KeyboardView.h \
            editor/NotePreview.h \
+           editor/ParamView.h \
            editor/PxtoneClient.h \
            editor/PxtoneController.h \
            editor/PxtoneIODevice.h \
@@ -93,6 +94,7 @@ SOURCES += main.cpp \
            editor/Interval.cpp \
            editor/KeyboardView.cpp \
            editor/NotePreview.cpp \
+           editor/ParamView.cpp \
            editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \
            editor/PxtoneIODevice.cpp \

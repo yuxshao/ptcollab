@@ -20,6 +20,7 @@ enum struct Direction { UP, DOWN };
 
 struct LocalEditState {
   qint32 m_quantize_clock, m_quantize_pitch;
+  Scale scale;
   LocalEditState(const pxtnService *pxtn, const EditState &s) {
     update(pxtn, s);
   };
@@ -48,7 +49,6 @@ class KeyboardView : public QWidget {
   void mouseMoveEvent(QMouseEvent *event) override;
   void paintEvent(QPaintEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
-  void refreshSize();
   void refreshQuantSettings();
   QSize sizeHint() const override;
   std::set<int> selectedUnitNos();

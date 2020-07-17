@@ -41,6 +41,7 @@ struct Scale {
 };
 QDataStream &operator<<(QDataStream &out, const Scale &a);
 QDataStream &operator>>(QDataStream &in, Scale &a);
+bool operator==(const Scale &x, const Scale &y);
 
 struct EditState {
   MouseEditState mouse_edit_state;
