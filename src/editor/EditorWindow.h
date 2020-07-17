@@ -12,7 +12,7 @@
 #include "EditorScrollArea.h"
 #include "KeyboardView.h"
 #include "PxtoneIODevice.h"
-#include "SideMenu.h"
+#include "PxtoneSideMenu.h"
 #include "UnitListModel.h"
 #include "pxtone/pxtnService.h"
 #include "server/BroadcastServer.h"
@@ -36,32 +36,22 @@ class EditorWindow : public QMainWindow {
  private:
   void Host(bool load_file);
   void keyPressEvent(QKeyEvent* event);
-  QAudioOutput* m_audio;
   KeyboardView* m_keyboard_view;
-  mooState m_moo_state;
   pxtnService m_pxtn;
+  mooState m_moo_state;
   EditorScrollArea* m_scroll_area;
-  PxtoneIODevice m_pxtn_device;
   QSplitter* m_splitter;
-  SideMenu* m_side_menu;
+  PxtoneSideMenu* m_side_menu;
   BroadcastServer* m_server;
-  PxtoneController* m_controller;
-  Client* m_client;
+  PxtoneClient* m_client;
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;
   UnitListModel* m_units;
 
-  std::unique_ptr<NotePreview> m_note_preview;
-
   Ui::EditorWindow* ui;
-  void togglePlayState();
-  void resetAndSuspendAudio();
   bool saveToFile(QString filename);
   void save();
   void saveAs();
-  bool loadDescriptor(pxtnDescriptor& desc);
-  void refreshSideMenuWoices();
-  void refreshSideMenuTempoBeat();
 };
 #endif  // MAINWINDOW_H

@@ -40,8 +40,10 @@ HEADERS += \
            editor/Interval.h \
            editor/KeyboardView.h \
            editor/NotePreview.h \
+           editor/PxtoneClient.h \
            editor/PxtoneController.h \
            editor/PxtoneIODevice.h \
+           editor/PxtoneSideMenu.h \
            editor/PxtoneUnitIODevice.h \
            editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
@@ -91,8 +93,10 @@ SOURCES += main.cpp \
            editor/Interval.cpp \
            editor/KeyboardView.cpp \
            editor/NotePreview.cpp \
+           editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \
            editor/PxtoneIODevice.cpp \
+           editor/PxtoneSideMenu.cpp \
            editor/PxtoneUnitIODevice.cpp \
            editor/SelectWoiceDialog.cpp \
            editor/SideMenu.cpp \

@@ -12,50 +12,29 @@
 #include "DummySyncServer.h"
 #include "EditState.h"
 #include "NotePreview.h"
-#include "PxtoneController.h"
+#include "PxtoneClient.h"
 #include "UnitListModel.h"
 #include "pxtone/pxtnService.h"
-#include "server/Client.h"
 
 enum struct Direction { UP, DOWN };
 
-struct RemoteEditState {
-  std::optional<EditState> state;
-  QString user;
+struct LocalEditState {
+  qint32 m_quantize_clock, m_quantize_pitch;
+  LocalEditState(const pxtnService *pxtn, const EditState &s) {
+    update(pxtn, s);
+  };
+  void update(const pxtnService *pxtn, const EditState &s);
 };
 
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardView(const pxtnService *pxtn, mooState *moo_state,
-                        QAudioOutput *audio_output,
-                        PxtoneController *controller, Client *client,
-                        UnitListModel *units, QScrollArea *parent = nullptr);
+  explicit KeyboardView(PxtoneClient *client, UnitListModel *units,
+                        QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
-  void loadHistory(QList<ServerAction> &history);
-  void setUid(qint64 uid);
-  void resetUnitIdMap();
-  const EditState &edit_state() { return m_edit_state; };
-
- signals:
-  void currentUnitNoChanged(int);
-  void unitsChanged();
-  void woicesChanged();
-  void tempoBeatChanged();
-  void onEdit();
-  void editStateChanged();
-  void userListChanged(const QList<std::pair<qint64, QString>> &users);
-  void quantXIndexChanged(int);
 
  public slots:
-  void setQuantXIndex(int);
-  void setQuantYIndex(int);
-  void setCurrentUnitNo(int);
-  void removeCurrentUnit();
-  void clearRemoteEditStates();
-  void processRemoteAction(const ServerAction &a);
   void toggleTestActivity();
-  void seekPosition(int clock);
   void selectAll();
   void deselect();
   void transposeSelection(Direction dir, bool wide, bool shift);
@@ -75,17 +54,12 @@ class KeyboardView : public QWidget {
   QSize sizeHint() const override;
   std::set<int> selectedUnitNos();
   const pxtnService *m_pxtn;
-  mooState *m_moo_state;
   QElapsedTimer *m_timer;
   int painted;
-  EditState m_edit_state;
-  QAudioOutput *m_audio_output;
+  LocalEditState m_edit_state;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
-  Client *m_client;
-  PxtoneController *m_controller;
-  int quantXIndex;
-  int quantizeSelectionY;
+  PxtoneClient *m_client;
 
   // A bunch of things to give the illusion of a smooth playhead when there's a
   // buffer.
@@ -94,7 +68,6 @@ class KeyboardView : public QWidget {
   QElapsedTimer timeSinceLastClock;
 
   bool m_test_activity;
-  std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   Clipboard m_clipboard;
   UnitListModel *m_units;
 };

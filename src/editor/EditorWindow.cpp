@@ -11,53 +11,19 @@
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
-#include "AudioFormat.h"
 #include "pxtone/pxtnDescriptor.h"
-#include "server/BroadcastServer.h"
-#include "server/Client.h"
 #include "ui_EditorWindow.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
 static constexpr int EVENT_MAX = 1000000;
 
-// TODO: Put this somewhere else, like in remote action or sth.
-AddWoice make_addWoice_from_path(const QString &path) {
-  QFileInfo fileinfo(path);
-  QString filename = fileinfo.fileName();
-  QString suffix = fileinfo.suffix().toLower();
-  pxtnWOICETYPE type;
-
-  if (suffix == "ptvoice")
-    type = pxtnWOICE_PTV;
-  else if (suffix == "ptnoise")
-    type = pxtnWOICE_PTN;
-  else if (suffix == "ogg" || suffix == "oga")
-    type = pxtnWOICE_OGGV;
-  else if (suffix == "wav")
-    type = pxtnWOICE_PCM;
-  else {
-    throw QString("Voice file (%1) has invalid extension (%2)")
-        .arg(filename)
-        .arg(suffix);
-  }
-  QFile file(path);
-  if (!file.open(QIODevice::ReadOnly))
-    throw QString("Could not open file (%1)").arg(filename);
-
-  QString name = fileinfo.baseName();
-  return AddWoice{type, name, file.readAll()};
-}
-
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
-      m_pxtn_device(this, &m_pxtn, &m_moo_state),
       m_server(nullptr),
-      m_client(new Client(this)),
       m_filename(""),
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
-      m_note_preview(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -66,52 +32,13 @@ EditorWindow::EditorWindow(QWidget *parent)
   ui->setupUi(this);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
 
-  QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-  if (!info.isFormatSupported(pxtoneAudioFormat())) {
-    qWarning()
-        << "Raw audio format not supported by backend, cannot play audio.";
-    return;
-  }
-
-  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
-
-  // m_audio->setBufferSize(441000);
-
-  // Apparently this reduces latency in pulseaudio, but also makes
-  // some sounds choppier
-  // m_audio->setCategory("game");
-  m_audio->setVolume(1.0);
-
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
   m_units = new UnitListModel(&m_pxtn, this);
-  m_controller = new PxtoneController(0, &m_pxtn, &m_moo_state, this);
-  m_keyboard_view = new KeyboardView(&m_pxtn, &m_moo_state, m_audio,
-                                     m_controller, m_client, m_units);
+  m_client = new PxtoneClient(&m_pxtn, m_client_status, m_units, this);
+  m_keyboard_view = new KeyboardView(m_client, m_units, nullptr);
 
-  connect(
-      m_client, &Client::connected,
-      [this](pxtnDescriptor &desc, QList<ServerAction> &history, qint64 uid) {
-        HostAndPort host_and_port = m_client->currentlyConnectedTo();
-        m_client_status->setText(tr("Connected to %1:%2")
-                                     .arg(host_and_port.host)
-                                     .arg(host_and_port.port));
-        QMessageBox::information(this, "Connected", "Connected to server.");
-        m_side_menu->setEditWidgetsEnabled(true);
-        loadDescriptor(desc);
-        m_keyboard_view->setUid(uid);
-        m_keyboard_view->loadHistory(history);
-      });
-  connect(m_client, &Client::disconnected, [this]() {
-    m_client_status->setText(tr("Not connected"));
-    m_keyboard_view->clearRemoteEditStates();
-    QMessageBox::information(this, "Disconnected", "Disconnected from server.");
-  });
-  connect(m_client, &Client::errorOccurred, [this](QString error) {
-    QMessageBox::information(this, "Connection error",
-                             tr("Connection error: %1").arg(error));
-  });
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
 
@@ -120,109 +47,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
 
-  m_side_menu = new SideMenu(m_units, this);
+  m_side_menu = new PxtoneSideMenu(m_client, m_units, this);
 
-  m_side_menu->setEditWidgetsEnabled(false);
   m_splitter->addWidget(m_side_menu);
   m_splitter->addWidget(m_scroll_area);
   m_splitter->setSizes(QList{10, 10000});
-
-  connect(m_side_menu, &SideMenu::quantXIndexUpdated, m_keyboard_view,
-          &KeyboardView::setQuantXIndex);
-  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_view,
-          &KeyboardView::setQuantYIndex);
-  connect(m_keyboard_view, &KeyboardView::quantXIndexChanged, m_side_menu,
-          &SideMenu::setQuantXIndex);
-  connect(m_side_menu, &SideMenu::quantYIndexUpdated, m_keyboard_view,
-          &KeyboardView::setQuantYIndex);
-
-  connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_view,
-          &KeyboardView::setCurrentUnitNo);
-  connect(m_keyboard_view, &KeyboardView::currentUnitNoChanged, m_side_menu,
-          &SideMenu::setCurrentUnit);
-  connect(m_keyboard_view, &KeyboardView::onEdit,
-          [=]() { m_side_menu->setModified(true); });
-  connect(m_keyboard_view, &KeyboardView::userListChanged, m_side_menu,
-          &SideMenu::setUserList);
-
-  connect(m_side_menu, &SideMenu::tempoChanged,
-          [this](int tempo) { m_client->sendAction(TempoChange{tempo}); });
-  connect(m_side_menu, &SideMenu::beatsChanged,
-          [this](int beat) { m_client->sendAction(BeatChange{beat}); });
-  connect(
-      m_side_menu, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
-        m_client->sendAction(
-            AddUnit{woice_id, m_pxtn.Woice_Get(woice_id)->get_name_buf(nullptr),
-                    unit_name});
-      });
-  connect(m_side_menu, &SideMenu::addWoice, [this](QString path) {
-    try {
-      m_client->sendAction(make_addWoice_from_path(path));
-    } catch (const QString &e) {
-      QMessageBox::critical(this, tr("Unable to add voice"), e);
-    }
-  });
-
-  connect(m_side_menu, &SideMenu::changeWoice,
-          [this](int idx, QString name, QString path) {
-            try {
-              m_client->sendAction(ChangeWoice{RemoveWoice{idx, name},
-                                               make_addWoice_from_path(path)});
-            } catch (const QString &e) {
-              QMessageBox::critical(this, tr("Unable to change voice"), e);
-            }
-          });
-
-  connect(m_side_menu, &SideMenu::removeWoice, [this](int idx, QString name) {
-    if (m_pxtn.Woice_Num() == 1) {
-      QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));
-      return;
-    }
-    if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
-  });
-  connect(m_side_menu, &SideMenu::candidateWoiceSelected, [this](QString path) {
-    try {
-      AddWoice a(make_addWoice_from_path(path));
-      std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
-      {
-        pxtnDescriptor d;
-        d.set_memory_r(a.data.constData(), a.data.size());
-        woice->read(&d, a.type);
-        m_pxtn.Woice_ReadyTone(woice);
-      }
-      // TODO: stop existing note preview on creation of new one in this case
-      m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, &m_moo_state.params,
-          m_keyboard_view->edit_state().mouse_edit_state.last_pitch,
-          m_keyboard_view->edit_state().mouse_edit_state.base_velocity, 48000,
-          woice, this);
-    } catch (const QString &e) {
-      qDebug() << "Could not preview woice at path" << path << ". Error" << e;
-    }
-  });
-  connect(m_side_menu, &SideMenu::selectWoice, [this](int idx) {
-    // TODO: Adjust the length based off pitch and if the instrument loops or
-    // not. Also this is variable on tempo rn - fix that.
-    if (idx >= 0)
-      m_note_preview = std::make_unique<NotePreview>(
-          &m_pxtn, &m_moo_state.params,
-          m_keyboard_view->edit_state().mouse_edit_state.last_pitch,
-          m_keyboard_view->edit_state().mouse_edit_state.base_velocity, 48000,
-          m_pxtn.Woice_Get(idx), this);
-    else
-      m_note_preview = nullptr;
-  });
-  connect(m_side_menu, &SideMenu::removeUnit, m_keyboard_view,
-          &KeyboardView::removeCurrentUnit);
-
-  connect(m_keyboard_view, &KeyboardView::woicesChanged, this,
-          &EditorWindow::refreshSideMenuWoices);
-  connect(m_keyboard_view, &KeyboardView::tempoBeatChanged, this,
-          &EditorWindow::refreshSideMenuTempoBeat);
-  connect(m_side_menu, &SideMenu::playButtonPressed, this,
-          &EditorWindow::togglePlayState);
-  connect(m_side_menu, &SideMenu::stopButtonPressed, this,
-          &EditorWindow::resetAndSuspendAudio);
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);
@@ -259,35 +88,13 @@ EditorWindow::EditorWindow(QWidget *parent)
 
 EditorWindow::~EditorWindow() { delete ui; }
 
-// TODO: Factor this out into a PxtoneAudioPlayer class. Setting play state,
-// seeking. Unfortunately start / stop don't even fix this because stopping
-// still waits for the buffer to drain (instead of flushing and throwing away)
-void EditorWindow::togglePlayState() {
-  if (m_audio->state() == QAudio::SuspendedState) {
-    m_audio->resume();
-    m_side_menu->setPlay(true);
-  } else {
-    m_audio->suspend();
-    m_side_menu->setPlay(false);
-  }
-}
-
-void EditorWindow::resetAndSuspendAudio() {
-  m_keyboard_view->seekPosition(0);
-  m_audio->suspend();
-
-  m_side_menu->setPlay(false);
-  // This reset should really also clear the buffers in the audio output, but
-  // [reset] unfortunately also disconnects from moo.
-}
-
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   switch (event->key()) {
     case Qt::Key_Space:
-      togglePlayState();
+      m_client->togglePlayState();
       break;
     case Qt::Key_Escape:
-      resetAndSuspendAudio();
+      m_client->resetAndSuspendAudio();
       m_keyboard_view->setFocus(Qt::OtherFocusReason);
       break;
       // TODO: Sort these keys
@@ -352,7 +159,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Backspace:
       if (event->modifiers() & Qt::ControlModifier &&
           event->modifiers() & Qt::ShiftModifier)
-        m_keyboard_view->removeCurrentUnit();
+        m_client->removeCurrentUnit();
       break;
     case Qt::Key_Delete:
       m_keyboard_view->clearSelection();
@@ -368,46 +175,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   }
 }
 
-void EditorWindow::refreshSideMenuWoices() {
-  QStringList woices;
-  for (int i = 0; i < m_pxtn.Woice_Num(); ++i)
-    woices.append(m_pxtn.Woice_Get(i)->get_name_buf(nullptr));
-  m_side_menu->setWoiceList(QStringList(woices));
-}
-
-void EditorWindow::refreshSideMenuTempoBeat() {
-  m_side_menu->setTempo(m_pxtn.master->get_beat_tempo());
-  m_side_menu->setBeats(m_pxtn.master->get_beat_num());
-}
-
-bool EditorWindow::loadDescriptor(pxtnDescriptor &desc) {
-  // An empty desc is interpreted as an empty file so we don't error.
-  m_units->beginRefresh();
-  if (desc.get_size_bytes() > 0) {
-    if (m_pxtn.read(&desc) != pxtnOK) {
-      qWarning() << "Error reading pxtone data from descriptor";
-      return false;
-    }
-  }
-  // TODO: this unit ID map should be much closer to the service.
-  m_keyboard_view->resetUnitIdMap();
-  if (m_pxtn.tones_ready(m_moo_state) != pxtnOK) {
-    qWarning() << "Error getting tones ready";
-    return false;
-  }
-  m_units->endRefresh();
-  resetAndSuspendAudio();
-
-  m_pxtn_device.open(QIODevice::ReadOnly);
-  m_audio->start(&m_pxtn_device);
-  m_audio->suspend();
-
-  refreshSideMenuWoices();
-  refreshSideMenuTempoBeat();
-
-  m_keyboard_view->updateGeometry();
-  return true;
-}
 const QString PTCOP_DIR_KEY("ptcop_dir");
 void EditorWindow::Host(bool load_file) {
   if (m_server) {

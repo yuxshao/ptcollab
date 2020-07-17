@@ -2,6 +2,7 @@
 #define EDITSTATE_H
 #include <QObject>
 #include <optional>
+
 #include "Interval.h"
 
 struct MouseEditState {
@@ -45,8 +46,8 @@ struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
   int m_current_unit_id;
-  int m_quantize_clock;
-  int m_quantize_pitch;
+  int m_quantize_clock_idx;
+  int m_quantize_pitch_idx;
   EditState();
 };
 QDataStream &operator<<(QDataStream &out, const EditState &a);

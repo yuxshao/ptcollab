@@ -3,6 +3,7 @@
 #include <QObject>
 #include <list>
 
+#include "PxtoneIODevice.h"
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/RemoteAction.h"
 
@@ -32,13 +33,17 @@ class PxtoneController : public QObject {
   void setUid(qint64 uid);
   qint64 uid();
   const UnitIdMap &unitIdMap() { return m_unit_id_map; }
-  void resetUnitIdMap() { m_unit_id_map = UnitIdMap(m_pxtn); }
+  bool loadDescriptor(pxtnDescriptor &desc);
   bool applyAddUnit(const AddUnit &a, qint64 uid);
   bool applyAddWoice(const AddWoice &a, qint64 uid);
   bool applyRemoveWoice(const RemoveWoice &a, qint64 uid);
   bool applyChangeWoice(const ChangeWoice &a, qint64 uid);
   bool applyTempoChange(const TempoChange &a, qint64 uid);
   bool applyBeatChange(const BeatChange &a, qint64 uid);
+  void seekMoo(int64_t clock);
+  void refreshMoo();
+  const mooState *moo() { return m_moo_state; }
+  const pxtnService *pxtn() { return m_pxtn; };
 
  public slots:
   // Maybe these types could be grouped.
@@ -48,11 +53,14 @@ class PxtoneController : public QObject {
 
  signals:
   void measureNumChanged();
+  void edited();
 
  private:
   qint64 m_uid;
   pxtnService *m_pxtn;
   mooState *m_moo_state;
+  PxtoneIODevice *m_moo_io_device;
+
   std::vector<LoggedAction> m_log;
   std::list<std::list<Action::Primitive>> m_uncommitted;
   UnitIdMap m_unit_id_map;

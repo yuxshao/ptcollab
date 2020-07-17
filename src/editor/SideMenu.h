@@ -13,6 +13,8 @@ namespace Ui {
 class SideMenu;
 }
 
+// TODO: Add a PxtoneSideMenu that takes a client and routes the signals /
+// slots?
 class SideMenu : public QWidget {
   Q_OBJECT
 

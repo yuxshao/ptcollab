@@ -15,8 +15,8 @@ EditState::EditState()
                         EVENTDEFAULT_KEY, 0, 0, 0, 0, std::nullopt}),
       scale(),
       m_current_unit_id(0),
-      m_quantize_clock(1),
-      m_quantize_pitch(1) {}
+      m_quantize_clock_idx(0),
+      m_quantize_pitch_idx(0) {}
 
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a) {
   return (out << qint8(a.type) << a.base_velocity << a.last_pitch
@@ -42,10 +42,10 @@ QDataStream &operator>>(QDataStream &in, Scale &a) {
 
 QDataStream &operator<<(QDataStream &out, const EditState &a) {
   return (out << a.mouse_edit_state << a.scale << a.m_current_unit_id
-              << a.m_quantize_clock << a.m_quantize_pitch);
+              << a.m_quantize_clock_idx << a.m_quantize_pitch_idx);
 }
 
 QDataStream &operator>>(QDataStream &in, EditState &a) {
   return (in >> a.mouse_edit_state >> a.scale >> a.m_current_unit_id >>
-          a.m_quantize_clock >> a.m_quantize_pitch);
+          a.m_quantize_clock_idx >> a.m_quantize_pitch_idx);
 }

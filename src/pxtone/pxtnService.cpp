@@ -370,7 +370,7 @@ pxtnERR pxtnService::Woice_read(int32_t idx, pxtnDescriptor *desc,
   return res;
 }
 
-pxtnERR pxtnService::Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) {
+pxtnERR pxtnService::Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) const {
   return woice->Tone_Ready(_ptn_bldr, _dst_sps);
 }
 

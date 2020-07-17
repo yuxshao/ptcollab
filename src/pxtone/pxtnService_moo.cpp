@@ -312,7 +312,7 @@ int32_t pxtnService::moo_tone_sample(pxtnUnitTone* p_u,
 bool pxtnService::moo_is_valid_data() const { return _moo_b_valid_data; }
 
 /* This place might be a chance to allow variable tempo songs */
-int32_t pxtnService::moo_get_now_clock(mooState& moo_state) const {
+int32_t pxtnService::moo_get_now_clock(const mooState& moo_state) const {
   if (moo_state.params.clock_rate)
     return (int32_t)(moo_state.smp_count / moo_state.params.clock_rate);
   return 0;

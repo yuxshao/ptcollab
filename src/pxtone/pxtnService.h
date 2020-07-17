@@ -229,7 +229,7 @@ class pxtnService {
   std::shared_ptr<pxtnWoice> Woice_Get_variable(int32_t idx);
 
   pxtnERR Woice_read(int32_t idx, pxtnDescriptor *desc, pxtnWOICETYPE type);
-  pxtnERR Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice);
+  pxtnERR Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) const;
   bool Woice_Remove(int32_t idx);
   bool Woice_Replace(int32_t old_place, int32_t new_place);
 
@@ -286,7 +286,7 @@ class pxtnService {
 
   int32_t moo_get_total_sample() const;
 
-  int32_t moo_get_now_clock(mooState &moo_state) const;
+  int32_t moo_get_now_clock(const mooState &moo_state) const;
   int32_t moo_get_end_clock() const;
   int32_t moo_get_sampling_offset() const;
   int32_t moo_get_sampling_end() const;
