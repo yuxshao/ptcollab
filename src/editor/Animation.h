@@ -9,6 +9,7 @@ class Animation : public QVariantAnimation {
   explicit Animation(QObject *parent = nullptr);
   void updateCurrentValue(const QVariant &) {}
  signals:
+  void nextFrame();
 };
 
 #endif  // ANIMATION_H

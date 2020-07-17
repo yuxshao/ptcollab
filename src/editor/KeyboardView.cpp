@@ -47,18 +47,12 @@ KeyboardView::KeyboardView(PxtoneClient *client, QScrollArea *parent)
       m_this_seek_caught_up(false),
       m_test_activity(false),
       m_clipboard(m_pxtn) {
-  m_anim->setDuration(100);
-  m_anim->setStartValue(0);
-  m_anim->setEndValue(360);
-  m_anim->setEasingCurve(QEasingCurve::Linear);
-  m_anim->setLoopCount(-1);
-  m_anim->start();
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
   setMouseTracking(true);
 
-  connect(m_anim, SIGNAL(valueChanged(QVariant)), SLOT(update()));
+  connect(m_anim, &Animation::nextFrame, [this]() { update(); });
   connect(m_client, &PxtoneClient::editStateChanged,
           [this](const EditState &s) { m_edit_state.update(m_pxtn, s); });
   connect(m_client, &PxtoneClient::measureNumChanged,
