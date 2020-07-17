@@ -37,7 +37,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_units = new UnitListModel(&m_pxtn, this);
   m_client = new PxtoneClient(&m_pxtn, m_client_status, m_units, this);
-  m_keyboard_view = new KeyboardView(m_client, m_units, nullptr);
+  m_keyboard_view = new KeyboardView(m_client, nullptr);
 
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);

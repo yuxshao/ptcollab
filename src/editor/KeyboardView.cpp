@@ -33,8 +33,7 @@ QSize KeyboardView::sizeHint() const {
       m_client->editState().scale.pitchToY(EVENTMIN_KEY));
 }
 
-KeyboardView::KeyboardView(PxtoneClient *client, UnitListModel *units,
-                           QScrollArea *parent)
+KeyboardView::KeyboardView(PxtoneClient *client, QScrollArea *parent)
     : QWidget(parent),
       m_pxtn(client->pxtn()),
       m_timer(new QElapsedTimer),
@@ -47,8 +46,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, UnitListModel *units,
       m_this_seek(0),
       m_this_seek_caught_up(false),
       m_test_activity(false),
-      m_clipboard(m_pxtn),
-      m_units(units) {
+      m_clipboard(m_pxtn) {
   m_anim->setDuration(100);
   m_anim->setStartValue(0);
   m_anim->setEndValue(360);

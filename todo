@@ -229,9 +229,11 @@ fill architecture could work well.
 7/14
 1. Undo this smaller blip thing because it causes windows to be incredibly slow.
 
+7/17
+1. Refactor a ton of stuff to get signals and state centralized.
+
 Todo by priority
 ----------------
- - seems like it takes forever to do the audio reset now?
  - show measure num, set loop points
    - will probably need some pixel font thing
  - keyboard on left side of piano roll (probably will help in figuring out how

@@ -29,8 +29,7 @@ struct LocalEditState {
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardView(PxtoneClient *client, UnitListModel *units,
-                        QScrollArea *parent = nullptr);
+  explicit KeyboardView(PxtoneClient *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
 
  public slots:
@@ -69,7 +68,6 @@ class KeyboardView : public QWidget {
 
   bool m_test_activity;
   Clipboard m_clipboard;
-  UnitListModel *m_units;
 };
 
 #endif  // KEYBOARDVIEW_H
