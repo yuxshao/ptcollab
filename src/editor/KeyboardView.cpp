@@ -8,8 +8,8 @@
 #include <QScrollArea>
 #include <QTime>
 
+#include "ComboOptions.h"
 #include "PxtoneUnitIODevice.h"
-#include "quantize.h"
 
 int nonnegative_modulo(int x, int m) {
   if (m == 0) return 0;

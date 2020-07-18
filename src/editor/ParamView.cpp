@@ -3,6 +3,8 @@
 #include <QPaintEvent>
 #include <QPainter>
 
+#include "ComboOptions.h"
+
 ParamView::ParamView(PxtoneClient *client, QWidget *parent)
     : QWidget(parent), m_client(client), m_anim(new Animation(this)) {
   // TODO: dedup with keyboardview
@@ -80,8 +82,9 @@ void ParamView::paintEvent(QPaintEvent *event) {
   {
     int32_t height = 4;
     int32_t width = 2;
-    EVENTKIND current_kind = EVENTKIND_VOLUME;
-    int32_t last_value = EVENTDEFAULT_VOLUME;
+    EVENTKIND current_kind =
+        paramOptions[m_client->editState().m_current_param_kind_idx].second;
+    int32_t last_value = DefaultKindValue(current_kind);
     int32_t last_clock = -1;
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
          e = e->next) {

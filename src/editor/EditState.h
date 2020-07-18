@@ -1,5 +1,7 @@
 #ifndef EDITSTATE_H
 #define EDITSTATE_H
+#include <pxtone/pxtnEvelist.h>
+
 #include <QObject>
 #include <optional>
 
@@ -47,6 +49,7 @@ struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
   int m_current_unit_id;
+  int m_current_param_kind_idx;
   int m_quantize_clock_idx;
   int m_quantize_pitch_idx;
   EditState();

@@ -2,6 +2,8 @@
 
 #include <QMessageBox>
 
+#include "ComboOptions.h"
+
 // TODO: Put this somewhere else, like in remote action or sth.
 AddWoice make_addWoice_from_path(const QString &path) {
   QFileInfo fileinfo(path);
@@ -121,6 +123,10 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
           &PxtoneClient::togglePlayState);
   connect(this, &SideMenu::stopButtonPressed, m_client,
           &PxtoneClient::resetAndSuspendAudio);
+  connect(this, &SideMenu::paramKindIndexChanged, [this](int index) {
+    m_client->changeEditState(
+        [&](EditState &s) { s.m_current_param_kind_idx = index; });
+  });
 }
 
 void PxtoneSideMenu::refreshWoices() {

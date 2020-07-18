@@ -120,7 +120,7 @@ int32_t pxtnEvelist::get_Count(int32_t clock1, int32_t clock2,
   return count;
 }
 
-static int32_t _DefaultKindValue(uint8_t kind) {
+int32_t DefaultKindValue(uint8_t kind) {
   switch (kind) {
       //    case EVENTKIND_ON        : return ;
     case EVENTKIND_KEY:
@@ -161,7 +161,7 @@ int32_t pxtnEvelist::get_Value(int32_t clock, uint8_t unit_no,
   if (!_eves) return 0;
 
   EVERECORD* p;
-  int32_t val = _DefaultKindValue(kind);
+  int32_t val = DefaultKindValue(kind);
 
   for (p = _start; p; p = p->next) {
     if (p->clock > clock) break;

@@ -33,6 +33,7 @@ HEADERS += \
            editor/Animation.h \
            editor/AudioFormat.h \
            editor/Clipboard.h \
+           editor/ComboOptions.h \
            editor/DummySyncServer.h \
            editor/EditState.h \
            editor/EditorScrollArea.h \
@@ -49,7 +50,6 @@ HEADERS += \
            editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
            editor/UnitListModel.h \
-           editor/quantize.h \
            protocol/Data.h \
            protocol/Hello.h \
            protocol/PxtoneEditAction.h \

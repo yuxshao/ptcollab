@@ -139,5 +139,6 @@ class pxtnEvelist {
 };
 
 bool Evelist_Kind_IsTail(int32_t kind);
+int32_t DefaultKindValue(uint8_t kind);
 
 #endif

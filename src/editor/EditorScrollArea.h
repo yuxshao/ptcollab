@@ -8,7 +8,7 @@
 class EditorScrollArea : public QScrollArea {
   Q_OBJECT
  public:
-  EditorScrollArea(QWidget *parent);
+  EditorScrollArea(QWidget *parent, bool match_scale);
   void wheelEvent(QWheelEvent *event) override;
   void controlScroll(QScrollArea *scrollToControl, Qt::Orientation direction);
 
@@ -17,6 +17,7 @@ class EditorScrollArea : public QScrollArea {
 
  private:
   bool middleDown;
+  bool m_match_scale;
   QPoint lastPos;
   bool event(QEvent *e) override;
   void mousePressEvent(QMouseEvent *event) override;

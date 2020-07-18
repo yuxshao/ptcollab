@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-#include "quantize.h"
+#include "ComboOptions.h"
 #include "ui_SideMenu.h"
 
 const QString WOICE_DIR_KEY("woice_dir");
@@ -32,6 +32,8 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
     ui->quantX->addItem(label, value);
   for (auto [label, value] : quantizeYOptions)
     ui->quantY->addItem(label, value);
+  for (auto [label, value] : paramOptions)
+    ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);
   ui->unitList->setItemDelegate(new UnitListDelegate);
@@ -40,10 +42,10 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
   ui->unitList->horizontalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);
 
-  void (QComboBox::*signal)(int) = &QComboBox::currentIndexChanged;
+  void (QComboBox::*indexChanged)(int) = &QComboBox::currentIndexChanged;
 
-  connect(ui->quantX, signal, this, &SideMenu::quantXIndexUpdated);
-  connect(ui->quantY, signal, this, &SideMenu::quantYIndexUpdated);
+  connect(ui->quantX, indexChanged, this, &SideMenu::quantXIndexUpdated);
+  connect(ui->quantY, indexChanged, this, &SideMenu::quantYIndexUpdated);
   connect(ui->playBtn, &QPushButton::clicked, this,
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
@@ -162,6 +164,9 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
                            "Name or selected instrument invalid");
   });
   ui->userList->setModel(m_users);
+
+  connect(ui->paramSelection, indexChanged, this,
+          &SideMenu::paramKindIndexChanged);
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {
@@ -206,6 +211,11 @@ void SideMenu::setTempo(int tempo) {
 }
 void SideMenu::setBeats(int beats) {
   ui->beatsField->setText(QString("%1").arg(beats));
+}
+
+void SideMenu::setParamKindIndex(int index) {
+  if (ui->paramSelection->currentIndex() != index)
+    ui->paramSelection->setCurrentIndex(index);
 }
 
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }

@@ -27,6 +27,7 @@ class SideMenu : public QWidget {
   void quantXIndexUpdated(int);
   void quantYIndexUpdated(int);
   void currentUnitChanged(int);
+  void paramKindIndexChanged(int);
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();
@@ -47,6 +48,7 @@ class SideMenu : public QWidget {
  public slots:
   void setQuantXIndex(int);
   void setQuantYIndex(int);
+  void setParamKindIndex(int);
   // void setSelectedUnits(QList<qint32> idx);
   void setCurrentUnit(int unit_no);
   void setPlay(bool);

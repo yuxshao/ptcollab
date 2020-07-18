@@ -12,8 +12,11 @@ class TransposableWheelEvent : QWheelEvent {
   }
 };
 
-EditorScrollArea::EditorScrollArea(QWidget *parent)
-    : QScrollArea(parent), middleDown(false), lastPos() {
+EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
+    : QScrollArea(parent),
+      middleDown(false),
+      m_match_scale(match_scale),
+      lastPos() {
   setWidgetResizable(true);
   setMouseTracking(true);
 }
@@ -40,28 +43,31 @@ static int newPos(double oldMax, int oldWidth, int oldPos, double newMax,
 }
 
 bool EditorScrollArea::event(QEvent *e) {
-  // Capture the old scrollbar positions and manually reconfigure the new ones
-  // so that a certain position on the screen is preserved in case of resize.
-  int oldMaxH = horizontalScrollBar()->maximum();
-  int oldWidthH = horizontalScrollBar()->pageStep();
-  int oldH = horizontalScrollBar()->value();
-  double ratioH = double(lastPos.x()) / viewport()->width();
+  if (m_match_scale) {
+    // Capture the old scrollbar positions and manually reconfigure the new ones
+    // so that a certain position on the screen is preserved in case of resize.
+    int oldMaxH = horizontalScrollBar()->maximum();
+    int oldWidthH = horizontalScrollBar()->pageStep();
+    int oldH = horizontalScrollBar()->value();
+    double ratioH = double(lastPos.x()) / viewport()->width();
 
-  int oldMaxV = verticalScrollBar()->maximum();
-  int oldWidthV = verticalScrollBar()->pageStep();
-  int oldV = verticalScrollBar()->value();
-  double ratioV = double(lastPos.y()) / viewport()->height();
+    int oldMaxV = verticalScrollBar()->maximum();
+    int oldWidthV = verticalScrollBar()->pageStep();
+    int oldV = verticalScrollBar()->value();
+    double ratioV = double(lastPos.y()) / viewport()->height();
 
-  bool result = QScrollArea::event(e);
-  int newMaxH = horizontalScrollBar()->maximum();
-  int newWidthH = horizontalScrollBar()->pageStep();
-  int newH = newPos(oldMaxH, oldWidthH, oldH, newMaxH, newWidthH, ratioH);
-  int newMaxV = verticalScrollBar()->maximum();
-  int newWidthV = verticalScrollBar()->pageStep();
-  int newV = newPos(oldMaxV, oldWidthV, oldV, newMaxV, newWidthV, ratioV);
-  if (newH != oldH) horizontalScrollBar()->setValue(newH);
-  if (newV != oldV) verticalScrollBar()->setValue(newV);
-  return result;
+    bool result = QScrollArea::event(e);
+    int newMaxH = horizontalScrollBar()->maximum();
+    int newWidthH = horizontalScrollBar()->pageStep();
+    int newH = newPos(oldMaxH, oldWidthH, oldH, newMaxH, newWidthH, ratioH);
+    int newMaxV = verticalScrollBar()->maximum();
+    int newWidthV = verticalScrollBar()->pageStep();
+    int newV = newPos(oldMaxV, oldWidthV, oldV, newMaxV, newWidthV, ratioV);
+    if (newH != oldH) horizontalScrollBar()->setValue(newH);
+    if (newV != oldV) verticalScrollBar()->setValue(newV);
+    return result;
+  } else
+    return QScrollArea::event(e);
 }
 void EditorScrollArea::mouseReleaseEvent(QMouseEvent *event) {
   event->ignore();

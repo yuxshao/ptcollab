@@ -49,7 +49,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter->addWidget(m_key_splitter);
   m_splitter->setSizes(QList{10, 10000});
 
-  m_scroll_area = new EditorScrollArea(m_key_splitter);
+  m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
@@ -57,7 +57,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   // TODO: Make member var
-  EditorScrollArea *m_param_scroll_area = new EditorScrollArea(m_key_splitter);
+  EditorScrollArea *m_param_scroll_area =
+      new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_param_scroll_area->setWidget(new ParamView(m_client, m_param_scroll_area));
   m_key_splitter->addWidget(m_scroll_area);
