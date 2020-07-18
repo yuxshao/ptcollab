@@ -7,7 +7,7 @@
 
 #include "PxtoneController.h"
 #include "UnitListModel.h"
-#include "server/Client.h"
+#include "network/Client.h"
 
 struct RemoteEditState {
   std::optional<EditState> state;

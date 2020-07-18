@@ -2,8 +2,8 @@
 
 #include <QMessageBox>
 
-#include "AudioFormat.h"
 #include "ComboOptions.h"
+#include "audio/AudioFormat.h"
 
 QList<std::pair<qint64, QString>> getUserList(
     const std::unordered_map<qint64, RemoteEditState> &users) {

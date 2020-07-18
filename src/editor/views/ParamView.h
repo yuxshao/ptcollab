@@ -4,7 +4,7 @@
 #include <QWidget>
 
 #include "Animation.h"
-#include "PxtoneClient.h"
+#include "editor/PxtoneClient.h"
 
 class ParamView : public QWidget {
   Q_OBJECT

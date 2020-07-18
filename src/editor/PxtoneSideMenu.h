@@ -3,9 +3,9 @@
 
 #include <QObject>
 
-#include "NotePreview.h"
 #include "PxtoneClient.h"
 #include "SideMenu.h"
+#include "audio/NotePreview.h"
 
 class PxtoneSideMenu : public SideMenu {
   Q_OBJECT

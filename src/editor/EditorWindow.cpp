@@ -11,9 +11,9 @@
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
-#include "ParamView.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
+#include "views/ParamView.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.

@@ -3,7 +3,7 @@
 #include <QObject>
 #include <list>
 
-#include "PxtoneIODevice.h"
+#include "audio/PxtoneIODevice.h"
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/RemoteAction.h"
 

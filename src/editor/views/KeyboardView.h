@@ -7,13 +7,12 @@
 #include <QWidget>
 #include <optional>
 
+#include "../Clipboard.h"
+#include "../EditState.h"
 #include "Animation.h"
-#include "Clipboard.h"
-#include "DummySyncServer.h"
-#include "EditState.h"
-#include "NotePreview.h"
-#include "PxtoneClient.h"
-#include "UnitListModel.h"
+#include "editor/PxtoneClient.h"
+#include "editor/UnitListModel.h"
+#include "editor/audio/NotePreview.h"
 #include "pxtone/pxtnService.h"
 
 enum struct Direction { UP, DOWN };

@@ -30,8 +30,8 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
-           editor/Animation.h \
-           editor/AudioFormat.h \
+           editor/views/Animation.h \
+           editor/audio/AudioFormat.h \
            editor/Clipboard.h \
            editor/ComboOptions.h \
            editor/DummySyncServer.h \
@@ -39,17 +39,18 @@ HEADERS += \
            editor/EditorScrollArea.h \
            editor/EditorWindow.h \
            editor/Interval.h \
-           editor/KeyboardView.h \
-           editor/NotePreview.h \
-           editor/ParamView.h \
+           editor/views/KeyboardView.h \
+           editor/audio/NotePreview.h \
+           editor/views/ParamView.h \
            editor/PxtoneClient.h \
            editor/PxtoneController.h \
-           editor/PxtoneIODevice.h \
+           editor/audio/PxtoneIODevice.h \
            editor/PxtoneSideMenu.h \
-           editor/PxtoneUnitIODevice.h \
+           editor/audio/PxtoneUnitIODevice.h \
            editor/SelectWoiceDialog.h \
            editor/SideMenu.h \
            editor/UnitListModel.h \
+           editor/views/ViewHelper.h \
            protocol/Data.h \
            protocol/Hello.h \
            protocol/PxtoneEditAction.h \
@@ -76,33 +77,34 @@ HEADERS += \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h \
-           server/BroadcastServer.h \
-           server/Client.h \
-           server/ServerSession.h
+           network/BroadcastServer.h \
+           network/Client.h \
+           network/ServerSession.h
 FORMS += \
     editor/EditorWindow.ui \
     editor/SelectWoiceDialog.ui \
     editor/SideMenu.ui
 SOURCES += main.cpp \
-           editor/Animation.cpp \
-           editor/AudioFormat.cpp \
+           editor/views/Animation.cpp \
+           editor/audio/AudioFormat.cpp \
            editor/Clipboard.cpp \
            editor/DummySyncServer.cpp \
            editor/EditState.cpp \
            editor/EditorScrollArea.cpp \
            editor/EditorWindow.cpp \
            editor/Interval.cpp \
-           editor/KeyboardView.cpp \
-           editor/NotePreview.cpp \
-           editor/ParamView.cpp \
+           editor/views/KeyboardView.cpp \
+           editor/audio/NotePreview.cpp \
+           editor/views/ParamView.cpp \
            editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \
-           editor/PxtoneIODevice.cpp \
+           editor/audio/PxtoneIODevice.cpp \
            editor/PxtoneSideMenu.cpp \
-           editor/PxtoneUnitIODevice.cpp \
+           editor/audio/PxtoneUnitIODevice.cpp \
            editor/SelectWoiceDialog.cpp \
            editor/SideMenu.cpp \
            editor/UnitListModel.cpp \
+           editor/views/ViewHelper.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \
            protocol/PxtoneEditAction.cpp \
@@ -129,9 +131,9 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
-           server/BroadcastServer.cpp \
-           server/Client.cpp \
-           server/ServerSession.cpp
+           network/BroadcastServer.cpp \
+           network/Client.cpp \
+           network/ServerSession.cpp
 
 !win32:LIBS += -logg -lvorbisfile
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile

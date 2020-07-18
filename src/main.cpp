@@ -3,7 +3,7 @@
 #include <QFile>
 
 #include "editor/EditorWindow.h"
-#include "server/BroadcastServer.h"
+#include "network/BroadcastServer.h"
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);

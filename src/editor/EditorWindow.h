@@ -10,13 +10,13 @@
 
 #include "EditState.h"
 #include "EditorScrollArea.h"
-#include "KeyboardView.h"
-#include "PxtoneIODevice.h"
 #include "PxtoneSideMenu.h"
 #include "UnitListModel.h"
+#include "audio/PxtoneIODevice.h"
+#include "network/BroadcastServer.h"
+#include "network/Client.h"
 #include "pxtone/pxtnService.h"
-#include "server/BroadcastServer.h"
-#include "server/Client.h"
+#include "views/KeyboardView.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;

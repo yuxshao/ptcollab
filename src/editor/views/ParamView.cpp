@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
-#include "ComboOptions.h"
+#include "editor/ComboOptions.h"
 
 ParamView::ParamView(PxtoneClient *client, QWidget *parent)
     : QWidget(parent), m_client(client), m_anim(new Animation(this)) {
