@@ -11,6 +11,7 @@ class ParamView : public QWidget {
 
   PxtoneClient *m_client;
   Animation *m_anim;
+  Scale m_last_scale;
 
   void paintEvent(QPaintEvent *event) override;
   QSize sizeHint() const override;

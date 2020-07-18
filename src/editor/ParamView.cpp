@@ -11,6 +11,11 @@ ParamView::ParamView(PxtoneClient *client, QWidget *parent)
   updateGeometry();
   setMouseTracking(true);
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
+  connect(m_client, &PxtoneClient::editStateChanged,
+          [this](const EditState &s) {
+            if (!(m_last_scale == s.scale)) updateGeometry();
+            m_last_scale = s.scale;
+          });
   connect(m_client, &PxtoneClient::measureNumChanged,
           [this]() { updateGeometry(); });
 }
