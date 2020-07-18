@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
+#include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 
 ParamView::ParamView(PxtoneClient *client, QWidget *parent)
@@ -41,7 +42,6 @@ static qreal paramToY(int param, int height) {
 
 static qreal paramOfY(int y, int height) { return 0x80 - (y * 0x80 / height); }
 
-// TODO: Don't repeat
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid, int height) {
   if (!std::holds_alternative<MouseParamEdit>(state.mouse_edit_state.kind))
@@ -50,16 +50,7 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
       std::get<MouseParamEdit>(state.mouse_edit_state.kind);
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
                   paramToY(param_edit_state.current_param, height));
-  QPainterPath path;
-  path.moveTo(position);
-  path.lineTo(position + QPoint(8, 0));
-  path.lineTo(position + QPoint(0, 8));
-  path.closeSubpath();
-  painter.fillPath(path, color);
-  painter.setPen(color);
-  painter.setFont(QFont("Sans serif", 6));
-  painter.drawText(position + QPoint(8, 13),
-                   QString("%1 (%2)").arg(username).arg(uid));
+  drawCursor(position, painter, color, username, uid);
 }
 
 struct ParamEditInterval {

@@ -8,6 +8,7 @@
 #include <QScrollArea>
 #include <QTime>
 
+#include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
@@ -278,24 +279,16 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   }
 }
 
-void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
-                const QString &username, qint64 uid) {
+static void drawCursor(const EditState &state, QPainter &painter,
+                       const QColor &color, const QString &username,
+                       qint64 uid) {
   if (!std::holds_alternative<MouseKeyboardEdit>(state.mouse_edit_state.kind))
     return;
   const auto &keyboard_edit_state =
       std::get<MouseKeyboardEdit>(state.mouse_edit_state.kind);
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
                   state.scale.pitchToY(keyboard_edit_state.current_pitch));
-  QPainterPath path;
-  path.moveTo(position);
-  path.lineTo(position + QPoint(8, 0));
-  path.lineTo(position + QPoint(0, 8));
-  path.closeSubpath();
-  painter.fillPath(path, color);
-  painter.setPen(color);
-  painter.setFont(QFont("Sans serif", 6));
-  painter.drawText(position + QPoint(8, 13),
-                   QString("%1 (%2)").arg(username).arg(uid));
+  drawCursor(position, painter, color, username, uid);
 }
 
 double smoothDistance(double dy, double dx) {
