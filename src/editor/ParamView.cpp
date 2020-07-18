@@ -89,9 +89,9 @@ void ParamView::paintEvent(QPaintEvent *event) {
       if (!matchingUnit) continue;
 
       int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-      int32_t lastY = last_value * size().height() / 0x80;
+      int32_t lastY = (0x80 - last_value) * size().height() / 0x80;
       int32_t thisX = e->clock / m_client->editState().scale.clockPerPx;
-      int32_t thisY = e->value * size().height() / 0x80;
+      int32_t thisY = (0x80 - e->value) * size().height() / 0x80;
 
       painter.fillRect(lastX, lastY - height / 2, thisX - lastX, height,
                        darkTeal);
@@ -104,7 +104,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
       last_clock = e->clock;
     }
     int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-    int32_t lastY = last_value * size().height() / 0x80;
+    int32_t lastY = (0x80 - last_value) * size().height() / 0x80;
     painter.fillRect(lastX, lastY - height / 2, size().width() - lastX, height,
                      darkTeal);
     painter.fillRect(lastX, lastY - height / 2, width, height, brightGreen);

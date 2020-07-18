@@ -100,5 +100,23 @@ void EditorScrollArea::wheelEvent(QWheelEvent *event) {
   QScrollArea::wheelEvent(event);
 }
 
+void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
+                                     Qt::Orientation direction) {
+  QScrollBar *bar;
+  QScrollBar *barToControl;
+  switch (direction) {
+    case Qt::Horizontal:
+      bar = horizontalScrollBar();
+      barToControl = scrollToControl->horizontalScrollBar();
+      break;
+    case Qt::Vertical:
+      bar = verticalScrollBar();
+      barToControl = scrollToControl->verticalScrollBar();
+      break;
+  }
+  connect(bar, &QAbstractSlider::valueChanged, barToControl,
+          &QAbstractSlider::setValue);
+}
+
 // So keys like up / down work with the editor.
 void EditorScrollArea::keyPressEvent(QKeyEvent *event) { event->ignore(); }
