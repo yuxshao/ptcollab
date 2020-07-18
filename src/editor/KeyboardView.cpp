@@ -616,11 +616,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                    (m_this_seek_caught_up ? Qt::white : halfWhite));
 
   // Draw bars at the end of the piece
-  painter.fillRect(last_clock / m_client->editState().scale.clockPerPx, 0, 1,
-                   size().height(), halfWhite);
-  painter.fillRect(
-      m_pxtn->moo_get_end_clock() / m_client->editState().scale.clockPerPx, 0,
-      1, size().height(), halfWhite);
+  painter.fillRect(last_clock / m_client->editState().scale.clockPerPx, 0, 2,
+                   size().height(), Qt::white);
+  painter.fillRect(last_clock / m_client->editState().scale.clockPerPx + 2, 0,
+                   3, size().height(), halfWhite);
+
+  painter.fillRect(repeat_clock / m_client->editState().scale.clockPerPx - 1, 0,
+                   2, size().height(), Qt::white);
+  painter.fillRect(repeat_clock / m_client->editState().scale.clockPerPx - 4, 0,
+                   3, size().height(), halfWhite);
 
   // Simulate activity on a client
   if (m_test_activity) {
