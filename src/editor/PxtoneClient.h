@@ -62,6 +62,10 @@ class PxtoneClient : public QObject {
     return m_remote_edit_states;
   }
   qint64 uid() { return m_controller->uid(); }
+  qint32 quantizeClock(int idx);
+  qint32 quantizeClock();
+  qint32 quantizePitch(int idx);
+  qint32 quantizePitch();
 
   void setCurrentUnitNo(int unit_no);
 

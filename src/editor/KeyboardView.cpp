@@ -21,6 +21,7 @@ int one_over_last_clock(pxtnService const *pxtn) {
 }
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
+  // TODO: dedup from pxtoneClient. maybe
   m_quantize_clock = pxtn->master->get_beat_clock() /
                      quantizeXOptions[s.m_quantize_clock_idx].second;
   m_quantize_pitch =
@@ -865,7 +866,7 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
   const auto &keyboard_edit_state = std::get<MouseKeyboardEdit>(kind);
 
   Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
-      m_edit_state.m_quantize_clock));
+      m_client->quantizeClock()));
   int start_pitch =
       quantize(keyboard_edit_state.start_pitch, m_edit_state.m_quantize_pitch) +
       m_edit_state.m_quantize_pitch;

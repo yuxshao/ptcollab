@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include "AudioFormat.h"
+#include "ComboOptions.h"
 
 QList<std::pair<qint64, QString>> getUserList(
     const std::unordered_map<qint64, RemoteEditState> &users) {
@@ -120,6 +121,22 @@ void PxtoneClient::togglePlayState() {
 void PxtoneClient::resetAndSuspendAudio() {
   seekMoo(0);
   m_audio->suspend();
+}
+
+qint32 PxtoneClient::quantizeClock(int idx) {
+  return pxtn()->master->get_beat_clock() / idx;
+}
+
+qint32 PxtoneClient::quantizeClock() {
+  return quantizeClock(
+      quantizeXOptions[editState().m_quantize_clock_idx].second);
+}
+
+qint32 PxtoneClient::quantizePitch(int idx) { return PITCH_PER_KEY / idx; }
+
+qint32 PxtoneClient::quantizePitch() {
+  return quantizePitch(
+      quantizeYOptions[editState().m_quantize_pitch_idx].second);
 }
 
 void PxtoneClient::applyAction(const std::list<Action::Primitive> &as) {

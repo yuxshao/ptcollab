@@ -62,6 +62,36 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
                    QString("%1 (%2)").arg(username).arg(uid));
 }
 
+struct ParamEditInterval {
+  Interval clock;
+  qint32 param;
+};
+
+std::list<ParamEditInterval> lineEdit(const MouseEditState &state,
+                                      int quantizeClock) {
+  std::list<ParamEditInterval> ret;
+  if (!std::holds_alternative<MouseParamEdit>(state.kind)) return ret;
+  const auto &param_state = std::get<MouseParamEdit>(state.kind);
+  Interval interval(state.clock_int(quantizeClock));
+  bool reverse = state.start_clock > state.current_clock;
+  for (int i = 0; interval.start + i * quantizeClock < interval.end; ++i) {
+    int steps = interval.length() / quantizeClock;
+    int start_clock = interval.start + i * quantizeClock;
+
+    int param;
+    if (steps == 1)
+      param = param_state.start_param;
+    else {
+      int currStep = reverse ? (steps - 1 - i) : i;
+      param = param_state.start_param +
+              (param_state.current_param - param_state.start_param) * currStep /
+                  (steps - 1);
+    }
+    ret.push_back({{start_clock, start_clock + quantizeClock}, param});
+  }
+  return ret;
+}
+
 static const QColor blue(QColor::fromRgb(52, 50, 85));
 static const QColor darkBlue(QColor::fromRgb(26, 25, 73));
 constexpr int BACKGROUND_GAPS[] = {-1000, 24, 32, 64, 96, 104, 1000};
@@ -107,13 +137,13 @@ void ParamView::paintEvent(QPaintEvent *event) {
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
 
+  int32_t lineHeight = 4;
+  int32_t lineWidth = 2;
   {
-    int32_t height = 4;
-    int32_t width = 2;
     EVENTKIND current_kind =
         paramOptions[m_client->editState().m_current_param_kind_idx].second;
     int32_t last_value = DefaultKindValue(current_kind);
-    int32_t last_clock = -1;
+    int32_t last_clock = -1000;
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
          e = e->next) {
       if (e->clock > clockBounds.end) break;
@@ -129,21 +159,50 @@ void ParamView::paintEvent(QPaintEvent *event) {
       int32_t thisX = e->clock / m_client->editState().scale.clockPerPx;
       int32_t thisY = paramToY(e->value, size().height());
 
-      painter.fillRect(lastX, lastY - height / 2, thisX - lastX, height,
+      painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX, lineHeight,
                        darkTeal);
-      painter.fillRect(thisX, std::min(lastY, thisY) - height / 2, width,
-                       std::max(lastY, thisY) - std::min(lastY, thisY) + height,
-                       darkTeal);
-      painter.fillRect(lastX, lastY - height / 2, width, height, brightGreen);
+      painter.fillRect(
+          thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
+          std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight,
+          darkTeal);
+      painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                       brightGreen);
 
       last_value = e->value;
       last_clock = e->clock;
     }
     int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
     int32_t lastY = (0x80 - last_value) * size().height() / 0x80;
-    painter.fillRect(lastX, lastY - height / 2, size().width() - lastX, height,
-                     darkTeal);
-    painter.fillRect(lastX, lastY - height / 2, width, height, brightGreen);
+    painter.fillRect(lastX, lastY - lineHeight / 2, size().width() - lastX,
+                     lineHeight, darkTeal);
+    painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                     brightGreen);
+  }
+
+  // draw ongoing edit
+  const MouseEditState &mouse_edit_state =
+      m_client->editState().mouse_edit_state;
+  switch (mouse_edit_state.type) {
+    case MouseEditState::Type::Nothing:
+    case MouseEditState::Type::SetOn:
+    case MouseEditState::Type::DeleteOn:
+    case MouseEditState::Type::SetNote:
+    case MouseEditState::Type::DeleteNote: {
+      QColor c(brightGreen);
+      c.setAlpha(mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
+      for (const ParamEditInterval &p :
+           lineEdit(mouse_edit_state, m_client->quantizeClock())) {
+        int x = p.clock.start / m_client->editState().scale.clockPerPx;
+        int w = p.clock.length() / m_client->editState().scale.clockPerPx;
+        int y = paramToY(p.param, height());
+        painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
+      }
+    } break;
+    // TODO
+    case MouseEditState::Type::Seek:
+      break;
+    case MouseEditState::Type::Select:
+      break;
   }
 
   // Draw cursor
@@ -177,6 +236,79 @@ static void updateStatePositions(EditState &edit_state,
     state.start_clock = state.current_clock;
     param_edit_state.start_param = current_param;
   }
+}
+
+void ParamView::mousePressEvent(QMouseEvent *event) {
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
+    event->ignore();
+    return;
+  }
+
+  bool make_note_preview = false;
+  m_client->changeEditState([&](EditState &s) {
+    if (event->button() == Qt::RightButton)
+      s.mouse_edit_state.type = MouseEditState::Type::DeleteOn;
+    else {
+      s.mouse_edit_state.type = MouseEditState::Type::SetOn;
+      make_note_preview = true;
+    }
+  });
+
+  // TODO: make note preview
+}
+
+void ParamView::mouseReleaseEvent(QMouseEvent *event) {
+  if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
+    event->ignore();
+    return;
+  }
+  if (!std::holds_alternative<MouseParamEdit>(
+          m_client->editState().mouse_edit_state.kind))
+    return;
+
+  Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
+      m_client->quantizeClock()));
+
+  m_client->changeEditState([&](EditState &s) {
+    if (m_client->pxtn()->Unit_Num() > 0) {
+      using namespace Action;
+      std::list<Primitive> actions;
+      EVENTKIND kind = paramOptions[s.m_current_param_kind_idx].second;
+      switch (s.mouse_edit_state.type) {
+        case MouseEditState::SetOn:
+        case MouseEditState::DeleteOn:
+        case MouseEditState::SetNote:
+        case MouseEditState::DeleteNote:
+          actions.push_back({kind, s.m_current_unit_id, clock_int.start,
+                             Delete{clock_int.end}});
+          if (s.mouse_edit_state.type == MouseEditState::SetOn ||
+              s.mouse_edit_state.type == MouseEditState::SetNote) {
+            for (const ParamEditInterval &p :
+                 lineEdit(s.mouse_edit_state, m_client->quantizeClock())) {
+              actions.push_back(
+                  {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
+            }
+          }
+          break;
+          // TODO: Dedup
+        case MouseEditState::Seek:
+          if (event->button() & Qt::LeftButton)
+            m_client->seekMoo(
+                m_client->editState().mouse_edit_state.current_clock);
+          break;
+        case MouseEditState::Select:
+          s.mouse_edit_state.selection.emplace(clock_int);
+          break;
+        case MouseEditState::Nothing:
+          break;
+      }
+      if (actions.size() > 0) {
+        m_client->applyAction(actions);
+      }
+    }
+    s.mouse_edit_state.type = MouseEditState::Type::Nothing;
+    updateStatePositions(s, event, height());
+  });
 }
 
 void ParamView::mouseMoveEvent(QMouseEvent *event) {

@@ -14,6 +14,8 @@ class ParamView : public QWidget {
   Scale m_last_scale;
 
   void paintEvent(QPaintEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   QSize sizeHint() const override;
 
