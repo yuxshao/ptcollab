@@ -114,8 +114,9 @@ void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
       barToControl = scrollToControl->verticalScrollBar();
       break;
   }
-  connect(bar, &QAbstractSlider::valueChanged, barToControl,
-          &QAbstractSlider::setValue);
+  connect(bar, &QAbstractSlider::valueChanged, [barToControl](int value) {
+    if (barToControl->value() != value) barToControl->setValue(value);
+  });
 }
 
 // So keys like up / down work with the editor.

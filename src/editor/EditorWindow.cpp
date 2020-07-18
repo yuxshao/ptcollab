@@ -63,6 +63,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
+  m_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);
   m_key_splitter->setSizes(QList{10000, 10});
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
