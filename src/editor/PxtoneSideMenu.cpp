@@ -127,6 +127,14 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
     m_client->changeEditState(
         [&](EditState &s) { s.m_current_param_kind_idx = index; });
   });
+  connect(this, &SideMenu::quantXIndexUpdated, [this](int index) {
+    m_client->changeEditState(
+        [&](EditState &s) { s.m_quantize_clock_idx = index; });
+  });
+  connect(this, &SideMenu::quantYIndexUpdated, [this](int index) {
+    m_client->changeEditState(
+        [&](EditState &s) { s.m_quantize_pitch_idx = index; });
+  });
 }
 
 void PxtoneSideMenu::refreshWoices() {

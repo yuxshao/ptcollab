@@ -236,8 +236,13 @@ fill architecture could work well.
 1. Display vel, vol, pan params
 2. fix scrolling not lining up with mouse
 
+7/18
+1. Param edit
+2. Fix side menu dropdown not affecting quantization
+
 Todo by priority
 ----------------
+ - add other keyboard shortcuts to param bar
  - Adidtional bars for other editing:
    - bottom bar for params like vol, pan, etc.
      - change voice events will require a map from voice id to no
