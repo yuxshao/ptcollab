@@ -183,9 +183,13 @@ static QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
 int pixelsPerVelocity = 3;
 static double slack = 50;
 int impliedVelocity(MouseEditState state, const Scale &scale) {
-  double delta = (state.current_pitch - state.start_pitch) / scale.pitchPerPx;
-  // Apply a sigmoid so that small changes in y hardly do anything
-  delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
+  double delta = 0;
+  if (std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+    const auto &s = std::get<MouseKeyboardEdit>(state.kind);
+    delta = (s.current_pitch - s.start_pitch) / scale.pitchPerPx;
+    // Apply a sigmoid so that small changes in y hardly do anything
+    delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
+  }
 
   return clamp(int(round(state.base_velocity + delta / pixelsPerVelocity)), 0,
                EVENTMAX_VELOCITY);
@@ -228,6 +232,9 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
+  if (!std::holds_alternative<MouseKeyboardEdit>(mouse_edit_state.kind)) return;
+  const auto &keyboard_edit_state =
+      std::get<MouseKeyboardEdit>(mouse_edit_state.kind);
   switch (mouse_edit_state.type) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
@@ -238,9 +245,9 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       // TODO: maybe factor out this quantization logic
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock));
-      int pitch =
-          quantize(mouse_edit_state.start_pitch, localState.m_quantize_pitch) +
-          localState.m_quantize_pitch;
+      int pitch = quantize(keyboard_edit_state.start_pitch,
+                           localState.m_quantize_pitch) +
+                  localState.m_quantize_pitch;
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
       paintBlock(pitch, interval, painter,
@@ -272,8 +279,12 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
+  if (!std::holds_alternative<MouseKeyboardEdit>(state.mouse_edit_state.kind))
+    return;
+  const auto &keyboard_edit_state =
+      std::get<MouseKeyboardEdit>(state.mouse_edit_state.kind);
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
-                  state.scale.pitchToY(state.mouse_edit_state.current_pitch));
+                  state.scale.pitchToY(keyboard_edit_state.current_pitch));
   QPainterPath path;
   path.moveTo(position);
   path.lineTo(position + QPoint(8, 0));
@@ -309,12 +320,16 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
     paintHighlight(state.pitch.value, interval.start, painter,
                    brush.toQColor(255, true, alpha), scale);
     if (drawTooltip) {
-      double alphaMultiplier =
-          smoothDistance(
-              (mouse.current_clock - on.start) / 40.0 / scale.clockPerPx,
-              (mouse.current_pitch - state.pitch.value) / 200.0 /
-                  scale.pitchPerPx) *
-          0.4;
+      double alphaMultiplier = 0;
+      if (std::holds_alternative<MouseKeyboardEdit>(mouse.kind)) {
+        alphaMultiplier +=
+            smoothDistance(
+                (mouse.current_clock - on.start) / 40.0 / scale.clockPerPx,
+                (std::get<MouseKeyboardEdit>(mouse.kind).current_pitch -
+                 state.pitch.value) /
+                    200.0 / scale.pitchPerPx) *
+            0.4;
+      }
       if (mouse.current_clock < on.end && mouse.current_clock >= on.start &&
           mouse.type != MouseEditState::SetOn)
         alphaMultiplier += 0.6;
@@ -612,7 +627,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       double period = 60;
       double amp = 20;
       e.mouse_edit_state.current_clock += amp * sin(painted / period);
-      e.mouse_edit_state.current_pitch += amp * cos(painted / period);
+      if (std::holds_alternative<MouseKeyboardEdit>(e.mouse_edit_state.kind))
+        std::get<MouseKeyboardEdit>(e.mouse_edit_state.kind).current_pitch +=
+            amp * cos(painted / period);
     });
   }
 }
@@ -663,11 +680,18 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
   }
 }
 
-void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
+static void updateStatePositions(EditState &edit_state,
+                                 const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
   state.current_clock =
       std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
-  state.current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
+  qint32 current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
+  if (!std::holds_alternative<MouseKeyboardEdit>(state.kind))
+    state.kind.emplace<MouseKeyboardEdit>(
+        MouseKeyboardEdit{current_pitch, current_pitch});
+  auto &keyboard_edit_state = std::get<MouseKeyboardEdit>(state.kind);
+
+  keyboard_edit_state.current_pitch = current_pitch;
 
   if (state.type == MouseEditState::Type::Nothing ||
       state.type == MouseEditState::Type::Seek) {
@@ -675,7 +699,7 @@ void updateStatePositions(EditState &edit_state, const QMouseEvent *event) {
                       ? MouseEditState::Type::Seek
                       : MouseEditState::Type::Nothing);
     state.start_clock = state.current_clock;
-    state.start_pitch = state.current_pitch;
+    keyboard_edit_state.start_pitch = current_pitch;
   }
 }
 
@@ -686,7 +710,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
   }
 
   if (m_pxtn->Unit_Num() == 0) return;
-  m_client->changeEditState([&](auto &s) {
+  m_client->changeEditState([&](EditState &s) {
     updateStatePositions(s, event);
 
     bool make_note_preview = false;
@@ -721,10 +745,12 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
     if (make_note_preview) {
       auto maybe_unit_no =
           m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-      if (maybe_unit_no != std::nullopt) {
-        qint32 vel = m_client->editState().mouse_edit_state.base_velocity;
+      if (maybe_unit_no != std::nullopt &&
+          std::holds_alternative<MouseKeyboardEdit>(s.mouse_edit_state.kind)) {
+        qint32 vel = s.mouse_edit_state.base_velocity;
 
-        int pitch = m_client->editState().mouse_edit_state.current_pitch;
+        int pitch =
+            std::get<MouseKeyboardEdit>(s.mouse_edit_state.kind).current_pitch;
         pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
                 m_edit_state.m_quantize_pitch;
         s.mouse_edit_state.last_pitch = pitch;
@@ -831,11 +857,18 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
     return;
   }
   if (m_audio_note_preview) m_audio_note_preview = nullptr;
+
+  const auto &kind = m_client->editState().mouse_edit_state.kind;
+  if (!std::holds_alternative<MouseKeyboardEdit>(
+          m_client->editState().mouse_edit_state.kind))
+    return;
+  const auto &keyboard_edit_state = std::get<MouseKeyboardEdit>(kind);
+
   Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
       m_edit_state.m_quantize_clock));
-  int start_pitch = quantize(m_client->editState().mouse_edit_state.start_pitch,
-                             m_edit_state.m_quantize_pitch) +
-                    m_edit_state.m_quantize_pitch;
+  int start_pitch =
+      quantize(keyboard_edit_state.start_pitch, m_edit_state.m_quantize_pitch) +
+      m_edit_state.m_quantize_pitch;
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
 
   m_client->changeEditState([&](auto &s) {

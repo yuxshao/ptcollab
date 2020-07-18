@@ -168,9 +168,18 @@ inline QTextStream &operator<<(QTextStream &out, const ChangeWoice &a) {
   return out;
 }
 
+inline QTextStream &operator<<(QTextStream &out, const MouseParamEdit &a) {
+  out << "Param(" << a.current_param << ")";
+  return out;
+}
+
+inline QTextStream &operator<<(QTextStream &out, const MouseKeyboardEdit &a) {
+  out << "Keyboard(" << a.current_pitch << ")";
+  return out;
+}
 inline QTextStream &operator<<(QTextStream &out, const EditState &a) {
   out << "EditState(c" << a.mouse_edit_state.current_clock << ", p"
-      << a.mouse_edit_state.current_pitch << ")";
+      << a.mouse_edit_state.kind << ")";
   return out;
 }
 

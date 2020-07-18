@@ -2,6 +2,7 @@
 
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPainterPath>
 
 #include "ComboOptions.h"
 
@@ -32,6 +33,33 @@ QSize ParamView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
                0x20);
+}
+
+static qreal paramToY(int param, int height) {
+  return (0x80 - param) * height / 0x80;
+}
+
+static qreal paramOfY(int y, int height) { return 0x80 - (y * 0x80 / height); }
+
+// TODO: Don't repeat
+void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
+                const QString &username, qint64 uid, int height) {
+  if (!std::holds_alternative<MouseParamEdit>(state.mouse_edit_state.kind))
+    return;
+  const auto &param_edit_state =
+      std::get<MouseParamEdit>(state.mouse_edit_state.kind);
+  QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
+                  paramToY(param_edit_state.current_param, height));
+  QPainterPath path;
+  path.moveTo(position);
+  path.lineTo(position + QPoint(8, 0));
+  path.lineTo(position + QPoint(0, 8));
+  path.closeSubpath();
+  painter.fillPath(path, color);
+  painter.setPen(color);
+  painter.setFont(QFont("Sans serif", 6));
+  painter.drawText(position + QPoint(8, 13),
+                   QString("%1 (%2)").arg(username).arg(uid));
 }
 
 static const QColor blue(QColor::fromRgb(52, 50, 85));
@@ -97,9 +125,9 @@ void ParamView::paintEvent(QPaintEvent *event) {
       if (!matchingUnit) continue;
 
       int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-      int32_t lastY = (0x80 - last_value) * size().height() / 0x80;
+      int32_t lastY = paramToY(last_value, size().height());
       int32_t thisX = e->clock / m_client->editState().scale.clockPerPx;
-      int32_t thisY = (0x80 - e->value) * size().height() / 0x80;
+      int32_t thisY = paramToY(e->value, size().height());
 
       painter.fillRect(lastX, lastY - height / 2, thisX - lastX, height,
                        darkTeal);
@@ -117,4 +145,43 @@ void ParamView::paintEvent(QPaintEvent *event) {
                      darkTeal);
     painter.fillRect(lastX, lastY - height / 2, width, height, brightGreen);
   }
+
+  // Draw cursor
+  {
+    QString my_username = "";
+    auto it = m_client->remoteEditStates().find(m_client->uid());
+    if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
+    drawCursor(m_client->editState(), painter, Qt::white, my_username,
+               m_client->uid(), height());
+  }
+}
+
+// TODO: DEDUP
+static void updateStatePositions(EditState &edit_state,
+                                 const QMouseEvent *event, int height) {
+  MouseEditState &state = edit_state.mouse_edit_state;
+  state.current_clock =
+      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
+  qint32 current_param = paramOfY(event->localPos().y(), height);
+  if (!std::holds_alternative<MouseParamEdit>(state.kind))
+    state.kind = MouseParamEdit{current_param, current_param};
+  auto &param_edit_state = std::get<MouseParamEdit>(state.kind);
+
+  param_edit_state.current_param = current_param;
+
+  if (state.type == MouseEditState::Type::Nothing ||
+      state.type == MouseEditState::Type::Seek) {
+    state.type = (event->modifiers() & Qt::ShiftModifier
+                      ? MouseEditState::Type::Seek
+                      : MouseEditState::Type::Nothing);
+    state.start_clock = state.current_clock;
+    param_edit_state.start_param = current_param;
+  }
+}
+
+void ParamView::mouseMoveEvent(QMouseEvent *event) {
+  // TODO: Change the note preview based off position.
+  m_client->changeEditState(
+      [&](auto &s) { updateStatePositions(s, event, height()); });
+  event->ignore();
 }

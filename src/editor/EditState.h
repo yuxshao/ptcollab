@@ -4,8 +4,36 @@
 
 #include <QObject>
 #include <optional>
+#include <variant>
 
 #include "Interval.h"
+
+struct MouseKeyboardEdit {
+  qint32 start_pitch;
+  qint32 current_pitch;
+};
+inline QDataStream &operator<<(QDataStream &out, const MouseKeyboardEdit &a) {
+  out << a.start_pitch << a.current_pitch;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MouseKeyboardEdit &a) {
+  in >> a.start_pitch >> a.current_pitch;
+  return in;
+}
+
+struct MouseParamEdit {
+  // qint32 param_idx;
+  qint32 start_param;
+  qint32 current_param;
+};
+inline QDataStream &operator<<(QDataStream &out, const MouseParamEdit &a) {
+  out << a.start_param << a.current_param;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MouseParamEdit &a) {
+  in >> a.start_param >> a.current_param;
+  return in;
+}
 
 struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn, Select };
@@ -13,11 +41,11 @@ struct MouseEditState {
   qreal base_velocity;
   qint32 last_pitch;
   qint32 start_clock;
-  qint32 start_pitch;
   qint32 current_clock;
-  qint32 current_pitch;
+  std::variant<MouseKeyboardEdit, MouseParamEdit> kind;
   std::optional<Interval> selection;
   Interval clock_int(qint32 quantize) const;
+  MouseEditState();
 };
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a);
 QDataStream &operator>>(QDataStream &in, MouseEditState &a);
