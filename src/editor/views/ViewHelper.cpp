@@ -13,3 +13,6 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
   painter.drawText(position + QPoint(8, 13),
                    QString("%1 (%2)").arg(username).arg(uid));
 }
+
+QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
+QColor slightTint(QColor::fromRgb(255, 255, 255, 32));

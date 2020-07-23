@@ -13,6 +13,7 @@
 
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
+#include "views/MooClock.h"
 #include "views/ParamView.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
@@ -38,7 +39,9 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_units = new UnitListModel(&m_pxtn, this);
   m_client = new PxtoneClient(&m_pxtn, m_client_status, m_units, this);
-  m_keyboard_view = new KeyboardView(m_client, nullptr);
+  m_moo_clock = new MooClock(m_client);
+
+  m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
@@ -56,11 +59,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-  // TODO: Make member var
-  EditorScrollArea *m_param_scroll_area =
-      new EditorScrollArea(m_key_splitter, false);
+  m_param_scroll_area = new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_param_scroll_area->setWidget(new ParamView(m_client, m_param_scroll_area));
+  m_param_scroll_area->setWidget(
+      new ParamView(m_client, m_moo_clock, m_param_scroll_area));
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);

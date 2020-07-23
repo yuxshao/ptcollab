@@ -10,6 +10,7 @@
 #include "../Clipboard.h"
 #include "../EditState.h"
 #include "Animation.h"
+#include "MooClock.h"
 #include "editor/PxtoneClient.h"
 #include "editor/UnitListModel.h"
 #include "editor/audio/NotePreview.h"
@@ -29,7 +30,8 @@ struct LocalEditState {
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardView(PxtoneClient *client, QScrollArea *parent = nullptr);
+  explicit KeyboardView(PxtoneClient *client, MooClock *moo_clock,
+                        QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
 
  public slots:
@@ -58,12 +60,7 @@ class KeyboardView : public QWidget {
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   PxtoneClient *m_client;
-
-  // A bunch of things to give the illusion of a smooth playhead when there's a
-  // buffer.
-  int m_last_clock, m_this_seek;
-  bool m_this_seek_caught_up;
-  QElapsedTimer timeSinceLastClock;
+  MooClock *m_moo_clock;
 
   bool m_test_activity;
   Clipboard m_clipboard;

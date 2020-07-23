@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "Animation.h"
+#include "MooClock.h"
 #include "editor/PxtoneClient.h"
 
 class ParamView : public QWidget {
@@ -12,6 +13,7 @@ class ParamView : public QWidget {
   PxtoneClient *m_client;
   Animation *m_anim;
   Scale m_last_scale;
+  MooClock *m_moo_clock;
 
   void paintEvent(QPaintEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
@@ -20,7 +22,8 @@ class ParamView : public QWidget {
   QSize sizeHint() const override;
 
  public:
-  explicit ParamView(PxtoneClient *client, QWidget *parent = nullptr);
+  explicit ParamView(PxtoneClient *client, MooClock *moo_clock,
+                     QWidget *parent = nullptr);
 
  signals:
 };

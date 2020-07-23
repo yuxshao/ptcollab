@@ -39,12 +39,13 @@ class EditorWindow : public QMainWindow {
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
   mooState m_moo_state;
-  EditorScrollArea* m_scroll_area;
+  EditorScrollArea *m_scroll_area, *m_param_scroll_area;
   QSplitter* m_splitter;
   QSplitter* m_key_splitter;
   PxtoneSideMenu* m_side_menu;
   BroadcastServer* m_server;
   PxtoneClient* m_client;
+  MooClock* m_moo_clock;
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;

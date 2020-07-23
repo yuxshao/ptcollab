@@ -240,23 +240,28 @@ fill architecture could work well.
 1. Param edit
 2. Fix side menu dropdown not affecting quantization
 
+7/22
+1. Playhead in bottom bar too
+
 Todo by priority
 ----------------
  - add other keyboard shortcuts to param bar
- - Adidtional bars for other editing:
-   - bottom bar for params like vol, pan, etc.
-     - change voice events will require a map from voice id to no
-     - linear change tool (see domino)
-   - Unit view, at least for drums
-     - how many views do you want? the fewer, the easier it is to be 'present'
-       with others.
-     - something like ptweb
-       - can pin instruments to be drums. (list of pinned is global)
- - show measure num, set loop points
-   - will probably need some pixel font thing
- - keyboard on left side of piano roll (probably will help in figuring out how
-   to sticky a thing in a scrollview)
+   - alt scroll
+   - ctrl + shift + scroll
+ - draw selection, playhead in param bar
+ - maybe other params could be other colours?
+ - set loop points from selection
+ - modify additional params:
+   - voice - will need map from voice id to no
+   - group
+   - key correct
  - select operations (keycmds) for other params (once those exist)
+ - Unit view, at least for drums
+   - how many views do you want? the fewer, the easier it is to be 'present'
+     with others.
+   - something like ptweb
+     - can pin instruments to be drums. (list of pinned is global)
+ - show measure num
  - more inspiration from domino midi!
 
 Misc todo by categories

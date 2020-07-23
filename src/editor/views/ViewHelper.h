@@ -9,4 +9,6 @@ extern void drawCursor(const QPoint &position, QPainter &painter,
                        const QColor &color, const QString &username,
                        qint64 uid);
 
+extern QColor halfWhite, slightTint;
+
 #endif  // VIEWHELPER_H

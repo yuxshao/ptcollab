@@ -7,8 +7,11 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 
-ParamView::ParamView(PxtoneClient *client, QWidget *parent)
-    : QWidget(parent), m_client(client), m_anim(new Animation(this)) {
+ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
+    : QWidget(parent),
+      m_client(client),
+      m_anim(new Animation(this)),
+      m_moo_clock(moo_clock) {
   // TODO: dedup with keyboardview
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -195,6 +198,11 @@ void ParamView::paintEvent(QPaintEvent *event) {
     case MouseEditState::Type::Select:
       break;
   }
+
+  painter.fillRect(
+      m_moo_clock->now() / m_client->editState().scale.clockPerPx, 0, 1,
+      size().height(),
+      (m_moo_clock->this_seek_caught_up() ? Qt::white : halfWhite));
 
   // Draw cursor
   {
