@@ -566,39 +566,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 }
 
 void KeyboardView::wheelEvent(QWheelEvent *event) {
-  qreal delta = event->angleDelta().y();
-  if (event->modifiers() & Qt::ControlModifier) {
-    if (event->modifiers() & Qt::ShiftModifier) {
-      // scale X
-      m_client->changeEditState([&](EditState &e) {
-        e.scale.clockPerPx *= pow(2, delta / 240.0);
-        if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
-        if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
-      });
-    } else {
-      // scale Y
-      m_client->changeEditState([&](EditState &e) {
-        e.scale.pitchPerPx *= pow(2, delta / 240.0);
-        if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
-        if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
-          e.scale.pitchPerPx = PITCH_PER_KEY / 4;
-      });
-    }
+  handleWheelEventWithModifier(event, m_client, true);
+  if (event->isAccepted()) return;
 
-    event->accept();
-  } else if (event->modifiers() & Qt::AltModifier) {
-    // In this case, alt flips the scroll direction.
-    // Maybe alt shift could handle quantize y?
-    delta = event->angleDelta().x();
-    int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
-    m_client->changeEditState([&](EditState &e) {
-      auto &qx = e.m_quantize_clock_idx;
-      if (delta < 0 && qx < size - 1) qx++;
-      if (delta > 0 && qx > 0) qx--;
-    });
-    event->accept();
-  } else if (m_client->editState().mouse_edit_state.type ==
-             MouseEditState::SetOn) {
+  if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn) {
     m_client->changeEditState([&](EditState &e) {
       auto &vel = e.mouse_edit_state.base_velocity;
       vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0,

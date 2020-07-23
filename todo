@@ -242,13 +242,10 @@ fill architecture could work well.
 
 7/22
 1. Playhead, repeat meas in param bar too
+2. Mouse / wheel shortcuts in param bar
 
 Todo by priority
 ----------------
- - add other keyboard shortcuts to param bar
-   - alt scroll
-   - ctrl + shift + scroll
- - draw selection in param bar
  - maybe other params could be other colours?
  - set loop points from selection
  - modify additional params:
@@ -256,6 +253,7 @@ Todo by priority
    - group
    - key correct
  - select operations (keycmds) for other params (once those exist)
+   - draw selection in param bar
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

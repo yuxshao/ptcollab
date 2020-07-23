@@ -310,6 +310,10 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
   });
 }
 
+void ParamView::wheelEvent(QWheelEvent *event) {
+  handleWheelEventWithModifier(event, m_client, true);
+}
+
 void ParamView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
   m_client->changeEditState(

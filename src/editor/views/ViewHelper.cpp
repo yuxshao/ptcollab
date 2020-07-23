@@ -1,5 +1,9 @@
 #include "ViewHelper.h"
 
+#include <QWheelEvent>
+
+#include "editor/ComboOptions.h"
+
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
   QPainterPath path;
@@ -18,7 +22,7 @@ QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
 QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
 
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
-                               int height, int clockPerPx, bool drawHead) {
+                               int height, qreal clockPerPx, bool drawHead) {
   QColor color = (moo_clock->this_seek_caught_up() ? Qt::white : halfWhite);
   const int x = moo_clock->now() / clockPerPx;
   int s = 0;
@@ -35,7 +39,7 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 }
 
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
-                          int clockPerPx, int height) {
+                          qreal clockPerPx, int height) {
   painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 2, height,
                    Qt::white);
   painter.fillRect(moo_clock->last_clock() / clockPerPx + 2, 0, 3, height,
@@ -45,4 +49,40 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                    Qt::white);
   painter.fillRect(moo_clock->repeat_clock() / clockPerPx - 4, 0, 3, height,
                    halfWhite);
+}
+
+void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
+                                  bool scaleY) {
+  qreal delta = event->angleDelta().y();
+  if (event->modifiers() & Qt::ControlModifier) {
+    if (event->modifiers() & Qt::ShiftModifier) {
+      // scale X
+      client->changeEditState([&](EditState &e) {
+        e.scale.clockPerPx *= pow(2, delta / 240.0);
+        if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
+        if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
+      });
+    } else if (scaleY) {
+      // scale Y
+      client->changeEditState([&](EditState &e) {
+        e.scale.pitchPerPx *= pow(2, delta / 240.0);
+        if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
+        if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
+          e.scale.pitchPerPx = PITCH_PER_KEY / 4;
+      });
+    }
+
+    event->accept();
+  } else if (event->modifiers() & Qt::AltModifier) {
+    // In this case, alt flips the scroll direction.
+    // Maybe alt shift could handle quantize y?
+    delta = event->angleDelta().x();
+    int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
+    client->changeEditState([&](EditState &e) {
+      auto &qx = e.m_quantize_clock_idx;
+      if (delta < 0 && qx < size - 1) qx++;
+      if (delta > 0 && qx > 0) qx--;
+    });
+    event->accept();
+  }
 }
