@@ -11,6 +11,7 @@ class EditorScrollArea : public QScrollArea {
   EditorScrollArea(QWidget *parent, bool match_scale);
   void wheelEvent(QWheelEvent *event) override;
   void controlScroll(QScrollArea *scrollToControl, Qt::Orientation direction);
+  void ensureVisible(int x, int xmargin);
 
  protected:
   void keyPressEvent(QKeyEvent *event) override;

@@ -552,6 +552,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
+  if (m_client->editState().m_follow_playhead)
+    emit ensureVisibleX(clock / m_client->editState().scale.clockPerPx);
+
   // Simulate activity on a client
   if (m_test_activity) {
     m_client->changeEditState([&](EditState &e) {

@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QScrollBar>
+#include <QStyle>
 
 class TransposableWheelEvent : QWheelEvent {
  public:
@@ -123,6 +124,26 @@ void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
   connect(bar, &QAbstractSlider::valueChanged, [barToControl](int value) {
     if (barToControl->value() != value) barToControl->setValue(value);
   });
+}
+
+void EditorScrollArea::ensureVisible(int x, int xmargin = -1) {
+  if (xmargin == -1) xmargin = viewport()->width() / 10;
+  int logicalX =
+      QStyle::visualPos(layoutDirection(), viewport()->rect(), QPoint(x, 0))
+          .x();
+  if (logicalX - xmargin < horizontalScrollBar()->value()) {
+    int newValue = horizontalScrollBar()->value();
+    while (logicalX - xmargin < newValue)
+      newValue -= viewport()->width() * 3 / 4;
+    horizontalScrollBar()->setValue(qMax(0, newValue));
+  } else if (logicalX >
+             horizontalScrollBar()->value() + viewport()->width() - xmargin) {
+    int newValue = horizontalScrollBar()->value();
+    while (logicalX > newValue + viewport()->width() - xmargin)
+      newValue += viewport()->width() * 3 / 4;
+    horizontalScrollBar()->setValue(
+        qMin(newValue, horizontalScrollBar()->maximum()));
+  }
 }
 
 // So keys like up / down work with the editor.

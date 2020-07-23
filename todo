@@ -244,13 +244,16 @@ fill architecture could work well.
 1. Playhead, repeat meas in param bar too
 2. Mouse / wheel shortcuts in param bar
 3. Set loop points from selection
+4. follow playhead but a bit broken
 
 Todo by priority
 ----------------
- - follow playhead
+ - follow playhead causes drawing to leak. why?
+   - try using 'ensureVisible' on the other one.
  - modify additional params:
-   - porta
+   - porta - drag like in pxtone
    - voice - will need map from voice id to no
+     - can drag a time interval and set with that unit / clear unit
    - group
    - key correct
  - maybe other params could be other colours?

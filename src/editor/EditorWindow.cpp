@@ -54,6 +54,9 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
+  // TODO: find a better place for this.
+  connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
+          [this](int x) { m_scroll_area->ensureVisible(x, -1); });
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -63,6 +66,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
+  // connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
+  //        [this](int x) { m_param_scroll_area->ensureVisible(x, -1); });
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
@@ -90,7 +95,7 @@ EditorWindow::EditorWindow(QWidget *parent)
         "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
         "deselect.\nWith "
         "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
-        "cycle unit.");
+        "cycle unit.\nF to follow playhead.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
@@ -136,6 +141,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_D:
       if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->deselect();
+      break;
+    case Qt::Key_F:
+      m_client->changeEditState(
+          [&](EditState &s) { s.m_follow_playhead = !s.m_follow_playhead; });
       break;
     case Qt::Key_N:
       if (event->modifiers() & Qt::ControlModifier) Host(false);

@@ -160,6 +160,10 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
         [&](EditState &s) { s.mouse_edit_state.selection.emplace(selection); });
     m_client->sendAction(SetLastMeas{newLastMeas});
   });
+  connect(this, &SideMenu::followChanged, [this](bool follow) {
+    m_client->changeEditState(
+        [&](EditState &s) { s.m_follow_playhead = follow; });
+  });
 }
 
 void PxtoneSideMenu::refreshWoices() {
@@ -181,5 +185,7 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
     setQuantYIndex(s.m_quantize_pitch_idx);
   if (m_last_edit_state.m_current_unit_id != s.m_current_unit_id)
     setCurrentUnit(s.m_current_unit_id);
+  if (m_last_edit_state.m_follow_playhead != s.m_follow_playhead)
+    setFollow(s.m_follow_playhead);
   m_last_edit_state = s;
 };

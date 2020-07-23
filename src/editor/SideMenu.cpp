@@ -78,6 +78,7 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
   });
   connect(ui->setRepeatBtn, &QPushButton::clicked, this, &SideMenu::setRepeat);
   connect(ui->setLastBtn, &QPushButton::clicked, this, &SideMenu::setLast);
+  connect(ui->followCheckbox, &QCheckBox::toggled, this, &SideMenu::setFollow);
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
@@ -213,6 +214,10 @@ void SideMenu::setTempo(int tempo) {
 }
 void SideMenu::setBeats(int beats) {
   ui->beatsField->setText(QString("%1").arg(beats));
+}
+
+void SideMenu::setFollow(bool follow) {
+  ui->followCheckbox->setCheckState(follow ? Qt::Checked : Qt::Unchecked);
 }
 
 void SideMenu::setParamKindIndex(int index) {

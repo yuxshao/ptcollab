@@ -46,6 +46,7 @@ class SideMenu : public QWidget {
   void tempoChanged(int beats);
   void setRepeat();
   void setLast();
+  void followChanged(bool);
 
  public slots:
   void setQuantXIndex(int);
@@ -59,6 +60,7 @@ class SideMenu : public QWidget {
   void setWoiceList(QStringList);
   void setTempo(int tempo);
   void setBeats(int beats);
+  void setFollow(bool follow);
 
  private:
   Ui::SideMenu *ui;

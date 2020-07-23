@@ -34,6 +34,9 @@ class KeyboardView : public QWidget {
                         QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
 
+ signals:
+  void ensureVisibleX(int x);
+
  public slots:
   void toggleTestActivity();
   void selectAll();

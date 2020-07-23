@@ -306,7 +306,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>QuantX</string>
+        <string>Snap X</string>
        </property>
       </widget>
      </item>
@@ -320,7 +320,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>QuantY</string>
+        <string>Snap Y</string>
        </property>
       </widget>
      </item>
@@ -328,6 +328,13 @@
       <widget class="QComboBox" name="quantY">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="followCheckbox">
+       <property name="text">
+        <string>Follow</string>
        </property>
       </widget>
      </item>
