@@ -199,10 +199,8 @@ void ParamView::paintEvent(QPaintEvent *event) {
       break;
   }
 
-  painter.fillRect(
-      m_moo_clock->now() / m_client->editState().scale.clockPerPx, 0, 1,
-      size().height(),
-      (m_moo_clock->this_seek_caught_up() ? Qt::white : halfWhite));
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+                            m_client->editState().scale.clockPerPx, false);
 
   // Draw cursor
   {

@@ -16,3 +16,20 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
 
 QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
 QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
+
+void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
+                               int height, int clockPerPx, bool drawHead) {
+  QColor color = (moo_clock->this_seek_caught_up() ? Qt::white : halfWhite);
+  const int x = moo_clock->now() / clockPerPx;
+  int s = 0;
+  if (drawHead) {
+    s = 4;
+    QPainterPath path;
+    path.moveTo(x - s, 0);
+    path.lineTo(x + s, 0);
+    path.lineTo(x, s);
+    path.closeSubpath();
+    painter.fillPath(path, color);
+  }
+  painter.fillRect(x, s, 1, height, color);
+}

@@ -19,10 +19,10 @@ class MooClock : public QObject {
  public:
   explicit MooClock(PxtoneClient *client);
 
-  qint32 now();
-  bool this_seek_caught_up() { return m_this_seek_caught_up; }
-  qint32 last_clock();
-  qint32 repeat_clock();
+  int now();
+  bool this_seek_caught_up() const { return m_this_seek_caught_up; }
+  int last_clock() const;
+  int repeat_clock() const;
 
  signals:
 };

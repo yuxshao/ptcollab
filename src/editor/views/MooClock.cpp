@@ -12,13 +12,13 @@ MooClock::MooClock(PxtoneClient *client)
   });
 }
 
-int MooClock::last_clock() {
+int MooClock::last_clock() const {
   const pxtnMaster *master = m_client->pxtn()->master;
   return master->get_beat_clock() * master->get_play_meas() *
          master->get_beat_num();
 }
 
-int MooClock::repeat_clock() {
+int MooClock::repeat_clock() const {
   const pxtnMaster *master = m_client->pxtn()->master;
   return master->get_repeat_meas() * master->get_beat_num() *
          master->get_beat_clock();

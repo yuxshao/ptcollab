@@ -549,18 +549,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
   // Draw the current player position
-  {
-    QColor color = (m_moo_clock->this_seek_caught_up() ? Qt::white : halfWhite);
-    const int x = clock / m_client->editState().scale.clockPerPx;
-    const int s = 4;
-    QPainterPath path;
-    path.moveTo(x - s, 0);
-    path.lineTo(x + s, 0);
-    path.lineTo(x, s);
-    path.closeSubpath();
-    painter.fillPath(path, color);
-    painter.fillRect(x, s, 1, size().height(), color);
-  }
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+                            m_client->editState().scale.clockPerPx, true);
 
   // Draw bars at the end of the piece
   painter.fillRect(
