@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
 #include <QtMultimedia/QAudioDeviceInfo>
@@ -66,8 +67,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
-  // connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
-  //        [this](int x) { m_param_scroll_area->ensureVisible(x, -1); });
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);

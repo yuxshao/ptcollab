@@ -54,6 +54,15 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
   updateGeometry();
   setMouseTracking(true);
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
+  connect(m_anim, &Animation::nextFrame, [this]() {
+    // This is not part of paintEvent because it causes some widgets to get
+    // rendered outside their viewport, prob. because it causes a repaint in a
+    // paintEvent.
+    if (m_client->editState().m_follow_playhead &&
+        m_client->audioState()->state() == QAudio::ActiveState)
+      emit ensureVisibleX(m_moo_clock->now() /
+                          m_client->editState().scale.clockPerPx);
+  });
 
   connect(m_client, &PxtoneClient::editStateChanged,
           [this](const EditState &s) {
@@ -551,9 +560,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                             m_client->editState().scale.clockPerPx, true);
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
-
-  if (m_client->editState().m_follow_playhead)
-    emit ensureVisibleX(clock / m_client->editState().scale.clockPerPx);
 
   // Simulate activity on a client
   if (m_test_activity) {
