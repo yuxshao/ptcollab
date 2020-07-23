@@ -264,6 +264,18 @@ bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
   return true;
 }
 
+void PxtoneController::applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid) {
+  (void)uid;
+  m_pxtn->master->set_repeat_meas(a.meas);
+  emit edited();
+}
+
+void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
+  (void)uid;
+  m_pxtn->master->set_last_meas(a.meas);
+  emit edited();
+}
+
 void PxtoneController::seekMoo(int64_t clock) {
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;

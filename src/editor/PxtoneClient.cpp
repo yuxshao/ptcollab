@@ -197,6 +197,12 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       if (m_controller->applyBeatChange(s, uid))
                         emit tempoBeatChanged();
                     },
+                    [this, uid](const SetRepeatMeas &s) {
+                      m_controller->applySetRepeatMeas(s, uid);
+                    },
+                    [this, uid](const SetLastMeas &s) {
+                      m_controller->applySetLastMeas(s, uid);
+                    },
                     [this, uid](const AddWoice &s) {
                       bool success = m_controller->applyAddWoice(s, uid);
                       emit woicesChanged();

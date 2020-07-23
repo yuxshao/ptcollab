@@ -44,6 +44,8 @@ class SideMenu : public QWidget {
   void selectedUnitsChanged(QList<qint32> idx);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
+  void setRepeat();
+  void setLast();
 
  public slots:
   void setQuantXIndex(int);

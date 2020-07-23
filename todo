@@ -243,15 +243,17 @@ fill architecture could work well.
 7/22
 1. Playhead, repeat meas in param bar too
 2. Mouse / wheel shortcuts in param bar
+3. Set loop points from selection
 
 Todo by priority
 ----------------
- - maybe other params could be other colours?
- - set loop points from selection
+ - follow playhead
  - modify additional params:
+   - porta
    - voice - will need map from voice id to no
    - group
    - key correct
+ - maybe other params could be other colours?
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
  - Unit view, at least for drums

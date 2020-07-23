@@ -76,6 +76,8 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
             QMessageBox::Yes)
       emit removeUnit();
   });
+  connect(ui->setRepeatBtn, &QPushButton::clicked, this, &SideMenu::setRepeat);
+  connect(ui->setLastBtn, &QPushButton::clicked, this, &SideMenu::setLast);
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
