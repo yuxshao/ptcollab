@@ -241,14 +241,14 @@ fill architecture could work well.
 2. Fix side menu dropdown not affecting quantization
 
 7/22
-1. Playhead in bottom bar too
+1. Playhead, repeat meas in param bar too
 
 Todo by priority
 ----------------
  - add other keyboard shortcuts to param bar
    - alt scroll
    - ctrl + shift + scroll
- - draw selection, playhead in param bar
+ - draw selection in param bar
  - maybe other params could be other colours?
  - set loop points from selection
  - modify additional params:

@@ -33,3 +33,16 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
   }
   painter.fillRect(x, s, 1, height, color);
 }
+
+void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
+                          int clockPerPx, int height) {
+  painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 2, height,
+                   Qt::white);
+  painter.fillRect(moo_clock->last_clock() / clockPerPx + 2, 0, 3, height,
+                   halfWhite);
+
+  painter.fillRect(moo_clock->repeat_clock() / clockPerPx - 1, 0, 2, height,
+                   Qt::white);
+  painter.fillRect(moo_clock->repeat_clock() / clockPerPx - 4, 0, 3, height,
+                   halfWhite);
+}

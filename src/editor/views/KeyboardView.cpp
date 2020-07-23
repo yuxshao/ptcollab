@@ -547,25 +547,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                m_client->uid());
   }
 
-  // clock = us * 1s/10^6us * 1m/60s * tempo beats/m * beat_clock clock/beats
-  // Draw the current player position
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, true);
-
-  // Draw bars at the end of the piece
-  painter.fillRect(
-      m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx, 0, 2,
-      size().height(), Qt::white);
-  painter.fillRect(
-      m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx + 2, 0,
-      3, size().height(), halfWhite);
-
-  painter.fillRect(
-      m_moo_clock->repeat_clock() / m_client->editState().scale.clockPerPx - 1,
-      0, 2, size().height(), Qt::white);
-  painter.fillRect(
-      m_moo_clock->repeat_clock() / m_client->editState().scale.clockPerPx - 4,
-      0, 3, size().height(), halfWhite);
+  drawRepeatAndEndBars(painter, m_moo_clock,
+                       m_client->editState().scale.clockPerPx, height());
 
   // Simulate activity on a client
   if (m_test_activity) {
