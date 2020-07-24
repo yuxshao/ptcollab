@@ -157,9 +157,18 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   int32_t lineHeight = 4;
   int32_t lineWidth = 2;
+  int32_t tailLineHeight = 4;
   EVENTKIND current_kind =
-      paramOptions[m_client->editState().m_current_param_kind_idx].second;
+      paramOptions[m_client->editState().current_param_kind_idx()].second;
   {
+    QColor onColor =
+        brushes[nonnegative_modulo(m_client->editState().m_current_unit_id,
+                                   NUM_BRUSHES)]
+            .toQColor(108, false, 255);
+    int h, s, l, a;
+    onColor.getHsl(&h, &s, &l, &a);
+    onColor.setHsl(h, s, l * 3 / 4, a);
+
     int32_t last_value = DefaultKindValue(current_kind);
     int32_t last_clock = -1000;
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
@@ -172,29 +181,44 @@ void ParamView::paintEvent(QPaintEvent *event) {
       bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
       if (!matchingUnit) continue;
 
-      int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-      int32_t lastY = paramToY(last_value, current_kind, size().height());
       int32_t thisX = e->clock / m_client->editState().scale.clockPerPx;
-      int32_t thisY = paramToY(e->value, current_kind, size().height());
 
-      painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX, lineHeight,
-                       darkTeal);
-      painter.fillRect(
-          thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
-          std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight,
-          darkTeal);
-      painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                       brightGreen);
+      if (!Evelist_Kind_IsTail(current_kind)) {
+        int32_t thisY = paramToY(e->value, current_kind, size().height());
+        int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
+        int32_t lastY = paramToY(last_value, current_kind, size().height());
+        painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX,
+                         lineHeight, onColor);
+        painter.fillRect(
+            thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
+            std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight,
+            onColor);
+        painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                         Qt::white);
+      } else {
+        int32_t w = (e->value) / m_client->editState().scale.clockPerPx;
+        int32_t y = height() / 2;
+        painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
+                         (tailLineHeight + 6), onColor);
+        painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
+                         (tailLineHeight + 2), onColor);
+        painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3,
+                         tailLineHeight, onColor);
+        painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
+                         tailLineHeight - 2, onColor);
+      }
 
       last_value = e->value;
       last_clock = e->clock;
     }
-    int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-    int32_t lastY = paramToY(last_value, current_kind, height());
-    painter.fillRect(lastX, lastY - lineHeight / 2, size().width() - lastX,
-                     lineHeight, darkTeal);
-    painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                     brightGreen);
+    if (!Evelist_Kind_IsTail(current_kind)) {
+      int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
+      int32_t lastY = paramToY(last_value, current_kind, height());
+      painter.fillRect(lastX, lastY - lineHeight / 2, size().width() - lastX,
+                       lineHeight, onColor);
+      painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                       Qt::white);
+    }
   }
 
   // draw ongoing edit
@@ -228,7 +252,25 @@ void ParamView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
-  // Draw cursor
+  // Draw cursors
+  for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
+    if (uid == m_client->uid()) continue;
+    if (remote_state.state.has_value()) {
+      EditState state = remote_state.state.value();
+      if (state.current_param_kind_idx() !=
+          m_client->editState().current_param_kind_idx())
+        continue;
+      state.scale =
+          m_client->editState().scale;  // Position according to our scale
+      int unit_id = state.m_current_unit_id;
+      QColor color = Qt::white;
+      if (unit_id != m_client->editState().m_current_unit_id)
+        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
+                                                        false, 128);
+      drawCursor(state, painter, color, remote_state.user, uid, current_kind,
+                 height());
+    }
+  }
   {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->uid());
@@ -296,7 +338,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
       m_client->quantizeClock()));
 
   EVENTKIND kind =
-      paramOptions[m_client->editState().m_current_param_kind_idx].second;
+      paramOptions[m_client->editState().current_param_kind_idx()].second;
   m_client->changeEditState([&](EditState &s) {
     if (m_client->pxtn()->Unit_Num() > 0) {
       using namespace Action;
@@ -310,10 +352,17 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                              Delete{clock_int.end}});
           if (s.mouse_edit_state.type == MouseEditState::SetOn ||
               s.mouse_edit_state.type == MouseEditState::SetNote) {
-            for (const ParamEditInterval &p : lineEdit(
-                     s.mouse_edit_state, kind, m_client->quantizeClock())) {
-              actions.push_back(
-                  {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
+            if (!Evelist_Kind_IsTail(kind))
+              for (const ParamEditInterval &p : lineEdit(
+                       s.mouse_edit_state, kind, m_client->quantizeClock())) {
+                actions.push_back(
+                    {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
+              }
+            else {
+              Interval clock_int =
+                  s.mouse_edit_state.clock_int(m_client->quantizeClock());
+              actions.push_back({kind, s.m_current_unit_id, clock_int.start,
+                                 Add{clock_int.length()}});
             }
           }
           break;
@@ -345,7 +394,7 @@ void ParamView::wheelEvent(QWheelEvent *event) {
 void ParamView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
   EVENTKIND current_kind =
-      paramOptions[m_client->editState().m_current_param_kind_idx].second;
+      paramOptions[m_client->editState().current_param_kind_idx()].second;
   m_client->changeEditState(
       [&](auto &s) { updateStatePositions(s, event, current_kind, height()); });
   event->ignore();

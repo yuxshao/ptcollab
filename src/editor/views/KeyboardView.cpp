@@ -12,10 +12,6 @@
 #include "editor/ComboOptions.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
-int nonnegative_modulo(int x, int m) {
-  if (m == 0) return 0;
-  return ((x % m) + m) % m;
-}
 int one_over_last_clock(pxtnService const *pxtn) {
   return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
          pxtn->master->get_beat_num();
@@ -104,7 +100,6 @@ struct KeyBlock {
   Interval onEvent;
 };
 
-constexpr int EVENTMAX_VELOCITY = 128;
 static void paintAtClockPitch(int clock, int pitch, int widthInPx,
                               QPainter &painter, const QBrush &brush,
                               const Scale &scale) {
@@ -138,51 +133,6 @@ static void paintHighlight(int pitch, int clock, QPainter &painter,
                            const QBrush &brush, const Scale &scale) {
   paintAtClockPitch(clock, pitch, 2, painter, brush, scale);
 }
-
-static int lerp(double r, int a, int b) {
-  if (r > 1) r = 1;
-  if (r < 0) r = 0;
-  return a + r * (b - a);
-}
-template <typename T>
-static T clamp(T x, T lo, T hi) {
-  if (x < lo) return lo;
-  if (x > hi) return hi;
-  return x;
-}
-struct Brush {
-  int hue;
-  int muted_saturation;
-  int base_saturation;
-  int muted_brightness;
-  int base_brightness;
-  int on_brightness;
-
-  Brush(int hue, int muted_saturation = 48, int base_saturation = 255,
-        int muted_brightness = 96, int base_brightness = 204,
-        int on_brightness = 255)
-      : hue(hue),
-        muted_saturation(muted_saturation),
-        base_saturation(base_saturation),
-        muted_brightness(muted_brightness),
-        base_brightness(base_brightness),
-        on_brightness(on_brightness) {}
-  Brush(double hue) : Brush(int(hue * 360)){};
-
-  QColor toQColor(int velocity, bool on, int alpha) const {
-    int brightness =
-        lerp(double(velocity) / EVENTMAX_VELOCITY, muted_brightness,
-             on ? on_brightness : base_brightness);
-    int saturation = lerp(double(velocity) / EVENTMAX_VELOCITY,
-                          muted_saturation, base_saturation);
-    return QColor::fromHsl(hue, saturation, brightness, alpha);
-  }
-};
-
-static Brush brushes[] = {
-    0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
-};
-constexpr int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
 
 int pixelsPerVelocity = 3;
 static double slack = 50;

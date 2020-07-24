@@ -94,7 +94,7 @@ EditorWindow::EditorWindow(QWidget *parent)
         "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
         "deselect.\nWith "
         "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
-        "cycle unit.\nF to follow playhead.");
+        "cycle unit.\n(E/D) to cycle parameter.\nF to follow playhead.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
@@ -139,7 +139,20 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->copySelection();
       break;
     case Qt::Key_D:
-      if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->deselect();
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_view->deselect();
+      else {
+        m_client->changeEditState([&](EditState &s) {
+          --s.m_current_param_kind_idx;
+          s.m_current_param_kind_idx = s.current_param_kind_idx();
+        });
+      }
+      break;
+    case Qt::Key_E:
+      m_client->changeEditState([&](EditState &s) {
+        ++s.m_current_param_kind_idx;
+        s.m_current_param_kind_idx = s.current_param_kind_idx();
+      });
       break;
     case Qt::Key_F:
       m_client->changeEditState(

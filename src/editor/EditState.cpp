@@ -2,6 +2,7 @@
 
 #include <QDataStream>
 
+#include "ComboOptions.h"
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnEvelist.h"
 
@@ -44,6 +45,12 @@ QDataStream &operator<<(QDataStream &out, const Scale &a) {
 
 QDataStream &operator>>(QDataStream &in, Scale &a) {
   return (in >> a.clockPerPx >> a.pitchPerPx >> a.noteHeight >> a.pitchOffset);
+}
+
+static int num_param_options = sizeof(paramOptions) / sizeof(paramOptions[0]);
+int EditState::current_param_kind_idx() const {
+  return ((m_current_param_kind_idx % num_param_options) + num_param_options) %
+         num_param_options;
 }
 
 EditState::EditState()

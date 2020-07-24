@@ -187,5 +187,7 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
     setCurrentUnit(s.m_current_unit_id);
   if (m_last_edit_state.m_follow_playhead != s.m_follow_playhead)
     setFollow(s.m_follow_playhead);
+  if (m_last_edit_state.current_param_kind_idx() != s.current_param_kind_idx())
+    setParamKindIndex(s.current_param_kind_idx());
   m_last_edit_state = s;
 };

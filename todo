@@ -247,20 +247,20 @@ fill architecture could work well.
 4. follow playhead
 
 7/23
-1. Fine tune param 
+1. Fine tune param - like a volume param
+2. portamento param - drag like in ptcollage
 
 Todo by priority
 ----------------
- - draw other cursors
  - modify additional params:
-   - low-precision key correct (24 -> 1 octave)
-   - porta - drag like in pxtone
    - voice - will need map from voice id to no
      - can drag a time interval and set with that unit / clear unit
    - group
- - maybe other params could be other colours?
+   - low-precision key correct (24 -> 1 octave)
+ - draw params / ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
+ - note previews on param input
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

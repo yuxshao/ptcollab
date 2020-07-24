@@ -12,10 +12,8 @@ static std::pair<QString, int> quantizeYOptions[] = {
     {"1", 1}, {"1/2", 2}, {"1/3", 3}, {"1/4", 4}, {"None", 256}};
 
 static std::pair<QString, EVENTKIND> paramOptions[] = {
-    {"Velocity", EVENTKIND_VELOCITY},
-    {"Pan (Volume)", EVENTKIND_PAN_VOLUME},
-    {"Pan (Time)", EVENTKIND_PAN_TIME},
-    {"Volume", EVENTKIND_VOLUME},
-    {"Fine-tune", EVENTKIND_TUNING}};
+    {"Velocity", EVENTKIND_VELOCITY},    {"Pan (Volume)", EVENTKIND_PAN_VOLUME},
+    {"Pan (Time)", EVENTKIND_PAN_TIME},  {"Volume", EVENTKIND_VOLUME},
+    {"Portamento", EVENTKIND_PORTAMENT}, {"Fine-tune", EVENTKIND_TUNING}};
 
 #endif  // QUANTIZE_H

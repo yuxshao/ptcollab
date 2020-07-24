@@ -81,6 +81,7 @@ struct EditState {
   int m_quantize_clock_idx;
   int m_quantize_pitch_idx;
   bool m_follow_playhead;
+  int current_param_kind_idx() const;
   EditState();
 };
 QDataStream &operator<<(QDataStream &out, const EditState &a);

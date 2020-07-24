@@ -3,6 +3,7 @@
 #include <QWheelEvent>
 
 #include "editor/ComboOptions.h"
+#include "pxtone/pxtnEvelist.h"
 
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
@@ -85,4 +86,20 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
     });
     event->accept();
   }
+}
+
+int lerp(double r, int a, int b) {
+  if (r > 1) r = 1;
+  if (r < 0) r = 0;
+  return a + r * (b - a);
+}
+
+const Brush brushes[] = {
+    0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
+};
+const int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
+
+int nonnegative_modulo(int x, int m) {
+  if (m == 0) return 0;
+  return ((x % m) + m) % m;
 }
