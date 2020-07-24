@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QObject>
 
+#include "DelayEffectModel.h"
+#include "OverdriveEffectModel.h"
 #include "PxtoneController.h"
 #include "UnitListModel.h"
 #include "network/Client.h"
@@ -25,6 +27,8 @@ class PxtoneClient : public QObject {
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   mooState m_moo_state;
   UnitListModel *m_units;
+  DelayEffectModel *m_delays;
+  OverdriveEffectModel *m_ovdrvs;
   EditState m_edit_state;
   QAudioOutput *m_audio;
   PxtoneIODevice *m_pxtn_device;
@@ -43,6 +47,7 @@ class PxtoneClient : public QObject {
 
  public:
   PxtoneClient(pxtnService *pxtn, QLabel *client_status, UnitListModel *units,
+               DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                QObject *parent = nullptr);
   void applyAction(const std::list<Action::Primitive> &);
   void sendAction(const ClientAction &);

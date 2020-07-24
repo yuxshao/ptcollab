@@ -19,14 +19,17 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
 }
 
-SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
+SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
+                   OverdriveEffectModel* ovdrvs, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(new SelectWoiceDialog(this)),
-      m_units(units) {
+      m_units(units),
+      m_delays(delays),
+      m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -36,10 +39,20 @@ SideMenu::SideMenu(UnitListModel* units, QWidget* parent)
     ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);
+  ui->delayList->setModel(m_delays);
+  ui->overdriveList->setModel(m_ovdrvs);
   ui->unitList->setItemDelegate(new UnitListDelegate);
   ui->unitList->verticalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);
   ui->unitList->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
+  ui->delayList->verticalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
+  ui->delayList->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
+  ui->overdriveList->verticalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
+  ui->overdriveList->horizontalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);
 
   void (QComboBox::*indexChanged)(int) = &QComboBox::currentIndexChanged;

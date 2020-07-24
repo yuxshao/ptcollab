@@ -6,6 +6,8 @@
 #include <QStringListModel>
 #include <QWidget>
 
+#include "DelayEffectModel.h"
+#include "OverdriveEffectModel.h"
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 
@@ -19,7 +21,8 @@ class SideMenu : public QWidget {
   Q_OBJECT
 
  public:
-  explicit SideMenu(UnitListModel *units, QWidget *parent = nullptr);
+  explicit SideMenu(UnitListModel *units, DelayEffectModel *delays,
+                    OverdriveEffectModel *ovdrvs, QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   ~SideMenu();
 
@@ -69,6 +72,8 @@ class SideMenu : public QWidget {
   QFileDialog *m_change_woice_dialog;
   SelectWoiceDialog *m_add_unit_dialog;
   UnitListModel *m_units;
+  DelayEffectModel *m_delays;
+  OverdriveEffectModel *m_ovdrvs;
 };
 
 #endif  // SIDEMENU_H

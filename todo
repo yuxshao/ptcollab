@@ -249,14 +249,13 @@ fill architecture could work well.
 7/23
 1. Fine tune param - like a volume param
 2. portamento param - drag like in ptcollage
+3. show effect but no edit
 
 Todo by priority
 ----------------
- - modify additional params:
-   - voice - will need map from voice id to no
-     - can drag a time interval and set with that unit / clear unit
-   - group
-   - low-precision key correct (24 -> 1 octave)
+ - modify effects
+ - set group
+ - bug where setting beat up after repeat causes weird jump
  - draw params / ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
@@ -267,7 +266,6 @@ Todo by priority
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
  - show measure num
- - more inspiration from domino midi!
 
 Misc todo by categories
 -----------------------
@@ -306,6 +304,10 @@ Editor functionality:
  - echo & overdrive
  - moving voices up and down
  - edit voice, unit names
+ - set voice - will need map from voice id to no
+   - can drag a time interval and set with that unit / clear unit
+ - low-precision key correct param (24 -> 1 octave)
+ - some kind of sine wave param or note setting?
 
 Editor QoL:
  - Time bar at the top

@@ -33,8 +33,9 @@ AddWoice make_addWoice_from_path(const QString &path) {
 }
 
 PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
-                               QWidget *parent)
-    : SideMenu(units, parent), m_client(client) {
+                               DelayEffectModel *delays,
+                               OverdriveEffectModel *ovdrvs, QWidget *parent)
+    : SideMenu(units, delays, ovdrvs, parent), m_client(client) {
   setEditWidgetsEnabled(false);
   // TODO: Update this
   connect(m_client, &PxtoneClient::editStateChanged, this,

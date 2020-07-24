@@ -8,6 +8,7 @@
 #include <QSplitter>
 #include <QtMultimedia/QAudioOutput>
 
+#include "DelayEffectModel.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "PxtoneSideMenu.h"
@@ -17,6 +18,7 @@
 #include "network/Client.h"
 #include "pxtone/pxtnService.h"
 #include "views/KeyboardView.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;
@@ -50,6 +52,8 @@ class EditorWindow : public QMainWindow {
   QLabel* m_server_status;
   QLabel* m_client_status;
   UnitListModel* m_units;
+  DelayEffectModel* m_delays;
+  OverdriveEffectModel* m_ovdrvs;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

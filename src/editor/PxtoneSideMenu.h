@@ -19,6 +19,8 @@ class PxtoneSideMenu : public SideMenu {
 
  public:
   explicit PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
+                          DelayEffectModel *delays,
+                          OverdriveEffectModel *ovdrvs,
                           QWidget *parent = nullptr);
  signals:
 };
