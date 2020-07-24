@@ -246,14 +246,18 @@ fill architecture could work well.
 3. Set loop points from selection
 4. follow playhead
 
+7/23
+1. Fine tune param 
+
 Todo by priority
 ----------------
+ - draw other cursors
  - modify additional params:
+   - low-precision key correct (24 -> 1 octave)
    - porta - drag like in pxtone
    - voice - will need map from voice id to no
      - can drag a time interval and set with that unit / clear unit
    - group
-   - key correct - probably take input dialog or text field
  - maybe other params could be other colours?
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
