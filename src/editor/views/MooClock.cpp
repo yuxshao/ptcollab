@@ -6,7 +6,7 @@ MooClock::MooClock(PxtoneClient *client)
       m_prev_clock(0),
       m_this_seek(0),
       m_this_seek_caught_up(false) {
-  connect(m_client, &PxtoneClient::seeked, [this](int clock) {
+  connect(m_client->controller(), &PxtoneController::seeked, [this](int clock) {
     m_this_seek = clock;
     m_this_seek_caught_up = false;
   });

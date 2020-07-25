@@ -217,6 +217,7 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
     qWarning("Voice doesn't exist. (Name doesn't match)");
     return false;
   }
+  emit beginAddUnit();
   if (!m_pxtn->Unit_AddNew()) {
     qWarning("Could not add another unit.");
     return false;
@@ -227,6 +228,8 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   int unit_no = m_pxtn->Unit_Num() - 1;
   auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
+  emit endAddUnit();
+
   emit edited();
   return true;
 }
@@ -240,6 +243,7 @@ void PxtoneController::applyRemoveUnit(const RemoveUnit &a, qint64 uid) {
   }
   qint32 unit_no = unit_no_maybe.value();
   m_pxtn->evels->Record_UnitNo_Miss(unit_no);
+  emit beginRemoveUnit(unit_no);
   if (!m_pxtn->Unit_Remove(unit_no)) {
     qWarning("Could not remove unit.");
     return;
@@ -247,6 +251,7 @@ void PxtoneController::applyRemoveUnit(const RemoveUnit &a, qint64 uid) {
   m_unit_id_map.removeUnit(unit_no);
   if (m_moo_state->units.size() > size_t(unit_no))
     m_moo_state->units.erase(m_moo_state->units.begin() + unit_no);
+  emit endRemoveUnit();
 
   emit edited();
 }
@@ -267,6 +272,7 @@ bool PxtoneController::applyTempoChange(const TempoChange &a, qint64 uid) {
   (void)uid;
   if (a.tempo < 20 || a.tempo > 600) return false;
   m_pxtn->adjustTempo(a.tempo, *m_moo_state);
+  emit tempoBeatChanged();
   emit edited();
   return true;
 }
@@ -275,6 +281,7 @@ bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
   (void)uid;
   if (a.beat < 1 || a.beat > 16) return false;
   m_pxtn->adjustBeatNum(a.beat, *m_moo_state);
+  emit tempoBeatChanged();
   emit edited();
   return true;
 }
@@ -300,6 +307,8 @@ void PxtoneController::seekMoo(int64_t clock) {
   prep.master_volume = 0.80f;
   bool success = m_pxtn->moo_preparation(&prep, *m_moo_state);
   if (!success) qWarning() << "Moo preparation error";
+
+  emit seeked(clock);
 }
 
 void PxtoneController::refreshMoo() {
@@ -307,6 +316,7 @@ void PxtoneController::refreshMoo() {
 }
 
 bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
+  emit beginRefresh();
   if (desc.get_size_bytes() > 0) {
     if (m_pxtn->read(&desc) != pxtnOK) {
       qWarning() << "Error reading pxtone data from descriptor";
@@ -319,7 +329,10 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
     return false;
   }
 
+  emit endRefresh();
   emit measureNumChanged();
+  emit woicesChanged();
+  emit tempoBeatChanged();
   return true;
 }
 
@@ -339,6 +352,7 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   name.truncate(pxtnMAX_TUNEWOICENAME);
   woice->set_name_buf(name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice);
+  emit woicesChanged();
   emit edited();
   return true;
 }
@@ -377,6 +391,7 @@ bool PxtoneController::applyRemoveWoice(const RemoveWoice &a, qint64 uid) {
     return false;
   }
   m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
+  emit woicesChanged();
   emit edited();
   return true;
 }
@@ -400,6 +415,7 @@ bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
   name.truncate(pxtnMAX_TUNEWOICENAME);
   woice->set_name_buf(name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice);
+  emit woicesChanged();
   emit edited();
   return true;
 }

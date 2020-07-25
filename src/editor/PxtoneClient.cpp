@@ -80,25 +80,18 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
   });
   connect(m_client, &Client::receivedAction, this,
           &PxtoneClient::processRemoteAction);
-  connect(m_controller, &PxtoneController::measureNumChanged, this,
-          &PxtoneClient::measureNumChanged);
-  connect(m_controller, &PxtoneController::edited, this, &PxtoneClient::edited);
 }
 
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   // m_units should be in controller
   m_delays->beginRefresh();
-  emit beginRefresh();
   m_ovdrvs->beginRefresh();
   // TODO: Perhaps have each of the models have a pointer to the client and have
   // the client expose signals before / after refresh.
   m_controller->loadDescriptor(desc);
-  emit endRefresh();
   m_delays->endRefresh();
   m_ovdrvs->endRefresh();
-  emit woicesChanged();
-  emit tempoBeatChanged();
 
   resetAndSuspendAudio();
   m_pxtn_device->open(QIODevice::ReadOnly);
@@ -160,10 +153,7 @@ void PxtoneClient::removeCurrentUnit() {
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
 }
 
-void PxtoneClient::seekMoo(int64_t clock) {
-  m_controller->seekMoo(clock);
-  emit seeked(clock);
-}
+void PxtoneClient::seekMoo(int64_t clock) { m_controller->seekMoo(clock); }
 
 void PxtoneClient::connectToServer(QString hostname, quint16 port,
                                    QString username) {
@@ -198,12 +188,10 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       m_controller->applyUndoRedo(s, uid);
                     },
                     [this, uid](const TempoChange &s) {
-                      if (m_controller->applyTempoChange(s, uid))
-                        emit tempoBeatChanged();
+                      m_controller->applyTempoChange(s, uid);
                     },
                     [this, uid](const BeatChange &s) {
-                      if (m_controller->applyBeatChange(s, uid))
-                        emit tempoBeatChanged();
+                      m_controller->applyBeatChange(s, uid);
                     },
                     [this, uid](const SetRepeatMeas &s) {
                       m_controller->applySetRepeatMeas(s, uid);
@@ -213,7 +201,6 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const AddWoice &s) {
                       bool success = m_controller->applyAddWoice(s, uid);
-                      emit woicesChanged();
                       if (!success) {
                         qWarning() << "Could not add voice" << s.name
                                    << "from user" << uid;
@@ -225,7 +212,6 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const RemoveWoice &s) {
                       bool success = m_controller->applyRemoveWoice(s, uid);
-                      emit woicesChanged();
                       if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             nullptr, tr("Could not remove voice"),
@@ -237,7 +223,6 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const ChangeWoice &s) {
                       bool success = m_controller->applyChangeWoice(s, uid);
-                      emit woicesChanged();
                       if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             nullptr, tr("Could not change voice"),
@@ -246,9 +231,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         m_controller->refreshMoo();
                     },
                     [this, uid](const AddUnit &s) {
-                      emit beginAddUnit();
                       bool success = m_controller->applyAddUnit(s, uid);
-                      emit endAddUnit();
                       changeEditState([&](EditState &s) {
                         if (uid == m_controller->uid() && success) {
                           const UnitIdMap &unitIdMap =
@@ -264,11 +247,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const RemoveUnit &s) {
                       auto unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
-                      // TODO: Do not put this in client, but rather in
-                      // controller
-                      emit beginRemoveUnit(unit_no.value());
                       m_controller->applyRemoveUnit(s, uid);
-                      emit endRemoveUnit();
                       changeEditState([&](EditState &s) {
                         if (unit_no != std::nullopt) {
                           const UnitIdMap &unitIdMap =

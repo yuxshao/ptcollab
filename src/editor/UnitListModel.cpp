@@ -12,25 +12,25 @@ inline Qt::CheckState flip_checked(Qt::CheckState c) {
 
 UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
     : QAbstractTableModel(parent), m_client(client) {
-  connect(m_client, &PxtoneClient::beginAddUnit, [this]() {
+  const PxtoneController *controller = m_client->controller();
+  connect(controller, &PxtoneController::beginAddUnit, [this]() {
     int unit_num = m_client->pxtn()->Unit_Num();
     beginInsertRows(QModelIndex(), unit_num, unit_num);
   });
-  connect(m_client, &PxtoneClient::endAddUnit, this,
+  connect(controller, &PxtoneController::endAddUnit, this,
           &UnitListModel::endInsertRows);
-  connect(m_client, &PxtoneClient::beginRemoveUnit,
+  connect(controller, &PxtoneController::beginRemoveUnit,
           [this](int index) { beginRemoveRows(QModelIndex(), index, index); });
-  connect(m_client, &PxtoneClient::endRemoveUnit, this,
+  connect(controller, &PxtoneController::endRemoveUnit, this,
           &UnitListModel::endRemoveRows);
-  connect(m_client, &PxtoneClient::beginRefresh, this,
+  connect(controller, &PxtoneController::beginRefresh, this,
           &UnitListModel::beginResetModel);
-  connect(m_client, &PxtoneClient::endRefresh, this,
+  connect(controller, &PxtoneController::endRefresh, this,
           &UnitListModel::endResetModel);
-  connect(m_client->controller(), &PxtoneController::unitNameEdited,
-          [this](int unit_no) {
-            QModelIndex i = index(unit_no, int(UnitListColumn::Name));
-            emit dataChanged(i, i);
-          });
+  connect(controller, &PxtoneController::unitNameEdited, [this](int unit_no) {
+    QModelIndex i = index(unit_no, int(UnitListColumn::Name));
+    emit dataChanged(i, i);
+  });
 }
 QVariant UnitListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();

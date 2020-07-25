@@ -32,24 +32,10 @@ class PxtoneClient : public QObject {
   PxtoneIODevice *m_pxtn_device;
 
  signals:
-  void measureNumChanged();
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
-  void tempoBeatChanged();
-  void woicesChanged();
   void editStateChanged(const EditState &m_edit_state);
-  void currentUnitNoChanged(int unit_no);
   void playStateChanged(bool playing);
-  void seeked(int clock);
-  void edited();
   void connected();
-
-  void beginAddUnit();
-  void endAddUnit();
-  void beginRemoveUnit(int index);
-
-  void endRemoveUnit();
-  void beginRefresh();
-  void endRefresh();
 
  public:
   PxtoneClient(pxtnService *pxtn, QLabel *client_status,

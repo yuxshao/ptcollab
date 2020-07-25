@@ -23,8 +23,8 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
             if (!(m_last_scale == s.scale)) updateGeometry();
             m_last_scale = s.scale;
           });
-  connect(m_client, &PxtoneClient::measureNumChanged,
-          [this]() { updateGeometry(); });
+  connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
+          &QWidget::updateGeometry);
 }
 
 // TODO: Don't repeat

@@ -42,12 +42,13 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
           &PxtoneSideMenu::handleNewEditState);
   connect(m_client, &PxtoneClient::connected,
           [this]() { setEditWidgetsEnabled(true); });
-  connect(m_client, &PxtoneClient::edited, [=]() { setModified(true); });
+  connect(m_client->controller(), &PxtoneController::edited,
+          [=]() { setModified(true); });
   connect(m_client, &PxtoneClient::userListChanged, this,
           &SideMenu::setUserList);
-  connect(m_client, &PxtoneClient::woicesChanged, this,
+  connect(m_client->controller(), &PxtoneController::woicesChanged, this,
           &PxtoneSideMenu::refreshWoices);
-  connect(m_client, &PxtoneClient::tempoBeatChanged, this,
+  connect(m_client->controller(), &PxtoneController::tempoBeatChanged, this,
           &PxtoneSideMenu::refreshTempoBeat);
   connect(m_client, &PxtoneClient::playStateChanged, this, &SideMenu::setPlay);
   connect(this, &SideMenu::currentUnitChanged, m_client,

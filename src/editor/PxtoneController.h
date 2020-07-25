@@ -56,9 +56,21 @@ class PxtoneController : public QObject {
 
  signals:
   void measureNumChanged();
+  void tempoBeatChanged();
+  void woicesChanged();
   void edited();
 
+  void seeked(qint32 clock);
+
+  void beginAddUnit();
+  void endAddUnit();
+  void beginRemoveUnit(int index);
+  void endRemoveUnit();
+
   void unitNameEdited(int index);
+
+  void beginRefresh();
+  void endRefresh();
 
  private:
   qint64 m_uid;

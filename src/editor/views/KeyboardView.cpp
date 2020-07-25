@@ -65,8 +65,8 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
             if (!(m_edit_state.scale == s.scale)) updateGeometry();
             m_edit_state.update(m_pxtn, s);
           });
-  connect(m_client, &PxtoneClient::measureNumChanged,
-          [this]() { updateGeometry(); });
+  connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
+          &QWidget::updateGeometry);
 }
 
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
