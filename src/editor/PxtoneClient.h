@@ -8,7 +8,6 @@
 #include "DelayEffectModel.h"
 #include "OverdriveEffectModel.h"
 #include "PxtoneController.h"
-#include "UnitListModel.h"
 #include "network/Client.h"
 
 struct RemoteEditState {
@@ -26,7 +25,6 @@ class PxtoneClient : public QObject {
   Client *m_client;
   std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
   mooState m_moo_state;
-  UnitListModel *m_units;
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
   EditState m_edit_state;
@@ -45,8 +43,15 @@ class PxtoneClient : public QObject {
   void edited();
   void connected();
 
+  void beginAddUnit();
+  void endAddUnit();
+  void beginRemoveUnit(int index);
+  void endRemoveUnit();
+  void beginRefresh();
+  void endRefresh();
+
  public:
-  PxtoneClient(pxtnService *pxtn, QLabel *client_status, UnitListModel *units,
+  PxtoneClient(pxtnService *pxtn, QLabel *client_status,
                DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                QObject *parent = nullptr);
   void applyAction(const std::list<Action::Primitive> &);

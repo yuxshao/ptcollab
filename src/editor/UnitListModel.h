@@ -3,8 +3,8 @@
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
 
+#include "PxtoneClient.h"
 #include "protocol/UnitIdMap.h"
-#include "pxtone/pxtnService.h"
 
 enum struct UnitListColumn { Visible, Played, Select, Name, MAX = Name };
 
@@ -17,31 +17,17 @@ struct UnitListItem {
       : visible(false), muted(false), name(name), id(0){};
 };
 
-#include <QDebug>
-
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
 
-  pxtnService *m_pxtn;
+  PxtoneClient *m_client;
 
  public:
-  // TODO: Perhaps we could change it so that indeed all unit edit ops go
-  // through here. It's just... so leaky though. Technically it could go through
-  // somewhere else.
-  void beginAdd() {
-    beginInsertRows(QModelIndex(), m_pxtn->Unit_Num(), m_pxtn->Unit_Num());
-  }
-  void endAdd() { endInsertRows(); };
-  void beginRemove(int index) { beginRemoveRows(QModelIndex(), index, index); };
-  void endRemove() { endRemoveRows(); }
-  void beginRefresh() { beginResetModel(); }
-  void endRefresh() { endResetModel(); }
-  UnitListModel(pxtnService *pxtn, QObject *parent = nullptr)
-      : QAbstractTableModel(parent), m_pxtn(pxtn){};
+  UnitListModel(PxtoneClient *client, QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_pxtn->Unit_Num();
+    return m_client->pxtn()->Unit_Num();
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;

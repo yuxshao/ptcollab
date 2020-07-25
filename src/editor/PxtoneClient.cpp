@@ -14,12 +14,11 @@ QList<std::pair<qint64, QString>> getUserList(
 }
 
 PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
-                           UnitListModel *units, DelayEffectModel *delays,
+                           DelayEffectModel *delays,
                            OverdriveEffectModel *ovdrvs, QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
       m_client(new Client(this)),
-      m_units(units),
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
@@ -90,12 +89,12 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   // m_units should be in controller
   m_delays->beginRefresh();
-  m_units->beginRefresh();
+  emit beginRefresh();
   m_ovdrvs->beginRefresh();
   // TODO: Perhaps have each of the models have a pointer to the client and have
   // the client expose signals before / after refresh.
   m_controller->loadDescriptor(desc);
-  m_units->endRefresh();
+  emit endRefresh();
   m_delays->endRefresh();
   m_ovdrvs->endRefresh();
   emit woicesChanged();
@@ -247,9 +246,9 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         m_controller->refreshMoo();
                     },
                     [this, uid](const AddUnit &s) {
-                      m_units->beginAdd();
+                      emit beginAddUnit();
                       bool success = m_controller->applyAddUnit(s, uid);
-                      m_units->endAdd();
+                      emit endAddUnit();
                       changeEditState([&](EditState &s) {
                         if (uid == m_controller->uid() && success) {
                           const UnitIdMap &unitIdMap =
@@ -262,9 +261,9 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const RemoveUnit &s) {
                       auto current_unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
-                      m_units->beginRemove(current_unit_no.value());
+                      emit beginRemoveUnit(current_unit_no.value());
                       m_controller->applyRemoveUnit(s, uid);
-                      m_units->endRemove();
+                      emit endRemoveUnit();
                       changeEditState([&](EditState &s) {
                         if (current_unit_no != std::nullopt) {
                           const UnitIdMap &unitIdMap =

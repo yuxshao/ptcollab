@@ -9,10 +9,28 @@ inline Qt::CheckState checked_of_bool(bool b) {
 inline Qt::CheckState flip_checked(Qt::CheckState c) {
   return (c == Qt::Checked ? Qt::Unchecked : Qt::Checked);
 }
+
+UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
+    : QAbstractTableModel(parent), m_client(client) {
+  connect(m_client, &PxtoneClient::beginAddUnit, [this]() {
+    int unit_num = m_client->pxtn()->Unit_Num();
+    beginInsertRows(QModelIndex(), unit_num, unit_num);
+  });
+  connect(m_client, &PxtoneClient::endAddUnit, this,
+          &UnitListModel::endInsertRows);
+  connect(m_client, &PxtoneClient::beginRemoveUnit,
+          [this](int index) { beginRemoveRows(QModelIndex(), index, index); });
+  connect(m_client, &PxtoneClient::endRemoveUnit, this,
+          &UnitListModel::endRemoveRows);
+  connect(m_client, &PxtoneClient::beginRefresh, this,
+          &UnitListModel::beginResetModel);
+  connect(m_client, &PxtoneClient::endRefresh, this,
+          &UnitListModel::endResetModel);
+}
 QVariant UnitListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();
 
-  const pxtnUnit *unit = m_pxtn->Unit_Get(index.row());
+  const pxtnUnit *unit = m_client->pxtn()->Unit_Get(index.row());
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole)
@@ -36,7 +54,9 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
 bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
                             int role) {
   if (!checkIndex(index)) return false;
-  pxtnUnit *unit = m_pxtn->Unit_Get_variable(index.row());
+  // TODO: provide official channels for this
+  pxtnUnit *unit = const_cast<pxtnService *>(m_client->pxtn())
+                       ->Unit_Get_variable(index.row());
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole) {
@@ -59,6 +79,7 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
       }
       return false;
     case UnitListColumn::Name:
+      // TODO: be able to edit name
       return false;
   }
   return false;
