@@ -258,20 +258,25 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         }
                       });
                     },
+                    [this, uid](const SetUnitName &s) {
+                      m_controller->applySetUnitName(s, uid);
+                    },
                     [this, uid](const RemoveUnit &s) {
-                      auto current_unit_no = m_controller->unitIdMap().idToNo(
+                      auto unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
-                      emit beginRemoveUnit(current_unit_no.value());
+                      // TODO: Do not put this in client, but rather in
+                      // controller
+                      emit beginRemoveUnit(unit_no.value());
                       m_controller->applyRemoveUnit(s, uid);
                       emit endRemoveUnit();
                       changeEditState([&](EditState &s) {
-                        if (current_unit_no != std::nullopt) {
+                        if (unit_no != std::nullopt) {
                           const UnitIdMap &unitIdMap =
                               m_controller->unitIdMap();
-                          if (unitIdMap.numUnits() <= current_unit_no.value() &&
+                          if (unitIdMap.numUnits() <= unit_no.value() &&
                               unitIdMap.numUnits() > 0) {
                             s.m_current_unit_id =
-                                unitIdMap.noToId(current_unit_no.value() - 1);
+                                unitIdMap.noToId(unit_no.value() - 1);
                           }
                         }
                       });

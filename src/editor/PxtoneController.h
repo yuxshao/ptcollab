@@ -52,10 +52,13 @@ class PxtoneController : public QObject {
   void applyRemoveUnit(const RemoveUnit &a, qint64 uid);
   void applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid);
   void applySetLastMeas(const SetLastMeas &a, qint64 uid);
+  void applySetUnitName(const SetUnitName &a, qint64 uid);
 
  signals:
   void measureNumChanged();
   void edited();
+
+  void unitNameEdited(int index);
 
  private:
   qint64 m_uid;

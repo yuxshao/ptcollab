@@ -26,6 +26,11 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
           &UnitListModel::beginResetModel);
   connect(m_client, &PxtoneClient::endRefresh, this,
           &UnitListModel::endResetModel);
+  connect(m_client->controller(), &PxtoneController::unitNameEdited,
+          [this](int unit_no) {
+            QModelIndex i = index(unit_no, int(UnitListColumn::Name));
+            emit dataChanged(i, i);
+          });
 }
 QVariant UnitListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();
@@ -45,7 +50,8 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
         return checked_of_bool(unit->get_operated());
       break;
     case UnitListColumn::Name:
-      if (role == Qt::DisplayRole) return QString(unit->get_name_buf(nullptr));
+      if (role == Qt::DisplayRole || role == Qt::EditRole)
+        return QString(unit->get_name_buf(nullptr));
       break;
   }
   return QVariant();
@@ -79,7 +85,8 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
       }
       return false;
     case UnitListColumn::Name:
-      // TODO: be able to edit name
+      int unit_id = m_client->unitIdMap().noToId(index.row());
+      m_client->sendAction(SetUnitName{unit_id, value.toString()});
       return false;
   }
   return false;
@@ -96,6 +103,7 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
       f &= ~Qt::ItemIsSelectable;
       break;
     case UnitListColumn::Name:
+      f |= Qt::ItemIsEditable;
       break;
   }
   return f;

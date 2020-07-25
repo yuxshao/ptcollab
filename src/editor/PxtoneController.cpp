@@ -196,6 +196,13 @@ void PxtoneController::applyUndoRedo(const UndoRedo &r, qint64 uid) {
   emit edited();
 }
 
+bool auxSetUnitName(pxtnUnit *unit, QString name) {
+  std::string unit_name_str =
+      name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
+  const char *unit_name_buf = unit_name_str.c_str();
+  return unit->set_name_buf(unit_name_buf, int32_t(unit_name_str.length()));
+}
+
 // TODO: Could probably also make adding and deleting units undoable. The main
 // thing is they'd have to be added to the log. And a record of a delete needs
 // to include the notes that were deleted with it.
@@ -218,11 +225,7 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
 
   m_unit_id_map.addUnit();
   int unit_no = m_pxtn->Unit_Num() - 1;
-  pxtnUnit *unit = m_pxtn->Unit_Get_variable(unit_no);
-  std::string unit_name_str =
-      a.unit_name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
-  const char *unit_name_buf = unit_name_str.c_str();
-  unit->set_name_buf(unit_name_buf, int32_t(unit_name_str.length()));
+  auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
   emit edited();
   return true;
@@ -245,6 +248,18 @@ void PxtoneController::applyRemoveUnit(const RemoveUnit &a, qint64 uid) {
   if (m_moo_state->units.size() > size_t(unit_no))
     m_moo_state->units.erase(m_moo_state->units.begin() + unit_no);
 
+  emit edited();
+}
+
+void PxtoneController::applySetUnitName(const SetUnitName &a, qint64 uid) {
+  (void)uid;
+  auto unit_no_maybe = m_unit_id_map.idToNo(a.unit_id);
+  if (unit_no_maybe == std::nullopt) {
+    qWarning("Unit ID (%d) doesn't exist.", a.unit_id);
+    return;
+  }
+  auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no_maybe.value()), a.name);
+  emit unitNameEdited(unit_no_maybe.value());
   emit edited();
 }
 

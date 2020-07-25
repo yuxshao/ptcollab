@@ -46,6 +46,7 @@ class PxtoneClient : public QObject {
   void beginAddUnit();
   void endAddUnit();
   void beginRemoveUnit(int index);
+
   void endRemoveUnit();
   void beginRefresh();
   void endRefresh();
@@ -78,6 +79,7 @@ class PxtoneClient : public QObject {
   qint32 quantizePitch();
 
   void setCurrentUnitNo(int unit_no);
+  const PxtoneController *controller() { return m_controller; }
 
  private:
   void processRemoteAction(const ServerAction &a);
