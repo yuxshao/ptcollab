@@ -38,6 +38,8 @@ class SideMenu : public QWidget {
   void connectButtonPressed();
   void addUnit(int woice_idx, QString unit_name);
   void removeUnit();
+  void addOverdrive();
+  void removeOverdrive(int no);
   // TODO: Maybe set up the UI so that you can also give a name
   void addWoice(QString filename);
   void removeWoice(int idx, QString name);

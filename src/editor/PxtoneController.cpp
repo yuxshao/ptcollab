@@ -298,6 +298,30 @@ void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   emit edited();
 }
 
+void PxtoneController::applyAddOverdrive(const Overdrive::Add &, qint64 uid) {
+  (void)uid;
+  if (m_pxtn->OverDrive_Num() >= m_pxtn->OverDrive_Max()) return;
+  emit beginAddOverdrive();
+  if (m_pxtn->OverDrive_Add(50, 2, 0)) emit edited();
+  emit endAddOverdrive();
+}
+
+void PxtoneController::applySetOverdrive(const Overdrive::Set &a, qint64 uid) {
+  (void)uid;
+  if (!m_pxtn->OverDrive_Set(a.ovdrv_no, a.cut, a.amp, a.group)) return;
+  emit overdriveChanged(a.ovdrv_no);
+  emit edited();
+}
+
+void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
+                                            qint64 uid) {
+  (void)uid;
+  if (m_pxtn->OverDrive_Num() <= a.ovdrv_no) return;
+  emit beginRemoveOverdrive(a.ovdrv_no);
+  if (m_pxtn->OverDrive_Remove(a.ovdrv_no)) emit edited();
+  emit endRemoveOverdrive();
+}
+
 void PxtoneController::seekMoo(int64_t clock) {
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
@@ -328,6 +352,11 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
     qWarning() << "Error getting tones ready";
     return false;
   }
+
+  // Fill delay eagerly so it's simpler to edit
+  // You can't add a 'noop' overdrive unfortunately
+  while (m_pxtn->Delay_Num() < m_pxtn->Delay_Max())
+    m_pxtn->Delay_Add(DELAYUNIT_Beat, 1, 0, 0, *m_moo_state);
 
   emit endRefresh();
   emit measureNumChanged();

@@ -169,6 +169,11 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     m_client->changeEditState(
         [&](EditState &s) { s.m_follow_playhead = follow; });
   });
+  connect(this, &SideMenu::addOverdrive,
+          [this]() { m_client->sendAction(Overdrive::Add{}); });
+  connect(this, &SideMenu::removeOverdrive, [this](int ovdrv_no) {
+    m_client->sendAction(Overdrive::Remove{ovdrv_no});
+  });
 }
 
 void PxtoneSideMenu::refreshWoices() {

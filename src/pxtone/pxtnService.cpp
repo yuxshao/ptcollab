@@ -225,7 +225,6 @@ pxtnERR pxtnService::tones_ready(mooState &moo_state) {
   for (size_t i = 0; i < _delays.size(); i++)
     moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
 
-  for (size_t i = 0; i < _ovdrvs.size(); i++) _ovdrvs[i].Tone_Ready();
   for (int32_t i = 0; i < _woice_num; i++) {
     res = _woices[i]->Tone_Ready(_ptn_bldr, _dst_sps);
     if (res != pxtnOK) return res;
@@ -307,15 +306,17 @@ bool pxtnService::OverDrive_Set(int32_t idx, float cut, float amp,
                                 int32_t group) {
   if (!_b_init) return false;
   if (size_t(idx) >= _ovdrvs.size()) return false;
-  _ovdrvs[idx].Set(cut, amp, group);
-  return true;
+  return _ovdrvs[idx].Set(cut, amp, group, true);
 }
 
 bool pxtnService::OverDrive_Add(float cut, float amp, int32_t group) {
   if (!_b_init) return false;
   if (_ovdrvs.size() >= _ovdrv_max) return false;
   _ovdrvs.emplace_back();
-  _ovdrvs.rbegin()->Set(cut, amp, group);
+  if (!_ovdrvs.rbegin()->Set(cut, amp, group, true)) {
+    _ovdrvs.pop_back();
+    return false;
+  }
   return true;
 }
 
@@ -336,13 +337,6 @@ const pxtnOverDrive *pxtnService::OverDrive_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
   return &_ovdrvs[idx];
-}
-
-bool pxtnService::OverDrive_ReadyTone(int32_t idx) {
-  if (!_b_init) return false;
-  if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return false;
-  _ovdrvs[idx].Tone_Ready();
-  return true;
 }
 
 // ---------------------------

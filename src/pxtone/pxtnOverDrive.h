@@ -42,7 +42,7 @@ class pxtnOverDrive {
   float get_amp() const;
   int32_t get_group() const;
 
-  void Set(float cut, float amp, int32_t group);
+  bool Set(float cut, float amp, int32_t group, bool check);
 
   bool get_played() const;
   void set_played(bool b);

@@ -53,6 +53,9 @@ class PxtoneController : public QObject {
   void applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid);
   void applySetLastMeas(const SetLastMeas &a, qint64 uid);
   void applySetUnitName(const SetUnitName &a, qint64 uid);
+  void applySetOverdrive(const Overdrive::Set &a, qint64 uid);
+  void applyAddOverdrive(const Overdrive::Add &a, qint64 uid);
+  void applyRemoveOverdrive(const Overdrive::Remove &a, qint64 uid);
 
  signals:
   void measureNumChanged();
@@ -64,10 +67,15 @@ class PxtoneController : public QObject {
 
   void beginAddUnit();
   void endAddUnit();
+  void unitNameEdited(int index);
   void beginRemoveUnit(int index);
   void endRemoveUnit();
 
-  void unitNameEdited(int index);
+  void beginAddOverdrive();
+  void endAddOverdrive();
+  void overdriveChanged(int ovdrv_no);
+  void beginRemoveOverdrive(int ovdrv_no);
+  void endRemoveOverdrive();
 
   void beginRefresh();
   void endRefresh();

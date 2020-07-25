@@ -189,6 +189,15 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const SetLastMeas &s) {
                       m_controller->applySetLastMeas(s, uid);
                     },
+                    [this, uid](const Overdrive::Add &s) {
+                      m_controller->applyAddOverdrive(s, uid);
+                    },
+                    [this, uid](const Overdrive::Set &s) {
+                      m_controller->applySetOverdrive(s, uid);
+                    },
+                    [this, uid](const Overdrive::Remove &s) {
+                      m_controller->applyRemoveOverdrive(s, uid);
+                    },
                     [this, uid](const AddWoice &s) {
                       bool success = m_controller->applyAddWoice(s, uid);
                       if (!success) {
@@ -250,7 +259,6 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         }
                       });
                     }},
-
                 s);
           },
           [this, uid](const NewSession &s) {

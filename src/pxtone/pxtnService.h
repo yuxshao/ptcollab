@@ -220,7 +220,6 @@ class pxtnService {
   bool OverDrive_Set(int32_t idx, float cut, float amp, int32_t group);
   bool OverDrive_Add(float cut, float amp, int32_t group);
   bool OverDrive_Remove(int32_t idx);
-  bool OverDrive_ReadyTone(int32_t idx);
   const pxtnOverDrive *OverDrive_Get(int32_t idx) const;
   pxtnOverDrive *OverDrive_Get_variable(int32_t idx);
 

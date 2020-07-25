@@ -12,10 +12,18 @@ float pxtnOverDrive::get_cut() const { return _cut_f; }
 float pxtnOverDrive::get_amp() const { return _amp_f; }
 int32_t pxtnOverDrive::get_group() const { return _group; }
 
-void pxtnOverDrive::Set(float cut, float amp, int32_t group) {
+bool pxtnOverDrive::Set(float cut, float amp, int32_t group, bool check) {
+  if (check) {
+    if (cut > TUNEOVERDRIVE_CUT_MAX || cut < TUNEOVERDRIVE_CUT_MIN)
+      return false;
+    if (amp > TUNEOVERDRIVE_AMP_MAX || amp < TUNEOVERDRIVE_AMP_MIN)
+      return false;
+  }
   _cut_f = cut;
   _amp_f = amp;
   _group = group;
+  _cut_16bit_top = (int32_t)(32767 * (100 - _cut_f) / 100);
+  return true;
 }
 
 bool pxtnOverDrive::get_played() const { return _b_played; }
@@ -23,10 +31,6 @@ void pxtnOverDrive::set_played(bool b) { _b_played = b; }
 bool pxtnOverDrive::switch_played() {
   _b_played = _b_played ? false : true;
   return _b_played;
-}
-
-void pxtnOverDrive::Tone_Ready() {
-  _cut_16bit_top = (int32_t)(32767 * (100 - _cut_f) / 100);
 }
 
 void pxtnOverDrive::Tone_Supple(int32_t *group_smps) const {
@@ -75,14 +79,8 @@ pxtnERR pxtnOverDrive::Read(pxtnDescriptor *p_doc) {
 
   if (over.xxx) return pxtnERR_fmt_unknown;
   if (over.yyy) return pxtnERR_fmt_unknown;
-  if (over.cut > TUNEOVERDRIVE_CUT_MAX || over.cut < TUNEOVERDRIVE_CUT_MIN)
-    return pxtnERR_fmt_unknown;
-  if (over.amp > TUNEOVERDRIVE_AMP_MAX || over.amp < TUNEOVERDRIVE_AMP_MIN)
-    return pxtnERR_fmt_unknown;
 
-  _cut_f = over.cut;
-  _amp_f = over.amp;
-  _group = over.group;
+  if (!Set(over.cut, over.amp, over.group, false)) return pxtnERR_fmt_unknown;
 
   return pxtnOK;
 }

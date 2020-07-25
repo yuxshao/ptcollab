@@ -263,10 +263,56 @@ inline QTextStream &operator<<(QTextStream &out, const SetLastMeas &a) {
   out << "SetLastMeas(" << a.meas << ")";
   return out;
 }
+
+namespace Overdrive {
+struct Set {
+  qint32 ovdrv_no;
+  qreal cut;
+  qreal amp;
+  qint32 group;
+};
+inline QDataStream &operator<<(QDataStream &out, const Set &a) {
+  out << a.ovdrv_no << a.cut << a.amp << a.group;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Set &a) {
+  in >> a.ovdrv_no >> a.cut >> a.amp >> a.group;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const Set &a) {
+  out << "Overdrive::Set(" << a.ovdrv_no << ", " << a.cut << ", " << a.amp
+      << ", " << a.group << ")";
+  return out;
+}
+struct Add : public std::monostate {};
+inline QTextStream &operator<<(QTextStream &out, const Add &) {
+  out << "Overdrive::Add()";
+  return out;
+}
+
+struct Remove {
+  qint32 ovdrv_no;
+};
+inline QDataStream &operator<<(QDataStream &out, const Remove &a) {
+  out << a.ovdrv_no;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Remove &a) {
+  in >> a.ovdrv_no;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const Remove &a) {
+  out << "Overdrive::Remove(" << a.ovdrv_no << ")";
+  return out;
+}
+
+}  // namespace Overdrive
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
                  RemoveWoice, ChangeWoice, TempoChange, BeatChange,
-                 SetRepeatMeas, SetLastMeas, SetUnitName>;
+                 SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
+                 Overdrive::Set, Overdrive::Remove>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

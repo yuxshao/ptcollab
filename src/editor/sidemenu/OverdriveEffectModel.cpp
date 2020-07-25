@@ -8,20 +8,86 @@ OverdriveEffectModel::OverdriveEffectModel(PxtoneClient *client,
           &OverdriveEffectModel::beginResetModel);
   connect(controller, &PxtoneController::endRefresh, this,
           &OverdriveEffectModel::endResetModel);
+  connect(controller, &PxtoneController::beginAddOverdrive, [this]() {
+    int n = m_client->pxtn()->OverDrive_Num();
+    beginInsertRows(QModelIndex(), n, n);
+  });
+  connect(controller, &PxtoneController::endAddOverdrive, this,
+          &OverdriveEffectModel::endInsertRows);
+  connect(controller, &PxtoneController::beginRemoveOverdrive,
+          [this](int index) { beginRemoveRows(QModelIndex(), index, index); });
+  connect(controller, &PxtoneController::endRemoveOverdrive, this,
+          &OverdriveEffectModel::endRemoveRows);
+  connect(controller, &PxtoneController::overdriveChanged,
+          [this](int ovdrv_no) {
+            emit dataChanged(index(ovdrv_no, 0),
+                             index(ovdrv_no, int(OverdriveEffectColumn::MAX)));
+          });
 }
 
 QVariant OverdriveEffectModel::data(const QModelIndex &index, int role) const {
-  if (!index.isValid() || role != Qt::DisplayRole) return QVariant();
-  const pxtnOverDrive *Overdrive = m_client->pxtn()->OverDrive_Get(index.row());
+  if (!index.isValid()) return QVariant();
+  const pxtnOverDrive *ovdrv = m_client->pxtn()->OverDrive_Get(index.row());
   switch (OverdriveEffectColumn(index.column())) {
     case OverdriveEffectColumn::Group:
-      return Overdrive->get_group();
+      if (role == Qt::DisplayRole || role == Qt::EditRole)
+        return ovdrv->get_group();
+      break;
     case OverdriveEffectColumn::Cut:
-      return QString("%1%").arg(Overdrive->get_cut());
+      if (role == Qt::DisplayRole)
+        return QString("%1%").arg(ovdrv->get_cut());
+      else if (role == Qt::EditRole)
+        return ovdrv->get_cut();
+      break;
     case OverdriveEffectColumn::Amp:
-      return QString("x%1").arg(Overdrive->get_amp());
+      if (role == Qt::DisplayRole)
+        return QString("x%1").arg(ovdrv->get_amp());
+      else if (role == Qt::EditRole)
+        return ovdrv->get_amp();
+      break;
   }
   return QVariant();
+}
+
+bool OverdriveEffectModel::setData(const QModelIndex &index,
+                                   const QVariant &value, int role) {
+  if (!checkIndex(index) || role != Qt::EditRole) return false;
+  bool ok;
+
+  const pxtnOverDrive *ovdrv = m_client->pxtn()->OverDrive_Get(index.row());
+  qreal cut = ovdrv->get_cut();
+  qreal amp = ovdrv->get_amp();
+  qint32 group = ovdrv->get_group();
+  switch (OverdriveEffectColumn(index.column())) {
+    case OverdriveEffectColumn::Group:
+      group = value.toInt(&ok);
+      break;
+    case OverdriveEffectColumn::Cut:
+      cut = value.toReal(&ok);
+      break;
+    case OverdriveEffectColumn::Amp:
+      amp = value.toReal(&ok);
+      break;
+  }
+  if (ok) m_client->sendAction(Overdrive::Set{index.row(), cut, amp, group});
+  return ok;
+}
+
+Qt::ItemFlags OverdriveEffectModel::flags(const QModelIndex &index) const {
+  Qt::ItemFlags f = QAbstractTableModel::flags(index);
+  if (!checkIndex(index)) return f;
+  switch (OverdriveEffectColumn(index.column())) {
+    case OverdriveEffectColumn::Group:
+      f |= Qt::ItemIsEditable;
+      break;
+    case OverdriveEffectColumn::Cut:
+      f |= Qt::ItemIsEditable;
+      break;
+    case OverdriveEffectColumn::Amp:
+      f |= Qt::ItemIsEditable;
+      break;
+  }
+  return f;
 }
 
 QVariant OverdriveEffectModel::headerData(int section,

@@ -183,6 +183,12 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
 
   connect(ui->paramSelection, indexChanged, this,
           &SideMenu::paramKindIndexChanged);
+  connect(ui->addOverdriveBtn, &QPushButton::clicked, this,
+          &SideMenu::addOverdrive);
+  connect(ui->removeOverdriveBtn, &QPushButton::clicked, [this]() {
+    int ovdrv_no = ui->overdriveList->selectionModel()->currentIndex().row();
+    emit removeOverdrive(ovdrv_no);
+  });
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {
