@@ -5,7 +5,11 @@
 #include "./pxtnMax.h"
 #include "./pxtnMem.h"
 
-const char *DELAYUNIT_names[] = {"Beat", "Meas", "Second"};
+const char *DELAYUNIT_names[] = {"Beat", "Meas", "Sec."};
+const char *DELAYUNIT_name(DELAYUNIT unit) {
+  if (unit > DELAYUNIT_max) return "unknown";
+  return DELAYUNIT_names[unit];
+}
 
 pxtnDelay::pxtnDelay() {
   _b_played = true;

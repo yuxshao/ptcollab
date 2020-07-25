@@ -256,10 +256,10 @@ fill architecture could work well.
 2. Set group using same param view as others but w/ 6 notches.
 3. Shortcuts for cycling param
 4. Edit unit names
+5. Modify effects
 
 Todo by priority
 ----------------
- - modify effects - start without the combobox
  - draw params / ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar

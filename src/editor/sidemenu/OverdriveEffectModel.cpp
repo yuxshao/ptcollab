@@ -35,15 +35,15 @@ QVariant OverdriveEffectModel::data(const QModelIndex &index, int role) const {
       break;
     case OverdriveEffectColumn::Cut:
       if (role == Qt::DisplayRole)
-        return QString("%1%").arg(ovdrv->get_cut());
+        return QString("%1%").arg(ovdrv->get_cut(), 0, 'f', 1);
       else if (role == Qt::EditRole)
-        return ovdrv->get_cut();
+        return QString("%1").arg(ovdrv->get_cut(), 0, 'f', 1);
       break;
     case OverdriveEffectColumn::Amp:
       if (role == Qt::DisplayRole)
-        return QString("x%1").arg(ovdrv->get_amp());
+        return QString("x%1").arg(ovdrv->get_amp(), 0, 'f', 2);
       else if (role == Qt::EditRole)
-        return ovdrv->get_amp();
+        return QString("%1").arg(ovdrv->get_amp(), 0, 'f', 2);
       break;
   }
   return QVariant();

@@ -15,7 +15,7 @@ enum DELAYUNIT {
   DELAYUNIT_Second,
   DELAYUNIT_max = DELAYUNIT_Second,
 };
-extern const char* DELAYUNIT_names[];
+extern const char* DELAYUNIT_name(DELAYUNIT unit);
 
 // TODO: Make this POD?
 class pxtnDelay {

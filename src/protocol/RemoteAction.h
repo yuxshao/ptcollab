@@ -115,7 +115,7 @@ inline QDataStream &operator>>(QDataStream &in, SetUnitName &a) {
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const SetUnitName &a) {
-  out << "SetUnitName(" << a.name << "," << a.unit_id << ")";
+  out << "SetUnitName(" << a.name << ", " << a.unit_id << ")";
   return out;
 }
 
@@ -308,11 +308,36 @@ inline QTextStream &operator<<(QTextStream &out, const Remove &a) {
 
 }  // namespace Overdrive
 
+namespace Delay {
+
+struct Set {
+  qint32 delay_no;
+  DELAYUNIT unit;
+  qreal freq;
+  qreal rate;
+  qint32 group;
+};
+inline QDataStream &operator<<(QDataStream &out, const Set &a) {
+  out << a.delay_no << a.unit << a.freq << a.rate << a.group;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Set &a) {
+  in >> a.delay_no >> a.unit >> a.freq >> a.rate >> a.group;
+  return in;
+}
+
+inline QTextStream &operator<<(QTextStream &out, const Set &a) {
+  out << "Delay::Set(" << a.delay_no << ", " << DELAYUNIT_name(a.unit) << ", "
+      << a.freq << ", " << a.rate << ", " << a.group << ")";
+  return out;
+}
+}  // namespace Delay
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
                  RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
-                 Overdrive::Set, Overdrive::Remove>;
+                 Overdrive::Set, Overdrive::Remove, Delay::Set>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

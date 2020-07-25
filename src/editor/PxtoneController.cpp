@@ -272,6 +272,8 @@ bool PxtoneController::applyTempoChange(const TempoChange &a, qint64 uid) {
   (void)uid;
   if (a.tempo < 20 || a.tempo > 600) return false;
   m_pxtn->adjustTempo(a.tempo, *m_moo_state);
+  for (int i = 0; i < m_pxtn->Delay_Num(); ++i)
+    m_pxtn->Delay_ReadyTone(i, *m_moo_state);
   emit tempoBeatChanged();
   emit edited();
   return true;
@@ -281,6 +283,8 @@ bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
   (void)uid;
   if (a.beat < 1 || a.beat > 16) return false;
   m_pxtn->adjustBeatNum(a.beat, *m_moo_state);
+  for (int i = 0; i < m_pxtn->Delay_Num(); ++i)
+    m_pxtn->Delay_ReadyTone(i, *m_moo_state);
   emit tempoBeatChanged();
   emit edited();
   return true;
@@ -320,6 +324,14 @@ void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
   emit beginRemoveOverdrive(a.ovdrv_no);
   if (m_pxtn->OverDrive_Remove(a.ovdrv_no)) emit edited();
   emit endRemoveOverdrive();
+}
+
+void PxtoneController::applySetDelay(const Delay::Set &a, qint64 uid) {
+  (void)uid;
+  if (!m_pxtn->Delay_Set(a.delay_no, a.unit, a.freq, a.rate, a.group)) return;
+  m_pxtn->Delay_ReadyTone(a.delay_no, *m_moo_state);
+  emit delayChanged(a.delay_no);
+  emit edited();
 }
 
 void PxtoneController::seekMoo(int64_t clock) {

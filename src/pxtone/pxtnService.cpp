@@ -287,7 +287,6 @@ const pxtnDelay *pxtnService::Delay_Get(int32_t idx) const {
 pxtnERR pxtnService::Delay_ReadyTone(int32_t idx, mooState &moo_state) const {
   if (!_b_init) return pxtnERR_INIT;
   if (idx < 0 || size_t(idx) >= moo_state.delays.size()) return pxtnERR_param;
-  // TODO: Call this upon beat num or beat tempo change
   moo_state.delays[idx] = pxtnDelayTone(_delays[idx], master->get_beat_num(),
                                         master->get_beat_tempo(), _dst_sps);
   return pxtnOK;
