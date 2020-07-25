@@ -253,11 +253,11 @@ fill architecture could work well.
 
 7/25
 1. Hopefully fix bug where setting beat up after repeat causes weird jump
+2. Set group using same param view as others but w/ 6 notches.
 
 Todo by priority
 ----------------
  - modify effects - start without the combobox
- - set group - use same param view as others, just with 6 notches.
  - draw params / ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar

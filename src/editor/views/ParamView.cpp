@@ -41,25 +41,39 @@ QSize ParamView::sizeHint() const {
 
 constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;
 static qreal paramToY(int param, EVENTKIND current_kind, int height) {
-  if (current_kind != EVENTKIND_TUNING) return (0x80 - param) * height / 0x80;
-  double tuning = log2(*((float *)&param));
-  return height - (tuning - min_tuning) / (max_tuning - min_tuning) * height;
+  switch (current_kind) {
+    case EVENTKIND_TUNING: {
+      double tuning = log2(*((float *)&param));
+      return height -
+             (tuning - min_tuning) / (max_tuning - min_tuning) * height;
+    }
+    case EVENTKIND_GROUPNO:
+      return height - param * height / (pxtnMAX_TUNEGROUPNUM - 1);
+    default:
+      return (0x80 - param) * height / 0x80;
+  }
 }
 
 static qreal paramOfY(int y, EVENTKIND current_kind, int height, bool snap) {
-  if (current_kind != EVENTKIND_TUNING) {
-    if (!snap)
-      return 0x80 - (y * 0x80 + height / 2) / height;
-    else
-      return (0x10 - (y * 0x10 + height / 2) / height) * 8;
+  switch (current_kind) {
+    case EVENTKIND_TUNING: {
+      double proportion;
+      if (!snap)
+        proportion = (height - y + 0.0) / height;
+      else
+        proportion =
+            int(0x10 - (y * 0x10 + height / 2) / height) / (0x10 + 0.0);
+      float tuning = exp2(proportion * (max_tuning - min_tuning) + min_tuning);
+      return *((int32_t *)&tuning);
+    }
+    case EVENTKIND_GROUPNO:
+      return int((pxtnMAX_TUNEGROUPNUM - 1) * (1 - (y + 0.0) / height) + 0.5);
+    default:
+      if (!snap)
+        return 0x80 - (y * 0x80 + height / 2) / height;
+      else
+        return (0x10 - (y * 0x10 + height / 2) / height) * 8;
   }
-  double proportion;
-  if (!snap)
-    proportion = (height - y + 0.0) / height;
-  else
-    proportion = int(0x10 - (y * 0x10 + height / 2) / height) / (0x10 + 0.0);
-  float tuning = exp2(proportion * (max_tuning - min_tuning) + min_tuning);
-  return *((int32_t *)&tuning);
 }
 
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
@@ -122,6 +136,7 @@ static const QColor brightGreen(QColor::fromRgb(0, 240, 128));
 constexpr int NUM_BACKGROUND_GAPS =
     sizeof(BACKGROUND_GAPS) / sizeof(BACKGROUND_GAPS[0]);
 constexpr int WINDOW_BOUND_SLACK = 32;
+constexpr int arbitrarily_tall = 1000;
 
 void ParamView::paintEvent(QPaintEvent *event) {
   const pxtnService *pxtn = m_client->pxtn();
@@ -187,14 +202,24 @@ void ParamView::paintEvent(QPaintEvent *event) {
         int32_t thisY = paramToY(e->value, current_kind, size().height());
         int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
         int32_t lastY = paramToY(last_value, current_kind, size().height());
+        // Horizontal line to thisX
         painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX,
                          lineHeight, onColor);
+        // Vertical line to thisY
         painter.fillRect(
             thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
             std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight,
             onColor);
+        // Highlight at lastX
         painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
                          Qt::white);
+        if (current_kind == EVENTKIND_GROUPNO) {
+          painter.setPen(Qt::white);
+          painter.setFont(QFont("Sans serif", 6));
+          painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
+                           arbitrarily_tall, Qt::AlignTop,
+                           QString("%1").arg(last_value));
+        }
       } else {
         int32_t w = (e->value) / m_client->editState().scale.clockPerPx;
         int32_t y = height() / 2;
@@ -218,6 +243,13 @@ void ParamView::paintEvent(QPaintEvent *event) {
                        lineHeight, onColor);
       painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
                        Qt::white);
+      if (current_kind == EVENTKIND_GROUPNO) {
+        painter.setPen(Qt::white);
+        painter.setFont(QFont("Sans serif", 6));
+        painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
+                         arbitrarily_tall, Qt::AlignTop,
+                         QString("%1").arg(last_value));
+      }
     }
   }
 
