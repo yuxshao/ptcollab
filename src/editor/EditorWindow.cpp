@@ -146,14 +146,14 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->deselect();
       else {
         m_client->changeEditState([&](EditState &s) {
-          --s.m_current_param_kind_idx;
+          ++s.m_current_param_kind_idx;
           s.m_current_param_kind_idx = s.current_param_kind_idx();
         });
       }
       break;
     case Qt::Key_E:
       m_client->changeEditState([&](EditState &s) {
-        ++s.m_current_param_kind_idx;
+        --s.m_current_param_kind_idx;
         s.m_current_param_kind_idx = s.current_param_kind_idx();
       });
       break;

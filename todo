@@ -254,6 +254,7 @@ fill architecture could work well.
 7/25
 1. Hopefully fix bug where setting beat up after repeat causes weird jump
 2. Set group using same param view as others but w/ 6 notches.
+3. Shortcuts for cycling param
 
 Todo by priority
 ----------------
