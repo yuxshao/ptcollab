@@ -39,10 +39,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_client = new PxtoneClient(&m_pxtn, m_client_status, this);
-  // TODO: model should just be made in the sidemenu
-  m_units = new UnitListModel(m_client, this);
-  m_delays = new DelayEffectModel(m_client, this);
-  m_ovdrvs = new OverdriveEffectModel(m_client, this);
   m_moo_clock = new MooClock(m_client);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
@@ -50,7 +46,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
 
-  m_side_menu = new PxtoneSideMenu(m_client, m_units, m_delays, m_ovdrvs, this);
+  m_side_menu = new PxtoneSideMenu(m_client, this);
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_splitter->addWidget(m_side_menu);
   m_splitter->addWidget(m_key_splitter);

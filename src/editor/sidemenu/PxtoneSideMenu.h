@@ -18,10 +18,7 @@ class PxtoneSideMenu : public SideMenu {
   void refreshTempoBeat();
 
  public:
-  explicit PxtoneSideMenu(PxtoneClient *client, UnitListModel *units,
-                          DelayEffectModel *delays,
-                          OverdriveEffectModel *ovdrvs,
-                          QWidget *parent = nullptr);
+  explicit PxtoneSideMenu(PxtoneClient *client, QWidget *parent = nullptr);
  signals:
 };
 

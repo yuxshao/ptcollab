@@ -51,9 +51,6 @@ class EditorWindow : public QMainWindow {
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;
-  UnitListModel* m_units;
-  DelayEffectModel* m_delays;
-  OverdriveEffectModel* m_ovdrvs;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);
