@@ -2,7 +2,7 @@
 
 #include <QMessageBox>
 
-#include "ComboOptions.h"
+#include "editor/ComboOptions.h"
 
 // TODO: Put this somewhere else, like in remote action or sth.
 AddWoice make_addWoice_from_path(const QString &path) {

@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-#include "ComboOptions.h"
+#include "editor/ComboOptions.h"
 #include "ui_SideMenu.h"
 
 const QString WOICE_DIR_KEY("woice_dir");

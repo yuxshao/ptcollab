@@ -1,27 +1,29 @@
-#ifndef DELAYEFFECTMODEL_H
-#define DELAYEFFECTMODEL_H
+#ifndef OVERDRIVEEFFECTMODEL_H
+#define OVERDRIVEEFFECTMODEL_H
+
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
 
-#include "PxtoneClient.h"
+#include "editor/PxtoneClient.h"
 #include "pxtone/pxtnService.h"
 
-enum struct DelayEffectColumn { Group, Unit, Frequency, Ratio, MAX = Ratio };
-class DelayEffectModel : public QAbstractTableModel {
+enum struct OverdriveEffectColumn { Group, Cut, Amp, MAX = Amp };
+
+class OverdriveEffectModel : public QAbstractTableModel {
   Q_OBJECT
 
   PxtoneClient *m_client;
 
  public:
-  DelayEffectModel(PxtoneClient *client, QObject *parent = nullptr);
+  OverdriveEffectModel(PxtoneClient *client, QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_client->pxtn()->Delay_Num();
+    return m_client->pxtn()->OverDrive_Num();
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return int(DelayEffectColumn::MAX) + 1;
+    return int(OverdriveEffectColumn::MAX) + 1;
   }
   QVariant data(const QModelIndex &index,
                 int role = Qt::DisplayRole) const override;
@@ -32,4 +34,4 @@ class DelayEffectModel : public QAbstractTableModel {
                       int role) const override;
 };
 
-#endif  // DELAYEFFECTMODEL_H
+#endif  // OVERDRIVEEFFECTMODEL_H

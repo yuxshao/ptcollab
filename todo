@@ -298,6 +298,7 @@ Technical stuff:
    - log if a message hasn't roundtripped in a while (consider if there's
      any expected situation where we don't expect roundtrip. prob. not if like
      drawpile)
+   - also if a pxtone action returns false
  - put hello in the protocol.
  - put ping in protocol
  - placing notes is choppy in windows because of note preview lag. how to fix?

@@ -3,7 +3,7 @@
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
 
-#include "PxtoneClient.h"
+#include "editor/PxtoneClient.h"
 #include "protocol/UnitIdMap.h"
 
 enum struct UnitListColumn { Visible, Played, Select, Name, MAX = Name };

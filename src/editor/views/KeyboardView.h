@@ -12,7 +12,6 @@
 #include "Animation.h"
 #include "MooClock.h"
 #include "editor/PxtoneClient.h"
-#include "editor/UnitListModel.h"
 #include "editor/audio/NotePreview.h"
 #include "pxtone/pxtnService.h"
 

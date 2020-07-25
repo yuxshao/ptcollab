@@ -8,15 +8,15 @@
 #include <QSplitter>
 #include <QtMultimedia/QAudioOutput>
 
-#include "DelayEffectModel.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
-#include "PxtoneSideMenu.h"
-#include "UnitListModel.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
 #include "pxtone/pxtnService.h"
+#include "sidemenu/DelayEffectModel.h"
+#include "sidemenu/PxtoneSideMenu.h"
+#include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 
 QT_BEGIN_NAMESPACE

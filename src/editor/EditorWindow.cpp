@@ -39,6 +39,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   setCentralWidget(m_splitter);
 
   m_client = new PxtoneClient(&m_pxtn, m_client_status, this);
+  // TODO: model should just be made in the sidemenu
   m_units = new UnitListModel(m_client, this);
   m_delays = new DelayEffectModel(m_client, this);
   m_ovdrvs = new OverdriveEffectModel(m_client, this);

@@ -30,8 +30,8 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
-           editor/DelayEffectModel.h \
-           editor/OverdriveEffectModel.h \
+           editor/sidemenu/DelayEffectModel.h \
+           editor/sidemenu/OverdriveEffectModel.h \
            editor/views/Animation.h \
            editor/audio/AudioFormat.h \
            editor/Clipboard.h \
@@ -48,11 +48,11 @@ HEADERS += \
            editor/PxtoneClient.h \
            editor/PxtoneController.h \
            editor/audio/PxtoneIODevice.h \
-           editor/PxtoneSideMenu.h \
+           editor/sidemenu/PxtoneSideMenu.h \
            editor/audio/PxtoneUnitIODevice.h \
-           editor/SelectWoiceDialog.h \
-           editor/SideMenu.h \
-           editor/UnitListModel.h \
+           editor/sidemenu/SelectWoiceDialog.h \
+           editor/sidemenu/SideMenu.h \
+           editor/sidemenu/UnitListModel.h \
            editor/views/ViewHelper.h \
            protocol/Data.h \
            protocol/Hello.h \
@@ -85,11 +85,11 @@ HEADERS += \
            network/ServerSession.h
 FORMS += \
     editor/EditorWindow.ui \
-    editor/SelectWoiceDialog.ui \
-    editor/SideMenu.ui
+    editor/sidemenu/SelectWoiceDialog.ui \
+    editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
-           editor/DelayEffectModel.cpp \
-           editor/OverdriveEffectModel.cpp \
+           editor/sidemenu/DelayEffectModel.cpp \
+           editor/sidemenu/OverdriveEffectModel.cpp \
            editor/views/Animation.cpp \
            editor/audio/AudioFormat.cpp \
            editor/Clipboard.cpp \
@@ -105,11 +105,11 @@ SOURCES += main.cpp \
            editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \
            editor/audio/PxtoneIODevice.cpp \
-           editor/PxtoneSideMenu.cpp \
+           editor/sidemenu/PxtoneSideMenu.cpp \
            editor/audio/PxtoneUnitIODevice.cpp \
-           editor/SelectWoiceDialog.cpp \
-           editor/SideMenu.cpp \
-           editor/UnitListModel.cpp \
+           editor/sidemenu/SelectWoiceDialog.cpp \
+           editor/sidemenu/SideMenu.cpp \
+           editor/sidemenu/UnitListModel.cpp \
            editor/views/ViewHelper.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \
