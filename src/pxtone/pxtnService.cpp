@@ -273,7 +273,13 @@ bool pxtnService::Delay_Remove(int32_t idx, mooState &moo_state) {
   return true;
 }
 
-pxtnDelay *pxtnService::Delay_Get(int32_t idx) {
+pxtnDelay *pxtnService::Delay_Get_variable(int32_t idx) {
+  if (!_b_init) return NULL;
+  if (idx < 0 || size_t(idx) >= _delays.size()) return NULL;
+  return &_delays[idx];
+}
+
+const pxtnDelay *pxtnService::Delay_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _delays.size()) return NULL;
   return &_delays[idx];
@@ -320,7 +326,13 @@ bool pxtnService::OverDrive_Remove(int32_t idx) {
   return true;
 }
 
-pxtnOverDrive *pxtnService::OverDrive_Get(int32_t idx) {
+pxtnOverDrive *pxtnService::OverDrive_Get_variable(int32_t idx) {
+  if (!_b_init) return NULL;
+  if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
+  return &_ovdrvs[idx];
+}
+
+const pxtnOverDrive *pxtnService::OverDrive_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
   return &_ovdrvs[idx];

@@ -4,6 +4,7 @@
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
 
+#include "PxtoneClient.h"
 #include "pxtone/pxtnService.h"
 
 enum struct OverdriveEffectColumn { Group, Cut, Amp, MAX = Amp };
@@ -11,17 +12,14 @@ enum struct OverdriveEffectColumn { Group, Cut, Amp, MAX = Amp };
 class OverdriveEffectModel : public QAbstractTableModel {
   Q_OBJECT
 
-  pxtnService *m_pxtn;
+  PxtoneClient *m_client;
 
  public:
-  void beginRefresh() { beginResetModel(); }
-  void endRefresh() { endResetModel(); }
-  OverdriveEffectModel(pxtnService *pxtn, QObject *parent = nullptr)
-      : QAbstractTableModel(parent), m_pxtn(pxtn){};
+  OverdriveEffectModel(PxtoneClient *client, QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_pxtn->OverDrive_Num();
+    return m_client->pxtn()->OverDrive_Num();
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;

@@ -211,7 +211,8 @@ class pxtnService {
                  mooState &moo_state);
   bool Delay_Remove(int32_t idx, mooState &moo_state);
   pxtnERR Delay_ReadyTone(int32_t idx, mooState &moo_state) const;
-  pxtnDelay *Delay_Get(int32_t idx);
+  const pxtnDelay *Delay_Get(int32_t idx) const;
+  pxtnDelay *Delay_Get_variable(int32_t idx);
 
   // over drive.
   int32_t OverDrive_Num() const;
@@ -220,7 +221,8 @@ class pxtnService {
   bool OverDrive_Add(float cut, float amp, int32_t group);
   bool OverDrive_Remove(int32_t idx);
   bool OverDrive_ReadyTone(int32_t idx);
-  pxtnOverDrive *OverDrive_Get(int32_t idx);
+  const pxtnOverDrive *OverDrive_Get(int32_t idx) const;
+  pxtnOverDrive *OverDrive_Get_variable(int32_t idx);
 
   // woice.
   int32_t Woice_Num() const;

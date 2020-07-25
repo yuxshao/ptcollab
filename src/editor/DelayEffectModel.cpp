@@ -1,8 +1,17 @@
 #include "DelayEffectModel.h"
 
+DelayEffectModel::DelayEffectModel(PxtoneClient *client, QObject *parent)
+    : QAbstractTableModel(parent), m_client(client) {
+  const PxtoneController *controller = m_client->controller();
+  connect(controller, &PxtoneController::beginRefresh, this,
+          &DelayEffectModel::beginResetModel);
+  connect(controller, &PxtoneController::endRefresh, this,
+          &DelayEffectModel::endResetModel);
+}
+
 QVariant DelayEffectModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid() || role != Qt::DisplayRole) return QVariant();
-  const pxtnDelay *delay = m_pxtn->Delay_Get(index.row());
+  const pxtnDelay *delay = m_client->pxtn()->Delay_Get(index.row());
   switch (DelayEffectColumn(index.column())) {
     case DelayEffectColumn::Group:
       return delay->get_group();

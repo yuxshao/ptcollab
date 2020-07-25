@@ -14,13 +14,10 @@ QList<std::pair<qint64, QString>> getUserList(
 }
 
 PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
-                           DelayEffectModel *delays,
-                           OverdriveEffectModel *ovdrvs, QObject *parent)
+                           QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
-      m_client(new Client(this)),
-      m_delays(delays),
-      m_ovdrvs(ovdrvs) {
+      m_client(new Client(this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
     qWarning()
@@ -84,14 +81,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
 
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
-  // m_units should be in controller
-  m_delays->beginRefresh();
-  m_ovdrvs->beginRefresh();
-  // TODO: Perhaps have each of the models have a pointer to the client and have
-  // the client expose signals before / after refresh.
   m_controller->loadDescriptor(desc);
-  m_delays->endRefresh();
-  m_ovdrvs->endRefresh();
 
   resetAndSuspendAudio();
   m_pxtn_device->open(QIODevice::ReadOnly);

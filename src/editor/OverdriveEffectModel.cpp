@@ -1,8 +1,18 @@
 #include "OverdriveEffectModel.h"
 
+OverdriveEffectModel::OverdriveEffectModel(PxtoneClient *client,
+                                           QObject *parent)
+    : QAbstractTableModel(parent), m_client(client) {
+  const PxtoneController *controller = m_client->controller();
+  connect(controller, &PxtoneController::beginRefresh, this,
+          &OverdriveEffectModel::beginResetModel);
+  connect(controller, &PxtoneController::endRefresh, this,
+          &OverdriveEffectModel::endResetModel);
+}
+
 QVariant OverdriveEffectModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid() || role != Qt::DisplayRole) return QVariant();
-  const pxtnOverDrive *Overdrive = m_pxtn->OverDrive_Get(index.row());
+  const pxtnOverDrive *Overdrive = m_client->pxtn()->OverDrive_Get(index.row());
   switch (OverdriveEffectColumn(index.column())) {
     case OverdriveEffectColumn::Group:
       return Overdrive->get_group();

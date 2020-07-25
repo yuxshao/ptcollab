@@ -38,11 +38,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
-  m_delays = new DelayEffectModel(&m_pxtn, this);
-  m_ovdrvs = new OverdriveEffectModel(&m_pxtn, this);
-  m_client =
-      new PxtoneClient(&m_pxtn, m_client_status, m_delays, m_ovdrvs, this);
+  m_client = new PxtoneClient(&m_pxtn, m_client_status, this);
   m_units = new UnitListModel(m_client, this);
+  m_delays = new DelayEffectModel(m_client, this);
+  m_ovdrvs = new OverdriveEffectModel(m_client, this);
   m_moo_clock = new MooClock(m_client);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);

@@ -3,23 +3,21 @@
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
 
+#include "PxtoneClient.h"
 #include "pxtone/pxtnService.h"
 
 enum struct DelayEffectColumn { Group, Unit, Frequency, Ratio, MAX = Ratio };
 class DelayEffectModel : public QAbstractTableModel {
   Q_OBJECT
 
-  pxtnService *m_pxtn;
+  PxtoneClient *m_client;
 
  public:
-  void beginRefresh() { beginResetModel(); }
-  void endRefresh() { endResetModel(); }
-  DelayEffectModel(pxtnService *pxtn, QObject *parent = nullptr)
-      : QAbstractTableModel(parent), m_pxtn(pxtn){};
+  DelayEffectModel(PxtoneClient *client, QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_pxtn->Delay_Num();
+    return m_client->pxtn()->Delay_Num();
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
