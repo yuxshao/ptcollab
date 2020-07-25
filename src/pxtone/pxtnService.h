@@ -272,9 +272,10 @@ class pxtnService {
                 ((double)master->get_beat_tempo() *
                  (double)master->get_beat_clock())));
   }
-  void adjustBeatNum(int32_t beat_num) {
+  void adjustBeatNum(int32_t beat_num, mooState &moo_state) {
     int32_t evels_max_clock = evels->get_Max_Clock();
     master->Set(beat_num, master->get_beat_tempo(), master->get_beat_clock());
+    moo_state.num_loop = 0;
     if (evels_max_clock > master->get_this_clock(master->get_last_meas(), 0, 0))
       master->AdjustMeasNum(evels_max_clock);
   }

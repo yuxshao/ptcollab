@@ -259,7 +259,7 @@ bool PxtoneController::applyTempoChange(const TempoChange &a, qint64 uid) {
 bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
   (void)uid;
   if (a.beat < 1 || a.beat > 16) return false;
-  m_pxtn->adjustBeatNum(a.beat);
+  m_pxtn->adjustBeatNum(a.beat, *m_moo_state);
   emit edited();
   return true;
 }

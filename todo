@@ -251,11 +251,13 @@ fill architecture could work well.
 2. portamento param - drag like in ptcollage
 3. show effect but no edit
 
+7/25
+1. Hopefully fix bug where setting beat up after repeat causes weird jump
+
 Todo by priority
 ----------------
- - modify effects
- - set group
- - bug where setting beat up after repeat causes weird jump
+ - modify effects - start without the combobox
+ - set group - use same param view as others, just with 6 notches.
  - draw params / ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
