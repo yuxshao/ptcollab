@@ -142,10 +142,12 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
         }
 
         case QEvent::MouseMove: {
-          if (index.row() != m_last_index.row() &&
-              index.column() == m_last_index.column()) {
-            m_last_index = index;
-            model->setData(index, m_last_set_checked, Qt::CheckStateRole);
+          const QModelIndex indexAtColumn =
+              index.siblingAtColumn(m_last_index.column());
+          if (indexAtColumn.row() != m_last_index.row()) {
+            m_last_index = indexAtColumn;
+            model->setData(indexAtColumn, m_last_set_checked,
+                           Qt::CheckStateRole);
           }
         }
 
