@@ -174,22 +174,24 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
     int32_t lastX = last.clock / clockPerPx;
     int32_t lastY = paramToY(last.value, current_kind, height);
     // Horizontal line to thisX
-    painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX, lineHeight,
-                     onColor);
+    painter.fillRect(lastX + lineWidth, lastY - lineHeight / 2,
+                     thisX - lastX - lineWidth, lineHeight, onColor);
     // Vertical line to thisY
     painter.fillRect(
         thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
         std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, onColor);
-    // Highlight at lastX
-    QColor fadedWhite = QColor::fromRgb(255, 255, 255, onColor.alpha());
-    painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                     fadedWhite);
-    if (current_kind == EVENTKIND_GROUPNO) {
-      painter.setPen(fadedWhite);
-      painter.setFont(QFont("Sans serif", 6));
-      painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
-                       arbitrarily_tall, Qt::AlignTop,
-                       QString("%1").arg(last.value));
+    if (unitOffset == 0) {
+      // Highlight at lastX
+      QColor fadedWhite = QColor::fromRgb(255, 255, 255, onColor.alpha());
+      painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                       fadedWhite);
+      if (current_kind == EVENTKIND_GROUPNO) {
+        painter.setPen(fadedWhite);
+        painter.setFont(QFont("Sans serif", 6));
+        painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
+                         arbitrarily_tall, Qt::AlignTop,
+                         QString("%1").arg(last.value));
+      }
     }
   } else {
     int32_t w = curr.value / clockPerPx;

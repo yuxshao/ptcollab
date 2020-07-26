@@ -130,19 +130,17 @@ void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
                                           qreal maxDistFromLeft) {
   minDistFromLeft *= viewport()->width();
   maxDistFromLeft *= viewport()->width();
-  qreal jump = (maxDistFromLeft - minDistFromLeft) * 0.95;
+  qreal slack = (maxDistFromLeft - minDistFromLeft) * 0.05;
   int logicalX =
       QStyle::visualPos(layoutDirection(), viewport()->rect(), QPoint(x, 0))
           .x();
   if (logicalX - minDistFromLeft < horizontalScrollBar()->value()) {
-    int newValue = horizontalScrollBar()->value();
-    while (logicalX - minDistFromLeft < newValue) newValue -= jump;
-    horizontalScrollBar()->setValue(qMax(0, newValue));
-  } else if (logicalX > horizontalScrollBar()->value() + maxDistFromLeft) {
-    int newValue = horizontalScrollBar()->value();
-    while (logicalX > newValue + maxDistFromLeft) newValue += jump;
     horizontalScrollBar()->setValue(
-        qMin(newValue, horizontalScrollBar()->maximum()));
+        qMax(0, qint32(logicalX - maxDistFromLeft + slack)));
+  } else if (logicalX - maxDistFromLeft > horizontalScrollBar()->value()) {
+    horizontalScrollBar()->setValue(
+        qMin(qint32(logicalX - minDistFromLeft - slack),
+             horizontalScrollBar()->maximum()));
   }
 }
 
