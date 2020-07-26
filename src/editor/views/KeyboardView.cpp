@@ -181,15 +181,17 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
-  if (!std::holds_alternative<MouseKeyboardEdit>(mouse_edit_state.kind)) return;
-  const auto &keyboard_edit_state =
-      std::get<MouseKeyboardEdit>(mouse_edit_state.kind);
+
   switch (mouse_edit_state.type) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
+      if (!std::holds_alternative<MouseKeyboardEdit>(mouse_edit_state.kind))
+        return;
+      const auto &keyboard_edit_state =
+          std::get<MouseKeyboardEdit>(mouse_edit_state.kind);
       int velocity = impliedVelocity(mouse_edit_state, state.scale);
       // TODO: maybe factor out this quantization logic
       Interval interval(

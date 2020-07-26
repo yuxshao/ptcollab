@@ -216,9 +216,11 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
             interval.length() / clockPerPx, lineHeight, c);
       }
     } break;
-    // TODO
     case MouseEditState::Type::Seek:
+      painter.fillRect(state.current_clock / clockPerPx, 0, 1, height,
+                       QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
       break;
+      // TODO
     case MouseEditState::Type::Select:
       break;
   }
@@ -408,11 +410,16 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
 
   bool make_note_preview = false;
   m_client->changeEditState([&](EditState &s) {
-    if (event->button() == Qt::RightButton)
-      s.mouse_edit_state.type = MouseEditState::Type::DeleteOn;
-    else {
-      s.mouse_edit_state.type = MouseEditState::Type::SetOn;
-      make_note_preview = true;
+    MouseEditState::Type &type = s.mouse_edit_state.type;
+    if (event->modifiers() & Qt::ShiftModifier) {
+      type = MouseEditState::Type::Seek;
+    } else {
+      if (event->button() == Qt::RightButton)
+        type = MouseEditState::Type::DeleteOn;
+      else {
+        type = MouseEditState::Type::SetOn;
+        make_note_preview = true;
+      }
     }
   });
 
