@@ -264,14 +264,13 @@ fill architecture could work well.
 
 7/26
 1. Change woices of unit
-2. Copy option for params
+2. Copy option for params, display selection in param view
+3. Transpose param
 
 Todo by priority
 ----------------
- - draw param selection in param bar
  - note previews on param input
  - fix scroll on load
- - shift for other params
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

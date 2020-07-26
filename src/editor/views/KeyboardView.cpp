@@ -667,8 +667,6 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
         case EVENTKIND_PAN_VOLUME:
         case EVENTKIND_VELOCITY:
         case EVENTKIND_VOLUME:
-        case EVENTKIND_PORTAMENT:
-        case EVENTKIND_VOICENO:
         case EVENTKIND_PAN_TIME:
           kind = current_kind;
           break;
