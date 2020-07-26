@@ -5,45 +5,50 @@
 namespace Action {
 
 void perform(const Primitive &a, pxtnService *pxtn, bool *widthChanged,
-             const UnitIdMap &map) {
+             const NoIdMap &unit_id_map, const NoIdMap &woice_id_map) {
   // if (a.kind == EVENTKIND_KEY) qDebug() << "Perform" << a;
-  auto unit_no_maybe = map.idToNo(a.unit_id);
+  auto unit_no_maybe = unit_id_map.idToNo(a.unit_id);
   if (unit_no_maybe == std::nullopt) return;
   qint32 unit_no = unit_no_maybe.value();
-  std::visit(overloaded{[&](const Add &b) {
-                          pxtn->evels->Record_Add_i(a.start_clock, unit_no,
-                                                    a.kind, b.value);
+  std::visit(
+      overloaded{
+          [&](const Add &b) {
+            int32_t value = b.value;
+            if (a.kind == EVENTKIND_VOICENO) {
+              std::optional<qint32> voice_no = woice_id_map.idToNo(value);
+              if (!voice_no.has_value()) return;
+              value = voice_no.value();
+            }
+            pxtn->evels->Record_Add_i(a.start_clock, unit_no, a.kind, value);
 
-                          // -1 since end is exclusive
-                          int end_clock = a.start_clock;
-                          if (Evelist_Kind_IsTail(a.kind))
-                            end_clock += b.value - 1;
+            // -1 since end is exclusive
+            int end_clock = a.start_clock;
+            if (Evelist_Kind_IsTail(a.kind)) end_clock += b.value - 1;
 
-                          int clockPerMeas = pxtn->master->get_beat_clock() *
-                                             pxtn->master->get_beat_num();
-                          int end_meas = end_clock / clockPerMeas;
-                          if (end_meas >= pxtn->master->get_meas_num()) {
-                            if (widthChanged) *widthChanged = true;
-                            pxtn->master->set_meas_num(end_meas + 1);
-                            qDebug() << end_meas;
-                          }
-                        },
-                        [&](const Delete &b) {
-                          pxtn->evels->Record_Delete(a.start_clock, b.end_clock,
-                                                     unit_no, a.kind);
-                        },
-                        [&](const Shift &b) {
-                          pxtn->evels->Record_Value_Change(a.start_clock,
-                                                           b.end_clock, unit_no,
-                                                           a.kind, b.offset);
-                        }},
-             a.type);
+            int clockPerMeas =
+                pxtn->master->get_beat_clock() * pxtn->master->get_beat_num();
+            int end_meas = end_clock / clockPerMeas;
+            if (end_meas >= pxtn->master->get_meas_num()) {
+              if (widthChanged) *widthChanged = true;
+              pxtn->master->set_meas_num(end_meas + 1);
+            }
+          },
+          [&](const Delete &b) {
+            pxtn->evels->Record_Delete(a.start_clock, b.end_clock, unit_no,
+                                       a.kind);
+          },
+          [&](const Shift &b) {
+            pxtn->evels->Record_Value_Change(a.start_clock, b.end_clock,
+                                             unit_no, a.kind, b.offset);
+          }},
+      a.type);
 }
 
 std::list<Primitive> get_undo(const Primitive &a, const pxtnService *pxtn,
-                              const UnitIdMap &map) {
+                              const NoIdMap &unit_id_map,
+                              const NoIdMap &woice_id_map) {
   std::list<Primitive> undo;
-  auto unit_no_maybe = map.idToNo(a.unit_id);
+  auto unit_no_maybe = unit_id_map.idToNo(a.unit_id);
   if (unit_no_maybe == std::nullopt) return undo;
   qint32 unit_no = unit_no_maybe.value();
 
@@ -58,15 +63,17 @@ std::list<Primitive> get_undo(const Primitive &a, const pxtnService *pxtn,
                 {a.kind, a.unit_id, a.start_clock, Delete{end_clock}});
           },
           [&](const Delete &b) {
-            // find everything in this range and add actions to add them in.
+            // find everything in this range and add actions to add
+            // them in.
             if (Evelist_Kind_IsTail(a.kind)) {
               const EVERECORD *p = pxtn->evels->get_Records();
               for (; p && p->clock < a.start_clock; p = p->next) {
                 if (a.kind == p->kind && unit_no == p->unit_no)
                   if (p->clock + p->value > a.start_clock) {
-                    // > instead of >= b/c exclusive. This was causing undos to
-                    // blow up in size because it'd lead to a ton of empty noop
-                    // actions that replace a note with the same.
+                    // > instead of >= b/c exclusive. This was causing
+                    // undos to blow up in size because it'd lead to a
+                    // ton of empty noop actions that replace a note
+                    // with the same.
                     undo.push_back(
                         {a.kind, a.unit_id, p->clock, Delete{a.start_clock}});
                     undo.push_back(
@@ -80,17 +87,23 @@ std::list<Primitive> get_undo(const Primitive &a, const pxtnService *pxtn,
               const EVERECORD *p = pxtn->evels->get_Records();
               for (; p && p->clock < a.start_clock; p = p->next) continue;
               for (; p && p->clock < b.end_clock; p = p->next)
-                if (a.kind == p->kind && unit_no == p->unit_no)
-                  undo.push_back({a.kind, a.unit_id, p->clock, Add{p->value}});
+                if (a.kind == p->kind && unit_no == p->unit_no) {
+                  qint32 value = p->value;
+                  if (a.kind == EVENTKIND_VOICENO)
+                    value = woice_id_map.noToId(value);
+                  undo.push_back({a.kind, a.unit_id, p->clock, Add{value}});
+                }
             }
           },
           [&](const Shift &b) {
-            // This undo isn't quite right if we hit a limit in the first
-            // direction. But it shouldn't desync, I think, because it's still
-            // semi-roundtrippable (f -> f^-1 -> f = f).
+            // This undo isn't quite right if we hit a limit in the
+            // first direction. But it shouldn't desync, I think,
+            // because it's still semi-roundtrippable (f -> f^-1 -> f =
+            // f).
             //
-            // But still undoing a transpose is a bit unintuitive b/c other
-            // people's edits will not be transposed backwards with your undo.
+            // But still undoing a transpose is a bit unintuitive b/c
+            // other people's edits will not be transposed backwards
+            // with your undo.
             undo.push_back({a.kind, a.unit_id, a.start_clock,
                             Shift{b.end_clock, -b.offset}});
           }},
@@ -104,11 +117,12 @@ std::list<Primitive> get_undo(const Primitive &a, const pxtnService *pxtn,
 
 std::list<Primitive> apply_and_get_undo(const std::list<Primitive> &actions,
                                         pxtnService *pxtn, bool *widthChanged,
-                                        const UnitIdMap &map) {
+                                        const NoIdMap &unit_id_map,
+                                        const NoIdMap &woice_id_map) {
   std::list<Primitive> undo;
   for (const Primitive &a : actions) {
-    undo.splice(undo.begin(), get_undo(a, pxtn, map));
-    perform(a, pxtn, widthChanged, map);
+    undo.splice(undo.begin(), get_undo(a, pxtn, unit_id_map, woice_id_map));
+    perform(a, pxtn, widthChanged, unit_id_map, woice_id_map);
   }
   return undo;
 }

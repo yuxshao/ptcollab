@@ -11,12 +11,12 @@
 // that actions are still valid past unit additions / deletions / moves.
 class NoIdMap {
  public:
-  NoIdMap(const pxtnService *pxtn);
+  NoIdMap(int start);
   qint32 numUnits() const { return m_no_to_id.size(); }
   qint32 noToId(qint32 no) const { return m_no_to_id[no]; };
   std::optional<qint32> idToNo(qint32 id) const;
-  void addUnit();
-  void removeUnit(size_t no);
+  void add();
+  void remove(size_t no);
   // TODO: move unit
 
  private:

@@ -8,14 +8,15 @@ PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
       m_uid(uid),
       m_pxtn(pxtn),
       m_moo_state(moo_state),
-      m_unit_id_map(pxtn),
+      m_unit_id_map(pxtn->Unit_Num()),
+      m_woice_id_map(pxtn->Woice_Num()),
       m_remote_index(0) {}
 
 EditAction PxtoneController::applyLocalAction(
     const std::list<Action::Primitive> &action) {
   bool widthChanged = false;
-  m_uncommitted.push_back(
-      Action::apply_and_get_undo(action, m_pxtn, &widthChanged, m_unit_id_map));
+  m_uncommitted.push_back(Action::apply_and_get_undo(
+      action, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map));
   if (widthChanged) emit measureNumChanged();
   // qDebug() << "Remote" << m_remote_index << "Local" << m_local_index;
   // qDebug() << "New action";
@@ -87,15 +88,15 @@ exit_loop:
     for (auto uncommitted = m_uncommitted.rbegin();
          uncommitted != m_uncommitted.rend(); ++uncommitted) {
       // int start_size = uncommitted->size();
-      *uncommitted = Action::apply_and_get_undo(*uncommitted, m_pxtn,
-                                                &widthChanged, m_unit_id_map);
+      *uncommitted = Action::apply_and_get_undo(
+          *uncommitted, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
       // qDebug() << "undoing local size(" << start_size << uncommitted->size()
       //         << ") index(" << i-- << ")";
     }
 
     // apply the committed action
     std::list<Action::Primitive> reverse = Action::apply_and_get_undo(
-        action.action, m_pxtn, &widthChanged, m_unit_id_map);
+        action.action, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
 
     if (local_actions_to_drop >= m_uncommitted.size())
       m_uncommitted.clear();
@@ -107,8 +108,8 @@ exit_loop:
     // redo each of the uncommitted actions forwards
     for (std::list<Action::Primitive> &uncommitted : m_uncommitted) {
       // int start_size = uncommitted.size();
-      uncommitted = Action::apply_and_get_undo(uncommitted, m_pxtn,
-                                               &widthChanged, m_unit_id_map);
+      uncommitted = Action::apply_and_get_undo(
+          uncommitted, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
       // qDebug() << "redoing local size(" << start_size << uncommitted.size()
       //         << ") index(" << i++ << ")";
     }
@@ -158,8 +159,8 @@ void PxtoneController::applyUndoRedo(const UndoRedo &r, qint64 uid) {
   bool widthChanged = false;
   for (auto uncommitted = m_uncommitted.rbegin();
        uncommitted != m_uncommitted.rend(); ++uncommitted) {
-    *uncommitted = Action::apply_and_get_undo(*uncommitted, m_pxtn,
-                                              &widthChanged, m_unit_id_map);
+    *uncommitted = Action::apply_and_get_undo(
+        *uncommitted, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
   }
 
   // Go back to the target action by user, temporarily undoing
@@ -171,25 +172,25 @@ void PxtoneController::applyUndoRedo(const UndoRedo &r, qint64 uid) {
     while (it != target) {
       if (it->state == LoggedAction::UndoState::DONE) {
         qDebug() << "Temporarily undoing " << it->uid << it->idx;
-        it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn,
-                                                 &widthChanged, m_unit_id_map);
+        it->reverse = Action::apply_and_get_undo(
+            it->reverse, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
         temporarily_undone.push_front(&(*it));
       }
       ++it;
     }
     it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn, &widthChanged,
-                                             m_unit_id_map);
+                                             m_unit_id_map, m_woice_id_map);
     it->state = (it->state == LoggedAction::UNDONE ? LoggedAction::DONE
                                                    : LoggedAction::UNDONE);
     ;
     for (LoggedAction *it : temporarily_undone)
-      it->reverse = Action::apply_and_get_undo(it->reverse, m_pxtn,
-                                               &widthChanged, m_unit_id_map);
+      it->reverse = Action::apply_and_get_undo(
+          it->reverse, m_pxtn, &widthChanged, m_unit_id_map, m_woice_id_map);
   }
 
   for (std::list<Action::Primitive> &uncommitted : m_uncommitted) {
     uncommitted = Action::apply_and_get_undo(uncommitted, m_pxtn, &widthChanged,
-                                             m_unit_id_map);
+                                             m_unit_id_map, m_woice_id_map);
   }
 
   if (widthChanged) emit measureNumChanged();
@@ -224,7 +225,7 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   }
   m_moo_state->addUnit(m_pxtn->Woice_Get(a.woice_id));
 
-  m_unit_id_map.addUnit();
+  m_unit_id_map.add();
   int unit_no = m_pxtn->Unit_Num() - 1;
   auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
@@ -248,7 +249,7 @@ void PxtoneController::applyRemoveUnit(const RemoveUnit &a, qint64 uid) {
     qWarning("Could not remove unit.");
     return;
   }
-  m_unit_id_map.removeUnit(unit_no);
+  m_unit_id_map.remove(unit_no);
   if (m_moo_state->units.size() > size_t(unit_no))
     m_moo_state->units.erase(m_moo_state->units.begin() + unit_no);
   emit endRemoveUnit();
@@ -359,7 +360,8 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
       return false;
     }
   }
-  m_unit_id_map = UnitIdMap(m_pxtn);
+  m_unit_id_map = NoIdMap(m_pxtn->Unit_Num());
+  m_woice_id_map = NoIdMap(m_pxtn->Woice_Num());
   if (m_pxtn->tones_ready(*m_moo_state) != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;
@@ -386,6 +388,7 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
     qDebug() << "Woice_read error" << result;
     return false;
   }
+  m_woice_id_map.add();
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
   std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_idx);
 
@@ -431,6 +434,7 @@ bool PxtoneController::applyRemoveWoice(const RemoveWoice &a, qint64 uid) {
     qWarning() << "Could not remove woice" << a.id << a.name;
     return false;
   }
+  m_woice_id_map.remove(a.id);
   m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
   emit woicesChanged();
   emit edited();

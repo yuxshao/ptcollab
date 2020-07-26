@@ -80,7 +80,8 @@ QDataStream &operator>>(QDataStream &in, Primitive &a);
 // the case of collaborative editing. You can't compute it beforehand.
 std::list<Primitive> apply_and_get_undo(const std::list<Primitive> &actions,
                                         pxtnService *pxtn, bool *widthChanged,
-                                        const NoIdMap &map);
+                                        const NoIdMap &unit_id_map,
+                                        const NoIdMap &woice_id_map);
 }  // namespace Action
 
 #endif  // PXTONEEDITACTION_H

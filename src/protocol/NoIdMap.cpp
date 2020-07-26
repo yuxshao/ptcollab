@@ -1,7 +1,7 @@
 #include "NoIdMap.h"
 
-NoIdMap::NoIdMap(const pxtnService *pxtn) : m_next_id(0) {
-  for (int32_t i = 0; i < pxtn->Unit_Num(); ++i) addUnit();
+NoIdMap::NoIdMap(int start) : m_next_id(0) {
+  for (int32_t i = 0; i < start; ++i) add();
 }
 
 std::optional<qint32> NoIdMap::idToNo(qint32 id) const {
@@ -10,7 +10,7 @@ std::optional<qint32> NoIdMap::idToNo(qint32 id) const {
   return qint32(it->second);
 }
 
-void NoIdMap::addUnit() {
+void NoIdMap::add() {
   qint32 id = m_next_id++;
   size_t no = m_no_to_id.size();
 
@@ -22,7 +22,7 @@ void NoIdMap::addUnit() {
   //         << QMap<qint32, qint32>(m_id_to_no);
 }
 
-void NoIdMap::removeUnit(size_t no) {
+void NoIdMap::remove(size_t no) {
   qint32 id = m_no_to_id[no];
   m_no_to_id.erase(m_no_to_id.begin() + no);
   m_id_to_no.erase(id);
