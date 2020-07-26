@@ -126,21 +126,21 @@ void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
   });
 }
 
-void EditorScrollArea::ensureVisible(int x, int xmargin = -1) {
-  if (xmargin == -1) xmargin = viewport()->width() / 10;
+void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
+                                          qreal maxDistFromLeft) {
+  minDistFromLeft *= viewport()->width();
+  maxDistFromLeft *= viewport()->width();
+  qreal jump = (maxDistFromLeft - minDistFromLeft) * 0.95;
   int logicalX =
       QStyle::visualPos(layoutDirection(), viewport()->rect(), QPoint(x, 0))
           .x();
-  if (logicalX - xmargin < horizontalScrollBar()->value()) {
+  if (logicalX - minDistFromLeft < horizontalScrollBar()->value()) {
     int newValue = horizontalScrollBar()->value();
-    while (logicalX - xmargin < newValue)
-      newValue -= viewport()->width() * 3 / 4;
+    while (logicalX - minDistFromLeft < newValue) newValue -= jump;
     horizontalScrollBar()->setValue(qMax(0, newValue));
-  } else if (logicalX >
-             horizontalScrollBar()->value() + viewport()->width() - xmargin) {
+  } else if (logicalX > horizontalScrollBar()->value() + maxDistFromLeft) {
     int newValue = horizontalScrollBar()->value();
-    while (logicalX > newValue + viewport()->width() - xmargin)
-      newValue += viewport()->width() * 3 / 4;
+    while (logicalX > newValue + maxDistFromLeft) newValue += jump;
     horizontalScrollBar()->setValue(
         qMin(newValue, horizontalScrollBar()->maximum()));
   }
