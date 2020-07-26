@@ -132,6 +132,53 @@ constexpr int NUM_BACKGROUND_GAPS =
 constexpr int WINDOW_BOUND_SLACK = 32;
 constexpr int arbitrarily_tall = 1000;
 
+struct Event {
+  int clock, value;
+};
+
+constexpr int32_t lineHeight = 4;
+constexpr int32_t lineWidth = 2;
+constexpr int32_t tailLineHeight = 4;
+static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
+                          const Event &last, const Event &curr, int clockPerPx,
+                          const QColor &onColor) {
+  int32_t thisX = curr.clock / clockPerPx;
+
+  if (!Evelist_Kind_IsTail(current_kind)) {
+    int32_t thisY = paramToY(curr.value, current_kind, height);
+    int32_t lastX = last.clock / clockPerPx;
+    int32_t lastY = paramToY(last.value, current_kind, height);
+    // Horizontal line to thisX
+    painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX, lineHeight,
+                     onColor);
+    // Vertical line to thisY
+    painter.fillRect(
+        thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
+        std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, onColor);
+    // Highlight at lastX
+    painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
+                     Qt::white);
+    if (current_kind == EVENTKIND_GROUPNO) {
+      painter.setPen(Qt::white);
+      painter.setFont(QFont("Sans serif", 6));
+      painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
+                       arbitrarily_tall, Qt::AlignTop,
+                       QString("%1").arg(last.value));
+    }
+  } else {
+    int32_t w = curr.value / clockPerPx;
+    int32_t y = height / 2;
+    painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
+                     (tailLineHeight + 6), onColor);
+    painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
+                     (tailLineHeight + 2), onColor);
+    painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3, tailLineHeight,
+                     onColor);
+    painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
+                     tailLineHeight - 2, onColor);
+  }
+}
+
 void ParamView::paintEvent(QPaintEvent *event) {
   const pxtnService *pxtn = m_client->pxtn();
   Interval clockBounds = {
@@ -164,9 +211,6 @@ void ParamView::paintEvent(QPaintEvent *event) {
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
 
-  int32_t lineHeight = 4;
-  int32_t lineWidth = 2;
-  int32_t tailLineHeight = 4;
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
   {
@@ -178,73 +222,25 @@ void ParamView::paintEvent(QPaintEvent *event) {
     onColor.getHsl(&h, &s, &l, &a);
     onColor.setHsl(h, s, l * 3 / 4, a);
 
-    int32_t last_value = DefaultKindValue(current_kind);
-    int32_t last_clock = -1000;
+    Event last{-1000, DefaultKindValue(current_kind)};
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
          e = e->next) {
       if (e->clock > clockBounds.end) break;
-
       if (e->kind != current_kind) continue;
       int unit_no = e->unit_no;
       qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
       bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
       if (!matchingUnit) continue;
 
-      int32_t thisX = e->clock / m_client->editState().scale.clockPerPx;
-
-      if (!Evelist_Kind_IsTail(current_kind)) {
-        int32_t thisY = paramToY(e->value, current_kind, size().height());
-        int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-        int32_t lastY = paramToY(last_value, current_kind, size().height());
-        // Horizontal line to thisX
-        painter.fillRect(lastX, lastY - lineHeight / 2, thisX - lastX,
-                         lineHeight, onColor);
-        // Vertical line to thisY
-        painter.fillRect(
-            thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
-            std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight,
-            onColor);
-        // Highlight at lastX
-        painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                         Qt::white);
-        if (current_kind == EVENTKIND_GROUPNO) {
-          painter.setPen(Qt::white);
-          painter.setFont(QFont("Sans serif", 6));
-          painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
-                           arbitrarily_tall, Qt::AlignTop,
-                           QString("%1").arg(last_value));
-        }
-      } else {
-        int32_t w = (e->value) / m_client->editState().scale.clockPerPx;
-        int32_t y = height() / 2;
-        painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
-                         (tailLineHeight + 6), onColor);
-        painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
-                         (tailLineHeight + 2), onColor);
-        painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3,
-                         tailLineHeight, onColor);
-        painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
-                         tailLineHeight - 2, onColor);
-      }
-
-      last_value = e->value;
-      last_clock = e->clock;
+      Event curr{e->clock, e->value};
+      drawLastEvent(painter, current_kind, height(), last, curr,
+                    m_client->editState().scale.clockPerPx, onColor);
+      last = curr;
     }
-    if (!Evelist_Kind_IsTail(current_kind)) {
-      int32_t lastX = last_clock / m_client->editState().scale.clockPerPx;
-      int32_t lastY = paramToY(last_value, current_kind, height());
-      painter.fillRect(lastX, lastY - lineHeight / 2, size().width() - lastX,
-                       lineHeight, onColor);
-      painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                       Qt::white);
-      if (current_kind == EVENTKIND_GROUPNO) {
-        painter.setPen(Qt::white);
-        painter.setFont(QFont("Sans serif", 6));
-        painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
-                         arbitrarily_tall, Qt::AlignTop,
-                         QString("%1").arg(last_value));
-      }
-    }
+    Event curr = last;
+    curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
+    drawLastEvent(painter, current_kind, height(), last, curr,
+                  m_client->editState().scale.clockPerPx, onColor);
   }
 
   // draw ongoing edit
