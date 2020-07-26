@@ -139,9 +139,11 @@ struct Event {
 constexpr int32_t lineHeight = 4;
 constexpr int32_t lineWidth = 2;
 constexpr int32_t tailLineHeight = 4;
+constexpr int32_t tailRowHeight = 8;
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                           const Event &last, const Event &curr,
-                          qreal clockPerPx, const QColor &onColor) {
+                          qreal clockPerPx, const QColor &onColor,
+                          int unitOffset, int numUnits) {
   if (onColor.alpha() == 0) return;
   int32_t thisX = curr.clock / clockPerPx;
 
@@ -168,21 +170,27 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
     }
   } else {
     int32_t w = curr.value / clockPerPx;
-    int32_t y = height / 2;
-    painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
-                     (tailLineHeight + 6), onColor);
-    painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
-                     (tailLineHeight + 2), onColor);
-    painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3, tailLineHeight,
-                     onColor);
-    painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
-                     tailLineHeight - 2, onColor);
+    int num_layer = 1;
+    for (int i = -num_layer; i <= num_layer; ++i) {
+      QColor color(onColor);
+      color.setAlpha(color.alpha() * (num_layer + 1 - abs(i)) /
+                     (num_layer + 1));
+      int32_t y = height / 2 + (unitOffset + i * numUnits) * tailRowHeight;
+      painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
+                       (tailLineHeight + 6), color);
+      painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
+                       (tailLineHeight + 2), color);
+      painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3, tailLineHeight,
+                       color);
+      painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
+                       tailLineHeight - 2, color);
+    }
   }
 }
 static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                             EVENTKIND current_kind, int quantizeClock,
                             qreal clockPerPx, int height,
-                            double alphaMultiplier) {
+                            double alphaMultiplier, int unitOffset) {
   switch (state.type) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
@@ -192,12 +200,20 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       QColor c(brightGreen);
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
-      for (const ParamEditInterval &p :
-           lineEdit(state, current_kind, quantizeClock)) {
-        int x = p.clock.start / clockPerPx;
-        int w = p.clock.length() / clockPerPx;
-        int y = paramToY(p.param, current_kind, height);
-        painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
+      if (!Evelist_Kind_IsTail(current_kind)) {
+        for (const ParamEditInterval &p :
+             lineEdit(state, current_kind, quantizeClock)) {
+          int x = p.clock.start / clockPerPx;
+          int w = p.clock.length() / clockPerPx;
+          int y = paramToY(p.param, current_kind, height);
+          painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
+        }
+      } else {
+        Interval interval = state.clock_int(quantizeClock);
+        painter.fillRect(
+            interval.start / clockPerPx,
+            height / 2 - lineHeight / 2 + unitOffset * tailRowHeight,
+            interval.length() / clockPerPx, lineHeight, c);
       }
     } break;
     // TODO
@@ -244,6 +260,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   QPixmap thisUnit(event->rect().size());
   thisUnit.fill(Qt::transparent);
+  int current_unit_no = 0;
   QPainter thisUnitPainter(&thisUnit);
   {
     thisUnitPainter.translate(-event->rect().topLeft());
@@ -267,8 +284,10 @@ void ParamView::paintEvent(QPaintEvent *event) {
         else
           a *= 0;
         painters.push_back(&painter);
-      } else
+      } else {
         painters.push_back(&thisUnitPainter);
+        current_unit_no = i;
+      }
       colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
     }
 
@@ -281,14 +300,16 @@ void ParamView::paintEvent(QPaintEvent *event) {
       Event curr{e->clock, e->value};
       drawLastEvent(*painters[unit_no], current_kind, height(),
                     lastEvents[unit_no], curr,
-                    m_client->editState().scale.clockPerPx, colors[unit_no]);
+                    m_client->editState().scale.clockPerPx, colors[unit_no],
+                    unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
       lastEvents[unit_no] = curr;
     }
     for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
       Event curr = lastEvents[i];
       curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
       drawLastEvent(*painters[i], current_kind, height(), lastEvents[i], curr,
-                    m_client->editState().scale.clockPerPx, colors[i]);
+                    m_client->editState().scale.clockPerPx, colors[i],
+                    i - current_unit_no, m_client->pxtn()->Unit_Num());
     }
   }
 
@@ -306,16 +327,19 @@ void ParamView::paintEvent(QPaintEvent *event) {
         alphaMultiplier = 0.3;
         this_painter = &painter;
       }
+      int unit_no = m_client->unitIdMap()
+                        .idToNo(state.m_current_unit_id)
+                        .value_or(current_unit_no);
       drawOngoingEdit(*this_painter, state.mouse_edit_state, current_kind,
                       m_client->quantizeClock(),
                       m_client->editState().scale.clockPerPx, height(),
-                      alphaMultiplier);
+                      alphaMultiplier, unit_no - current_unit_no);
     }
   }
   painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
   drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
                   m_client->quantizeClock(),
-                  m_client->editState().scale.clockPerPx, height(), 1);
+                  m_client->editState().scale.clockPerPx, height(), 1, 0);
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, false);
