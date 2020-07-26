@@ -236,8 +236,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       bool success = m_controller->applyAddUnit(s, uid);
                       changeEditState([&](EditState &s) {
                         if (uid == m_controller->uid() && success) {
-                          const UnitIdMap &unitIdMap =
-                              m_controller->unitIdMap();
+                          const NoIdMap &unitIdMap = m_controller->unitIdMap();
                           s.m_current_unit_id =
                               unitIdMap.noToId(unitIdMap.numUnits() - 1);
                         }
@@ -252,8 +251,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       m_controller->applyRemoveUnit(s, uid);
                       changeEditState([&](EditState &s) {
                         if (unit_no != std::nullopt) {
-                          const UnitIdMap &unitIdMap =
-                              m_controller->unitIdMap();
+                          const NoIdMap &unitIdMap = m_controller->unitIdMap();
                           if (unitIdMap.numUnits() <= unit_no.value() &&
                               unitIdMap.numUnits() > 0) {
                             s.m_current_unit_id =
@@ -283,9 +281,13 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
 }
 
 void PxtoneClient::setCurrentUnitNo(int unit_no) {
-  // qDebug() << "Changing unit id" << m_client->editState().m_current_unit_id
-  //         << m_sync->unitIdMap().noToId(unit_no);
   changeEditState([&](EditState &s) {
     s.m_current_unit_id = m_controller->unitIdMap().noToId(unit_no);
+  });
+}
+
+void PxtoneClient::setCurrentWoiceNo(int woice_no) {
+  changeEditState([&](EditState &s) {
+    s.m_current_woice_id = m_controller->woiceIdMap().noToId(woice_no);
   });
 }

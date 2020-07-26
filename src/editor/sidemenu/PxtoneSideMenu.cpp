@@ -120,6 +120,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           m_client->pxtn()->Woice_Get(idx), this);
     else
       m_note_preview = nullptr;
+    m_client->setCurrentWoiceNo(idx);
   });
   connect(this, &SideMenu::removeUnit, m_client,
           &PxtoneClient::removeCurrentUnit);
@@ -180,7 +181,7 @@ void PxtoneSideMenu::refreshWoices() {
   QStringList woices;
   for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i)
     woices.append(m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
-  setWoiceList(QStringList(woices));
+  setWoiceList(woices);
 }
 
 void PxtoneSideMenu::refreshTempoBeat() {
@@ -193,8 +194,15 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
     setQuantXIndex(s.m_quantize_clock_idx);
   if (m_last_edit_state.m_quantize_pitch_idx != s.m_quantize_pitch_idx)
     setQuantYIndex(s.m_quantize_pitch_idx);
-  if (m_last_edit_state.m_current_unit_id != s.m_current_unit_id)
-    setCurrentUnit(s.m_current_unit_id);
+  if (m_last_edit_state.m_current_unit_id != s.m_current_unit_id) {
+    std::optional<qint32> x = m_client->unitIdMap().idToNo(s.m_current_unit_id);
+    if (x.has_value()) setCurrentUnit(x.value());
+  }
+  if (m_last_edit_state.m_current_woice_id != s.m_current_woice_id) {
+    std::optional<qint32> x =
+        m_client->controller()->woiceIdMap().idToNo(s.m_current_woice_id);
+    if (x.has_value()) setCurrentWoice(x.value());
+  }
   if (m_last_edit_state.m_follow_playhead != s.m_follow_playhead)
     setFollow(s.m_follow_playhead);
   if (m_last_edit_state.current_param_kind_idx() != s.current_param_kind_idx())

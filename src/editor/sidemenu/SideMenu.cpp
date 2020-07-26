@@ -245,6 +245,7 @@ void SideMenu::setParamKindIndex(int index) {
 }
 
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
+void SideMenu::setCurrentWoice(int u) { ui->woiceList->setCurrentRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)
     ui->playBtn->setText("Pause (SPC)");

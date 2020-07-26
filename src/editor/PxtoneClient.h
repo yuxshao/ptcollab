@@ -50,7 +50,7 @@ class PxtoneClient : public QObject {
   const mooState *moo() { return m_controller->moo(); }
   const QAudioOutput *audioState() { return m_audio; }
 
-  const UnitIdMap &unitIdMap() { return m_controller->unitIdMap(); }
+  const NoIdMap &unitIdMap() { return m_controller->unitIdMap(); }
   const std::unordered_map<qint64, RemoteEditState> &remoteEditStates() {
     return m_remote_edit_states;
   }
@@ -61,6 +61,7 @@ class PxtoneClient : public QObject {
   qint32 quantizePitch();
 
   void setCurrentUnitNo(int unit_no);
+  void setCurrentWoiceNo(int woice_no);
   const PxtoneController *controller() { return m_controller; }
 
  private:

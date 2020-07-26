@@ -32,8 +32,8 @@ class PxtoneController : public QObject {
   EditAction applyLocalAction(const std::list<Action::Primitive> &action);
   void setUid(qint64 uid);
   qint64 uid();
-  const NoIdMap &unitIdMap() { return m_unit_id_map; }
-  const NoIdMap &woiceIdMap() { return m_woice_id_map; }
+  const NoIdMap &unitIdMap() const { return m_unit_id_map; }
+  const NoIdMap &woiceIdMap() const { return m_woice_id_map; }
   bool loadDescriptor(pxtnDescriptor &desc);
   bool applyAddUnit(const AddUnit &a, qint64 uid);
   bool applyAddWoice(const AddWoice &a, qint64 uid);

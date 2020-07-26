@@ -140,6 +140,28 @@ constexpr int32_t lineHeight = 4;
 constexpr int32_t lineWidth = 2;
 constexpr int32_t tailLineHeight = 4;
 constexpr int32_t tailRowHeight = 8;
+static void drawLastVoiceNoEvent(QPainter &painter, int height,
+                                 const Event &last, const Event &curr,
+                                 qreal clockPerPx, const QColor &onColor,
+                                 const pxtnService *pxtn) {
+  int32_t lastX = last.clock / clockPerPx;
+  QPainterPath path;
+  constexpr int s = 4;
+  path.moveTo(lastX, height / 2 - s);
+  path.lineTo(lastX + s, height / 2);
+  path.lineTo(lastX, height / 2 + s);
+  path.closeSubpath();
+  painter.fillPath(path, onColor);
+
+  std::shared_ptr<const pxtnWoice> woice = pxtn->Woice_Get(last.value);
+  if (woice != nullptr) {
+    int32_t thisX = curr.clock / clockPerPx;
+    painter.setPen(QColor::fromRgb(255, 255, 255, onColor.alpha()));
+    painter.setFont(QFont("Sans serif", 6));
+    painter.drawText(lastX + s, height / 2, thisX - lastX - s, 10000,
+                     Qt::AlignTop, QString(woice->get_name_buf(nullptr)));
+  }
+}
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                           const Event &last, const Event &curr,
                           qreal clockPerPx, const QColor &onColor,
@@ -147,7 +169,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
   if (onColor.alpha() == 0) return;
   int32_t thisX = curr.clock / clockPerPx;
 
-  if (!Evelist_Kind_IsTail(current_kind)) {
+  if (!Evelist_Kind_IsTail(current_kind) && current_kind != EVENTKIND_VOICENO) {
     int32_t thisY = paramToY(curr.value, current_kind, height);
     int32_t lastX = last.clock / clockPerPx;
     int32_t lastY = paramToY(last.value, current_kind, height);
@@ -159,10 +181,11 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
         std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, onColor);
     // Highlight at lastX
+    QColor fadedWhite = QColor::fromRgb(255, 255, 255, onColor.alpha());
     painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                     QColor::fromRgb(255, 255, 255, onColor.alpha()));
+                     fadedWhite);
     if (current_kind == EVENTKIND_GROUPNO) {
-      painter.setPen(Qt::white);
+      painter.setPen(fadedWhite);
       painter.setFont(QFont("Sans serif", 6));
       painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
                        arbitrarily_tall, Qt::AlignTop,
@@ -191,6 +214,7 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                             EVENTKIND current_kind, int quantizeClock,
                             qreal clockPerPx, int height,
                             double alphaMultiplier, int unitOffset) {
+  if (!std::holds_alternative<MouseParamEdit>(state.kind)) return;
   switch (state.type) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
@@ -200,7 +224,8 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       QColor c(brightGreen);
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
-      if (!Evelist_Kind_IsTail(current_kind)) {
+      if (!Evelist_Kind_IsTail(current_kind) &&
+          current_kind != EVENTKIND_VOICENO) {
         for (const ParamEditInterval &p :
              lineEdit(state, current_kind, quantizeClock)) {
           int x = p.clock.start / clockPerPx;
@@ -300,18 +325,29 @@ void ParamView::paintEvent(QPaintEvent *event) {
       int unit_no = e->unit_no;
 
       Event curr{e->clock, e->value};
-      drawLastEvent(*painters[unit_no], current_kind, height(),
-                    lastEvents[unit_no], curr,
-                    m_client->editState().scale.clockPerPx, colors[unit_no],
-                    unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
+      if (current_kind != EVENTKIND_VOICENO)
+        drawLastEvent(*painters[unit_no], current_kind, height(),
+                      lastEvents[unit_no], curr,
+                      m_client->editState().scale.clockPerPx, colors[unit_no],
+                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
+      else if (unit_no == current_unit_no)
+        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
+                             curr, m_client->editState().scale.clockPerPx,
+                             colors[unit_no], m_client->pxtn());
       lastEvents[unit_no] = curr;
     }
-    for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-      Event curr = lastEvents[i];
+    for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
+      Event curr = lastEvents[unit_no];
       curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
-      drawLastEvent(*painters[i], current_kind, height(), lastEvents[i], curr,
-                    m_client->editState().scale.clockPerPx, colors[i],
-                    i - current_unit_no, m_client->pxtn()->Unit_Num());
+      if (current_kind != EVENTKIND_VOICENO)
+        drawLastEvent(*painters[unit_no], current_kind, height(),
+                      lastEvents[unit_no], curr,
+                      m_client->editState().scale.clockPerPx, colors[unit_no],
+                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
+      else if (unit_no == current_unit_no)
+        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
+                             curr, m_client->editState().scale.clockPerPx,
+                             colors[unit_no], m_client->pxtn());
     }
   }
 
@@ -453,15 +489,17 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                              Delete{clock_int.end}});
           if (s.mouse_edit_state.type == MouseEditState::SetOn ||
               s.mouse_edit_state.type == MouseEditState::SetNote) {
-            if (!Evelist_Kind_IsTail(kind))
+            if (kind == EVENTKIND_VOICENO) {
+              actions.push_back(
+                  {kind, s.m_current_unit_id, clock_int.start,
+                   Add{m_client->editState().m_current_woice_id}});
+            } else if (!Evelist_Kind_IsTail(kind)) {
               for (const ParamEditInterval &p : lineEdit(
                        s.mouse_edit_state, kind, m_client->quantizeClock())) {
                 actions.push_back(
                     {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
               }
-            else {
-              Interval clock_int =
-                  s.mouse_edit_state.clock_int(m_client->quantizeClock());
+            } else {
               actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                                  Add{clock_int.length()}});
             }

@@ -263,12 +263,13 @@ fill architecture could work well.
 9. Seek in param bar
 
 7/26
-1. 
+1. Change woices of unit
+
 Todo by priority
 ----------------
- - change instruments in unit
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
+ - adjust follow margins
  - note previews on param input
  - shift other params depending on the one displayed
  - Unit view, at least for drums

@@ -25,10 +25,10 @@ class Clipboard {
   void copy(const std::set<int> &unit_nos, const Interval &range);
   std::list<Action::Primitive> makePaste(const std::set<int> &unit_nos,
                                          qint32 start_clock,
-                                         const UnitIdMap &map);
+                                         const NoIdMap &map);
   std::list<Action::Primitive> makeClear(const std::set<int> &unit_nos,
                                          const Interval &range,
-                                         const UnitIdMap &map);
+                                         const NoIdMap &map);
   qint32 copyLength() { return m_copy_length; }
 };
 
