@@ -20,6 +20,7 @@ class Clipboard : public QObject {
   const pxtnService *m_pxtn;
   std::list<Item> m_items;
   std::set<int> m_unit_nos;
+  // TODO: move this to editstate so you can see others' param selections too.
   std::set<EVENTKIND> m_kinds_to_copy;
   qint32 m_copy_length;
 

@@ -292,3 +292,7 @@ void PxtoneClient::setCurrentWoiceNo(int woice_no) {
     s.m_current_woice_id = m_controller->woiceIdMap().noToId(woice_no);
   });
 }
+
+void PxtoneClient::deselect() {
+  changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); });
+}

@@ -148,7 +148,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_D:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->deselect();
+        m_client->deselect();
       else {
         m_client->changeEditState([&](EditState &s) {
           ++s.m_current_param_kind_idx;

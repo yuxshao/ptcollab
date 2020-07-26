@@ -144,26 +144,6 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
 }
 static qint32 arbitrarily_tall = 512;
 
-void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
-                   double alphaMultiplier) {
-  QColor c = slightTint;
-  c.setAlpha(c.alpha() * alphaMultiplier);
-  painter.fillRect(interval.start, 0, interval.length(), height, c);
-  c = halfWhite;
-  c.setAlpha(c.alpha() * alphaMultiplier);
-  painter.fillRect(interval.start, 0, 1, height, c);
-  painter.fillRect(interval.end, 0, 1, height, c);
-}
-
-void drawExistingSelection(QPainter &painter, const EditState &state,
-                           qint32 height, double alphaMultiplier) {
-  if (state.mouse_edit_state.selection.has_value()) {
-    Interval interval{state.mouse_edit_state.selection.value() /
-                      state.scale.clockPerPx};
-    drawSelection(painter, interval, height, alphaMultiplier * 0.8);
-  }
-}
-
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                     const Brush &brush, const Scale &scale, qint32 alpha) {
   if (alpha == 0) return;
@@ -467,14 +447,17 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
       // TODO: colour other's existing selections (or identify somehow. maybe
       // name tag?)
-      drawExistingSelection(painter, adjusted_state, size().height(),
+      drawExistingSelection(painter, adjusted_state.mouse_edit_state,
+                            adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
                         painter, size().height(), alphaMultiplier,
                         selectionAlphaMultiplier);
     }
   }
-  drawExistingSelection(painter, m_client->editState(), size().height(), 1);
+  drawExistingSelection(painter, m_client->editState().mouse_edit_state,
+                        m_client->editState().scale.clockPerPx, size().height(),
+                        1);
   drawOngoingAction(m_client->editState(), m_edit_state, painter,
                     size().height(), 1, 1);
 
@@ -577,7 +560,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
           event->button() != Qt::RightButton)
         type = MouseEditState::Type::Select;
       else {
-        if (event->button() == Qt::RightButton) deselect();
+        if (event->button() == Qt::RightButton) m_client->deselect();
         type = MouseEditState::Type::Seek;
       }
     } else {
@@ -661,11 +644,6 @@ void KeyboardView::selectAll() {
   });
 }
 
-void KeyboardView::deselect() {
-  m_client->changeEditState(
-      [&](auto &s) { s.mouse_edit_state.selection.reset(); });
-}
-
 void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
   if (m_client->editState().mouse_edit_state.selection.has_value()) {
     int offset;
@@ -682,7 +660,22 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
       kind = EVENTKIND_KEY;
       offset *= PITCH_PER_KEY * (wide ? 12 : 1);
     } else {
-      kind = EVENTKIND_VELOCITY;
+      EVENTKIND current_kind =
+          paramOptions[m_client->editState().m_current_param_kind_idx].second;
+      switch (current_kind) {
+        case EVENTKIND_KEY:
+        case EVENTKIND_PAN_VOLUME:
+        case EVENTKIND_VELOCITY:
+        case EVENTKIND_VOLUME:
+        case EVENTKIND_PORTAMENT:
+        case EVENTKIND_VOICENO:
+        case EVENTKIND_PAN_TIME:
+          kind = current_kind;
+          break;
+        default:
+          kind = EVENTKIND_VELOCITY;
+          break;
+      }
       offset *= (wide ? 16 : 4);
     }
     Interval interval(m_client->editState().mouse_edit_state.selection.value());

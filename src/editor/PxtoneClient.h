@@ -64,6 +64,7 @@ class PxtoneClient : public QObject {
 
   void setCurrentUnitNo(int unit_no);
   void setCurrentWoiceNo(int woice_no);
+  void deselect();
   const PxtoneController *controller() { return m_controller; }
   Clipboard *clipboard() { return m_clipboard; }
 

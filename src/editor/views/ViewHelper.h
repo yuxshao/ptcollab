@@ -63,5 +63,9 @@ extern const Brush brushes[];
 extern const int NUM_BRUSHES;
 extern int nonnegative_modulo(int x, int m);
 extern int one_over_last_clock(pxtnService const *pxtn);
-
+extern void drawSelection(QPainter &painter, const Interval &interval,
+                          qint32 height, double alphaMultiplier);
+extern void drawExistingSelection(QPainter &painter,
+                                  const MouseEditState &state, qreal clockPerPx,
+                                  qint32 height, double alphaMultiplier);
 #endif  // VIEWHELPER_H

@@ -108,3 +108,23 @@ int one_over_last_clock(pxtnService const *pxtn) {
   return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
          pxtn->master->get_beat_num();
 }
+
+void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
+                   double alphaMultiplier) {
+  QColor c = slightTint;
+  c.setAlpha(c.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, interval.length(), height, c);
+  c = halfWhite;
+  c.setAlpha(c.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, 1, height, c);
+  painter.fillRect(interval.end, 0, 1, height, c);
+}
+
+void drawExistingSelection(QPainter &painter, const MouseEditState &state,
+                           qreal clockPerPx, qint32 height,
+                           double alphaMultiplier) {
+  if (state.selection.has_value()) {
+    Interval interval{state.selection.value() / clockPerPx};
+    drawSelection(painter, interval, height, alphaMultiplier * 0.8);
+  }
+}

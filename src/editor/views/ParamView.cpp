@@ -215,7 +215,8 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
 static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                             EVENTKIND current_kind, int quantizeClock,
                             qreal clockPerPx, int height,
-                            double alphaMultiplier, int unitOffset) {
+                            double alphaMultiplier,
+                            double selectionAlphaMultiplier, int unitOffset) {
   if (!std::holds_alternative<MouseParamEdit>(state.kind)) return;
   switch (state.type) {
     case MouseEditState::Type::Nothing:
@@ -247,9 +248,10 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       painter.fillRect(state.current_clock / clockPerPx, 0, 1, height,
                        QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
       break;
-      // TODO
-    case MouseEditState::Type::Select:
-      break;
+    case MouseEditState::Type::Select: {
+      Interval interval(state.clock_int(quantizeClock) / clockPerPx);
+      drawSelection(painter, interval, height, selectionAlphaMultiplier);
+    } break;
   }
 }
 void ParamView::paintEvent(QPaintEvent *event) {
@@ -284,13 +286,13 @@ void ParamView::paintEvent(QPaintEvent *event) {
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
 
-  // TODO: Draw selection if copy on
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
 
   QPixmap thisUnit(event->rect().size());
   thisUnit.fill(Qt::transparent);
   int current_unit_no = 0;
+  qreal clockPerPx = m_client->editState().scale.clockPerPx;
   QPainter thisUnitPainter(&thisUnit);
   {
     thisUnitPainter.translate(-event->rect().topLeft());
@@ -330,27 +332,25 @@ void ParamView::paintEvent(QPaintEvent *event) {
       Event curr{e->clock, e->value};
       if (current_kind != EVENTKIND_VOICENO)
         drawLastEvent(*painters[unit_no], current_kind, height(),
-                      lastEvents[unit_no], curr,
-                      m_client->editState().scale.clockPerPx, colors[unit_no],
+                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
                       unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
       else if (unit_no == current_unit_no)
         drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
-                             curr, m_client->editState().scale.clockPerPx,
-                             colors[unit_no], m_client->pxtn());
+                             curr, clockPerPx, colors[unit_no],
+                             m_client->pxtn());
       lastEvents[unit_no] = curr;
     }
     for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
       Event curr = lastEvents[unit_no];
-      curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
+      curr.clock = (width() + 50) * clockPerPx;
       if (current_kind != EVENTKIND_VOICENO)
         drawLastEvent(*painters[unit_no], current_kind, height(),
-                      lastEvents[unit_no], curr,
-                      m_client->editState().scale.clockPerPx, colors[unit_no],
+                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
                       unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
       else if (unit_no == current_unit_no)
         drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
-                             curr, m_client->editState().scale.clockPerPx,
-                             colors[unit_no], m_client->pxtn());
+                             curr, clockPerPx, colors[unit_no],
+                             m_client->pxtn());
     }
   }
 
@@ -363,29 +363,32 @@ void ParamView::paintEvent(QPaintEvent *event) {
           m_client->editState().current_param_kind_idx())
         continue;
       QPainter *this_painter = &thisUnitPainter;
-      double alphaMultiplier = 0.7;
+      double alphaMultiplier = 0.7, selectionAlphaMultiplier = 0.5;
       if (state.m_current_unit_id != m_client->editState().m_current_unit_id) {
         alphaMultiplier = 0.3;
+        selectionAlphaMultiplier = 0.3;
         this_painter = &painter;
       }
       int unit_no = m_client->unitIdMap()
                         .idToNo(state.m_current_unit_id)
                         .value_or(current_unit_no);
+      // TODO: be able to see others' param selections too.
       drawOngoingEdit(*this_painter, state.mouse_edit_state, current_kind,
-                      m_client->quantizeClock(),
-                      m_client->editState().scale.clockPerPx, height(),
-                      alphaMultiplier, unit_no - current_unit_no);
+                      m_client->quantizeClock(), clockPerPx, height(),
+                      alphaMultiplier, selectionAlphaMultiplier,
+                      unit_no - current_unit_no);
     }
   }
   painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
-  drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
-                  m_client->quantizeClock(),
-                  m_client->editState().scale.clockPerPx, height(), 1, 0);
 
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
-                            m_client->editState().scale.clockPerPx, false);
-  drawRepeatAndEndBars(painter, m_moo_clock,
-                       m_client->editState().scale.clockPerPx, height());
+  if (m_client->clipboard()->kindIsCopied(current_kind))
+    drawExistingSelection(painter, m_client->editState().mouse_edit_state,
+                          clockPerPx, size().height(), 1);
+  drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
+                  m_client->quantizeClock(), clockPerPx, height(), 1, 1, 0);
+
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(), clockPerPx, false);
+  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -451,7 +454,13 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
   m_client->changeEditState([&](EditState &s) {
     MouseEditState::Type &type = s.mouse_edit_state.type;
     if (event->modifiers() & Qt::ShiftModifier) {
-      type = MouseEditState::Type::Seek;
+      if (event->modifiers() & Qt::ControlModifier &&
+          event->button() != Qt::RightButton)
+        type = MouseEditState::Type::Select;
+      else {
+        if (event->button() == Qt::RightButton) m_client->deselect();
+        type = MouseEditState::Type::Seek;
+      }
     } else {
       if (event->button() == Qt::RightButton)
         type = MouseEditState::Type::DeleteOn;

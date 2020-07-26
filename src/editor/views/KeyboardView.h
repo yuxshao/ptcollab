@@ -38,7 +38,6 @@ class KeyboardView : public QWidget {
  public slots:
   void toggleTestActivity();
   void selectAll();
-  void deselect();
   void transposeSelection(Direction dir, bool wide, bool shift);
   void cutSelection();
   void copySelection();
