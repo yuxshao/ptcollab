@@ -284,6 +284,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
 
+  // TODO: Draw selection if copy on
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
 

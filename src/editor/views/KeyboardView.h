@@ -7,7 +7,6 @@
 #include <QWidget>
 #include <optional>
 
-#include "../Clipboard.h"
 #include "../EditState.h"
 #include "Animation.h"
 #include "MooClock.h"
@@ -65,7 +64,6 @@ class KeyboardView : public QWidget {
   MooClock *m_moo_clock;
 
   bool m_test_activity;
-  Clipboard m_clipboard;
 };
 
 #endif  // KEYBOARDVIEW_H

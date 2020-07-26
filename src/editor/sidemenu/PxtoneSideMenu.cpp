@@ -170,11 +170,20 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     m_client->changeEditState(
         [&](EditState &s) { s.m_follow_playhead = follow; });
   });
+  connect(this, &SideMenu::copyChanged, [this](bool copy) {
+    EVENTKIND kind =
+        paramOptions[m_client->editState().current_param_kind_idx()].second;
+    if (m_client->clipboard()->kindIsCopied(kind) != copy)
+      m_client->clipboard()->setKindIsCopied(kind, copy);
+  });
+  connect(m_client->clipboard(), &Clipboard::copyKindsSet, this,
+          &PxtoneSideMenu::refreshCopyCheckbox);
   connect(this, &SideMenu::addOverdrive,
           [this]() { m_client->sendAction(Overdrive::Add{}); });
   connect(this, &SideMenu::removeOverdrive, [this](int ovdrv_no) {
     m_client->sendAction(Overdrive::Remove{ovdrv_no});
   });
+  refreshCopyCheckbox();
 }
 
 void PxtoneSideMenu::refreshWoices() {
@@ -187,6 +196,12 @@ void PxtoneSideMenu::refreshWoices() {
 void PxtoneSideMenu::refreshTempoBeat() {
   setTempo(m_client->pxtn()->master->get_beat_tempo());
   setBeats(m_client->pxtn()->master->get_beat_num());
+}
+
+void PxtoneSideMenu::refreshCopyCheckbox() {
+  EVENTKIND kind =
+      paramOptions[m_client->editState().current_param_kind_idx()].second;
+  setCopy(m_client->clipboard()->kindIsCopied(kind));
 }
 
 void PxtoneSideMenu::handleNewEditState(const EditState &s) {
@@ -205,7 +220,10 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
   }
   if (m_last_edit_state.m_follow_playhead != s.m_follow_playhead)
     setFollow(s.m_follow_playhead);
-  if (m_last_edit_state.current_param_kind_idx() != s.current_param_kind_idx())
+  if (m_last_edit_state.current_param_kind_idx() !=
+      s.current_param_kind_idx()) {
     setParamKindIndex(s.current_param_kind_idx());
+    refreshCopyCheckbox();
+  }
   m_last_edit_state = s;
 };

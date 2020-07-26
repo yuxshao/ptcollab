@@ -16,6 +16,7 @@ class PxtoneSideMenu : public SideMenu {
   void handleNewEditState(const EditState &s);
   void refreshWoices();
   void refreshTempoBeat();
+  void refreshCopyCheckbox();
 
  public:
   explicit PxtoneSideMenu(PxtoneClient *client, QWidget *parent = nullptr);

@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QObject>
 
+#include "Clipboard.h"
 #include "PxtoneController.h"
 #include "network/Client.h"
 
@@ -26,6 +27,7 @@ class PxtoneClient : public QObject {
   EditState m_edit_state;
   QAudioOutput *m_audio;
   PxtoneIODevice *m_pxtn_device;
+  Clipboard *m_clipboard;
 
  signals:
   void userListChanged(const QList<std::pair<qint64, QString>> &users);
@@ -63,6 +65,7 @@ class PxtoneClient : public QObject {
   void setCurrentUnitNo(int unit_no);
   void setCurrentWoiceNo(int woice_no);
   const PxtoneController *controller() { return m_controller; }
+  Clipboard *clipboard() { return m_clipboard; }
 
  private:
   void processRemoteAction(const ServerAction &a);

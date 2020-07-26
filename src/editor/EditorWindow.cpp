@@ -12,6 +12,7 @@
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
+#include "ComboOptions.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MooClock.h"
@@ -93,7 +94,9 @@ EditorWindow::EditorWindow(QWidget *parent)
         "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
         "deselect.\nWith "
         "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
-        "cycle unit.\n(E/D) to cycle parameter.\nF to follow playhead.");
+        "cycle unit.\n(E/D) to cycle parameter.\nF to follow playhead.\n C to "
+        "toggle if a parameter is copied. Velocity is tied to note and on "
+        "events.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
@@ -136,6 +139,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->copySelection();
+      else {
+        EVENTKIND kind =
+            paramOptions[m_client->editState().current_param_kind_idx()].second;
+        m_client->clipboard()->setKindIsCopied(
+            kind, !m_client->clipboard()->kindIsCopied(kind));
+      }
       break;
     case Qt::Key_D:
       if (event->modifiers() & Qt::ControlModifier)

@@ -38,8 +38,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_client(client),
       m_moo_clock(moo_clock),
-      m_test_activity(false),
-      m_clipboard(m_pxtn) {
+      m_test_activity(false) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
@@ -806,13 +805,14 @@ std::set<int> KeyboardView::selectedUnitNos() {
 
 void KeyboardView::copySelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
-  m_clipboard.copy(selectedUnitNos(),
-                   m_client->editState().mouse_edit_state.selection.value());
+  m_client->clipboard()->copy(
+      selectedUnitNos(),
+      m_client->editState().mouse_edit_state.selection.value());
 }
 
 void KeyboardView::clearSelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
-  std::list<Action::Primitive> actions = m_clipboard.makeClear(
+  std::list<Action::Primitive> actions = m_client->clipboard()->makeClear(
       selectedUnitNos(),
       m_client->editState().mouse_edit_state.selection.value(),
       m_client->unitIdMap());
@@ -828,9 +828,9 @@ void KeyboardView::paste() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->changeEditState([&](auto &s) {
     Interval &selection = s.mouse_edit_state.selection.value();
-    std::list<Action::Primitive> actions = m_clipboard.makePaste(
+    std::list<Action::Primitive> actions = m_client->clipboard()->makePaste(
         selectedUnitNos(), selection.start, m_client->unitIdMap());
     if (actions.size() > 0) m_client->applyAction(actions);
-    selection.end = selection.start + m_clipboard.copyLength();
+    selection.end = selection.start + m_client->clipboard()->copyLength();
   });
 }

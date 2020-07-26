@@ -17,7 +17,8 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
                            QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
-      m_client(new Client(this)) {
+      m_client(new Client(this)),
+      m_clipboard(new Clipboard(pxtn, this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
     qWarning()

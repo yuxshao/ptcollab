@@ -91,7 +91,9 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
   });
   connect(ui->setRepeatBtn, &QPushButton::clicked, this, &SideMenu::setRepeat);
   connect(ui->setLastBtn, &QPushButton::clicked, this, &SideMenu::setLast);
-  connect(ui->followCheckbox, &QCheckBox::toggled, this, &SideMenu::setFollow);
+  connect(ui->followCheckbox, &QCheckBox::toggled, this,
+          &SideMenu::followChanged);
+  connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
@@ -237,6 +239,10 @@ void SideMenu::setBeats(int beats) {
 
 void SideMenu::setFollow(bool follow) {
   ui->followCheckbox->setCheckState(follow ? Qt::Checked : Qt::Unchecked);
+}
+
+void SideMenu::setCopy(bool copy) {
+  ui->copyCheckbox->setCheckState(copy ? Qt::Checked : Qt::Unchecked);
 }
 
 void SideMenu::setParamKindIndex(int index) {
