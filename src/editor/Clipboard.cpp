@@ -38,7 +38,7 @@ void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range) {
 
 std::list<Action::Primitive> Clipboard::makePaste(
     const std::set<int> &paste_unit_nos, qint32 start_clock,
-    const UnitIdMap &map) {
+    const NoIdMap &map) {
   using namespace Action;
   std::list<Primitive> actions;
   auto min = std::min_element(paste_unit_nos.begin(), paste_unit_nos.end());
@@ -73,7 +73,7 @@ std::list<Action::Primitive> Clipboard::makePaste(
 // TODO: Maybe shouldn't be here? Doesn't actually use clipboard state ATM
 std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
                                                   const Interval &range,
-                                                  const UnitIdMap &map) {
+                                                  const NoIdMap &map) {
   using namespace Action;
   std::list<Primitive> actions;
   // TODO: Dedup with makePaste

@@ -4,7 +4,7 @@
 #include <QStyledItemDelegate>
 
 #include "editor/PxtoneClient.h"
-#include "protocol/UnitIdMap.h"
+#include "protocol/NoIdMap.h"
 
 enum struct UnitListColumn { Visible, Played, Select, Name, MAX = Name };
 

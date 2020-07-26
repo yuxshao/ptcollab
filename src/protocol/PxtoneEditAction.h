@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "UnitIdMap.h"
+#include "NoIdMap.h"
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnService.h"
 
@@ -80,7 +80,7 @@ QDataStream &operator>>(QDataStream &in, Primitive &a);
 // the case of collaborative editing. You can't compute it beforehand.
 std::list<Primitive> apply_and_get_undo(const std::list<Primitive> &actions,
                                         pxtnService *pxtn, bool *widthChanged,
-                                        const UnitIdMap &map);
+                                        const NoIdMap &map);
 }  // namespace Action
 
 #endif  // PXTONEEDITACTION_H

@@ -56,10 +56,10 @@ HEADERS += \
            editor/views/ViewHelper.h \
            protocol/Data.h \
            protocol/Hello.h \
+           protocol/NoIdMap.h \
            protocol/PxtoneEditAction.h \
            protocol/RemoteAction.h \
            protocol/SerializeVariant.h \
-           protocol/UnitIdMap.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
            pxtone/pxtnDescriptor.h \
@@ -113,9 +113,9 @@ SOURCES += main.cpp \
            editor/views/ViewHelper.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \
+           protocol/NoIdMap.cpp \
            protocol/PxtoneEditAction.cpp \
            protocol/RemoteAction.cpp \
-           protocol/UnitIdMap.cpp \
            pxtone/pxtnDelay.cpp \
            pxtone/pxtnDescriptor.cpp \
            pxtone/pxtnError.cpp \
