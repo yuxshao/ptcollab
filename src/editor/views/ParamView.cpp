@@ -140,8 +140,8 @@ constexpr int32_t lineHeight = 4;
 constexpr int32_t lineWidth = 2;
 constexpr int32_t tailLineHeight = 4;
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
-                          const Event &last, const Event &curr, int clockPerPx,
-                          const QColor &onColor) {
+                          const Event &last, const Event &curr,
+                          qreal clockPerPx, const QColor &onColor) {
   if (onColor.alpha() == 0) return;
   int32_t thisX = curr.clock / clockPerPx;
 
@@ -179,7 +179,34 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                      tailLineHeight - 2, onColor);
   }
 }
-
+static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
+                            EVENTKIND current_kind, int quantizeClock,
+                            qreal clockPerPx, int height,
+                            double alphaMultiplier) {
+  switch (state.type) {
+    case MouseEditState::Type::Nothing:
+    case MouseEditState::Type::SetOn:
+    case MouseEditState::Type::DeleteOn:
+    case MouseEditState::Type::SetNote:
+    case MouseEditState::Type::DeleteNote: {
+      QColor c(brightGreen);
+      c.setAlpha(alphaMultiplier *
+                 (state.type == MouseEditState::Nothing ? 128 : 255));
+      for (const ParamEditInterval &p :
+           lineEdit(state, current_kind, quantizeClock)) {
+        int x = p.clock.start / clockPerPx;
+        int w = p.clock.length() / clockPerPx;
+        int y = paramToY(p.param, current_kind, height);
+        painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
+      }
+    } break;
+    // TODO
+    case MouseEditState::Type::Seek:
+      break;
+    case MouseEditState::Type::Select:
+      break;
+  }
+}
 void ParamView::paintEvent(QPaintEvent *event) {
   const pxtnService *pxtn = m_client->pxtn();
   Interval clockBounds = {
@@ -215,10 +242,10 @@ void ParamView::paintEvent(QPaintEvent *event) {
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
 
+  QPixmap thisUnit(event->rect().size());
+  thisUnit.fill(Qt::transparent);
+  QPainter thisUnitPainter(&thisUnit);
   {
-    QPixmap thisUnit(event->rect().size());
-    thisUnit.fill(Qt::transparent);
-    QPainter thisUnitPainter(&thisUnit);
     thisUnitPainter.translate(-event->rect().topLeft());
     std::vector<QColor> colors;
     std::vector<Event> lastEvents;
@@ -263,34 +290,32 @@ void ParamView::paintEvent(QPaintEvent *event) {
       drawLastEvent(*painters[i], current_kind, height(), lastEvents[i], curr,
                     m_client->editState().scale.clockPerPx, colors[i]);
     }
-    painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
   }
 
   // draw ongoing edit
-  const MouseEditState &mouse_edit_state =
-      m_client->editState().mouse_edit_state;
-  switch (mouse_edit_state.type) {
-    case MouseEditState::Type::Nothing:
-    case MouseEditState::Type::SetOn:
-    case MouseEditState::Type::DeleteOn:
-    case MouseEditState::Type::SetNote:
-    case MouseEditState::Type::DeleteNote: {
-      QColor c(brightGreen);
-      c.setAlpha(mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
-      for (const ParamEditInterval &p : lineEdit(mouse_edit_state, current_kind,
-                                                 m_client->quantizeClock())) {
-        int x = p.clock.start / m_client->editState().scale.clockPerPx;
-        int w = p.clock.length() / m_client->editState().scale.clockPerPx;
-        int y = paramToY(p.param, current_kind, height());
-        painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
+  for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
+    if (uid == m_client->uid()) continue;
+    if (remote_state.state.has_value()) {
+      const EditState &state = remote_state.state.value();
+      if (state.current_param_kind_idx() !=
+          m_client->editState().current_param_kind_idx())
+        continue;
+      QPainter *this_painter = &thisUnitPainter;
+      double alphaMultiplier = 0.7;
+      if (state.m_current_unit_id != m_client->editState().m_current_unit_id) {
+        alphaMultiplier = 0.3;
+        this_painter = &painter;
       }
-    } break;
-    // TODO
-    case MouseEditState::Type::Seek:
-      break;
-    case MouseEditState::Type::Select:
-      break;
+      drawOngoingEdit(*this_painter, state.mouse_edit_state, current_kind,
+                      m_client->quantizeClock(),
+                      m_client->editState().scale.clockPerPx, height(),
+                      alphaMultiplier);
+    }
   }
+  painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
+  drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
+                  m_client->quantizeClock(),
+                  m_client->editState().scale.clockPerPx, height(), 1);
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, false);
