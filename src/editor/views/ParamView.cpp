@@ -142,6 +142,7 @@ constexpr int32_t tailLineHeight = 4;
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                           const Event &last, const Event &curr, int clockPerPx,
                           const QColor &onColor) {
+  if (onColor.alpha() == 0) return;
   int32_t thisX = curr.clock / clockPerPx;
 
   if (!Evelist_Kind_IsTail(current_kind)) {
@@ -157,7 +158,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, onColor);
     // Highlight at lastX
     painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
-                     Qt::white);
+                     QColor::fromRgb(255, 255, 255, onColor.alpha()));
     if (current_kind == EVENTKIND_GROUPNO) {
       painter.setPen(Qt::white);
       painter.setFont(QFont("Sans serif", 6));
@@ -213,34 +214,56 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
-  {
-    QColor onColor =
-        brushes[nonnegative_modulo(m_client->editState().m_current_unit_id,
-                                   NUM_BRUSHES)]
-            .toQColor(108, false, 255);
-    int h, s, l, a;
-    onColor.getHsl(&h, &s, &l, &a);
-    onColor.setHsl(h, s, l * 3 / 4, a);
 
-    Event last{-1000, DefaultKindValue(current_kind)};
+  {
+    QPixmap thisUnit(event->rect().size());
+    thisUnit.fill(Qt::transparent);
+    QPainter thisUnitPainter(&thisUnit);
+    thisUnitPainter.translate(-event->rect().topLeft());
+    std::vector<QColor> colors;
+    std::vector<Event> lastEvents;
+    std::vector<QPainter *> painters;
+    colors.reserve(m_client->pxtn()->Unit_Num());
+    painters.reserve(m_client->pxtn()->Unit_Num());
+    lastEvents.reserve(m_client->pxtn()->Unit_Num());
+    for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
+      lastEvents.emplace_back(Event{-1000, DefaultKindValue(current_kind)});
+      int unit_id = m_client->unitIdMap().noToId(i);
+      colors.push_back(
+          brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(108, false,
+                                                                     255));
+      int h, s, l, a;
+      colors.rbegin()->getHsl(&h, &s, &l, &a);
+      if (m_client->editState().m_current_unit_id != unit_id) {
+        if (m_client->pxtn()->Unit_Get(i)->get_visible())
+          a *= 0.3;
+        else
+          a *= 0;
+        painters.push_back(&painter);
+      } else
+        painters.push_back(&thisUnitPainter);
+      colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
+    }
+
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
          e = e->next) {
       if (e->clock > clockBounds.end) break;
       if (e->kind != current_kind) continue;
       int unit_no = e->unit_no;
-      qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
-      bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-      if (!matchingUnit) continue;
 
       Event curr{e->clock, e->value};
-      drawLastEvent(painter, current_kind, height(), last, curr,
-                    m_client->editState().scale.clockPerPx, onColor);
-      last = curr;
+      drawLastEvent(*painters[unit_no], current_kind, height(),
+                    lastEvents[unit_no], curr,
+                    m_client->editState().scale.clockPerPx, colors[unit_no]);
+      lastEvents[unit_no] = curr;
     }
-    Event curr = last;
-    curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
-    drawLastEvent(painter, current_kind, height(), last, curr,
-                  m_client->editState().scale.clockPerPx, onColor);
+    for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
+      Event curr = lastEvents[i];
+      curr.clock = (width() + 50) * m_client->editState().scale.clockPerPx;
+      drawLastEvent(*painters[i], current_kind, height(), lastEvents[i], curr,
+                    m_client->editState().scale.clockPerPx, colors[i]);
+    }
+    painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
   }
 
   // draw ongoing edit

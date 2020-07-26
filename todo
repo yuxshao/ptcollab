@@ -257,10 +257,11 @@ fill architecture could work well.
 3. Shortcuts for cycling param
 4. Edit unit names
 5. Modify effects
+6. Draw params for other units in lower alpha
 
 Todo by priority
 ----------------
- - draw params / ongoing edits for other units in lower alpha
+ - ongoing edits for other units in lower alpha
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
  - note previews on param input
