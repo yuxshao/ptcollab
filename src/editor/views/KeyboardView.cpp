@@ -12,11 +12,6 @@
 #include "editor/ComboOptions.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
-int one_over_last_clock(pxtnService const *pxtn) {
-  return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
-         pxtn->master->get_beat_num();
-}
-
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
   m_quantize_clock = pxtn->master->get_beat_clock() /

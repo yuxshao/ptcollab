@@ -62,5 +62,6 @@ struct Brush {
 extern const Brush brushes[];
 extern const int NUM_BRUSHES;
 extern int nonnegative_modulo(int x, int m);
+extern int one_over_last_clock(pxtnService const *pxtn);
 
 #endif  // VIEWHELPER_H

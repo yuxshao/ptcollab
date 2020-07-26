@@ -264,6 +264,7 @@ Todo by priority
  - select operations (keycmds) for other params (once those exist)
    - draw selection in param bar
  - note previews on param input
+ - change instruments in unit
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

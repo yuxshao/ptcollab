@@ -103,3 +103,8 @@ int nonnegative_modulo(int x, int m) {
   if (m == 0) return 0;
   return ((x % m) + m) % m;
 }
+
+int one_over_last_clock(pxtnService const *pxtn) {
+  return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
+         pxtn->master->get_beat_num();
+}

@@ -27,12 +27,6 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
           &QWidget::updateGeometry);
 }
 
-// TODO: Don't repeat
-static int one_over_last_clock(pxtnService const *pxtn) {
-  return pxtn->master->get_beat_clock() * (pxtn->master->get_meas_num() + 1) *
-         pxtn->master->get_beat_num();
-}
-
 QSize ParamView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
