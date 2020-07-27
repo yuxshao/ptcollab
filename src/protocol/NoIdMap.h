@@ -12,8 +12,8 @@
 class NoIdMap {
  public:
   NoIdMap(int start);
-  qint32 numUnits() const { return m_no_to_id.size(); }
-  qint32 noToId(qint32 no) const { return m_no_to_id[no]; };
+  size_t numUnits() const { return m_no_to_id.size(); }
+  qint32 noToId(size_t no) const { return m_no_to_id[no]; };
   std::optional<qint32> idToNo(qint32 id) const;
   void add();
   void remove(size_t no);
