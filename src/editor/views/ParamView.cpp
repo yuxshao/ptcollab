@@ -488,6 +488,18 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
   });
 }
 
+static void setVelInRange(const EVERECORD *&p, int32_t unit_no,
+                          const ParamEditInterval &interval,
+                          std::list<Action::Primitive> &actions) {
+  using namespace Action;
+  while (p && p->prev && p->prev->clock >= interval.clock.start) p = p->prev;
+  while (p && p->clock < interval.clock.start) p = p->next;
+  for (; p && p->clock < interval.clock.end; p = p->next)
+    if (p->kind == EVENTKIND_VELOCITY && p->unit_no == unit_no)
+      actions.push_back(
+          {EVENTKIND_VELOCITY, unit_no, p->clock, Add{interval.param}});
+}
+
 void ParamView::mouseReleaseEvent(QMouseEvent *event) {
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
@@ -512,6 +524,8 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
         case MouseEditState::DeleteOn:
         case MouseEditState::SetNote:
         case MouseEditState::DeleteNote:
+          // Has gotten a bit convoluted, though this is because there are like
+          // 3 different cases of adding something.
           actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                              Delete{clock_int.end}});
           if (s.mouse_edit_state.type == MouseEditState::SetOn ||
@@ -521,11 +535,21 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                   {kind, s.m_current_unit_id, clock_int.start,
                    Add{m_client->editState().m_current_woice_id}});
             } else if (!Evelist_Kind_IsTail(kind)) {
-              for (const ParamEditInterval &p : lineEdit(
-                       s.mouse_edit_state, kind, m_client->quantizeClock())) {
-                actions.push_back(
-                    {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
-              }
+              const std::list<ParamEditInterval> intervals =
+                  lineEdit(s.mouse_edit_state, kind, m_client->quantizeClock());
+              if (kind == EVENTKIND_VELOCITY) {
+                std::optional<qint32> unit_no =
+                    m_client->unitIdMap().idToNo(s.m_current_unit_id);
+                if (unit_no.has_value()) {
+                  const EVERECORD *records =
+                      m_client->pxtn()->evels->get_Records();
+                  for (const ParamEditInterval &p : intervals)
+                    setVelInRange(records, unit_no.value(), p, actions);
+                }
+              } else
+                for (const ParamEditInterval &p : intervals)
+                  actions.push_back(
+                      {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
             } else {
               actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                                  Add{clock_int.length()}});

@@ -266,11 +266,11 @@ fill architecture could work well.
 1. Change woices of unit
 2. Copy option for params, display selection in param view
 3. Transpose param
+4. Note previews on param input
+5. Sane velocity setting (you can only modify existing velocity events)
 
 Todo by priority
 ----------------
- - sane velocity setting
- - note previews on param input
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
