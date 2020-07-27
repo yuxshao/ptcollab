@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>626</height>
+    <height>635</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -228,13 +228,6 @@
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
          </attribute>
-        </widget>
-       </item>
-       <item>
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
         </widget>
        </item>
        <item>
