@@ -432,6 +432,14 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     }
   }
 
+  // Print measure numbers
+  /*painter.setPen(brightGreen);
+  for (int meas = 0; true; ++meas) {
+    int x = m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num() *
+            meas / m_client->editState().scale.clockPerPx;
+    if (x > size().width()) break;
+    painter.drawText(x, 1, 1000, 1000, Qt::AlignTop, QString("%1").arg(meas));
+  }*/
   // Draw existing selections
 
   // Draw selections & ongoing edits / selections / seeks
@@ -513,8 +521,8 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
       vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0,
                           EVENTMAX_VELOCITY);
       if (m_audio_note_preview != nullptr)
-        m_audio_note_preview->setVel(
-            impliedVelocity(e.mouse_edit_state, e.scale));
+        m_audio_note_preview->processEvent(
+            EVENTKIND_VELOCITY, impliedVelocity(e.mouse_edit_state, e.scale));
     });
     event->accept();
   }
@@ -608,8 +616,10 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
 void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
   if (m_audio_note_preview != nullptr)
-    m_audio_note_preview->setVel(impliedVelocity(
-        m_client->editState().mouse_edit_state, m_client->editState().scale));
+    m_audio_note_preview->processEvent(
+        EVENTKIND_VELOCITY,
+        impliedVelocity(m_client->editState().mouse_edit_state,
+                        m_client->editState().scale));
 
   m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
   event->ignore();

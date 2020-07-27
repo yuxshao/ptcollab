@@ -50,12 +50,58 @@ void mooParams::resetVoiceOn(pxtnUnitTone* p_u) const {
 bool pxtnService::_moo_InitUnitTone(mooState& moo_state) const {
   return moo_state.resetUnits(_unit_num, Woice_Get(EVENTDEFAULT_VOICENO));
 }
+#include <QDebug>
+void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
+                                  int32_t value,
+                                  const pxtnService* pxtn) const {
+  int32_t dst_sps, dst_ch_num;
+  pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
+  switch (kind) {
+    case EVENTKIND_KEY:
+      p_u->Tone_Key(value);
+      break;
+    case EVENTKIND_PAN_VOLUME:
+      p_u->Tone_Pan_Volume(dst_ch_num, value);
+      break;
+    case EVENTKIND_PAN_TIME:
+      p_u->Tone_Pan_Time(dst_ch_num, value, dst_sps);
+      break;
+    case EVENTKIND_VELOCITY:
+      p_u->Tone_Velocity(value);
+      break;
+    case EVENTKIND_VOLUME:
+      p_u->Tone_Volume(value);
+      break;
+    case EVENTKIND_PORTAMENT:
+      p_u->Tone_Portament((int32_t)(value * clock_rate));
+      break;
+    case EVENTKIND_BEATCLOCK:
+    case EVENTKIND_BEATTEMPO:
+    case EVENTKIND_BEATNUM:
+    case EVENTKIND_REPEAT:
+    case EVENTKIND_LAST:
+    case EVENTKIND_NULL:
+    case EVENTKIND_ON:
+    case EVENTKIND_NUM:
+      break;
+    case EVENTKIND_VOICENO: {
+      p_u->set_woice(pxtn->Woice_Get(value));
+      resetVoiceOn(p_u);
+    } break;
+    case EVENTKIND_GROUPNO:
+      p_u->Tone_GroupNo(value);
+      break;
+    case EVENTKIND_TUNING:
+      p_u->Tone_Tuning(*((float*)(&value)));
+      break;
+  }
+}
 
 // u is used to look ahead to cut short notes whose release go into the next.
 // This note duration cutting is for the smoothing near the end of a note.
 void mooParams::processEvent(pxtnUnitTone* p_u, int32_t u, const EVERECORD* e,
-                             int32_t clock, int32_t dst_ch_num, int32_t dst_sps,
-                             int32_t smp_end, const pxtnService* pxtn) const {
+                             int32_t clock, int32_t smp_end,
+                             const pxtnService* pxtn) const {
   pxtnVOICETONE* p_tone;
   std::shared_ptr<const pxtnWoice> p_wc;
   const pxtnVOICEINSTANCE* p_vi;
@@ -126,39 +172,8 @@ void mooParams::processEvent(pxtnUnitTone* p_u, int32_t u, const EVERECORD* e,
       break;
     }
 
-    case EVENTKIND_KEY:
-      p_u->Tone_Key(e->value);
-      break;
-    case EVENTKIND_PAN_VOLUME:
-      p_u->Tone_Pan_Volume(dst_ch_num, e->value);
-      break;
-    case EVENTKIND_PAN_TIME:
-      p_u->Tone_Pan_Time(dst_ch_num, e->value, dst_sps);
-      break;
-    case EVENTKIND_VELOCITY:
-      p_u->Tone_Velocity(e->value);
-      break;
-    case EVENTKIND_VOLUME:
-      p_u->Tone_Volume(e->value);
-      break;
-    case EVENTKIND_PORTAMENT:
-      p_u->Tone_Portament((int32_t)(e->value * clock_rate));
-      break;
-    case EVENTKIND_BEATCLOCK:
-    case EVENTKIND_BEATTEMPO:
-    case EVENTKIND_BEATNUM:
-    case EVENTKIND_REPEAT:
-    case EVENTKIND_LAST:
-      break;
-    case EVENTKIND_VOICENO: {
-      p_u->set_woice(pxtn->Woice_Get(e->value));
-      resetVoiceOn(p_u);
-    } break;
-    case EVENTKIND_GROUPNO:
-      p_u->Tone_GroupNo(e->value);
-      break;
-    case EVENTKIND_TUNING:
-      p_u->Tone_Tuning(*((float*)(&e->value)));
+    default:
+      processNonOnEvent(p_u, EVENTKIND(e->kind), e->value, pxtn);
       break;
   }
 }
@@ -192,7 +207,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
     // TODO: Be robust to if there's a mention of a new unit. Generate the new
     // unit on the fly?
     moo_state.params.processEvent(&moo_state.units[u], u, moo_state.p_eve,
-                                  clock, _dst_ch_num, _dst_sps, smp_end, this);
+                                  clock, smp_end, this);
   }
 
   // sampling..

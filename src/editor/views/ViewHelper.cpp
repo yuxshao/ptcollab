@@ -128,3 +128,5 @@ void drawExistingSelection(QPainter &painter, const MouseEditState &state,
     drawSelection(painter, interval, height, alphaMultiplier * 0.8);
   }
 }
+
+const QColor brightGreen(QColor::fromRgb(0, 240, 128));

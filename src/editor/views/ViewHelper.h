@@ -68,4 +68,5 @@ extern void drawSelection(QPainter &painter, const Interval &interval,
 extern void drawExistingSelection(QPainter &painter,
                                   const MouseEditState &state, qreal clockPerPx,
                                   qint32 height, double alphaMultiplier);
+extern const QColor brightGreen;
 #endif  // VIEWHELPER_H

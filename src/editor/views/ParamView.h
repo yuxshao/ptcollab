@@ -6,6 +6,7 @@
 #include "Animation.h"
 #include "MooClock.h"
 #include "editor/PxtoneClient.h"
+#include "editor/audio/NotePreview.h"
 
 class ParamView : public QWidget {
   Q_OBJECT
@@ -14,6 +15,7 @@ class ParamView : public QWidget {
   Animation *m_anim;
   Scale m_last_scale;
   MooClock *m_moo_clock;
+  std::unique_ptr<NotePreview> m_audio_note_preview;
 
   void paintEvent(QPaintEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;

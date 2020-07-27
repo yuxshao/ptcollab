@@ -11,8 +11,8 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
     : QWidget(parent),
       m_client(client),
       m_anim(new Animation(this)),
-      m_moo_clock(moo_clock) {
-  // TODO: dedup with keyboardview
+      m_moo_clock(moo_clock),
+      m_audio_note_preview(nullptr) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
@@ -125,7 +125,6 @@ static const QColor *GAP_COLORS[] = {&darkBlue, &darkBlue, &blue,
                                      &blue,     &darkBlue, &darkBlue};
 
 static const QColor darkTeal(QColor::fromRgb(0, 96, 96));
-static const QColor brightGreen(QColor::fromRgb(0, 240, 128));
 
 constexpr int NUM_BACKGROUND_GAPS =
     sizeof(BACKGROUND_GAPS) / sizeof(BACKGROUND_GAPS[0]);
@@ -469,9 +468,24 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
         make_note_preview = true;
       }
     }
+    if (make_note_preview) {
+      auto maybe_unit_no =
+          m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+      if (maybe_unit_no != std::nullopt &&
+          std::holds_alternative<MouseParamEdit>(s.mouse_edit_state.kind)) {
+        EVERECORD e;
+        e.kind =
+            paramOptions[m_client->editState().current_param_kind_idx()].second;
+        e.value = (e.kind == EVENTKIND_VOICENO
+                       ? m_client->editState().m_current_woice_id
+                       : std::get<MouseParamEdit>(s.mouse_edit_state.kind)
+                             .current_param);
+        m_audio_note_preview = std::make_unique<NotePreview>(
+            m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
+            s.mouse_edit_state.current_clock, std::list<EVERECORD>({e}), this);
+      }
+    }
   });
-
-  // TODO: make note preview
 }
 
 void ParamView::mouseReleaseEvent(QMouseEvent *event) {
@@ -479,6 +493,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
     event->ignore();
     return;
   }
+  if (m_audio_note_preview) m_audio_note_preview = nullptr;
   if (!std::holds_alternative<MouseParamEdit>(
           m_client->editState().mouse_edit_state.kind))
     return;

@@ -56,8 +56,10 @@ struct mooParams {
   mooParams();
 
   void processEvent(pxtnUnitTone *p_u, int32_t u, const EVERECORD *e,
-                    int32_t clock, int32_t dst_ch_num, int32_t dst_sps,
-                    int32_t smp_num, const pxtnService *pxtn) const;
+                    int32_t clock, int32_t smp_num,
+                    const pxtnService *pxtn) const;
+  void processNonOnEvent(pxtnUnitTone *p_u, EVENTKIND kind, int32_t value,
+                         const pxtnService *pxtn) const;
 
   // TODO: maybe don't need to expose
   void resetVoiceOn(pxtnUnitTone *p_u) const;
