@@ -54,8 +54,8 @@ bool pxtnService::_moo_InitUnitTone(mooState& moo_state) const {
 void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
                                   int32_t value,
                                   const pxtnService* pxtn) const {
-  int32_t dst_sps, dst_ch_num;
-  pxtn->get_destination_quality(&dst_sps, &dst_ch_num);
+  int32_t dst_ch_num, dst_sps;
+  pxtn->get_destination_quality(&dst_ch_num, &dst_sps);
   switch (kind) {
     case EVENTKIND_KEY:
       p_u->Tone_Key(value);
