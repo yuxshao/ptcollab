@@ -342,6 +342,12 @@
       <layout class="QHBoxLayout" name="horizontalLayout_11">
        <item>
         <widget class="QComboBox" name="quantX">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
@@ -349,6 +355,12 @@
        </item>
        <item>
         <widget class="QLabel" name="label_3">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Y</string>
          </property>
@@ -356,6 +368,12 @@
        </item>
        <item>
         <widget class="QComboBox" name="quantY">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
