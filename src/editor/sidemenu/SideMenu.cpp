@@ -245,6 +245,16 @@ void SideMenu::setCopy(bool copy) {
   ui->copyCheckbox->setCheckState(copy ? Qt::Checked : Qt::Unchecked);
 }
 
+void SideMenu::setSetOrClearMeas(bool set) {
+  if (set) {
+    ui->setLastBtn->setText("Set last");
+    ui->setRepeatBtn->setText("Set repeat");
+  } else {
+    ui->setLastBtn->setText("Clear last");
+    ui->setRepeatBtn->setText("Clear repeat");
+  }
+}
+
 void SideMenu::setParamKindIndex(int index) {
   if (ui->paramSelection->currentIndex() != index)
     ui->paramSelection->setCurrentIndex(index);

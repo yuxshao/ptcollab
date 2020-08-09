@@ -69,6 +69,7 @@ class SideMenu : public QWidget {
   void setBeats(int beats);
   void setFollow(bool follow);
   void setCopy(bool);
+  void setSetOrClearMeas(bool);
 
  private:
   Ui::SideMenu *ui;

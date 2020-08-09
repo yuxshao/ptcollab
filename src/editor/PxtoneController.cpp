@@ -293,13 +293,13 @@ bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
 
 void PxtoneController::applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid) {
   (void)uid;
-  m_pxtn->master->set_repeat_meas(a.meas);
+  m_pxtn->master->set_repeat_meas(a.meas.value_or(0));
   emit edited();
 }
 
 void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   (void)uid;
-  m_pxtn->master->set_last_meas(a.meas);
+  m_pxtn->master->set_last_meas(a.meas.value_or(0));
   emit edited();
 }
 

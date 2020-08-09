@@ -233,7 +233,7 @@ inline QTextStream &operator<<(QTextStream &out, const BeatChange &a) {
 }
 
 struct SetRepeatMeas {
-  qint32 meas;
+  std::optional<qint32> meas;
 };
 inline QDataStream &operator<<(QDataStream &out, const SetRepeatMeas &a) {
   out << a.meas;
@@ -244,12 +244,12 @@ inline QDataStream &operator>>(QDataStream &in, SetRepeatMeas &a) {
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const SetRepeatMeas &a) {
-  out << "SetRepeatMeas(" << a.meas << ")";
+  out << "SetRepeatMeas(" << a.meas.value_or(-1) << ")";
   return out;
 }
 
 struct SetLastMeas {
-  qint32 meas;
+  std::optional<qint32> meas;
 };
 inline QDataStream &operator<<(QDataStream &out, const SetLastMeas &a) {
   out << a.meas;
@@ -260,7 +260,7 @@ inline QDataStream &operator>>(QDataStream &in, SetLastMeas &a) {
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const SetLastMeas &a) {
-  out << "SetLastMeas(" << a.meas << ")";
+  out << "SetLastMeas(" << a.meas.value_or(-1) << ")";
   return out;
 }
 
