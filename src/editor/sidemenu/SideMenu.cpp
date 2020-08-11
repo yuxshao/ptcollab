@@ -29,7 +29,8 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
       m_add_unit_dialog(new SelectWoiceDialog(this)),
       m_units(units),
       m_delays(delays),
-      m_ovdrvs(ovdrvs) {
+      m_ovdrvs(ovdrvs),
+      m_middle_of_set_woice_list(false) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -102,7 +103,7 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
   });
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-    if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
     if (ui->woiceList->currentRow() >= 0) m_change_woice_dialog->show();
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
@@ -167,8 +168,11 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
       QMessageBox::warning(this, tr("Cannot remove voice"),
                            tr("Please select a valid voice to remove."));
   });
-  connect(ui->woiceList, &QListWidget::currentRowChanged, this,
-          &SideMenu::selectWoice);
+  connect(ui->woiceList, &QListWidget::currentRowChanged, [this](int idx) {
+    // this check is because set woice clears the list which makes a spurious
+    // event
+    if (!m_middle_of_set_woice_list) emit selectWoice(idx);
+  });
   connect(ui->woiceList, &QListWidget::itemActivated, [this](QListWidgetItem*) {
     emit selectWoice(ui->woiceList->currentRow());
   });
@@ -225,9 +229,13 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
 }
 
 void SideMenu::setWoiceList(QStringList woices) {
+  m_middle_of_set_woice_list = true;
+  int currentRow = ui->woiceList->currentRow();
   ui->woiceList->clear();
   ui->woiceList->addItems(woices);
+  if (woices.size() > currentRow) ui->woiceList->setCurrentRow(currentRow);
   m_add_unit_dialog->setWoices(woices);
+  m_middle_of_set_woice_list = false;
 }
 
 void SideMenu::setTempo(int tempo) {

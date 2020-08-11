@@ -121,8 +121,17 @@ void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
       barToControl = scrollToControl->verticalScrollBar();
       break;
   }
-  connect(bar, &QAbstractSlider::valueChanged, [barToControl](int value) {
-    if (barToControl->value() != value) barToControl->setValue(value);
+  connect(bar, &QAbstractSlider::valueChanged, [bar, barToControl](int value) {
+    if (barToControl->value() != value) {
+      // setMaximum/setMinimum is a hack - when there are two synced bars that
+      // respond to the same resize event, one of them will change their range
+      // first. Setting the other's value to the first one will cause a jump if
+      // the value is out of the second's range, so force the ranges to be the
+      // same here.
+      barToControl->setMinimum(bar->minimum());
+      barToControl->setMaximum(bar->maximum());
+      barToControl->setValue(value);
+    }
   });
 }
 

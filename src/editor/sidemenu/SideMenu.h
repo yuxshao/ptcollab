@@ -44,7 +44,7 @@ class SideMenu : public QWidget {
   void addWoice(QString filename);
   void removeWoice(int idx, QString name);
   void changeWoice(int idx, QString name, QString filename);
-  void selectWoice(int);
+  void selectWoice(int idx);
   void candidateWoiceSelected(QString filename);
   void selectedUnitsChanged(QList<qint32> idx);
   void beatsChanged(int tempo);
@@ -80,6 +80,7 @@ class SideMenu : public QWidget {
   UnitListModel *m_units;
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
+  bool m_middle_of_set_woice_list;
 };
 
 #endif  // SIDEMENU_H

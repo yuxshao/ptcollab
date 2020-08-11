@@ -272,14 +272,19 @@ fill architecture could work well.
 8/8
 1. Clear last meas / repeat meas if selection is not there
 
+8/10
+1. Fix scroll wheel jumping if at end and zooming in
+2. Some jank stuff so that adding / changing instr doesn't reset selection or
+   cause spurious note preview
+3. Add and change voice dialogs use the same starting dirs now
+
 Todo by priority
 ----------------
  - Slider for volume, buffer size.
- - Change instrument should have same dialog and add instr. Also it should not
-   reset selection.
  - velocity should just by default match the previous velocity, not some random
    base vel
  - Rearrange units.
+ - voice properties, in particular, loop
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
