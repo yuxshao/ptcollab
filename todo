@@ -278,11 +278,12 @@ fill architecture could work well.
    cause spurious note preview
 3. Add and change voice dialogs use the same starting dirs now
 
+8/11
+1. Velocity is set based off what the existing velocity is
+
 Todo by priority
 ----------------
  - Slider for volume, buffer size.
- - velocity should just by default match the previous velocity, not some random
-   base vel
  - Rearrange units.
  - voice properties, in particular, loop
  - Unit view, at least for drums

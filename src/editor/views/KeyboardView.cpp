@@ -595,8 +595,6 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
           m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
       if (maybe_unit_no != std::nullopt &&
           std::holds_alternative<MouseKeyboardEdit>(s.mouse_edit_state.kind)) {
-        qint32 vel = s.mouse_edit_state.base_velocity;
-
         int pitch =
             std::get<MouseKeyboardEdit>(s.mouse_edit_state.kind).current_pitch;
         pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
@@ -606,9 +604,13 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
         int clock = m_client->editState().mouse_edit_state.current_clock;
         clock = quantize(clock, m_edit_state.m_quantize_clock);
 
+        qint32 unit_no = maybe_unit_no.value();
+        qint32 vel =
+            m_pxtn->evels->get_Value(clock, unit_no, EVENTKIND_VELOCITY);
+        s.mouse_edit_state.base_velocity = vel;
+
         m_audio_note_preview = std::make_unique<NotePreview>(
-            m_pxtn, &m_client->moo()->params, maybe_unit_no.value(), clock,
-            pitch, vel, this);
+            m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel, this);
       }
     }
   });
