@@ -56,8 +56,9 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
   // TODO: find a better place for this.
-  connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
-          [this](int x) { m_scroll_area->ensureWithinMargin(x, 0.12, 0.75); });
+  connect(m_keyboard_view, &KeyboardView::ensureVisibleX, [this](int x) {
+    m_scroll_area->ensureWithinMargin(x, -0.02, 0.15, 0.15, 0.75);
+  });
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);

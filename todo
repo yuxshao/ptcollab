@@ -280,6 +280,7 @@ fill architecture could work well.
 
 8/11
 1. Velocity is set based off what the existing velocity is
+2. Adjust jump when too far left or right
 
 Todo by priority
 ----------------
