@@ -32,6 +32,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/OverdriveEffectModel.h \
+           editor/sidemenu/WoiceListModel.h \
            editor/views/Animation.h \
            editor/audio/AudioFormat.h \
            editor/Clipboard.h \
@@ -90,6 +91,7 @@ FORMS += \
 SOURCES += main.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
+           editor/sidemenu/WoiceListModel.cpp \
            editor/views/Animation.cpp \
            editor/audio/AudioFormat.cpp \
            editor/Clipboard.cpp \

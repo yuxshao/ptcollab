@@ -374,7 +374,6 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
 
   emit endRefresh();
   emit measureNumChanged();
-  emit woicesChanged();
   emit tempoBeatChanged();
   return true;
 }
@@ -383,11 +382,14 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   (void)uid;
   pxtnDescriptor d;
   d.set_memory_r(a.data.constData(), a.data.size());
+  emit beginAddWoice();
   pxtnERR result = m_pxtn->Woice_read(m_pxtn->Woice_Num(), &d, a.type);
   if (result != pxtnOK) {
     qDebug() << "Woice_read error" << result;
+    emit endAddWoice();
     return false;
   }
+  emit endAddWoice();
   m_woice_id_map.add();
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
   std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_idx);
@@ -396,7 +398,6 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   name.truncate(pxtnMAX_TUNEWOICENAME);
   woice->set_name_buf(name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice);
-  emit woicesChanged();
   emit edited();
   return true;
 }
@@ -430,13 +431,15 @@ bool PxtoneController::applyRemoveWoice(const RemoveWoice &a, qint64 uid) {
   }
   if (!validateRemoveName(a, m_pxtn)) return false;
 
+  emit beginRemoveWoice(a.id);
   if (!m_pxtn->Woice_Remove(a.id)) {
+    emit endRemoveWoice();
     qWarning() << "Could not remove woice" << a.id << a.name;
     return false;
   }
+  emit endRemoveWoice();
   m_woice_id_map.remove(a.id);
   m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
-  emit woicesChanged();
   emit edited();
   return true;
 }
@@ -460,7 +463,48 @@ bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
   name.truncate(pxtnMAX_TUNEWOICENAME);
   woice->set_name_buf(name.toStdString().c_str(), name.length());
   m_pxtn->Woice_ReadyTone(woice);
-  emit woicesChanged();
+  emit woiceEdited(a.remove.id);
+  emit edited();
+  return true;
+}
+
+bool PxtoneController::applyWoiceSet(const Woice::Set &a, qint64 uid) {
+  (void)uid;
+  std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(a.id);
+  if (woice == nullptr) return false;
+  for (int i = 0; i < woice->get_voice_num(); ++i) {
+    pxtnVOICEUNIT *voice = woice->get_voice_variable(i);
+    std::visit(overloaded{[&](Woice::Key a) {
+                            if (a.key > 108 * PITCH_PER_KEY)
+                              a.key = 108 * PITCH_PER_KEY;
+                            if (a.key < 21 * PITCH_PER_KEY)
+                              a.key = 21 * PITCH_PER_KEY;
+                            voice->basic_key = a.key;
+                          },
+                          [&](const Woice::Flag &a) {
+                            uint32_t flag;
+                            if (woice->get_type() != pxtnWOICE_PTV) {
+                              switch (a.flag) {
+                                case Woice::Flag::LOOP:
+                                  flag = PTV_VOICEFLAG_WAVELOOP;
+                                  break;
+                                case Woice::Flag::BEATFIT:
+                                  flag = PTV_VOICEFLAG_BEATFIT;
+                                  break;
+                              }
+                              if (a.set)
+                                voice->voice_flags |= flag;
+                              else
+                                voice->voice_flags &= ~flag;
+                            }
+                          },
+                          [&](const Woice::Name &a) {
+                            woice->set_name_buf(a.name.toStdString().c_str(),
+                                                a.name.length());
+                          }},
+               a.setting);
+  }
+  emit woiceEdited(a.id);
   emit edited();
   return true;
 }

@@ -8,15 +8,6 @@
 
 enum struct UnitListColumn { Visible, Played, Select, Name, MAX = Name };
 
-struct UnitListItem {
-  bool visible;
-  bool muted;
-  QString name;
-  qint32 id;  // TODO populate
-  UnitListItem(QString name)
-      : visible(false), muted(false), name(name), id(0){};
-};
-
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
 

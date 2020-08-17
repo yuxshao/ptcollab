@@ -39,6 +39,7 @@ class PxtoneController : public QObject {
   bool applyAddWoice(const AddWoice &a, qint64 uid);
   bool applyRemoveWoice(const RemoveWoice &a, qint64 uid);
   bool applyChangeWoice(const ChangeWoice &a, qint64 uid);
+  bool applyWoiceSet(const Woice::Set &a, qint64 uid);
   bool applyTempoChange(const TempoChange &a, qint64 uid);
   bool applyBeatChange(const BeatChange &a, qint64 uid);
   void seekMoo(int64_t clock);
@@ -62,7 +63,6 @@ class PxtoneController : public QObject {
  signals:
   void measureNumChanged();
   void tempoBeatChanged();
-  void woicesChanged();
   void edited();
 
   void seeked(qint32 clock);
@@ -72,6 +72,12 @@ class PxtoneController : public QObject {
   void unitNameEdited(int index);
   void beginRemoveUnit(int index);
   void endRemoveUnit();
+
+  void beginAddWoice();
+  void endAddWoice();
+  void woiceEdited(int index);
+  void beginRemoveWoice(int index);
+  void endRemoveWoice();
 
   void beginAddOverdrive();
   void endAddOverdrive();

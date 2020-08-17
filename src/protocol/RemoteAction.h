@@ -333,11 +333,69 @@ inline QTextStream &operator<<(QTextStream &out, const Set &a) {
 }
 }  // namespace Delay
 
+namespace Woice {
+
+struct Key {
+  qint32 key;
+};
+inline QDataStream &operator<<(QDataStream &out, const Key &a) {
+  out << a.key;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Key &a) {
+  in >> a.key;
+  return in;
+}
+
+struct Name {
+  QString name;
+};
+inline QDataStream &operator<<(QDataStream &out, const Name &a) {
+  out << a.name;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Name &a) {
+  in >> a.name;
+  return in;
+}
+struct Flag {
+  enum { LOOP, BEATFIT } flag;
+  bool set;
+};
+inline QDataStream &operator<<(QDataStream &out, const Flag &a) {
+  out << a.flag << a.set;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Flag &a) {
+  in >> a.flag >> a.set;
+  return in;
+}
+
+using Setting = std::variant<Name, Flag, Key>;
+struct Set {
+  qint32 id;
+  Setting setting;
+};
+inline QDataStream &operator<<(QDataStream &out, const Set &a) {
+  out << a.id << a.setting;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Set &a) {
+  in >> a.id >> a.setting;
+  return in;
+}
+
+inline QTextStream &operator<<(QTextStream &out, const Set &a) {
+  out << "Woice::Set(" << a.id << ")";
+  return out;
+}
+}  // namespace Woice
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
                  RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
-                 Overdrive::Set, Overdrive::Remove, Delay::Set>;
+                 Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

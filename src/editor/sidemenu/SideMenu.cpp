@@ -19,8 +19,9 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
 }
 
-SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
-                   OverdriveEffectModel* ovdrvs, QWidget* parent)
+SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
+                   DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
+                   QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_users(new QStringListModel(this)),
@@ -28,9 +29,9 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
       m_change_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(new SelectWoiceDialog(this)),
       m_units(units),
+      m_woices(woices),
       m_delays(delays),
-      m_ovdrvs(ovdrvs),
-      m_middle_of_set_woice_list(false) {
+      m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -40,21 +41,16 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
     ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);
+  ui->woiceList->setModel(m_woices);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
   ui->unitList->setItemDelegate(new UnitListDelegate);
-  ui->unitList->verticalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
-  ui->unitList->horizontalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
-  ui->delayList->verticalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
-  ui->delayList->horizontalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
-  ui->overdriveList->verticalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
-  ui->overdriveList->horizontalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
+  for (auto* list :
+       {ui->unitList, ui->woiceList, ui->delayList, ui->overdriveList}) {
+    list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    list->horizontalHeader()->setSectionResizeMode(
+        QHeaderView::ResizeToContents);
+  }
 
   void (QComboBox::*indexChanged)(int) = &QComboBox::currentIndexChanged;
 
@@ -104,7 +100,7 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
     if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
-    if (ui->woiceList->currentRow() >= 0) m_change_woice_dialog->show();
+    if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
           &SideMenu::candidateWoiceSelected);
@@ -144,38 +140,43 @@ SideMenu::SideMenu(UnitListModel* units, DelayEffectModel* delays,
   });
 
   connect(m_change_woice_dialog, &QDialog::accepted, this, [this]() {
-    int idx = ui->woiceList->currentRow();
-    if (idx < 0 || !ui->woiceList->currentItem()) return;
+    int idx = ui->woiceList->currentIndex().row();
+    QString name = ui->woiceList->currentIndex()
+                       .siblingAtColumn(int(WoiceListColumn::Name))
+                       .data()
+                       .toString();
+    if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
     for (const auto& filename : m_change_woice_dialog->selectedFiles())
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
-        emit changeWoice(idx, ui->woiceList->currentItem()->text(), filename);
+        emit changeWoice(idx, name, filename);
       }
   });
 
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
-    int idx = ui->woiceList->currentRow();
-    if (idx >= 0 && ui->woiceList->currentItem() != nullptr) {
-      if (ui->woiceList->count() > 0 &&
-          QMessageBox::question(
-              this, tr("Are you sure?"),
-              tr("Are you sure you want to delete the voice "
-                 "(%1)? This cannot be undone.")
-                  .arg(ui->woiceList->currentItem()->text())) ==
-              QMessageBox::Yes)
-        emit removeWoice(idx, ui->woiceList->currentItem()->text());
+    int idx = ui->woiceList->currentIndex().row();
+    if (idx >= 0 && ui->woiceList->model()->rowCount() > 0) {
+      QString name = ui->woiceList->currentIndex()
+                         .siblingAtColumn(int(WoiceListColumn::Name))
+                         .data()
+                         .toString();
+      if (QMessageBox::question(this, tr("Are you sure?"),
+                                tr("Are you sure you want to delete the voice "
+                                   "(%1)? This cannot be undone.")
+                                    .arg(name)) == QMessageBox::Yes)
+        emit removeWoice(idx, name);
     } else
       QMessageBox::warning(this, tr("Cannot remove voice"),
                            tr("Please select a valid voice to remove."));
   });
-  connect(ui->woiceList, &QListWidget::currentRowChanged, [this](int idx) {
-    // this check is because set woice clears the list which makes a spurious
-    // event
-    if (!m_middle_of_set_woice_list) emit selectWoice(idx);
-  });
-  connect(ui->woiceList, &QListWidget::itemActivated, [this](QListWidgetItem*) {
-    emit selectWoice(ui->woiceList->currentRow());
-  });
+
+  connect(ui->woiceList->selectionModel(),
+          &QItemSelectionModel::currentRowChanged,
+          [this](const QModelIndex& curr, const QModelIndex&) {
+            emit selectWoice(curr.row());
+          });
+  connect(ui->woiceList, &QTableView::activated,
+          [this](const QModelIndex& index) { emit selectWoice(index.row()); });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     QString name = m_add_unit_dialog->getUnitNameSelection();
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();
@@ -228,16 +229,6 @@ void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
   m_users->setStringList(usernames);
 }
 
-void SideMenu::setWoiceList(QStringList woices) {
-  m_middle_of_set_woice_list = true;
-  int currentRow = ui->woiceList->currentRow();
-  ui->woiceList->clear();
-  ui->woiceList->addItems(woices);
-  if (woices.size() > currentRow) ui->woiceList->setCurrentRow(currentRow);
-  m_add_unit_dialog->setWoices(woices);
-  m_middle_of_set_woice_list = false;
-}
-
 void SideMenu::setTempo(int tempo) {
   ui->tempoField->setText(QString("%1").arg(tempo));
 }
@@ -269,7 +260,7 @@ void SideMenu::setParamKindIndex(int index) {
 }
 
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
-void SideMenu::setCurrentWoice(int u) { ui->woiceList->setCurrentRow(u); }
+void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing)
     ui->playBtn->setText("Pause (SPC)");

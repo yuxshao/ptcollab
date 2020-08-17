@@ -233,6 +233,13 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       else
                         m_controller->refreshMoo();
                     },
+                    [this, uid](const Woice::Set &s) {
+                      bool success = m_controller->applyWoiceSet(s, uid);
+                      if (!success && uid == m_controller->uid())
+                        QMessageBox::warning(
+                            nullptr, tr("Could not change voice"),
+                            tr("Could not change voice properties"));
+                    },
                     [this, uid](const AddUnit &s) {
                       bool success = m_controller->applyAddUnit(s, uid);
                       changeEditState([&](EditState &s) {
@@ -253,7 +260,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       changeEditState([&](EditState &s) {
                         if (unit_no != std::nullopt) {
                           const NoIdMap &unitIdMap = m_controller->unitIdMap();
-                          if (unitIdMap.numUnits() <= unit_no.value() &&
+                          if (unitIdMap.numUnits() <= size_t(unit_no.value()) &&
                               unitIdMap.numUnits() > 0) {
                             s.m_current_unit_id =
                                 unitIdMap.noToId(unit_no.value() - 1);

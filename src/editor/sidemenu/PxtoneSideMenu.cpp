@@ -36,6 +36,7 @@ AddWoice make_addWoice_from_path(const QString &path) {
 // cycle.
 PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     : SideMenu(new UnitListModel(client, parent),
+               new WoiceListModel(client, parent),
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent), parent),
       m_client(client) {
@@ -49,8 +50,6 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           [=]() { setModified(true); });
   connect(m_client, &PxtoneClient::userListChanged, this,
           &SideMenu::setUserList);
-  connect(m_client->controller(), &PxtoneController::woicesChanged, this,
-          &PxtoneSideMenu::refreshWoices);
   connect(m_client->controller(), &PxtoneController::tempoBeatChanged, this,
           &PxtoneSideMenu::refreshTempoBeat);
   connect(m_client, &PxtoneClient::playStateChanged, this, &SideMenu::setPlay);
@@ -192,13 +191,6 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     m_client->sendAction(Overdrive::Remove{ovdrv_no});
   });
   refreshCopyCheckbox();
-}
-
-void PxtoneSideMenu::refreshWoices() {
-  QStringList woices;
-  for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i)
-    woices.append(m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
-  setWoiceList(woices);
 }
 
 void PxtoneSideMenu::refreshTempoBeat() {
