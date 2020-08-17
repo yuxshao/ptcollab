@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 
+#include "BasicWoiceListModel.h"
 #include "editor/ComboOptions.h"
 
 // TODO: Put this somewhere else, like in remote action or sth.
@@ -37,6 +38,7 @@ AddWoice make_addWoice_from_path(const QString &path) {
 PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     : SideMenu(new UnitListModel(client, parent),
                new WoiceListModel(client, parent),
+               new BasicWoiceListModel(client, parent),
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent), parent),
       m_client(client) {

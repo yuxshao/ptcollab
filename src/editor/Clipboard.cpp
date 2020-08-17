@@ -79,7 +79,7 @@ std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
   std::list<Primitive> actions;
   // TODO: Dedup with makePaste
   for (const int &unit_no : unit_nos) {
-    if (map.numUnits() <= unit_no) continue;
+    if (map.numUnits() <= size_t(unit_no)) continue;
     qint32 unit_id = map.noToId(unit_no);
     for (const EVENTKIND &kind : m_kinds_to_copy)
       actions.emplace_back(

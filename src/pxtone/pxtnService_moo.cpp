@@ -403,6 +403,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep,
   moo_state.params.clock_rate = (float)(60.0f * (double)_dst_sps /
                                         ((double)master->get_beat_tempo() *
                                          (double)master->get_beat_clock()));
+  moo_state.params.bt_tempo = master->get_beat_tempo();
   moo_state.params.smp_stride = (44100.0f / _dst_sps);
   moo_state.params.top = 0x7fff;
 

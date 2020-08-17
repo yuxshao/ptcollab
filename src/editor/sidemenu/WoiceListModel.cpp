@@ -118,9 +118,6 @@ Qt::ItemFlags WoiceListModel::flags(const QModelIndex &index) const {
   switch (WoiceListColumn(index.column())) {
     case WoiceListColumn::Loop:
     case WoiceListColumn::BeatFit:
-      // TODO: Beatfit is broken? Idk
-      // TODO: Item activated doesn't work?
-      // TODO: Shouldn't be strongfocus?
       f |= Qt::ItemIsUserCheckable;
       if (woice->get_type() == pxtnWOICE_PTV) f &= ~Qt::ItemIsUserCheckable;
       // f &= ~Qt::ItemIsSelectable;

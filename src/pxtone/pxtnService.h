@@ -274,6 +274,7 @@ class pxtnService {
         (float)(60.0f * (double)_dst_sps /
                 ((double)master->get_beat_tempo() *
                  (double)master->get_beat_clock())));
+    moo_state.params.bt_tempo = master->get_beat_tempo();
   }
   void adjustBeatNum(int32_t beat_num, mooState &moo_state) {
     int32_t evels_max_clock = evels->get_Max_Clock();

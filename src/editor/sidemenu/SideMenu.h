@@ -23,6 +23,7 @@ class SideMenu : public QWidget {
 
  public:
   explicit SideMenu(UnitListModel *units, WoiceListModel *woices,
+                    QAbstractListModel *woices_for_add_unit,
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);

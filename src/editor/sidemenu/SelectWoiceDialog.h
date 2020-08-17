@@ -1,6 +1,7 @@
 #ifndef SELECTWOICEDIALOG_H
 #define SELECTWOICEDIALOG_H
 
+#include <QAbstractListModel>
 #include <QDialog>
 
 namespace Ui {
@@ -14,14 +15,15 @@ class SelectWoiceDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SelectWoiceDialog(QWidget *parent = nullptr);
-  void setWoices(QStringList woices);
+  explicit SelectWoiceDialog(QAbstractListModel *model,
+                             QWidget *parent = nullptr);
   int getSelectedWoiceIndex();
   QString getUnitNameSelection();
   ~SelectWoiceDialog();
 
  private:
   Ui::SelectWoiceDialog *ui;
+  QAbstractListModel *m_model;
 };
 
 #endif  // SELECTWOICEDIALOG_H

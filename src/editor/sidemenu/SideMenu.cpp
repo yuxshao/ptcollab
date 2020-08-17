@@ -20,6 +20,7 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
 }
 
 SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
+                   QAbstractListModel* woices_for_add_unit,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    QWidget* parent)
     : QWidget(parent),
@@ -27,7 +28,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
-      m_add_unit_dialog(new SelectWoiceDialog(this)),
+      m_add_unit_dialog(new SelectWoiceDialog(woices_for_add_unit, this)),
       m_units(units),
       m_woices(woices),
       m_delays(delays),
@@ -170,13 +171,17 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                            tr("Please select a valid voice to remove."));
   });
 
-  connect(ui->woiceList->selectionModel(),
+  /*connect(ui->woiceList->selectionModel(),
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex& curr, const QModelIndex&) {
             emit selectWoice(curr.row());
+          });*/
+  connect(ui->woiceList, &QTableView::clicked,
+          [this](const QModelIndex& index) {
+            if (index.column() == int(WoiceListColumn::Name) ||
+                index.column() == int(WoiceListColumn::Key))
+              emit selectWoice(index.row());
           });
-  connect(ui->woiceList, &QTableView::activated,
-          [this](const QModelIndex& index) { emit selectWoice(index.row()); });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     QString name = m_add_unit_dialog->getUnitNameSelection();
     int idx = m_add_unit_dialog->getSelectedWoiceIndex();

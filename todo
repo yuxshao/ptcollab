@@ -282,11 +282,13 @@ fill architecture could work well.
 1. Velocity is set based off what the existing velocity is
 2. Adjust jump when too far left or right
 
+8/17
+1. Woice properties
+
 Todo by priority
 ----------------
  - Slider for volume, buffer size.
  - Rearrange units.
- - voice properties, in particular, loop
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

@@ -2,27 +2,24 @@
 
 #include "ui_SelectWoiceDialog.h"
 
-SelectWoiceDialog::SelectWoiceDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::SelectWoiceDialog) {
+SelectWoiceDialog::SelectWoiceDialog(QAbstractListModel *model, QWidget *parent)
+    : QDialog(parent), ui(new Ui::SelectWoiceDialog), m_model(model) {
   ui->setupUi(this);
+  ui->woiceList->setModel(model);
   connect(
-      ui->woiceList, &QListWidget::currentTextChanged,
-      [this](const QString &s) {
-        if (ui->unitName->text().startsWith("u-") || ui->unitName->text() == "")
-          ui->unitName->setText(QString("u-%1").arg(s));
+      ui->woiceList->selectionModel(), &QItemSelectionModel::currentRowChanged,
+      [this](const QModelIndex &index) {
+        QString name = ui->unitName->text();
+        if (name.startsWith("u-") || name == "")
+          ui->unitName->setText(QString("u-%1").arg(index.data().toString()));
       });
 
-  connect(ui->woiceList, &QListWidget::itemActivated,
-          [this](const QListWidgetItem *) { accept(); });
-}
-
-void SelectWoiceDialog::setWoices(QStringList woices) {
-  ui->woiceList->clear();
-  ui->woiceList->addItems(woices);
+  connect(ui->woiceList, &QListView::activated,
+          [this](const QModelIndex &) { accept(); });
 }
 
 int SelectWoiceDialog::getSelectedWoiceIndex() {
-  return ui->woiceList->currentRow();
+  return ui->woiceList->currentIndex().row();
 }
 
 QString SelectWoiceDialog::getUnitNameSelection() {
