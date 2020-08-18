@@ -125,12 +125,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->cycleCurrentUnit(-1);
       break;
     case Qt::Key_S:
-      if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier)
-          saveAs();
-        else
-          save();
-      } else
+      if (!(event->modifiers() & Qt::ControlModifier))
         m_keyboard_view->cycleCurrentUnit(1);
       break;
     case Qt::Key_A:
@@ -166,17 +161,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_F:
       m_client->changeEditState(
           [&](EditState &s) { s.m_follow_playhead = !s.m_follow_playhead; });
-      break;
-    case Qt::Key_N:
-      if (event->modifiers() & Qt::ControlModifier) Host(false);
-      break;
-    case Qt::Key_O:
-      if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier)
-          Host(true);
-        else
-          connectToHost();
-      }
       break;
     case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
