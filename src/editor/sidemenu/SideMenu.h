@@ -56,6 +56,7 @@ class SideMenu : public QWidget {
   void followChanged(bool);
   void copyChanged(bool);
   void moveUnit(bool up);
+  void volumeChanged(int volume);
 
  public slots:
   void setQuantXIndex(int);

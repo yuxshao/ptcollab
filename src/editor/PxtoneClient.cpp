@@ -303,6 +303,8 @@ void PxtoneClient::setCurrentWoiceNo(int woice_no) {
   });
 }
 
+void PxtoneClient::setVolume(int volume) { m_controller->setVolume(volume); }
+
 void PxtoneClient::deselect() {
   changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); });
 }

@@ -55,7 +55,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -63,9 +63,9 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Effects</string>
+          <string>Effect</string>
          </property>
         </widget>
        </item>
@@ -340,9 +340,16 @@
      </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Collab</string>
+       <string>Misc</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Users</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QListView" name="userList">
          <property name="editTriggers">
@@ -369,6 +376,65 @@
            </property>
            <property name="text">
             <string>Connect (C-o)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Vol</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="volumeSlider">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>2</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Buf</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="bufferLength">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
            </property>
           </widget>
          </item>

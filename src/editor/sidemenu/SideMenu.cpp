@@ -205,6 +205,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           [this]() { emit moveUnit(true); });
   connect(ui->downUnitBtn, &QPushButton::clicked,
           [this]() { emit moveUnit(false); });
+  connect(ui->volumeSlider, &QSlider::valueChanged, this,
+          &SideMenu::volumeChanged);
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {

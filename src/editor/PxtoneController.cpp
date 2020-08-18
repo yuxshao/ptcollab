@@ -374,6 +374,13 @@ void PxtoneController::refreshMoo() {
   seekMoo(m_pxtn->moo_get_now_clock(*m_moo_state));
 }
 
+void PxtoneController::setVolume(int volume) {
+  double v = volume / 100.0;
+  double ampl = pow(25, v - 1);
+  if (v < 0.1) ampl *= v / 0.1;
+  m_moo_state->params.master_vol = ampl;
+}
+
 bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit beginRefresh();
   if (desc.get_size_bytes() > 0) {

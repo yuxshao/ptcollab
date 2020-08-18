@@ -46,6 +46,7 @@ class PxtoneController : public QObject {
   void refreshMoo();
   const mooState *moo() { return m_moo_state; }
   const pxtnService *pxtn() { return m_pxtn; };
+  void setVolume(int volume);
 
  public slots:
   // Maybe these types could be grouped.
