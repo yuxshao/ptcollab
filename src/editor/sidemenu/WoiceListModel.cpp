@@ -119,7 +119,8 @@ Qt::ItemFlags WoiceListModel::flags(const QModelIndex &index) const {
     case WoiceListColumn::Loop:
     case WoiceListColumn::BeatFit:
       f |= Qt::ItemIsUserCheckable;
-      if (woice->get_type() == pxtnWOICE_PTV) f &= ~Qt::ItemIsUserCheckable;
+      if (woice->get_type() == pxtnWOICE_PTV)
+        f &= ~Qt::ItemIsEnabled & ~Qt::ItemIsUserCheckable;
       // f &= ~Qt::ItemIsSelectable;
       break;
     case WoiceListColumn::Key:
