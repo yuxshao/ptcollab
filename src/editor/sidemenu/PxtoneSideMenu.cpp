@@ -196,6 +196,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     m_client->sendAction(MoveUnit{m_client->editState().m_current_unit_id, up});
   });
   connect(this, &SideMenu::volumeChanged, m_client, &PxtoneClient::setVolume);
+  connect(this, &SideMenu::bufferLengthChanged, m_client,
+          &PxtoneClient::setBufferSize);
   refreshCopyCheckbox();
 }
 

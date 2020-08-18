@@ -27,6 +27,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
+
   ~SideMenu();
 
  signals:
@@ -57,6 +58,7 @@ class SideMenu : public QWidget {
   void copyChanged(bool);
   void moveUnit(bool up);
   void volumeChanged(int volume);
+  void bufferLengthChanged(double secs);
 
  public slots:
   void setQuantXIndex(int);

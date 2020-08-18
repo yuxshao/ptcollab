@@ -8,9 +8,8 @@
 #include <QSettings>
 
 #include "editor/ComboOptions.h"
+#include "editor/Settings.h"
 #include "ui_SideMenu.h"
-
-const QString WOICE_DIR_KEY("woice_dir");
 
 static QFileDialog* make_add_woice_dialog(QWidget* parent) {
   return new QFileDialog(
@@ -205,8 +204,28 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           [this]() { emit moveUnit(true); });
   connect(ui->downUnitBtn, &QPushButton::clicked,
           [this]() { emit moveUnit(false); });
-  connect(ui->volumeSlider, &QSlider::valueChanged, this,
-          &SideMenu::volumeChanged);
+  {
+    bool ok;
+    int v;
+    v = QSettings().value(VOLUME_KEY).toInt(&ok);
+    if (ok) ui->volumeSlider->setValue(v);
+  }
+  connect(ui->volumeSlider, &QSlider::valueChanged, [this](int v) {
+    QSettings().setValue(VOLUME_KEY, v);
+    emit volumeChanged(v);
+  });
+  {
+    bool ok;
+    double v;
+    v = QSettings().value(BUFFER_LENGTH_KEY).toDouble(&ok);
+    if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 1));
+  }
+  connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
+    bool ok;
+    double length = ui->bufferLength->text().toDouble(&ok);
+    QSettings().setValue(BUFFER_LENGTH_KEY, length);
+    emit bufferLengthChanged(length);
+  });
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {

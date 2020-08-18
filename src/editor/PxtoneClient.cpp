@@ -1,8 +1,10 @@
 #include "PxtoneClient.h"
 
 #include <QMessageBox>
+#include <QSettings>
 
 #include "ComboOptions.h"
+#include "Settings.h"
 #include "audio/AudioFormat.h"
 
 QList<std::pair<qint64, QString>> getUserList(
@@ -86,8 +88,37 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
 
   resetAndSuspendAudio();
   m_pxtn_device->open(QIODevice::ReadOnly);
+  {
+    bool ok;
+    int v = QSettings().value(VOLUME_KEY).toInt(&ok);
+    if (ok) setVolume(v);
+  }
+  {
+    bool ok;
+    int v = QSettings().value(BUFFER_LENGTH_KEY).toDouble(&ok);
+    if (ok) setBufferSize(v);
+  }
   m_audio->start(m_pxtn_device);
   m_audio->suspend();
+}
+
+void PxtoneClient::setBufferSize(double secs) {
+  bool started = (m_audio->state() != QAudio::StoppedState);
+  QAudioFormat fmt = pxtoneAudioFormat();
+
+  if (started) {
+    m_audio->stop();
+    // m_audio->deleteLater();
+    // m_audio = new QAudioOutput(fmt, this);
+  }
+
+  m_audio->setBufferSize(fmt.bytesForDuration(secs * 10e6));
+
+  if (started) {
+    resetAndSuspendAudio();
+    m_audio->start(m_pxtn_device);
+    m_audio->suspend();
+  }
 }
 
 // TODO: Factor this out into a PxtoneAudioPlayer class. Setting play state,

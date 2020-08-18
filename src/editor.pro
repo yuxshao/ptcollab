@@ -30,6 +30,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
+           editor/Settings.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/OverdriveEffectModel.h \
@@ -90,6 +91,7 @@ FORMS += \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
+           editor/Settings.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \

@@ -69,6 +69,8 @@ class PxtoneClient : public QObject {
   const PxtoneController *controller() { return m_controller; }
   Clipboard *clipboard() { return m_clipboard; }
 
+  void setBufferSize(double secs);
+
  private:
   void processRemoteAction(const ServerAction &a);
   void loadDescriptor(pxtnDescriptor &desc);

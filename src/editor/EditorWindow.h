@@ -6,7 +6,6 @@
 #include <QMainWindow>
 #include <QScrollArea>
 #include <QSplitter>
-#include <QtMultimedia/QAudioOutput>
 
 #include "EditState.h"
 #include "EditorScrollArea.h"
