@@ -99,6 +99,7 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
     if (ok) setBufferSize(v);
   }
   m_audio->start(m_pxtn_device);
+  qDebug() << "Actual" << m_audio->bufferSize();
   m_audio->suspend();
 }
 
@@ -108,11 +109,9 @@ void PxtoneClient::setBufferSize(double secs) {
 
   if (started) {
     m_audio->stop();
-    // m_audio->deleteLater();
-    // m_audio = new QAudioOutput(fmt, this);
   }
 
-  m_audio->setBufferSize(fmt.bytesForDuration(secs * 10e6));
+  m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
 
   if (started) {
     resetAndSuspendAudio();

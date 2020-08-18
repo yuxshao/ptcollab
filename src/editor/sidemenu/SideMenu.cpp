@@ -223,8 +223,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;
     double length = ui->bufferLength->text().toDouble(&ok);
-    QSettings().setValue(BUFFER_LENGTH_KEY, length);
-    emit bufferLengthChanged(length);
+    if (ok) {
+      QSettings().setValue(BUFFER_LENGTH_KEY, length);
+      emit bufferLengthChanged(length);
+    }
   });
 }
 

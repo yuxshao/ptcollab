@@ -363,7 +363,7 @@ void PxtoneController::seekMoo(int64_t clock) {
   prep.start_pos_sample = clock * 60 * 44100 /
                           m_pxtn->master->get_beat_clock() /
                           m_pxtn->master->get_beat_tempo();
-  prep.master_volume = 0.80f;
+  prep.master_volume = m_moo_state->params.master_vol;
   bool success = m_pxtn->moo_preparation(&prep, *m_moo_state);
   if (!success) qWarning() << "Moo preparation error";
 
