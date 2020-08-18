@@ -285,10 +285,12 @@ fill architecture could work well.
 8/17
 1. Woice properties
 
+8/18
+1. Rearrange units
+2. Slider for volume, buffer size
+
 Todo by priority
 ----------------
- - Slider for volume, buffer size.
- - Rearrange units.
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
