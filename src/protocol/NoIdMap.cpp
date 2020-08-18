@@ -1,5 +1,7 @@
 #include "NoIdMap.h"
 
+#include <QDebug>
+
 NoIdMap::NoIdMap(int start) : m_next_id(0) {
   for (int32_t i = 0; i < start; ++i) add();
 }
@@ -31,4 +33,18 @@ void NoIdMap::remove(size_t no) {
 
   // qDebug() << QVector<qint32>(m_no_to_id.begin(), m_no_to_id.end())
   //         << QMap<qint32, size_t>(m_id_to_no);
+}
+
+void NoIdMap::swapAdjacent(size_t no1, size_t no2) {
+  if (no1 - no2 != 1 && no2 - no1 != 1) {
+    qDebug() << "Not adjacent swap" << no1 << no2;
+    return;
+  }
+  if (no1 >= m_no_to_id.size() || no2 >= m_no_to_id.size()) {
+    qDebug() << "swapAdjacent value too big" << no1 << no2 << m_no_to_id.size();
+    return;
+  }
+  std::swap(m_no_to_id[no1], m_no_to_id[no2]);
+  m_id_to_no[m_no_to_id[no2]] = no2;
+  m_id_to_no[m_no_to_id[no1]] = no1;
 }

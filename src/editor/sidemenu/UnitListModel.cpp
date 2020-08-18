@@ -27,6 +27,14 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
           &UnitListModel::beginResetModel);
   connect(controller, &PxtoneController::endRefresh, this,
           &UnitListModel::endResetModel);
+  connect(controller, &PxtoneController::beginMoveUnit,
+          [this](int unit_no, bool up) {
+            UnitListModel::beginMoveRows(QModelIndex(), unit_no, unit_no,
+                                         QModelIndex(),
+                                         (up ? unit_no - 1 : unit_no + 2));
+          });
+  connect(controller, &PxtoneController::endMoveUnit, this,
+          &UnitListModel::endMoveRows);
   connect(controller, &PxtoneController::unitNameEdited, [this](int unit_no) {
     QModelIndex i = index(unit_no, int(UnitListColumn::Name));
     emit dataChanged(i, i);

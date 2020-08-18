@@ -192,6 +192,9 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
   connect(this, &SideMenu::removeOverdrive, [this](int ovdrv_no) {
     m_client->sendAction(Overdrive::Remove{ovdrv_no});
   });
+  connect(this, &SideMenu::moveUnit, [this](bool up) {
+    m_client->sendAction(MoveUnit{m_client->editState().m_current_unit_id, up});
+  });
   refreshCopyCheckbox();
 }
 

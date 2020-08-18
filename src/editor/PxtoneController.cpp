@@ -269,6 +269,28 @@ void PxtoneController::applySetUnitName(const SetUnitName &a, qint64 uid) {
   emit edited();
 }
 
+void PxtoneController::applyMoveUnit(const MoveUnit &a, qint64 uid) {
+  (void)uid;
+  auto unit_no_maybe = m_unit_id_map.idToNo(a.unit_id);
+  if (unit_no_maybe == std::nullopt) {
+    qWarning("Unit ID (%d) doesn't exist.", a.unit_id);
+    return;
+  }
+  int unit_no = unit_no_maybe.value();
+  int new_unit_no = unit_no + (a.up ? -1 : 1);
+  if (new_unit_no < 0 || size_t(new_unit_no) >= m_unit_id_map.numUnits()) {
+    qWarning("Unit is at end.");
+    return;
+  }
+
+  emit beginMoveUnit(unit_no, a.up);
+  m_pxtn->evels->Record_UnitNo_Replace(unit_no, new_unit_no);
+  m_pxtn->Unit_Replace(unit_no, new_unit_no, *m_moo_state);
+  m_unit_id_map.swapAdjacent(unit_no, new_unit_no);
+  emit endMoveUnit();
+  emit edited();
+}
+
 bool PxtoneController::applyTempoChange(const TempoChange &a, qint64 uid) {
   (void)uid;
   if (a.tempo < 20 || a.tempo > 600) return false;

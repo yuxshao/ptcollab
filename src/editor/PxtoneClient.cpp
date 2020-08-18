@@ -253,6 +253,9 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const SetUnitName &s) {
                       m_controller->applySetUnitName(s, uid);
                     },
+                    [this, uid](const MoveUnit &s) {
+                      m_controller->applyMoveUnit(s, uid);
+                    },
                     [this, uid](const RemoveUnit &s) {
                       auto unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);

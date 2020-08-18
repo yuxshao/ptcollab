@@ -101,6 +101,22 @@ inline QTextStream &operator<<(QTextStream &out, const RemoveUnit &a) {
   out << "RemoveUnit(unit_id=" << a.unit_id << ")";
   return out;
 }
+struct MoveUnit {
+  qint32 unit_id;
+  bool up;
+};
+inline QDataStream &operator<<(QDataStream &out, const MoveUnit &a) {
+  out << a.unit_id << a.up;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MoveUnit &a) {
+  in >> a.unit_id >> a.up;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const MoveUnit &a) {
+  out << "MoveUnit(" << a.unit_id << "," << a.up << ")";
+  return out;
+}
 
 struct SetUnitName {
   qint32 unit_id;
@@ -392,8 +408,8 @@ inline QTextStream &operator<<(QTextStream &out, const Set &a) {
 }  // namespace Woice
 
 using ClientAction =
-    std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, AddWoice,
-                 RemoveWoice, ChangeWoice, TempoChange, BeatChange,
+    std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, MoveUnit,
+                 AddWoice, RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
                  Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {

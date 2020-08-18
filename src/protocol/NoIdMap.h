@@ -17,6 +17,7 @@ class NoIdMap {
   std::optional<qint32> idToNo(qint32 id) const;
   void add();
   void remove(size_t no);
+  void swapAdjacent(size_t no1, size_t no2);
   // TODO: move unit
 
  private:

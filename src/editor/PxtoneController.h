@@ -52,6 +52,7 @@ class PxtoneController : public QObject {
   void applyRemoteAction(const EditAction &a, qint64 uid);
   void applyUndoRedo(const UndoRedo &r, qint64 uid);
   void applyRemoveUnit(const RemoveUnit &a, qint64 uid);
+  void applyMoveUnit(const MoveUnit &a, qint64 uid);
   void applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid);
   void applySetLastMeas(const SetLastMeas &a, qint64 uid);
   void applySetUnitName(const SetUnitName &a, qint64 uid);
@@ -89,6 +90,9 @@ class PxtoneController : public QObject {
 
   void beginRefresh();
   void endRefresh();
+
+  void beginMoveUnit(int unit_no, bool up);
+  void endMoveUnit();
 
  private:
   qint64 m_uid;

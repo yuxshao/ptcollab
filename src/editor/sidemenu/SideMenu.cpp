@@ -201,6 +201,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     int ovdrv_no = ui->overdriveList->selectionModel()->currentIndex().row();
     emit removeOverdrive(ovdrv_no);
   });
+  connect(ui->upUnitBtn, &QPushButton::clicked,
+          [this]() { emit moveUnit(true); });
+  connect(ui->downUnitBtn, &QPushButton::clicked,
+          [this]() { emit moveUnit(false); });
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {
@@ -213,6 +217,8 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->removeUnitBtn->setEnabled(b);
   ui->tempoField->setEnabled(b);
   ui->beatsField->setEnabled(b);
+  ui->upUnitBtn->setEnabled(b);
+  ui->downUnitBtn->setEnabled(b);
 }
 
 SideMenu::~SideMenu() { delete ui; }

@@ -474,8 +474,8 @@ bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place,
   if (moo_state.units.size() > size_t(std::max(old_place, new_place)))
     std::rotate(moo_state.units.begin() + std::min(old_place, new_place),
                 moo_state.units.begin() +
-                    (old_place < new_place ? old_place + 1 : new_place),
-                moo_state.units.begin() + std::max(old_place, new_place));
+                    (old_place < new_place ? old_place + 1 : old_place),
+                moo_state.units.begin() + std::max(old_place, new_place) + 1);
   return true;
 }
 
