@@ -289,6 +289,9 @@ fill architecture could work well.
 1. Rearrange units
 2. Slider for volume, buffer size
 
+8/19
+1. Previewing a bad file does not crash the editor
+
 Todo by priority
 ----------------
  - Unit view, at least for drums

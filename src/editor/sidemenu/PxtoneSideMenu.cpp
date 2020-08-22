@@ -97,7 +97,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
       {
         pxtnDescriptor d;
         d.set_memory_r(a.data.constData(), a.data.size());
-        woice->read(&d, a.type);
+        pxtnERR result = woice->read(&d, a.type);
+        if (result != pxtnOK) throw QString("Invalid voice data");
         m_client->pxtn()->Woice_ReadyTone(woice);
       }
       // TODO: stop existing note preview on creation of new one in this case
