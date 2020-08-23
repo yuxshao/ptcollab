@@ -692,17 +692,18 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
 
     using namespace Action;
     std::list<Primitive> as;
-    for (qint32 unit : selectedUnitNos()) {
+    for (qint32 unitNo : selectedUnitNos()) {
+      qint32 unit = m_client->unitIdMap().noToId(unitNo);
       if (kind != EVENTKIND_VELOCITY) {
         int32_t start_val =
-            m_pxtn->evels->get_Value(interval.start, unit, kind);
+            m_pxtn->evels->get_Value(interval.start, unitNo, kind);
         as.push_back({kind, unit, interval.start, Delete{interval.start + 1}});
         as.push_back({kind, unit, interval.start, Add{start_val}});
       }
       as.push_back({kind, unit, interval.start, Shift{interval.end, offset}});
       if (kind != EVENTKIND_VELOCITY &&
           interval.end < m_pxtn->master->get_clock_num()) {
-        int32_t end_val = m_pxtn->evels->get_Value(interval.end, unit, kind);
+        int32_t end_val = m_pxtn->evels->get_Value(interval.end, unitNo, kind);
         as.push_back({kind, unit, interval.end, Delete{interval.end + 1}});
         as.push_back({kind, unit, interval.end, Add{end_val}});
       }

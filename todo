@@ -289,8 +289,9 @@ fill architecture could work well.
 1. Rearrange units
 2. Slider for volume, buffer size
 
-8/19
+8/22
 1. Previewing a bad file does not crash the editor
+2. Moving units up and down doesn't cause transpose to break any more
 
 Todo by priority
 ----------------
