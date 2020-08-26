@@ -293,6 +293,10 @@ fill architecture could work well.
 1. Previewing a bad file does not crash the editor
 2. Moving units up and down doesn't cause transpose to break any more
 
+8/23
+1. Moving units up and down doesn't cause velocity setting to affect the wrong
+   unit
+
 Todo by priority
 ----------------
  - Unit view, at least for drums

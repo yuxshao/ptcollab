@@ -489,7 +489,7 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
   });
 }
 
-static void setVelInRange(const EVERECORD *&p, int32_t unit_no,
+static void setVelInRange(const EVERECORD *&p, int32_t unit_no, qint32 unit_id,
                           const ParamEditInterval &interval,
                           std::list<Action::Primitive> &actions) {
   using namespace Action;
@@ -498,7 +498,7 @@ static void setVelInRange(const EVERECORD *&p, int32_t unit_no,
   for (; p && p->clock < interval.clock.end; p = p->next)
     if (p->kind == EVENTKIND_VELOCITY && p->unit_no == unit_no)
       actions.push_back(
-          {EVENTKIND_VELOCITY, unit_no, p->clock, Add{interval.param}});
+          {EVENTKIND_VELOCITY, unit_id, p->clock, Add{interval.param}});
 }
 
 void ParamView::mouseReleaseEvent(QMouseEvent *event) {
@@ -545,7 +545,8 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                   const EVERECORD *records =
                       m_client->pxtn()->evels->get_Records();
                   for (const ParamEditInterval &p : intervals)
-                    setVelInRange(records, unit_no.value(), p, actions);
+                    setVelInRange(records, unit_no.value(), s.m_current_unit_id,
+                                  p, actions);
                 }
               } else
                 for (const ParamEditInterval &p : intervals)
