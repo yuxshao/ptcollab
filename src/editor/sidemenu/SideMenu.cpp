@@ -218,7 +218,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     bool ok;
     double v;
     v = QSettings().value(BUFFER_LENGTH_KEY).toDouble(&ok);
-    if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 1));
+    if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;

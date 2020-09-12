@@ -111,7 +111,7 @@ void PxtoneClient::setBufferSize(double secs) {
     m_audio->stop();
   }
 
-  m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
+  if (secs >= 0.01) m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
 
   if (started) {
     resetAndSuspendAudio();
