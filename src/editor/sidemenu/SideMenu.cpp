@@ -225,6 +225,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     double length = ui->bufferLength->text().toDouble(&ok);
     if (ok) {
       QSettings().setValue(BUFFER_LENGTH_KEY, length);
+      ui->bufferLength->clearFocus();
       emit bufferLengthChanged(length);
     }
   });
