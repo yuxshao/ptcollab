@@ -297,8 +297,12 @@ void SideMenu::setParamKindIndex(int index) {
 void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
-  if (playing)
-    ui->playBtn->setText("Pause (SPC)");
-  else
-    ui->playBtn->setText("Play (SPC)");
+  if (playing) {
+    ui->playBtn->setText(" (SPC)");
+    ui->playBtn->setIcon(QIcon(":/icons/pause"));
+  }
+  else {
+    ui->playBtn->setText(" (SPC)");
+    ui->playBtn->setIcon(QIcon(":/icons/play"));
+  }
 }

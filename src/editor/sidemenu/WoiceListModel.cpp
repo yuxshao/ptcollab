@@ -136,7 +136,8 @@ Qt::ItemFlags WoiceListModel::flags(const QModelIndex &index) const {
 
 QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
                                     int role) const {
-  if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+    if (orientation == Qt::Horizontal) {
+  if (role == Qt::DisplayRole) {
     switch (WoiceListColumn(section)) {
       case WoiceListColumn::Loop:
       case WoiceListColumn::BeatFit:
@@ -150,13 +151,14 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
   if (role == Qt::DecorationRole) {
       switch (WoiceListColumn(section)) {
         case WoiceListColumn::Loop:
-          return QIcon(":/icons/repeat");
+          return QIcon(":/icons/loop");
         case WoiceListColumn::BeatFit:
           return QIcon(":/icons/measure");
         case WoiceListColumn::Key:
         case WoiceListColumn::Name:
           break;
       }
+    }
     }
   return QVariant();
 }

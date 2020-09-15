@@ -22,11 +22,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Play (SPC)</string>
+        <string> (SPC)</string>
        </property>
        <property name="icon">
-        <iconset theme="play">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme=":/icons/play" resource="../../icons.qrc">
+         <normaloff>:/icons/play</normaloff>:/icons/play</iconset>
        </property>
       </widget>
      </item>
@@ -36,7 +36,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Stop (ESC)</string>
+        <string> (ESC)</string>
+       </property>
+       <property name="icon">
+        <iconset theme=":/icons/stop" resource="../../icons.qrc">
+         <normaloff>:/icons/stop</normaloff>:/icons/stop</iconset>
        </property>
       </widget>
      </item>
@@ -49,6 +53,10 @@
      </property>
      <property name="text">
       <string>Save locally (C-s)</string>
+     </property>
+     <property name="icon">
+      <iconset theme=":/icons/save">
+       <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
    </item>
@@ -302,7 +310,11 @@
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="text">
-            <string>Up</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset theme=":/icons/up" resource="../../icons.qrc">
+             <normaloff>:/icons/up</normaloff>:/icons/up</iconset>
            </property>
           </widget>
          </item>
@@ -312,7 +324,11 @@
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="text">
-            <string>Down</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset theme=":/icons/down" resource="../../icons.qrc">
+             <normaloff>:/icons/down</normaloff>:/icons/down</iconset>
            </property>
           </widget>
          </item>
@@ -561,6 +577,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../icons.qrc"/>
+ </resources>
  <connections/>
 </ui>
