@@ -139,14 +139,24 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
   if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
     switch (WoiceListColumn(section)) {
       case WoiceListColumn::Loop:
-        return "L";
       case WoiceListColumn::BeatFit:
-        return "B";
+        break;
       case WoiceListColumn::Key:
         return "Key";
       case WoiceListColumn::Name:
         return "Name";
     }
   }
+  if (role == Qt::DecorationRole) {
+      switch (WoiceListColumn(section)) {
+        case WoiceListColumn::Loop:
+          return QIcon(":/icons/repeat");
+        case WoiceListColumn::BeatFit:
+          return QIcon(":/icons/measure");
+        case WoiceListColumn::Key:
+        case WoiceListColumn::Name:
+          break;
+      }
+    }
   return QVariant();
 }

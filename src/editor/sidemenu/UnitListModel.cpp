@@ -119,19 +119,33 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
 
 QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
                                    int role) const {
+    if ( orientation == Qt::Horizontal) {
   if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
     switch (UnitListColumn(section)) {
       case UnitListColumn::Visible:
-        return "V";
+        break;
       case UnitListColumn::Played:
-        return "P";
+        break;
       case UnitListColumn::Select:
-        return "S";
+        break;
       case UnitListColumn::Name:
         return "Name";
     }
   }
-  return QVariant();
+  if (role == Qt::DecorationRole) {
+      switch (UnitListColumn(section)) {
+        case UnitListColumn::Visible:
+          return QIcon(":/icons/visible");
+        case UnitListColumn::Played:
+          return QIcon(":/icons/audio-on");
+        case UnitListColumn::Select:
+          return QIcon(":/icons/select");
+      default: break;
+      }
+    }
+
+    }
+    return QVariant();
 }
 
 void UnitListDelegate::paint(QPainter *painter,

@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="audio-on">icons/icons/status/16/audio-on.svg</file>
+        <file alias="audio-off">icons/icons/status/16/audio-volume-muted.svg</file>
+        <file alias="visible">icons/icons/actions/16/view-visible.svg</file>
+        <file alias="select">icons/icons/actions/16/edit-select.svg</file>
+        <file alias="repeat">icons/icons/actions/16/media-playlist-repeat.svg</file>
+        <file alias="measure">icons/icons/actions/16/measure.svg</file>
+        <file alias="select-rect">icons/icons/actions/16/select-rectangular.svg</file>
+        <file alias="invisible">icons/icons/actions/16/view-hidden.svg</file>
+    </qresource>
+</RCC>
