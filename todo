@@ -296,9 +296,14 @@ fill architecture could work well.
 8/23
 1. Moving units up and down doesn't cause velocity setting to affect the wrong
    unit
+   
+9/14
+1. Add icons
+2. Slightly better buffer settings. Still bad on windows though
 
 Todo by priority
 ----------------
+ - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
