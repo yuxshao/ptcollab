@@ -14,7 +14,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
                          std::list<EVERECORD> additional_events, int duration,
                          std::shared_ptr<const pxtnWoice> starting_woice,
-                         QObject *parent)
+                         int bufferSize, QObject *parent)
     : QObject(parent),
       m_pxtn(pxtn),
       m_unit(starting_woice),
@@ -51,6 +51,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
 
   m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
   m_audio->setVolume(1.0);
+  m_audio->setBufferSize(bufferSize);
   m_audio->start(m_device);
   connect(m_device, &PxtoneUnitIODevice::ZeroLives, this,
           &NotePreview::finished);
@@ -69,28 +70,28 @@ static EVERECORD ev(int32_t clock, EVENTKIND kind, int32_t value) {
 }
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
-                         int unit_no, int clock, int pitch, int vel,
+                         int unit_no, int clock, int pitch, int vel, int bufferSize,
                          QObject *parent)
     : NotePreview(
           pxtn, moo_params, unit_no, clock,
           {ev(clock, EVENTKIND_KEY, pitch), ev(clock, EVENTKIND_VELOCITY, vel)},
-          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), parent) {}
+          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, parent) {}
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
-                         std::list<EVERECORD> additional_events,
+                         std::list<EVERECORD> additional_events, int bufferSize,
                          QObject *parent)
     : NotePreview(pxtn, moo_params, unit_no, clock, additional_events,
                   LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO),
-                  parent){};
+                   bufferSize, parent){};
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int pitch, int vel, int duration,
-                         std::shared_ptr<const pxtnWoice> woice,
+                         std::shared_ptr<const pxtnWoice> woice, int bufferSize,
                          QObject *parent)
     : NotePreview(pxtn, moo_params, -1, 0,
                   {ev(0, EVENTKIND_KEY, pitch), ev(0, EVENTKIND_VELOCITY, vel)},
-                  duration, woice, parent) {}
+                  duration, woice, bufferSize, parent) {}
 
 NotePreview::~NotePreview() {
   // seems to fix a crash that'd happen if I change quickly between woices

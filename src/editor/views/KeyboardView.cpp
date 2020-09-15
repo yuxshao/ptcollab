@@ -610,7 +610,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
         s.mouse_edit_state.base_velocity = vel;
 
         m_audio_note_preview = std::make_unique<NotePreview>(
-            m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel, this);
+            m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel, m_client->audioState()->bufferSize(), this);
       }
     }
   });

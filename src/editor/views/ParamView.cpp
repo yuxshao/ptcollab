@@ -483,7 +483,8 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
                              .current_param);
         m_audio_note_preview = std::make_unique<NotePreview>(
             m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
-            s.mouse_edit_state.current_clock, std::list<EVERECORD>({e}), this);
+            s.mouse_edit_state.current_clock, std::list<EVERECORD>({e}),
+            m_client->audioState()->bufferSize(), this);
       }
     }
   });

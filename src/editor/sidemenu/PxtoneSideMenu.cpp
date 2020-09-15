@@ -106,7 +106,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           m_client->pxtn(), &m_client->moo()->params,
           m_client->editState().mouse_edit_state.last_pitch,
           m_client->editState().mouse_edit_state.base_velocity, 48000, woice,
-          this);
+          m_client->audioState()->bufferSize(), this);
     } catch (const QString &e) {
       qDebug() << "Could not preview woice at path" << path << ". Error" << e;
     }
@@ -119,7 +119,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           m_client->pxtn(), &m_client->moo()->params,
           m_client->editState().mouse_edit_state.last_pitch,
           m_client->editState().mouse_edit_state.base_velocity, 48000,
-          m_client->pxtn()->Woice_Get(idx), this);
+          m_client->pxtn()->Woice_Get(idx), m_client->audioState()->bufferSize(), this);
     else
       m_note_preview = nullptr;
     m_client->setCurrentWoiceNo(idx);

@@ -9,13 +9,13 @@ class NotePreview : public QObject {
   Q_OBJECT
  public:
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
-              int clock, int pitch, int vel, QObject *parent = nullptr);
+              int clock, int pitch, int vel, int bufferSize, QObject *parent = nullptr);
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
-              int clock, std::list<EVERECORD> additional_events,
+              int clock, std::list<EVERECORD> additional_events, int bufferSize,
               QObject *parent = nullptr);
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int pitch,
               int vel, int duration, std::shared_ptr<const pxtnWoice> woice,
-              QObject *parent = nullptr);
+              int bufferSize, QObject *parent = nullptr);
   void processEvent(EVENTKIND kind, int32_t value);
   void suspend() { m_audio->suspend(); }
   ~NotePreview();
@@ -25,7 +25,7 @@ class NotePreview : public QObject {
  private:
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, std::list<EVERECORD> additional_events, int duration,
-              std::shared_ptr<const pxtnWoice> starting_woice,
+              std::shared_ptr<const pxtnWoice> starting_woice, int bufferSize,
               QObject *parent = nullptr);
   const pxtnService *m_pxtn;
   pxtnUnitTone m_unit;
