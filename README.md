@@ -16,6 +16,7 @@ Most features in pxtone collage are available here:
 - Setting tempo, beats, repeat and last measures
 - Adding and removing voices and units
 - Shift+click to seek
+- Ctrl+click to modify just note values, not note ons
 - Selection
   - Ctrl+shift+click to select
   - Ctrl+A to select all
@@ -28,15 +29,18 @@ Additionally, there are a few features I wanted to have
 available to make editing easy (for me at least). These are:
 1. Editing notes while playing
 2. Colour-coded units visible in the background
-3. Keyboard shortcuts for navigation
+3. Transposition / shifting parameters by pressing (shift)
+   up / down while something is selected. Ctrl shifts by an
+   octave.
+4. Keyboard shortcuts for navigation
   - W/S for next previous / next unit
   - Q/A for previous / next parameter
-4. Mouse-related shortcuts for view / mode changes
+5. Mouse-related shortcuts for view / mode changes
   - Middle-click drag to move around
   - Shift+wheel to scroll horizontally
   - Ctrl+(shift)+wheel to zoom vertically (horizontally)
   - Alt+wheel to change quantization
-5. Various dragging gestures
+6. Various dragging gestures
   - Drag in the keyboard view to modify velocity
   - Drag in the parameter view for linear editing
   
