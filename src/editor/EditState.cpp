@@ -17,6 +17,12 @@ Interval MouseEditState::clock_int(int q) const {
   return {quantize(begin, q), quantize(end, q) + q};
 }
 
+Interval MouseEditState::clock_int_short(int q) const {
+  int begin = std::min(start_clock, current_clock);
+  int end = std::max(start_clock, current_clock);
+  return {quantize(begin, q), quantize(end, q)};
+}
+
 MouseEditState::MouseEditState()
     : type(MouseEditState::Type::Nothing),
       base_velocity(EVENTDEFAULT_VELOCITY),

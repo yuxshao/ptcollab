@@ -45,6 +45,7 @@ struct MouseEditState {
   std::variant<MouseKeyboardEdit, MouseParamEdit> kind;
   std::optional<Interval> selection;
   Interval clock_int(qint32 quantize) const;
+  Interval clock_int_short(int q) const;
   MouseEditState();
 };
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a);

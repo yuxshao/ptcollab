@@ -205,10 +205,10 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                        (tailLineHeight + 6), color);
       painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
                        (tailLineHeight + 2), color);
-      painter.fillRect(thisX + 2, y - tailLineHeight / 2, w - 3, tailLineHeight,
-                       color);
-      painter.fillRect(thisX + w - 1, y - (tailLineHeight - 2) / 2, 1,
-                       tailLineHeight - 2, color);
+      painter.fillRect(thisX + 2, y - tailLineHeight / 2, std::max(0, w - 3),
+                       tailLineHeight, color);
+      painter.fillRect(thisX + std::max(0, w - 1), y - (tailLineHeight - 2) / 2,
+                       1, tailLineHeight - 2, color);
     }
   }
 }
@@ -237,11 +237,11 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
           painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
         }
       } else {
-        Interval interval = state.clock_int(quantizeClock);
+        Interval interval = state.clock_int_short(quantizeClock);
         painter.fillRect(
             interval.start / clockPerPx,
             height / 2 - lineHeight / 2 + unitOffset * tailRowHeight,
-            interval.length() / clockPerPx, lineHeight, c);
+            std::max(1.0, interval.length() / clockPerPx), lineHeight, c);
       }
     } break;
     case MouseEditState::Type::Seek:
@@ -517,6 +517,9 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
 
   EVENTKIND kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
+  if (kind == EVENTKIND_PORTAMENT)
+    clock_int = m_client->editState().mouse_edit_state.clock_int_short(
+        m_client->quantizeClock());
   m_client->changeEditState([&](EditState &s) {
     if (m_client->pxtn()->Unit_Num() > 0) {
       using namespace Action;
