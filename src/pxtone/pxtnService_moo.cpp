@@ -316,6 +316,7 @@ int32_t pxtnService::moo_tone_sample(pxtnUnitTone* p_u,
                              moo_params.smp_stride);
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
     int32_t work = p_u->Tone_Supple_get(ch, time_pan_index);
+    work *= moo_params.master_vol;
     if (work > moo_params.top) work = moo_params.top;
     if (work < -moo_params.top) work = -moo_params.top;
     *((int16_t*)data + ch) = (int16_t)(work);

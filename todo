@@ -296,7 +296,7 @@ fill architecture could work well.
 8/23
 1. Moving units up and down doesn't cause velocity setting to affect the wrong
    unit
-   
+
 9/14
 1. Add icons
 2. Slightly better buffer settings. Still bad on windows though
@@ -305,12 +305,11 @@ fill architecture could work well.
 1. Split help menu, tooltips for icons
 2. Save confirmation
 3. Save username, connection destination, port
+4. Note preview is affected by volume now
 
 Todo by priority
 ----------------
- - note preview affected by volume
  - Small user suggestions
-   - Save username, connection destination, port
    - Show menu when selecting voice
  - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums
