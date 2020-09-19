@@ -309,8 +309,11 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - Small user suggestions
-   - Show menu when selecting voice
+ - easier voice selection
+ - root note
+ - measure numbers
+ - coarse tune
+ - piano roll on the left
  - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
