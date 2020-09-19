@@ -70,12 +70,13 @@ static EVERECORD ev(int32_t clock, EVENTKIND kind, int32_t value) {
 }
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
-                         int unit_no, int clock, int pitch, int vel, int bufferSize,
-                         QObject *parent)
+                         int unit_no, int clock, int pitch, int vel,
+                         int bufferSize, QObject *parent)
     : NotePreview(
           pxtn, moo_params, unit_no, clock,
           {ev(clock, EVENTKIND_KEY, pitch), ev(clock, EVENTKIND_VELOCITY, vel)},
-          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, parent) {}
+          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize,
+          parent) {}
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
@@ -83,7 +84,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          QObject *parent)
     : NotePreview(pxtn, moo_params, unit_no, clock, additional_events,
                   LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO),
-                   bufferSize, parent){};
+                  bufferSize, parent){};
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int pitch, int vel, int duration,

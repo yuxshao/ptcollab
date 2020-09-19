@@ -93,9 +93,9 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   }
   {
     bool ok;
-    int v = QSettings()
-                .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
-                .toDouble(&ok);
+    double v = QSettings()
+                   .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
+                   .toDouble(&ok);
     if (ok) setBufferSize(v);
   }
   m_audio->start(m_pxtn_device);
