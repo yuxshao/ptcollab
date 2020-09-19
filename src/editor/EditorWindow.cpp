@@ -383,7 +383,7 @@ void EditorWindow::connectToHost() {
       settings.value(CONNECT_SERVER_PORT_KEY, DEFAULT_PORT).toInt(), 0, 65536,
       1, &ok);
   if (!ok) return;
-  settings.setValue(HOST_SERVER_PORT_KEY, port);
+  settings.setValue(CONNECT_SERVER_PORT_KEY, port);
 
   QString username = QInputDialog::getText(
       this, "Username", "What's your display name?", QLineEdit::Normal,
