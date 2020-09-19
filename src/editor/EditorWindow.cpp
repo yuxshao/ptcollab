@@ -28,6 +28,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_filename(""),
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
+      m_modified(false),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
