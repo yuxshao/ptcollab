@@ -93,14 +93,26 @@ Qt::ItemFlags OverdriveEffectModel::flags(const QModelIndex &index) const {
 QVariant OverdriveEffectModel::headerData(int section,
                                           Qt::Orientation orientation,
                                           int role) const {
-  if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-    switch (OverdriveEffectColumn(section)) {
-      case OverdriveEffectColumn::Group:
-        return "G";
-      case OverdriveEffectColumn::Cut:
-        return "Cut";
-      case OverdriveEffectColumn::Amp:
-        return "Amp.";
+  if (orientation == Qt::Horizontal) {
+    if (role == Qt::DisplayRole) {
+      switch (OverdriveEffectColumn(section)) {
+        case OverdriveEffectColumn::Group:
+          return "G";
+        case OverdriveEffectColumn::Cut:
+          return "Cut";
+        case OverdriveEffectColumn::Amp:
+          return "Amp.";
+      }
+    }
+    if (role == Qt::ToolTipRole) {
+      switch (OverdriveEffectColumn(section)) {
+        case OverdriveEffectColumn::Group:
+          return tr("Group");
+        case OverdriveEffectColumn::Cut:
+          return tr("Cut");
+        case OverdriveEffectColumn::Amp:
+          return tr("Amplification");
+      }
     }
   }
   return QVariant();

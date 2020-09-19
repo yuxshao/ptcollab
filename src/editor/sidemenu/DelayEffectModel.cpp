@@ -105,16 +105,30 @@ Qt::ItemFlags DelayEffectModel::flags(const QModelIndex &index) const {
 
 QVariant DelayEffectModel::headerData(int section, Qt::Orientation orientation,
                                       int role) const {
-  if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-    switch (DelayEffectColumn(section)) {
-      case DelayEffectColumn::Group:
-        return "G";
-      case DelayEffectColumn::Unit:
-        return "Unit";
-      case DelayEffectColumn::Frequency:
-        return "Freq.";
-      case DelayEffectColumn::Rate:
-        return "Ratio";
+  if (orientation == Qt::Horizontal) {
+    if (role == Qt::DisplayRole) {
+      switch (DelayEffectColumn(section)) {
+        case DelayEffectColumn::Group:
+          return "G";
+        case DelayEffectColumn::Unit:
+          return "Unit";
+        case DelayEffectColumn::Frequency:
+          return "Freq.";
+        case DelayEffectColumn::Rate:
+          return "Ratio";
+      }
+    }
+    if (role == Qt::ToolTipRole) {
+      switch (DelayEffectColumn(section)) {
+        case DelayEffectColumn::Group:
+          return tr("Group");
+        case DelayEffectColumn::Unit:
+          return tr("Unit");
+        case DelayEffectColumn::Frequency:
+          return tr("Frequency");
+        case DelayEffectColumn::Rate:
+          return tr("Ratio");
+      }
     }
   }
   return QVariant();

@@ -119,20 +119,20 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
 
 QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
                                    int role) const {
-    if ( orientation == Qt::Horizontal) {
-  if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-    switch (UnitListColumn(section)) {
-      case UnitListColumn::Visible:
-        break;
-      case UnitListColumn::Played:
-        break;
-      case UnitListColumn::Select:
-        break;
-      case UnitListColumn::Name:
-        return "Name";
+  if (orientation == Qt::Horizontal) {
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+      switch (UnitListColumn(section)) {
+        case UnitListColumn::Visible:
+          break;
+        case UnitListColumn::Played:
+          break;
+        case UnitListColumn::Select:
+          break;
+        case UnitListColumn::Name:
+          return "Name";
+      }
     }
-  }
-  if (role == Qt::DecorationRole) {
+    if (role == Qt::DecorationRole) {
       switch (UnitListColumn(section)) {
         case UnitListColumn::Visible:
           return QIcon(":/icons/visible");
@@ -140,12 +140,24 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return QIcon(":/icons/audio-on");
         case UnitListColumn::Select:
           return QIcon(":/icons/select");
-      default: break;
+        default:
+          break;
       }
     }
-
+    if (role == Qt::ToolTipRole) {
+      switch (UnitListColumn(section)) {
+        case UnitListColumn::Visible:
+          return tr("Visible");
+        case UnitListColumn::Played:
+          return tr("Played");
+        case UnitListColumn::Select:
+          return tr("Selected");
+        case UnitListColumn::Name:
+          return tr("Name");
+      }
     }
-    return QVariant();
+  }
+  return QVariant();
 }
 
 void UnitListDelegate::paint(QPainter *painter,

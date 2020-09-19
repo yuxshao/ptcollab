@@ -85,7 +85,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
-  connect(ui->actionHelp, &QAction::triggered, [=]() {
+  connect(ui->actionShortcuts, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "Help",
         "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "

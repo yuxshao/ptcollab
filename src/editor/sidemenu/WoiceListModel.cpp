@@ -136,19 +136,19 @@ Qt::ItemFlags WoiceListModel::flags(const QModelIndex &index) const {
 
 QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
                                     int role) const {
-    if (orientation == Qt::Horizontal) {
-  if (role == Qt::DisplayRole) {
-    switch (WoiceListColumn(section)) {
-      case WoiceListColumn::Loop:
-      case WoiceListColumn::BeatFit:
-        break;
-      case WoiceListColumn::Key:
-        return "Key";
-      case WoiceListColumn::Name:
-        return "Name";
+  if (orientation == Qt::Horizontal) {
+    if (role == Qt::DisplayRole) {
+      switch (WoiceListColumn(section)) {
+        case WoiceListColumn::Loop:
+        case WoiceListColumn::BeatFit:
+          break;
+        case WoiceListColumn::Key:
+          return "Key";
+        case WoiceListColumn::Name:
+          return "Name";
+      }
     }
-  }
-  if (role == Qt::DecorationRole) {
+    if (role == Qt::DecorationRole) {
       switch (WoiceListColumn(section)) {
         case WoiceListColumn::Loop:
           return QIcon(":/icons/loop");
@@ -159,6 +159,18 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
           break;
       }
     }
+    if (role == Qt::ToolTipRole) {
+      switch (WoiceListColumn(section)) {
+        case WoiceListColumn::Loop:
+          return tr("Loop");
+        case WoiceListColumn::BeatFit:
+          return tr("Beat fit");
+        case WoiceListColumn::Key:
+          return tr("Key");
+        case WoiceListColumn::Name:
+          return tr("Name");
+      }
     }
+  }
   return QVariant();
 }
