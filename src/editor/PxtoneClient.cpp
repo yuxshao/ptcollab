@@ -128,12 +128,12 @@ void PxtoneClient::setBufferSize(double secs) {
 void PxtoneClient::togglePlayState() {
   switch (m_audio->state()) {
     case QAudio::ActiveState:
+    case QAudio::IdleState:
       m_audio->suspend();
       break;
     case QAudio::SuspendedState:
       m_audio->resume();
       break;
-    case QAudio::IdleState:
     case QAudio::InterruptedState:
     case QAudio::StoppedState:
       qWarning() << "Toggling play state of audio that is not playing"
