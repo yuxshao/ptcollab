@@ -30,8 +30,6 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
   m_pxtn_device = new PxtoneIODevice(this, m_controller->pxtn(), &m_moo_state);
   m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
 
-  // m_audio->setBufferSize(441000);
-
   // Apparently this reduces latency in pulseaudio, but also makes
   // some sounds choppier
   // m_audio->setCategory("game");
@@ -39,14 +37,14 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
   connect(m_audio, &QAudioOutput::stateChanged, [this](QAudio::State state) {
     switch (state) {
       case QAudio::ActiveState:
+      case QAudio::IdleState:
         emit playStateChanged(true);
         break;
       case QAudio::SuspendedState:
+      case QAudio::StoppedState:
         emit playStateChanged(false);
         break;
-      case QAudio::IdleState:
       case QAudio::InterruptedState:
-      case QAudio::StoppedState:
         qWarning() << "Entered unexpected play state" << state;
         emit playStateChanged(false);
         break;
@@ -95,7 +93,9 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   }
   {
     bool ok;
-    int v = QSettings().value(BUFFER_LENGTH_KEY).toDouble(&ok);
+    int v = QSettings()
+                .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
+                .toDouble(&ok);
     if (ok) setBufferSize(v);
   }
   m_audio->start(m_pxtn_device);
@@ -104,14 +104,16 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
 }
 
 void PxtoneClient::setBufferSize(double secs) {
-  bool started = (m_audio->state() != QAudio::StoppedState);
+  bool started = (m_audio->state() != QAudio::StoppedState &&
+                  m_audio->state() != QAudio::IdleState);
   QAudioFormat fmt = pxtoneAudioFormat();
 
-  if (started) {
-    m_audio->stop();
-  }
+  if (started) m_audio->stop();
 
-  if (secs >= 0.01) m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
+  if (secs < 0.01) secs = 0.01;
+  if (secs > 10) secs = 10;
+  qDebug() << "Setting buffer size: " << secs;
+  m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
 
   if (started) {
     resetAndSuspendAudio();

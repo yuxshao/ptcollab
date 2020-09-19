@@ -303,11 +303,14 @@ fill architecture could work well.
 
 9/19
 1. Split help menu, tooltips for icons
+2. Save confirmation
+3. Save username, connection destination, port
 
 Todo by priority
 ----------------
+ - note preview affected by volume
  - Small user suggestions
-   - Save confirmation
+   - Save username, connection destination, port
    - Show menu when selecting voice
  - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums

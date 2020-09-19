@@ -80,6 +80,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::connectButtonPressed, this,
           &EditorWindow::connectToHost);
 
+  connect(m_client->controller(), &PxtoneController::edited, [this]() {
+    m_modified = true;
+    m_side_menu->setModified(true);
+  });
+
   connect(ui->actionNewHost, &QAction::triggered, [this]() { Host(false); });
   connect(ui->actionOpenHost, &QAction::triggered, [this]() { Host(true); });
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
@@ -162,6 +167,14 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &s) { s.m_follow_playhead = !s.m_follow_playhead; });
       break;
+    case Qt::Key_K:
+      if (event->modifiers() & Qt::ControlModifier &&
+          event->modifiers() & Qt::ShiftModifier &&
+          QMessageBox::question(
+              this, "Clear settings",
+              "Are you sure you want to clear your settings?"))
+        QSettings().clear();
+      break;
     case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
         m_keyboard_view->toggleTestActivity();
@@ -205,16 +218,50 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   }
 }
 
+bool EditorWindow::maybeSave() {
+  if (!m_modified) return true;
+
+  int ret = QMessageBox::question(
+      this, tr("Unsaved changes"),
+      tr("Do you want to save your changes first?"),
+      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+      QMessageBox::Save);
+  switch (ret) {
+    case QMessageBox::Save:
+      save();
+      return true;
+    case QMessageBox::Discard:
+      return true;
+    case QMessageBox::Cancel:
+      return false;
+      break;
+    default:
+      qWarning() << "Unexpected maybeSave answer" << ret;
+      return false;
+  }
+}
+
+void EditorWindow::closeEvent(QCloseEvent *event) {
+  if (maybeSave())
+    event->accept();
+  else
+    event->ignore();
+}
+
 const QString PTCOP_DIR_KEY("ptcop_dir");
+const QString DISPLAY_NAME_KEY("display_name");
+const QString HOST_SERVER_PORT_KEY("host_server_port");
+constexpr int DEFAULT_PORT = 15835;
 void EditorWindow::Host(bool load_file) {
+  if (!maybeSave()) return;
   if (m_server) {
     auto result = QMessageBox::question(this, "Server already running",
                                         "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
   QString filename = "";
+  QSettings settings;
   if (load_file) {
-    QSettings settings;
     filename = QFileDialog::getOpenFileName(
         this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
         "pxtone projects (*.ptcop)");
@@ -228,14 +275,19 @@ void EditorWindow::Host(bool load_file) {
 
   if (load_file && filename.isEmpty()) return;
   bool ok;
-  int port =
-      QInputDialog::getInt(this, "Port", "What port should this server run on?",
-                           15835, 0, 65536, 1, &ok);
+  int port = QInputDialog::getInt(
+      this, "Port", "What port should this server run on?",
+      settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toInt(), 0, 65536, 1,
+      &ok);
   if (!ok) return;
-  QString username =
-      QInputDialog::getText(this, "Username", "What's your display name?",
-                            QLineEdit::Normal, "Anonymous", &ok);
+  settings.setValue(HOST_SERVER_PORT_KEY, port);
+
+  QString username = QInputDialog::getText(
+      this, "Username", "What's your display name?", QLineEdit::Normal,
+      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString(), &ok);
   if (!ok) return;
+  settings.setValue(DISPLAY_NAME_KEY, username);
+
   if (m_server) {
     delete m_server;
     m_server = nullptr;
@@ -281,6 +333,7 @@ bool EditorWindow::saveToFile(QString filename) {
   int version_from_pxtn_service = 5;
   if (m_pxtn.write(&desc, false, version_from_pxtn_service) != pxtnOK)
     return false;
+  m_modified = false;
   m_side_menu->setModified(false);
   return true;
 }
@@ -302,7 +355,11 @@ void EditorWindow::save() {
   else
     saveToFile(m_filename);
 }
+
+const QString CONNECT_SERVER_NAME_KEY("connect_server_name");
+const QString CONNECT_SERVER_PORT_KEY("connect_server_port");
 void EditorWindow::connectToHost() {
+  if (!maybeSave()) return;
   if (m_server) {
     auto result =
         QMessageBox::question(this, "Server running", "Stop the server first?");
@@ -314,19 +371,25 @@ void EditorWindow::connectToHost() {
     }
   }
   bool ok;
-  QString host =
-      QInputDialog::getText(this, "Host", "What host should I connect to?",
-                            QLineEdit::Normal, "localhost", &ok);
+  QSettings settings;
+  QString host = QInputDialog::getText(
+      this, "Host", "What host should I connect to?", QLineEdit::Normal,
+      settings.value(CONNECT_SERVER_NAME_KEY, "localhost").toString(), &ok);
+  settings.setValue(CONNECT_SERVER_NAME_KEY, host);
   if (!ok) return;
 
   int port = QInputDialog::getInt(
-      this, "Port", "What port should I connect to?", 15835, 0, 65536, 1, &ok);
+      this, "Port", "What port should I connect to?",
+      settings.value(CONNECT_SERVER_PORT_KEY, DEFAULT_PORT).toInt(), 0, 65536,
+      1, &ok);
   if (!ok) return;
+  settings.setValue(HOST_SERVER_PORT_KEY, port);
 
-  QString username =
-      QInputDialog::getText(this, "Username", "What's your display name?",
-                            QLineEdit::Normal, "Anonymous", &ok);
+  QString username = QInputDialog::getText(
+      this, "Username", "What's your display name?", QLineEdit::Normal,
+      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString(), &ok);
   if (!ok) return;
+  settings.setValue(DISPLAY_NAME_KEY, username);
 
   // TODO: some validation here? e.g., maybe disallow exotic chars in case
   // type isn't supported on other clients?

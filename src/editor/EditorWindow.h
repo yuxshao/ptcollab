@@ -36,7 +36,8 @@ class EditorWindow : public QMainWindow {
 
  private:
   void Host(bool load_file);
-  void keyPressEvent(QKeyEvent* event);
+  void keyPressEvent(QKeyEvent* event) override;
+  void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
   mooState m_moo_state;
@@ -50,10 +51,12 @@ class EditorWindow : public QMainWindow {
   QString m_filename;
   QLabel* m_server_status;
   QLabel* m_client_status;
+  bool m_modified;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);
   void save();
   void saveAs();
+  bool maybeSave();
 };
 #endif  // MAINWINDOW_H

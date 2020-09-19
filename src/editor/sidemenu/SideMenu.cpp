@@ -217,7 +217,9 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   {
     bool ok;
     double v;
-    v = QSettings().value(BUFFER_LENGTH_KEY).toDouble(&ok);
+    v = QSettings()
+            .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
+            .toDouble(&ok);
     if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
@@ -300,8 +302,7 @@ void SideMenu::setPlay(bool playing) {
   if (playing) {
     ui->playBtn->setText(" (SPC)");
     ui->playBtn->setIcon(QIcon(":/icons/pause"));
-  }
-  else {
+  } else {
     ui->playBtn->setText(" (SPC)");
     ui->playBtn->setIcon(QIcon(":/icons/play"));
   }
