@@ -53,7 +53,7 @@ let me know if I forgot anyone:
 1. Pixel for making such an awesome music software!
 2. Everyone involved in ptweb!
 3. Friends and family for supporting this!
-4. jaxcheese, neozoid, steedfarmer, ewangreen for testing out
+4. jaxcheese, neozoid, steedfarmer, ewangreen, gkpotter for testing out
    with me, making tunes together, and giving great feedback!
 5. steedfarmer for helping me hunt down this nasty networking bug!
 6. arcofdream for helping conceptualize the UI, giving feedback,
@@ -61,5 +61,3 @@ let me know if I forgot anyone:
 7. arcofdream, nanoplink, easynam for general programming, UX
    discussion and consulting!
 8. Jade for testing, finding UI bugs, and providing valuable
-   feedback and suggestions!
-9. Everyone in the pxtone discord servers!
