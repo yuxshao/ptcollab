@@ -51,7 +51,7 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       // of unit. This is just how the sound engine behaves.
       m_audio_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
-          m_client->editState().mouse_edit_state.start_clock,
+          m_client->editState().mouse_edit_state.start_clock, 48000,
           std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
           this);
     }
@@ -577,6 +577,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                 action->setData(id);
               }
               QAction *action = m_woice_menu->exec(event->globalPos());
+              if (m_audio_note_preview) m_audio_note_preview = nullptr;
               if (action != nullptr) {
                 bool ok = true;
                 int woice_id = action->data().toInt(&ok);
@@ -584,7 +585,6 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                   qWarning() << "Invalid woice menu action woice ID";
                   return;
                 }
-                if (m_audio_note_preview) m_audio_note_preview = nullptr;
                 actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                                    Add{woice_id}});
               }

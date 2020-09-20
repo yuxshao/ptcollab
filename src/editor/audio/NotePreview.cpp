@@ -79,12 +79,18 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
           parent) {}
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
+                         int unit_no, int clock, int duration,
+                         std::list<EVERECORD> additional_events, int bufferSize,
+                         QObject *parent)
+    : NotePreview(pxtn, moo_params, unit_no, clock, additional_events, duration,
+                  pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, parent){};
+
+NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
                          std::list<EVERECORD> additional_events, int bufferSize,
                          QObject *parent)
-    : NotePreview(pxtn, moo_params, unit_no, clock, additional_events,
-                  LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO),
-                  bufferSize, parent){};
+    : NotePreview(pxtn, moo_params, unit_no, clock, LONG_ON_VALUE,
+                  additional_events, bufferSize, parent){};
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int pitch, int vel, int duration,
