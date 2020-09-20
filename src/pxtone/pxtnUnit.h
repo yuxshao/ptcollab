@@ -67,7 +67,7 @@ class pxtnUnitTone {
   void Tone_Increment_Sample_Custom(float freq, pxtnVOICETONE *vts) const;
   void Tone_Increment_Sample(float freq);
 
-  bool set_woice(std::shared_ptr<const pxtnWoice> p_woice);
+  bool set_woice(std::shared_ptr<const pxtnWoice> p_woice, bool resetKey);
   std::shared_ptr<const pxtnWoice> get_woice() const;
 
   pxtnVOICETONE *get_tone(int32_t voice_idx);

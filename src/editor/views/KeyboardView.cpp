@@ -646,6 +646,7 @@ static bool canChangeUnit(PxtoneClient *client) {
     case MouseEditState::Type::Seek:
       return true;
   }
+  return false;
 }
 
 void KeyboardView::cycleCurrentUnit(int offset) {

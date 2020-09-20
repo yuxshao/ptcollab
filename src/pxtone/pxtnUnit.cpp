@@ -28,7 +28,7 @@ pxtnUnitTone::pxtnUnitTone(std::shared_ptr<const pxtnWoice> p_woice) {
     _pan_times[i] = 0;
   }
 
-  if (!set_woice(p_woice)) throw "Voice is null";
+  if (!set_woice(p_woice, true)) throw "Voice is null";
 }
 
 void pxtnUnitTone::Tone_Clear() {
@@ -77,12 +77,16 @@ void pxtnUnitTone::Tone_Reset(float tempo, float clock_rate) {
   Tone_Reset_Custom(tempo, clock_rate, _vts);
 }
 
-bool pxtnUnitTone::set_woice(std::shared_ptr<const pxtnWoice> p_woice) {
+bool pxtnUnitTone::set_woice(std::shared_ptr<const pxtnWoice> p_woice,
+                             bool resetKey) {
   if (!p_woice) return false;
   _p_woice = p_woice;
-  _key_now = EVENTDEFAULT_KEY;
-  _key_margin = 0;
-  _key_start = EVENTDEFAULT_KEY;
+  if (resetKey) {
+    _key_now = EVENTDEFAULT_KEY;
+    _key_margin = 0;
+    _key_start = EVENTDEFAULT_KEY;
+  } else
+    Tone_KeyOn();
   return true;
 }
 
@@ -182,15 +186,16 @@ void pxtnUnitTone::Tone_Envelope_Custom(pxtnVOICETONE *vts) const {
                                                  p_vt->env_pos /
                                                  p_vi->env_release;
         p_vt->env_pos++;
-        // TODO: I think I can set life_count to 0 if env_pos > env_release. But
-        // not sure.
+        // TODO: I think I can set life_count to 0 if env_pos > env_release.
+        // But not sure.
       }
     }
   }
 }
 void pxtnUnitTone::Tone_Envelope() { Tone_Envelope_Custom(_vts); }
 
-/* This sets up the buffers local to the unit for time pans (_pan_time_bufs) */
+/* This sets up the buffers local to the unit for time pans (_pan_time_bufs)
+ */
 /* added [Tone_sample_custom] because [Tone_sample] by default modifies the
  * pxtnVOICETONE associated with the actual unit during playback. */
 void pxtnUnitTone::Tone_Sample_Custom(int32_t ch_num, int32_t smooth_smp,

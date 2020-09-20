@@ -85,7 +85,11 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
     case EVENTKIND_NUM:
       break;
     case EVENTKIND_VOICENO: {
-      p_u->set_woice(pxtn->Woice_Get(value));
+      /// Normally setting a woice resets the key, but this messes up some note
+      /// previews. Use the sign of [value] to signal whether or not to reset
+      /// the key.
+      p_u->set_woice(pxtn->Woice_Get(value >= 0 ? value : -value),
+                     (value >= 0));
       resetVoiceOn(p_u);
     } break;
     case EVENTKIND_GROUPNO:

@@ -42,13 +42,15 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
     m_last_woice_menu_preview_id = id;
     auto maybe_unit_no =
         m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-    auto maybe_woice_no = m_client->controller()->woiceIdMap().idToNo(id);
+    std::optional<qint32> maybe_woice_no =
+        m_client->controller()->woiceIdMap().idToNo(id);
     if (maybe_woice_no.has_value() && maybe_unit_no.has_value()) {
       EVERECORD e;
       e.kind = EVENTKIND_VOICENO;
-      e.value = maybe_woice_no.value();
-      // This note preview always plays at the default key, not the previous key
-      // of unit. This is just how the sound engine behaves.
+      /// Since woice changes reset the unit key, I added a hack so
+      /// that the sound engine will interpret negative values the same as
+      /// positive but without resetting.
+      e.value = -maybe_woice_no.value();
       m_audio_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
           m_client->editState().mouse_edit_state.start_clock, 48000,
