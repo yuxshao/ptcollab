@@ -313,6 +313,7 @@ Todo by priority
 ----------------
  - measure numbers
  - midi input???
+   - start with qwerty input
  - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'

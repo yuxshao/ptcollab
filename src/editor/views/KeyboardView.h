@@ -31,6 +31,7 @@ class KeyboardView : public QWidget {
   explicit KeyboardView(PxtoneClient *client, MooClock *moo_clock,
                         QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
+  void setCurrentUnitNo(int unit_no);
 
  signals:
   void ensureVisibleX(int x);

@@ -634,28 +634,38 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
   event->ignore();
 }
 
-void KeyboardView::cycleCurrentUnit(int offset) {
-  switch (m_client->editState().mouse_edit_state.type) {
+static bool canChangeUnit(PxtoneClient *client) {
+  switch (client->editState().mouse_edit_state.type) {
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote:
     case MouseEditState::Type::Select:
-      break;
+      return false;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::Seek:
-      auto maybe_unit_no =
-          m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-      if (maybe_unit_no == std::nullopt) break;
-      qint32 unit_no = nonnegative_modulo(maybe_unit_no.value() + offset,
-                                          m_pxtn->Unit_Num());
-      qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
-      m_client->changeEditState(
-          [&](auto &s) { s.m_current_unit_id = unit_id; });
-      break;
+      return true;
   }
 }
 
+void KeyboardView::cycleCurrentUnit(int offset) {
+  if (!canChangeUnit(m_client)) return;
+
+  auto maybe_unit_no =
+      m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+  if (maybe_unit_no == std::nullopt) return;
+  qint32 unit_no =
+      nonnegative_modulo(maybe_unit_no.value() + offset, m_pxtn->Unit_Num());
+  qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
+  m_client->changeEditState([&](auto &s) { s.m_current_unit_id = unit_id; });
+}
+
+void KeyboardView::setCurrentUnitNo(int unit_no) {
+  if (!canChangeUnit(m_client)) return;
+  if (unit_no >= m_pxtn->Unit_Num()) return;
+  qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
+  m_client->changeEditState([&](auto &s) { s.m_current_unit_id = unit_id; });
+}
 void KeyboardView::selectAll() {
   m_client->changeEditState([&](EditState &s) {
     s.mouse_edit_state.selection.emplace(

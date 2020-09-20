@@ -93,17 +93,19 @@ EditorWindow::EditorWindow(QWidget *parent)
           &EditorWindow::connectToHost);
   connect(ui->actionShortcuts, &QAction::triggered, [=]() {
     QMessageBox::about(
-        this, "Help",
+        this, "Shortcuts",
         "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
         "horizontally.\nMiddle-click drag also "
         "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
         "seek.\nCtrl+click to modify note instead of on "
         "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
         "deselect.\nWith "
-        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W/S) to "
-        "cycle unit.\n(E/D) to cycle parameter.\nF to follow playhead.\n C to "
+        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W or "
+        "PgUp/S or PgDn) to "
+        "cycle unit.\n1..9 to jump to a unit directly.\n(E/D) to cycle "
+        "parameter.\nF to follow playhead.\n C to "
         "toggle if a parameter is copied. Velocity is tied to note and on "
-        "events.");
+        "events.\n(F1..F4) to switch tabs.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
@@ -118,7 +120,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 EditorWindow::~EditorWindow() { delete ui; }
 
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
-  switch (event->key()) {
+  int key = event->key();
+  switch (key) {
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->selectAll();
@@ -193,6 +196,32 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
 
+    case Qt::Key_F1:
+    case Qt::Key_F2:
+    case Qt::Key_F3:
+    case Qt::Key_F4:
+      m_side_menu->setTab(key - Qt::Key_F1);
+      break;
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    case Qt::Key_6:
+    case Qt::Key_7:
+    case Qt::Key_8:
+    case Qt::Key_9:
+      m_keyboard_view->setCurrentUnitNo(key - Qt::Key_1);
+      break;
+    case Qt::Key_0:
+      m_keyboard_view->setCurrentUnitNo(9);
+      break;
+    case Qt::Key_PageDown:
+      m_keyboard_view->cycleCurrentUnit(1);
+      break;
+    case Qt::Key_PageUp:
+      m_keyboard_view->cycleCurrentUnit(-1);
+      break;
     case Qt::Key_Space:
       m_client->togglePlayState();
       break;

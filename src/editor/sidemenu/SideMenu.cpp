@@ -247,6 +247,8 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->downUnitBtn->setEnabled(b);
 }
 
+void SideMenu::setTab(int index) { ui->tabWidget->setCurrentIndex(index); }
+
 SideMenu::~SideMenu() { delete ui; }
 
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }

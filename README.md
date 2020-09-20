@@ -33,8 +33,10 @@ available to make editing easy (for me at least). These are:
    up / down while something is selected. Ctrl shifts by an
    octave.
 4. Keyboard shortcuts for navigation
-  - W/S for next previous / next unit
+  - W/S for next previous / next unit (PgUp / PgDn also work)
   - Q/A for previous / next parameter
+  - F1..F4 for the tabs in the menu
+  - 1..9 for jumping to a unit directly
 5. Mouse-related shortcuts for view / mode changes
   - Middle-click drag to move around
   - Shift+wheel to scroll horizontally

@@ -27,6 +27,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
+  void setTab(int index);
 
   ~SideMenu();
 
