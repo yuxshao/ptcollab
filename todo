@@ -316,7 +316,7 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - measure numbers
+ - set repeat and last flags
  - midi input???
    - start with qwerty input
  - Somehow get rid of the lag when note previewing on windows

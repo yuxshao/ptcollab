@@ -129,9 +129,14 @@ void MeasureView::paintEvent(QPaintEvent *) {
   // Draw white lines under background
   // TODO: Dedup with keyboardview
   const pxtnMaster *master = pxtn->master;
+  qreal activeWidth = master->get_beat_num() * (master->get_meas_num()) *
+                      master->get_beat_clock() /
+                      m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
-  painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, width(), RULER_HEIGHT,
+  painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
                    QColor::fromRgb(128, 0, 0));
+  painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
+                   RULER_HEIGHT, QColor::fromRgb(64, 0, 0));
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
                    width(), 1, beatBrush);
@@ -140,6 +145,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
             m_client->editState().scale.clockPerPx;
     if (x > width()) break;
     if (beat % master->get_beat_num() == 0) {
+      int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
                        measureBrush);
       if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
@@ -147,26 +153,24 @@ void MeasureView::paintEvent(QPaintEvent *) {
       painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT, measureBrush);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
-      drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1,
-              beat / master->get_beat_num());
+      if (measure < master->get_meas_num())
+        drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1,
+                beat / master->get_beat_num());
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
                        beatBrush);
   }
   constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
   drawFlag(&painter, FlagType::Top, 0, FLAG_Y);
-  if (pxtn->master->get_repeat_meas() > 0) {
-    drawFlag(&painter, FlagType::Repeat,
-             pxtn->master->get_repeat_meas() * master->get_beat_num() *
-                 master->get_beat_clock() /
-                 m_client->editState().scale.clockPerPx,
-             FLAG_Y);
+  if (m_moo_clock->repeat_clock() > 0) {
+    drawFlag(
+        &painter, FlagType::Repeat,
+        m_moo_clock->repeat_clock() / m_client->editState().scale.clockPerPx,
+        FLAG_Y);
   }
-  if (pxtn->master->get_last_meas() > 0) {
+  if (m_moo_clock->has_last()) {
     drawFlag(&painter, FlagType::Last,
-             pxtn->master->get_last_meas() * master->get_beat_num() *
-                 master->get_beat_clock() /
-                 m_client->editState().scale.clockPerPx,
+             m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx,
              FLAG_Y);
   }
 
