@@ -568,8 +568,10 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
           // like 3 different cases of adding something.
           actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                              Delete{clock_int.end}});
+          // Velocity deletion is hard, so just interpret deletion as setting.
           if (s.mouse_edit_state.type == MouseEditState::SetOn ||
-              s.mouse_edit_state.type == MouseEditState::SetNote) {
+              s.mouse_edit_state.type == MouseEditState::SetNote ||
+              kind == EVENTKIND_VELOCITY) {
             if (kind == EVENTKIND_VOICENO) {
               m_woice_menu->clear();
               for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i) {
