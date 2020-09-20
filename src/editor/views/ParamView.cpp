@@ -12,11 +12,14 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       m_client(client),
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
-      m_audio_note_preview(nullptr) {
+      m_audio_note_preview(nullptr),
+      m_woice_menu(new QMenu(this)),
+      m_last_woice_menu_preview_id(-1) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
   setMouseTracking(true);
+  m_woice_menu->addAction("Hello");
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
   connect(m_client, &PxtoneClient::editStateChanged,
           [this](const EditState &s) {
@@ -25,6 +28,32 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
           });
   connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
           &QWidget::updateGeometry);
+  connect(m_woice_menu, &QMenu::hovered, [this](QAction *action) {
+    bool ok = true;
+    int id = action->data().toInt(&ok);
+    if (!ok) {
+      qWarning() << "Invalid woice menu action woice ID";
+      return;
+    }
+    if (m_last_woice_menu_preview_id == id &&
+        m_last_woice_menu_preview_time.elapsed() < 1500)
+      return;
+    m_last_woice_menu_preview_time.restart();
+    m_last_woice_menu_preview_id = id;
+    auto maybe_unit_no =
+        m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+    auto maybe_woice_no = m_client->controller()->woiceIdMap().idToNo(id);
+    if (maybe_woice_no.has_value() && maybe_unit_no.has_value()) {
+      EVERECORD e;
+      e.kind = EVENTKIND_VOICENO;
+      e.value = maybe_woice_no.value();
+      m_audio_note_preview = std::make_unique<NotePreview>(
+          m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
+          m_client->editState().mouse_edit_state.start_clock,
+          std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+          this);
+    }
+  });
 }
 
 QSize ParamView::sizeHint() const {
@@ -237,7 +266,9 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
           painter.fillRect(x, y - lineHeight / 2, w, lineHeight, c);
         }
       } else {
-        Interval interval = state.clock_int_short(quantizeClock);
+        Interval interval = (current_kind == EVENTKIND_PORTAMENT
+                                 ? state.clock_int_short(quantizeClock)
+                                 : state.clock_int(quantizeClock));
         painter.fillRect(
             interval.start / clockPerPx,
             height / 2 - lineHeight / 2 + unitOffset * tailRowHeight,
@@ -474,17 +505,17 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
           m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
       if (maybe_unit_no != std::nullopt &&
           std::holds_alternative<MouseParamEdit>(s.mouse_edit_state.kind)) {
+        int unit_no = maybe_unit_no.value();
         EVERECORD e;
         e.kind =
             paramOptions[m_client->editState().current_param_kind_idx()].second;
-        e.value = (e.kind == EVENTKIND_VOICENO
-                       ? m_client->editState().m_current_woice_id
-                       : std::get<MouseParamEdit>(s.mouse_edit_state.kind)
-                             .current_param);
+        e.value =
+            std::get<MouseParamEdit>(s.mouse_edit_state.kind).current_param;
+        qint32 current_clock = s.mouse_edit_state.current_clock;
         m_audio_note_preview = std::make_unique<NotePreview>(
-            m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
-            s.mouse_edit_state.current_clock, std::list<EVERECORD>({e}),
-            m_client->audioState()->bufferSize(), this);
+            m_client->pxtn(), &m_client->moo()->params, unit_no, current_clock,
+            std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+            this);
       }
     }
   });
@@ -529,16 +560,32 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
         case MouseEditState::DeleteOn:
         case MouseEditState::SetNote:
         case MouseEditState::DeleteNote:
-          // Has gotten a bit convoluted, though this is because there are like
-          // 3 different cases of adding something.
+          // Has gotten a bit convoluted, though this is because there are
+          // like 3 different cases of adding something.
           actions.push_back({kind, s.m_current_unit_id, clock_int.start,
                              Delete{clock_int.end}});
           if (s.mouse_edit_state.type == MouseEditState::SetOn ||
               s.mouse_edit_state.type == MouseEditState::SetNote) {
             if (kind == EVENTKIND_VOICENO) {
-              actions.push_back(
-                  {kind, s.m_current_unit_id, clock_int.start,
-                   Add{m_client->editState().m_current_woice_id}});
+              m_woice_menu->clear();
+              for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i) {
+                int32_t id = m_client->controller()->woiceIdMap().noToId(i);
+                QAction *action = m_woice_menu->addAction(
+                    m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
+                action->setData(id);
+              }
+              QAction *action = m_woice_menu->exec(event->globalPos());
+              if (action != nullptr) {
+                bool ok = true;
+                int woice_id = action->data().toInt(&ok);
+                if (!ok) {
+                  qWarning() << "Invalid woice menu action woice ID";
+                  return;
+                }
+                if (m_audio_note_preview) m_audio_note_preview = nullptr;
+                actions.push_back({kind, s.m_current_unit_id, clock_int.start,
+                                   Add{woice_id}});
+              }
             } else if (!Evelist_Kind_IsTail(kind)) {
               const std::list<ParamEditInterval> intervals =
                   lineEdit(s.mouse_edit_state, kind, m_client->quantizeClock());

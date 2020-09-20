@@ -1,6 +1,7 @@
 #ifndef PARAMVIEW_H
 #define PARAMVIEW_H
 
+#include <QMenu>
 #include <QWidget>
 
 #include "Animation.h"
@@ -16,6 +17,9 @@ class ParamView : public QWidget {
   Scale m_last_scale;
   MooClock *m_moo_clock;
   std::unique_ptr<NotePreview> m_audio_note_preview;
+  QMenu *m_woice_menu;
+  int m_last_woice_menu_preview_id;
+  QElapsedTimer m_last_woice_menu_preview_time;
 
   void paintEvent(QPaintEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
