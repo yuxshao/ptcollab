@@ -40,18 +40,47 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
 constexpr int NUM_WIDTH = 8;
 constexpr int NUM_HEIGHT = 8;
 constexpr int NUM_OFFSET_X = 0;
-constexpr int NUM_OFFSET_Y = 32;
+constexpr int NUM_OFFSET_Y = 40;
 static void drawNum(QPainter *painter, int x, int y, int w, int num) {
-  static QPixmap numbers(":/images/images");
+  static QPixmap images(":/images/images");
   int xr = x + w;
   do {
     int digit = num % 10;
     xr -= NUM_WIDTH;
-    painter->drawPixmap(xr, y, NUM_WIDTH, NUM_HEIGHT, numbers,
+    painter->drawPixmap(xr, y, NUM_WIDTH, NUM_HEIGHT, images,
                         NUM_OFFSET_X + digit * NUM_WIDTH, NUM_OFFSET_Y,
                         NUM_WIDTH, NUM_HEIGHT);
     num = (num - digit) / 10;
   } while (num > 0);
+}
+
+enum struct FlagType { Top, Repeat, Last };
+constexpr int FLAG_HEIGHT = 8;
+constexpr int FLAG_WIDTH = 40;
+static void drawFlag(QPainter *painter, FlagType type, int measure_x, int y) {
+  static QPixmap images(":/images/images");
+  int sx, sy;
+  bool end;
+  switch (type) {
+    case FlagType::Top:
+      sx = 0;
+      sy = 0;
+      end = false;
+      break;
+    case FlagType::Repeat:
+      sx = 0;
+      sy = 8;
+      end = false;
+      break;
+    case FlagType::Last:
+      sx = FLAG_WIDTH;
+      sy = 8;
+      end = true;
+      break;
+  }
+
+  int x = (end ? measure_x - FLAG_WIDTH : measure_x + 1);
+  painter->drawPixmap(x, y, images, sx, sy, FLAG_WIDTH, FLAG_HEIGHT);
 }
 
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
@@ -123,6 +152,22 @@ void MeasureView::paintEvent(QPaintEvent *) {
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
                        beatBrush);
+  }
+  constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
+  drawFlag(&painter, FlagType::Top, 0, FLAG_Y);
+  if (pxtn->master->get_repeat_meas() > 0) {
+    drawFlag(&painter, FlagType::Repeat,
+             pxtn->master->get_repeat_meas() * master->get_beat_num() *
+                 master->get_beat_clock() /
+                 m_client->editState().scale.clockPerPx,
+             FLAG_Y);
+  }
+  if (pxtn->master->get_last_meas() > 0) {
+    drawFlag(&painter, FlagType::Last,
+             pxtn->master->get_last_meas() * master->get_beat_num() *
+                 master->get_beat_clock() /
+                 m_client->editState().scale.clockPerPx,
+             FLAG_Y);
   }
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),

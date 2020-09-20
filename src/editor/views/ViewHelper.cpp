@@ -41,15 +41,12 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
-  painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 2, height,
-                   Qt::white);
-  painter.fillRect(moo_clock->last_clock() / clockPerPx + 2, 0, 3, height,
-                   halfWhite);
+  if (moo_clock->has_last())
+    painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
+                     Qt::white);
 
-  painter.fillRect(moo_clock->repeat_clock() / clockPerPx - 1, 0, 2, height,
+  painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
                    Qt::white);
-  painter.fillRect(moo_clock->repeat_clock() / clockPerPx - 4, 0, 3, height,
-                   halfWhite);
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,

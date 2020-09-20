@@ -75,3 +75,7 @@ int MooClock::now() {
 
   return clock;
 }
+
+bool MooClock::has_last() const {
+  return m_client->pxtn()->master->get_last_meas() > 0;
+}

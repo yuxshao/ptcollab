@@ -21,6 +21,7 @@ class MooClock : public QObject {
 
   int now();
   bool this_seek_caught_up() const { return m_this_seek_caught_up; }
+  bool has_last() const;
   int last_clock() const;
   int repeat_clock() const;
 
