@@ -313,6 +313,8 @@ void EditorWindow::Host(bool load_file) {
   }
   m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
   m_filename = filename;
+  m_modified = false;
+  m_side_menu->setModified(false);
 
   m_client->connectToServer("localhost", port, username);
 }
@@ -394,5 +396,7 @@ void EditorWindow::connectToHost() {
 
   // TODO: some validation here? e.g., maybe disallow exotic chars in case
   // type isn't supported on other clients?
+  m_modified = false;
+  m_side_menu->setModified(false);
   m_client->connectToServer(host, port, username);
 }

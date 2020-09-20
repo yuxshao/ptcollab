@@ -312,15 +312,13 @@ Todo by priority
 ----------------
  - root note
  - measure numbers
- - coarse tune
- - piano roll on the left
+ - midi input???
  - Somehow get rid of the lag when note previewing on windows
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
- - show measure num
 
 Misc todo by categories
 -----------------------
@@ -332,6 +330,8 @@ Aesthetics:
   - tab system to edit multiple files at once / switch between sessions
   - arcofdream's icon designs for the connect / disconnect menus
   - write / read shiftJIS in unit, woice names.
+ - coarse tune
+ - piano roll on the left
 
 Technical stuff:
  - server keeps its own state (e.g., active users) + running history (currently
