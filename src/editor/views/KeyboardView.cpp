@@ -339,8 +339,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       qint64 elapsed = m_timer->nsecsElapsed();
       m_timer->restart();
       iFps = 1E9 / elapsed * interval;
+      emit fpsUpdated(iFps);
     }
-    painter.drawText(rect(), QString("%1 FPS").arg(iFps, 0, 'f', 0));
   }
 
   // Set up drawing structures that we'll use while iterating through events

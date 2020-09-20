@@ -50,8 +50,7 @@ class EditorWindow : public QMainWindow {
   PxtoneClient* m_client;
   MooClock* m_moo_clock;
   QString m_filename;
-  QLabel* m_server_status;
-  QLabel* m_client_status;
+  QLabel *m_server_status, *m_client_status, *m_fps_status;
   bool m_modified;
 
   Ui::EditorWindow* ui;

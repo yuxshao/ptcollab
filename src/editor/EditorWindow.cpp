@@ -30,6 +30,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_filename(""),
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
+      m_fps_status(new QLabel("FPS", this)),
       m_modified(false),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
@@ -47,6 +48,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
+  statusBar()->addPermanentWidget(m_fps_status);
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
 
@@ -72,6 +74,9 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  connect(m_keyboard_view, &KeyboardView::fpsUpdated, [this](qreal fps) {
+    m_fps_status->setText(QString("%1 FPS").arg(fps, 0, 'f', 0));
+  });
 
   m_param_scroll_area = new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);

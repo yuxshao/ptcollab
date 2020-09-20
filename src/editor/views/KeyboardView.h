@@ -35,6 +35,7 @@ class KeyboardView : public QWidget {
 
  signals:
   void ensureVisibleX(int x);
+  void fpsUpdated(qreal fps);
 
  public slots:
   void toggleTestActivity();
