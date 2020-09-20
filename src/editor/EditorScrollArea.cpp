@@ -20,6 +20,7 @@ EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
       lastPos() {
   setWidgetResizable(true);
   setMouseTracking(true);
+  setFrameStyle(QFrame::NoFrame);
 }
 
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {

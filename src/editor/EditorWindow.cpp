@@ -51,9 +51,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_client_status);
 
   m_side_menu = new PxtoneSideMenu(m_client, this);
-  m_measure_splitter = new QWidget(m_splitter);
+  m_measure_splitter = new QFrame(m_splitter);
   QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
   m_measure_splitter->setLayout(measure_layout);
+  m_measure_splitter->setFrameStyle(QFrame::StyledPanel);
+  measure_layout->setContentsMargins(0, 0, 0, 0);
   measure_layout->setSpacing(0);
   m_splitter->addWidget(m_side_menu);
   m_splitter->addWidget(m_measure_splitter);

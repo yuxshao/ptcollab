@@ -98,6 +98,8 @@ void MeasureView::paintEvent(QPaintEvent *) {
   QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
   const pxtnMaster *master = pxtn->master;
   int lastDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
+  painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, width(), 15,
+                   QColor::fromRgb(128, 0, 0));
   for (int measure = 0; true; ++measure) {
     int x = measure * master->get_beat_clock() * master->get_beat_num() /
             m_client->editState().scale.clockPerPx;
