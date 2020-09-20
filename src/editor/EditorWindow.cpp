@@ -119,21 +119,6 @@ EditorWindow::~EditorWindow() { delete ui; }
 
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   switch (event->key()) {
-    case Qt::Key_Space:
-      m_client->togglePlayState();
-      break;
-    case Qt::Key_Escape:
-      m_client->resetAndSuspendAudio();
-      m_keyboard_view->setFocus(Qt::OtherFocusReason);
-      break;
-      // TODO: Sort these keys
-    case Qt::Key_W:
-      m_keyboard_view->cycleCurrentUnit(-1);
-      break;
-    case Qt::Key_S:
-      if (!(event->modifiers() & Qt::ControlModifier))
-        m_keyboard_view->cycleCurrentUnit(1);
-      break;
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->selectAll();
@@ -168,6 +153,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &s) { s.m_follow_playhead = !s.m_follow_playhead; });
       break;
+    case Qt::Key_H:
+      if (event->modifiers() & Qt::ShiftModifier) {
+        m_keyboard_view->toggleTestActivity();
+      }
+      break;
     case Qt::Key_K:
       if (event->modifiers() & Qt::ControlModifier &&
           event->modifiers() & Qt::ShiftModifier &&
@@ -176,10 +166,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
               "Are you sure you want to clear your settings?"))
         QSettings().clear();
       break;
-    case Qt::Key_H:
-      if (event->modifiers() & Qt::ShiftModifier) {
-        m_keyboard_view->toggleTestActivity();
-      }
+    case Qt::Key_S:
+      if (!(event->modifiers() & Qt::ControlModifier))
+        m_keyboard_view->cycleCurrentUnit(1);
+      break;
+    case Qt::Key_W:
+      m_keyboard_view->cycleCurrentUnit(-1);
       break;
     case Qt::Key_V:
       if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->paste();
@@ -187,6 +179,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_X:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->cutSelection();
+      break;
+    case Qt::Key_Y:
+      if (event->modifiers() & Qt::ControlModifier)
+        m_client->sendAction(UndoRedo::REDO);
       break;
     case Qt::Key_Z:
       if (event->modifiers() & Qt::ControlModifier) {
@@ -196,9 +192,13 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           m_client->sendAction(UndoRedo::UNDO);
       }
       break;
-    case Qt::Key_Y:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_client->sendAction(UndoRedo::REDO);
+
+    case Qt::Key_Space:
+      m_client->togglePlayState();
+      break;
+    case Qt::Key_Escape:
+      m_client->resetAndSuspendAudio();
+      m_keyboard_view->setFocus(Qt::OtherFocusReason);
       break;
     case Qt::Key_Backspace:
       if (event->modifiers() & Qt::ControlModifier &&
