@@ -55,9 +55,8 @@ struct mooParams {
 
   mooParams();
 
-  void processEvent(pxtnUnitTone *p_u, int32_t u, const EVERECORD *e,
-                    int32_t clock, int32_t smp_num,
-                    const pxtnService *pxtn) const;
+  void processEvent(pxtnUnitTone *p_u, const EVERECORD *e, int32_t clock,
+                    int32_t smp_num, const pxtnService *pxtn) const;
   void processNonOnEvent(pxtnUnitTone *p_u, EVENTKIND kind, int32_t value,
                          const pxtnService *pxtn) const;
 

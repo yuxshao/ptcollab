@@ -99,7 +99,7 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
 
 // u is used to look ahead to cut short notes whose release go into the next.
 // This note duration cutting is for the smoothing near the end of a note.
-void mooParams::processEvent(pxtnUnitTone* p_u, int32_t u, const EVERECORD* e,
+void mooParams::processEvent(pxtnUnitTone* p_u, const EVERECORD* e,
                              int32_t clock, int32_t smp_end,
                              const pxtnService* pxtn) const {
   pxtnVOICETONE* p_tone;
@@ -133,7 +133,7 @@ void mooParams::processEvent(pxtnUnitTone* p_u, int32_t u, const EVERECORD* e,
           EVERECORD* next = NULL;
           for (EVERECORD* p = e->next; p; p = p->next) {
             if (p->clock > c) break;
-            if (p->unit_no == u && p->kind == EVENTKIND_ON) {
+            if (p->unit_no == e->unit_no && p->kind == EVENTKIND_ON) {
               next = p;
               break;
             }
@@ -206,8 +206,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
     int32_t u = moo_state.p_eve->unit_no;
     // TODO: Be robust to if there's a mention of a new unit. Generate the new
     // unit on the fly?
-    moo_state.params.processEvent(&moo_state.units[u], u, moo_state.p_eve,
-                                  clock, smp_end, this);
+    moo_state.params.processEvent(&moo_state.units[u], moo_state.p_eve, clock,
+                                  smp_end, this);
   }
 
   // sampling..

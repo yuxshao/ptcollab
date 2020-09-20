@@ -26,12 +26,12 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
     for (const EVERECORD *e = m_pxtn->evels->get_Records();
          e && e->clock <= clock; e = e->next) {
       if (e->unit_no == unit_no) {
-        moo_params->processEvent(&m_unit, unit_no, e, clock, -1, m_pxtn);
+        moo_params->processEvent(&m_unit, e, clock, -1, m_pxtn);
       }
     }
 
   for (const EVERECORD &e : additional_events)
-    moo_params->processEvent(&m_unit, unit_no, &e, clock, -1, pxtn);
+    moo_params->processEvent(&m_unit, &e, clock, -1, pxtn);
   m_unit.Tone_KeyOn();
 
   // Because woices are shared ptrs we can be confident this won't break if the
