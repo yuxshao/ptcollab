@@ -27,12 +27,6 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           &QWidget::updateGeometry);
 }
 
-QSize MeasureView::sizeHint() const {
-  return QSize(one_over_last_clock(m_client->pxtn()) /
-                   m_client->editState().scale.clockPerPx,
-               32);
-}
-
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
   if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
@@ -86,6 +80,17 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 
 constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
 constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
+constexpr int RULER_HEIGHT = 15;
+constexpr int SEPARATOR_OFFSET = 6;
+QSize MeasureView::sizeHint() const {
+  return QSize(one_over_last_clock(m_client->pxtn()) /
+                   m_client->editState().scale.clockPerPx,
+               2 + MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET);
+}
+
+const static QBrush measureBrush(Qt::white);
+const static QBrush beatBrush(QColor::fromRgb(128, 128, 128));
+const static QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
 void MeasureView::paintEvent(QPaintEvent *) {
   const pxtnService *pxtn = m_client->pxtn();
 
@@ -94,24 +99,30 @@ void MeasureView::paintEvent(QPaintEvent *) {
 
   // Draw white lines under background
   // TODO: Dedup with keyboardview
-  QBrush measureBrush(Qt::white);
-  QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
   const pxtnMaster *master = pxtn->master;
-  int lastDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
-  painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, width(), 15,
+  int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
+  painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, width(), RULER_HEIGHT,
                    QColor::fromRgb(128, 0, 0));
-  for (int measure = 0; true; ++measure) {
-    int x = measure * master->get_beat_clock() * master->get_beat_num() /
+  painter.fillRect(0,
+                   MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
+                   width(), 1, beatBrush);
+  for (int beat = 0; true; ++beat) {
+    int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
     if (x > width()) break;
-    painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
-                     measureBrush);
-    if (x - lastDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
-    lastDraw = x;
-    painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT, measureBrush);
-    painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
-                     MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
-    drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1, measure);
+    if (beat % master->get_beat_num() == 0) {
+      painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
+                       measureBrush);
+      if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
+      lastMeasureDraw = x;
+      painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT, measureBrush);
+      painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
+                       MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
+      drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1,
+              beat / master->get_beat_num());
+    } else
+      painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
+                       beatBrush);
   }
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
