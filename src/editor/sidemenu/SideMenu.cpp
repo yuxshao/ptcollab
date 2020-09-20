@@ -86,8 +86,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->setRepeatBtn, &QPushButton::clicked, this, &SideMenu::setRepeat);
-  connect(ui->setLastBtn, &QPushButton::clicked, this, &SideMenu::setLast);
   connect(ui->followCheckbox, &QCheckBox::toggled, this,
           &SideMenu::followChanged);
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
@@ -281,16 +279,6 @@ void SideMenu::setFollow(bool follow) {
 
 void SideMenu::setCopy(bool copy) {
   ui->copyCheckbox->setCheckState(copy ? Qt::Checked : Qt::Unchecked);
-}
-
-void SideMenu::setSetOrClearMeas(bool set) {
-  if (set) {
-    ui->setLastBtn->setText("Set last");
-    ui->setRepeatBtn->setText("Set repeat");
-  } else {
-    ui->setLastBtn->setText("Clear last");
-    ui->setRepeatBtn->setText("Clear repeat");
-  }
 }
 
 void SideMenu::setParamKindIndex(int index) {

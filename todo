@@ -313,13 +313,15 @@ fill architecture could work well.
 1. A few more keyboard shortcuts (pgup/dn, fn keys, 1..9)
 2. Preview with changing voice is now at the right pitch
 3. Fix tiny bug that let you delete velocity events
+4. Set repeat and last flags
 
 Todo by priority
 ----------------
- - set repeat and last flags
  - midi input???
    - start with qwerty input
  - Somehow get rid of the lag when note previewing on windows
+   - use miniaudio or portaudio? if portaudio, would also stop having to hack
+     the stream time.
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

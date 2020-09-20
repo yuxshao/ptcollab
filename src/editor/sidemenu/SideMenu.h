@@ -53,8 +53,6 @@ class SideMenu : public QWidget {
   void selectedUnitsChanged(QList<qint32> idx);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
-  void setRepeat();
-  void setLast();
   void followChanged(bool);
   void copyChanged(bool);
   void moveUnit(bool up);
@@ -75,7 +73,6 @@ class SideMenu : public QWidget {
   void setBeats(int beats);
   void setFollow(bool follow);
   void setCopy(bool);
-  void setSetOrClearMeas(bool);
 
  private:
   Ui::SideMenu *ui;

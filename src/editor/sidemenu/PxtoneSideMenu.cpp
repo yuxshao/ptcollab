@@ -142,39 +142,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     m_client->changeEditState(
         [&](EditState &s) { s.m_quantize_pitch_idx = index; });
   });
-  connect(this, &SideMenu::setRepeat, [this]() {
-    if (!m_client->editState().mouse_edit_state.selection.has_value())
-      m_client->sendAction(SetRepeatMeas{std::nullopt});
-    else {
-      Interval selection =
-          m_client->editState().mouse_edit_state.selection.value();
-      const pxtnMaster *master = m_client->pxtn()->master;
-      int clockPerMeasure = master->get_beat_clock() * master->get_beat_num();
-      int newRepeatMeas = selection.start / clockPerMeasure;
-      selection.start = newRepeatMeas * clockPerMeasure;
-      m_client->changeEditState([&](EditState &s) {
-        s.mouse_edit_state.selection.emplace(selection);
-      });
-      m_client->sendAction(SetRepeatMeas{newRepeatMeas});
-    }
-  });
 
-  connect(this, &SideMenu::setLast, [this]() {
-    if (!m_client->editState().mouse_edit_state.selection.has_value())
-      m_client->sendAction(SetLastMeas{std::nullopt});
-    else {
-      Interval selection =
-          m_client->editState().mouse_edit_state.selection.value();
-      const pxtnMaster *master = m_client->pxtn()->master;
-      int clockPerMeasure = master->get_beat_clock() * master->get_beat_num();
-      int newLastMeas = (selection.end - 1) / clockPerMeasure + 1;
-      selection.end = newLastMeas * clockPerMeasure;
-      m_client->changeEditState([&](EditState &s) {
-        s.mouse_edit_state.selection.emplace(selection);
-      });
-      m_client->sendAction(SetLastMeas{newLastMeas});
-    }
-  });
   connect(this, &SideMenu::followChanged, [this](bool follow) {
     m_client->changeEditState(
         [&](EditState &s) { s.m_follow_playhead = follow; });
@@ -233,9 +201,6 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
     setParamKindIndex(s.current_param_kind_idx());
     refreshCopyCheckbox();
   }
-  if (m_last_edit_state.mouse_edit_state.selection.has_value() !=
-      s.mouse_edit_state.selection.has_value())
-    setSetOrClearMeas(s.mouse_edit_state.selection.has_value());
 
   m_last_edit_state = s;
 };
