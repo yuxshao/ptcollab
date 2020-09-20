@@ -231,8 +231,12 @@ void MeasureView::paintEvent(QPaintEvent *) {
 static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
-  if (state.type == MouseEditState::Type::Nothing)
-    state.type = MouseEditState::Type::Seek;
+
+  if (state.type == MouseEditState::Nothing ||
+      state.type == MouseEditState::Seek) {
+    bool shift = event->modifiers() & Qt::ShiftModifier;
+    state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
+  }
 
   state.current_clock =
       std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
@@ -249,12 +253,14 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
     s.mouse_edit_state.start_clock =
         std::max(0., event->localPos().x() * s.scale.clockPerPx);
     MouseEditState::Type &type = s.mouse_edit_state.type;
-    if (event->modifiers() & Qt::ControlModifier &&
-        event->button() != Qt::RightButton)
-      type = MouseEditState::Type::Select;
-    else {
-      if (event->button() == Qt::RightButton) m_client->deselect();
-      type = MouseEditState::Type::Seek;
+    if (event->modifiers() & Qt::ShiftModifier) {
+      if (event->modifiers() & Qt::ControlModifier &&
+          event->button() != Qt::RightButton)
+        type = MouseEditState::Type::Select;
+      else {
+        if (event->button() == Qt::RightButton) m_client->deselect();
+        type = MouseEditState::Type::Seek;
+      }
     }
   });
 }
@@ -268,14 +274,7 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
   //        m_client->editState().mouse_edit_state.kind))
   //  return;
 
-  Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
-      m_client->quantizeClock()));
-
-  EVENTKIND kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
-  if (kind == EVENTKIND_PORTAMENT)
-    clock_int = m_client->editState().mouse_edit_state.clock_int_short(
-        m_client->quantizeClock());
+  qint32 current_clock = m_client->editState().mouse_edit_state.current_clock;
   m_client->changeEditState([&](EditState &s) {
     if (m_client->pxtn()->Unit_Num() > 0) {
       using namespace Action;
@@ -289,14 +288,27 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
           // TODO: Dedup w/ the other seek / select responses
         case MouseEditState::Seek:
           if (event->button() & Qt::LeftButton)
-            m_client->seekMoo(
-                m_client->editState().mouse_edit_state.current_clock);
+            m_client->seekMoo(current_clock);
           break;
-        case MouseEditState::Select:
+        case MouseEditState::Select: {
+          Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
+              m_client->quantizeClock()));
           s.mouse_edit_state.selection.emplace(clock_int);
           break;
-        case MouseEditState::Nothing:
+        }
+        case MouseEditState::Nothing: {
+          // For simplicity, no new state. Nothing = set measure.
+          int half_meas = 2 * current_clock /
+                          m_client->pxtn()->master->get_beat_clock() /
+                          m_client->pxtn()->master->get_beat_num();
+          int meas = half_meas / 2;
+          bool left_half = half_meas % 2 == 0;
+          if (left_half)
+            m_client->sendAction(SetRepeatMeas{meas});
+          else
+            m_client->sendAction(SetLastMeas{meas + 1});
           break;
+        }
       }
       if (actions.size() > 0) {
         m_client->applyAction(actions);
