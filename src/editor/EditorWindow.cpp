@@ -8,6 +8,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
+#include <QVBoxLayout>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
@@ -50,11 +51,15 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_client_status);
 
   m_side_menu = new PxtoneSideMenu(m_client, this);
-  m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
+  m_measure_splitter = new QWidget(m_splitter);
+  QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
+  m_measure_splitter->setLayout(measure_layout);
+  measure_layout->setSpacing(0);
   m_splitter->addWidget(m_side_menu);
-  m_splitter->addWidget(m_key_splitter);
+  m_splitter->addWidget(m_measure_splitter);
   m_splitter->setSizes(QList{10, 10000});
 
+  m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
   // TODO: find a better place for this.
@@ -71,19 +76,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
 
-  m_measure_scroll_area = new EditorScrollArea(m_key_splitter, false);
+  m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   m_measure_scroll_area->setWidget(
       new MeasureView(m_client, m_moo_clock, m_measure_scroll_area));
+  m_measure_scroll_area->setMaximumHeight(
+      m_measure_scroll_area->widget()->sizeHint().height());
 
-  m_key_splitter->addWidget(m_measure_scroll_area);
+  measure_layout->addWidget(m_measure_scroll_area);
+  measure_layout->addWidget(m_key_splitter);
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
   m_scroll_area->controlScroll(m_measure_scroll_area, Qt::Horizontal);
   m_measure_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);
-  m_key_splitter->setSizes(QList{10, 10000, 10});
+  m_key_splitter->setSizes(QList{10000, 10});
+  // m_measure_splitter->setSizes(QList{1, 10000});
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);

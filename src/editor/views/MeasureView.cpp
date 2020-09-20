@@ -14,7 +14,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock) {
   setFocusPolicy(Qt::NoFocus);
-  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
   updateGeometry();
   setMouseTracking(true);
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
@@ -30,7 +30,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 QSize MeasureView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
-               0x20);
+               32);
 }
 
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
