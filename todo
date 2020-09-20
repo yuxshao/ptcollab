@@ -306,10 +306,10 @@ fill architecture could work well.
 2. Save confirmation
 3. Save username, connection destination, port
 4. Note preview is affected by volume now
+5. Easier voice selection via menu
 
 Todo by priority
 ----------------
- - easier voice selection
  - root note
  - measure numbers
  - coarse tune
