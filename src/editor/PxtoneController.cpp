@@ -315,12 +315,18 @@ bool PxtoneController::applyBeatChange(const BeatChange &a, qint64 uid) {
 
 void PxtoneController::applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid) {
   (void)uid;
-  m_pxtn->master->set_repeat_meas(a.meas.value_or(0));
+  int m = a.meas.value_or(0);
+  if (m >= m_pxtn->master->get_play_meas())
+    m_pxtn->master->set_last_meas(m + 1);
+  m_pxtn->master->set_repeat_meas(m);
   emit edited();
 }
 
 void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   (void)uid;
+  int m = a.meas.value_or(0);
+  if (m != 0 && m <= m_pxtn->master->get_repeat_meas())
+    m_pxtn->master->set_repeat_meas(m - 1);
   m_pxtn->master->set_last_meas(a.meas.value_or(0));
   emit edited();
 }

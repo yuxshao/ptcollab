@@ -57,7 +57,8 @@ static void drawNum(QPainter *painter, int x, int y, int w, int num) {
 enum struct FlagType { Top, Repeat, Last };
 constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
-static void drawFlag(QPainter *painter, FlagType type, int measure_x, int y) {
+static void drawFlag(QPainter *painter, FlagType type, bool outline,
+                     int measure_x, int y) {
   static QPixmap images(":/images/images");
   int sx, sy;
   bool end;
@@ -78,23 +79,39 @@ static void drawFlag(QPainter *painter, FlagType type, int measure_x, int y) {
       end = true;
       break;
   }
-
+  if (outline) sy += 8;
   int x = (end ? measure_x - FLAG_WIDTH : measure_x + 1);
   painter->drawPixmap(x, y, images, sx, sy, FLAG_WIDTH, FLAG_HEIGHT);
 }
 
+constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
+constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
+constexpr int RULER_HEIGHT = 15;
+constexpr int SEPARATOR_OFFSET = 6;
+constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
-                       int quantizeClock, double alphaMultiplier,
+                       int quantizeClock, int clockPerMeas,
+                       double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
   switch (mouse_edit_state.type) {
-    case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote:
       break;
+    case MouseEditState::Type::Nothing: {
+      if (std::holds_alternative<MouseMeasureEdit>(
+              state.mouse_edit_state.kind)) {
+        int half_meas = 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
+        int meas = half_meas / 2;
+        int left_half = half_meas % 2 == 1;
+        drawFlag(&painter, (left_half ? FlagType::Repeat : FlagType::Last),
+                 true, meas * clockPerMeas / state.scale.clockPerPx, FLAG_Y);
+      }
+      break;
+    }
     case MouseEditState::Type::Seek:
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
                        0, 1, height,
@@ -107,10 +124,6 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
   }
 }
 
-constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
-constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
-constexpr int RULER_HEIGHT = 15;
-constexpr int SEPARATOR_OFFSET = 6;
 QSize MeasureView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
@@ -129,8 +142,8 @@ void MeasureView::paintEvent(QPaintEvent *) {
   // Draw white lines under background
   // TODO: Dedup with keyboardview
   const pxtnMaster *master = pxtn->master;
-  qreal activeWidth = master->get_beat_num() * (master->get_meas_num()) *
-                      master->get_beat_clock() /
+  int clockPerMeas = master->get_beat_num() * master->get_beat_clock();
+  qreal activeWidth = master->get_meas_num() * clockPerMeas /
                       m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
@@ -160,16 +173,15 @@ void MeasureView::paintEvent(QPaintEvent *) {
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
                        beatBrush);
   }
-  constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
-  drawFlag(&painter, FlagType::Top, 0, FLAG_Y);
+  drawFlag(&painter, FlagType::Top, false, 0, FLAG_Y);
   if (m_moo_clock->repeat_clock() > 0) {
     drawFlag(
-        &painter, FlagType::Repeat,
+        &painter, FlagType::Repeat, false,
         m_moo_clock->repeat_clock() / m_client->editState().scale.clockPerPx,
         FLAG_Y);
   }
   if (m_moo_clock->has_last()) {
-    drawFlag(&painter, FlagType::Last,
+    drawFlag(&painter, FlagType::Last, false,
              m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx,
              FLAG_Y);
   }
@@ -192,13 +204,13 @@ void MeasureView::paintEvent(QPaintEvent *) {
       drawOngoingAction(
           adjusted_state, painter, height(),
           m_client->quantizeClock(adjusted_state.m_quantize_clock_idx),
-          alphaMultiplier, selectionAlphaMultiplier);
+          clockPerMeas, alphaMultiplier, selectionAlphaMultiplier);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, height(), 1);
   drawOngoingAction(m_client->editState(), painter, height(),
-                    m_client->quantizeClock(), 1, 1);
+                    m_client->quantizeClock(), clockPerMeas, 1, 1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -296,19 +308,21 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
           s.mouse_edit_state.selection.emplace(clock_int);
           break;
         }
-        case MouseEditState::Nothing: {
-          // For simplicity, no new state. Nothing = set measure.
-          int half_meas = 2 * current_clock /
-                          m_client->pxtn()->master->get_beat_clock() /
-                          m_client->pxtn()->master->get_beat_num();
-          int meas = half_meas / 2;
-          bool left_half = half_meas % 2 == 0;
-          if (left_half)
-            m_client->sendAction(SetRepeatMeas{meas});
-          else
-            m_client->sendAction(SetLastMeas{meas + 1});
-          break;
-        }
+        case MouseEditState::Nothing:
+          if (std::holds_alternative<MouseMeasureEdit>(
+                  s.mouse_edit_state.kind)) {
+            int half_meas = 2 * current_clock /
+                                m_client->pxtn()->master->get_beat_clock() /
+                                m_client->pxtn()->master->get_beat_num() +
+                            1;
+            int meas = half_meas / 2;
+            bool left_half = half_meas % 2 == 1;
+            if (left_half)
+              m_client->sendAction(SetRepeatMeas{meas});
+            else
+              m_client->sendAction(SetLastMeas{meas});
+            break;
+          }
       }
       if (actions.size() > 0) {
         m_client->applyAction(actions);
