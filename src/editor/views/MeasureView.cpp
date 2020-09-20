@@ -143,8 +143,9 @@ void MeasureView::paintEvent(QPaintEvent *) {
   // TODO: Dedup with keyboardview
   const pxtnMaster *master = pxtn->master;
   int clockPerMeas = master->get_beat_num() * master->get_beat_clock();
-  qreal activeWidth = master->get_meas_num() * clockPerMeas /
-                      m_client->editState().scale.clockPerPx;
+  int activeMeas = std::max(master->get_last_meas(), master->get_meas_num());
+  qreal activeWidth =
+      activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
                    QColor::fromRgb(128, 0, 0));
@@ -166,7 +167,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
       painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT, measureBrush);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
-      if (measure < master->get_meas_num())
+      if (measure < activeMeas)
         drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1,
                 beat / master->get_beat_num());
     } else
@@ -317,13 +318,23 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
                             1;
             int meas = half_meas / 2;
             bool left_half = half_meas % 2 == 1;
-            if (left_half)
-              m_client->sendAction(SetRepeatMeas{meas});
-            else
-              m_client->sendAction(SetLastMeas{meas});
-            break;
+            if (event->button() & Qt::LeftButton) {
+              if (left_half)
+                m_client->sendAction(SetRepeatMeas{meas});
+              else
+                m_client->sendAction(SetLastMeas{meas});
+            } else {
+              if (left_half &&
+                  m_client->pxtn()->master->get_repeat_meas() == meas)
+                m_client->sendAction(SetRepeatMeas{});
+              if (!left_half &&
+                  m_client->pxtn()->master->get_play_meas() == meas)
+                m_client->sendAction(SetLastMeas{});
+            }
           }
+          break;
       }
+
       if (actions.size() > 0) {
         m_client->applyAction(actions);
       }
