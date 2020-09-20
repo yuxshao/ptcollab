@@ -296,21 +296,26 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
+  QBrush rootNoteBrush(QColor::fromRgb(84, 76, 76));
   QBrush whiteNoteBrush(QColor::fromRgb(64, 64, 64));
   QBrush blackNoteBrush(QColor::fromRgb(32, 32, 32));
   for (int row = 0; true; ++row) {
     QBrush *brush;
-    switch (row % 12) {
-      case 2:
-      case 4:
-      case 6:
-      case 9:
-      case 11:
-        brush = &blackNoteBrush;
-        break;
-      default:
-        brush = &whiteNoteBrush;
-    }
+
+    if (row == 39)
+      brush = &rootNoteBrush;
+    else
+      switch (row % 12) {
+        case 2:
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+          brush = &blackNoteBrush;
+          break;
+        default:
+          brush = &whiteNoteBrush;
+      }
 
     if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
         size().height())
@@ -320,7 +325,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     // TODO: change scale so that pitchPerPx is necessarily an int
     int next_y =
         (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-    painter.fillRect(0, this_y, size().width(), next_y - this_y - 1, *brush);
+    int h = next_y - this_y - 1;
+    painter.fillRect(0, this_y, size().width(), h, *brush);
   }
 
   // Draw FPS
@@ -435,10 +441,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // Print measure numbers
   /*painter.setPen(brightGreen);
   for (int meas = 0; true; ++meas) {
-    int x = m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num() *
-            meas / m_client->editState().scale.clockPerPx;
-    if (x > size().width()) break;
-    painter.drawText(x, 1, 1000, 1000, Qt::AlignTop, QString("%1").arg(meas));
+    int x = m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num()
+  * meas / m_client->editState().scale.clockPerPx; if (x > size().width())
+  break; painter.drawText(x, 1, 1000, 1000, Qt::AlignTop,
+  QString("%1").arg(meas));
   }*/
   // Draw existing selections
 
@@ -610,7 +616,8 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
         s.mouse_edit_state.base_velocity = vel;
 
         m_audio_note_preview = std::make_unique<NotePreview>(
-            m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel, m_client->audioState()->bufferSize(), this);
+            m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
+            m_client->audioState()->bufferSize(), this);
       }
     }
   });

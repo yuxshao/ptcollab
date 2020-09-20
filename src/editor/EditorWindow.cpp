@@ -378,8 +378,8 @@ void EditorWindow::connectToHost() {
   QString host = QInputDialog::getText(
       this, "Host", "What host should I connect to?", QLineEdit::Normal,
       settings.value(CONNECT_SERVER_NAME_KEY, "localhost").toString(), &ok);
-  settings.setValue(CONNECT_SERVER_NAME_KEY, host);
   if (!ok) return;
+  settings.setValue(CONNECT_SERVER_NAME_KEY, host);
 
   int port = QInputDialog::getInt(
       this, "Port", "What port should I connect to?",
