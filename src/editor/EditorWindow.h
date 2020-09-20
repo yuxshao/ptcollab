@@ -41,7 +41,7 @@ class EditorWindow : public QMainWindow {
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
   mooState m_moo_state;
-  EditorScrollArea *m_scroll_area, *m_param_scroll_area;
+  EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
   QSplitter* m_key_splitter;
   PxtoneSideMenu* m_side_menu;

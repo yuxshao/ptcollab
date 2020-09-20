@@ -15,6 +15,7 @@
 #include "ComboOptions.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
+#include "views/MeasureView.h"
 #include "views/MooClock.h"
 #include "views/ParamView.h"
 
@@ -69,11 +70,20 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
+
+  m_measure_scroll_area = new EditorScrollArea(m_key_splitter, false);
+  m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  m_measure_scroll_area->setWidget(
+      new MeasureView(m_client, m_moo_clock, m_measure_scroll_area));
+
+  m_key_splitter->addWidget(m_measure_scroll_area);
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
-  m_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);
-  m_key_splitter->setSizes(QList{10000, 10});
+  m_scroll_area->controlScroll(m_measure_scroll_area, Qt::Horizontal);
+  m_measure_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);
+  m_key_splitter->setSizes(QList{10, 10000, 10});
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);

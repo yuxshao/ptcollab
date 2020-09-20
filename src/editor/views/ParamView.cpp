@@ -19,7 +19,6 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
   setMouseTracking(true);
-  m_woice_menu->addAction("Hello");
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
   connect(m_client, &PxtoneClient::editStateChanged,
           [this](const EditState &s) {

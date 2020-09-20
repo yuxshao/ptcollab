@@ -17,4 +17,7 @@
         <file alias="up">icons/icons/actions/16/go-up.svg</file>
         <file alias="down">icons/icons/actions/16/go-down.svg</file>
     </qresource>
+    <qresource prefix="/images">
+        <file alias="images">images.png</file>
+    </qresource>
 </RCC>

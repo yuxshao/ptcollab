@@ -35,6 +35,17 @@ inline QDataStream &operator>>(QDataStream &in, MouseParamEdit &a) {
   return in;
 }
 
+struct MouseMeasureEdit {
+  qint32 y;
+};
+inline QDataStream &operator<<(QDataStream &out, const MouseMeasureEdit &a) {
+  out << a.y;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MouseMeasureEdit &a) {
+  in >> a.y;
+  return in;
+}
 struct MouseEditState {
   enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn, Select };
   Type type;
@@ -42,7 +53,7 @@ struct MouseEditState {
   qint32 last_pitch;
   qint32 start_clock;
   qint32 current_clock;
-  std::variant<MouseKeyboardEdit, MouseParamEdit> kind;
+  std::variant<MouseKeyboardEdit, MouseParamEdit, MouseMeasureEdit> kind;
   std::optional<Interval> selection;
   Interval clock_int(qint32 quantize) const;
   Interval clock_int_short(int q) const;

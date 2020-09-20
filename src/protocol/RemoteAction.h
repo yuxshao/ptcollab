@@ -202,6 +202,11 @@ inline QTextStream &operator<<(QTextStream &out, const ChangeWoice &a) {
   return out;
 }
 
+inline QTextStream &operator<<(QTextStream &out, const MouseMeasureEdit &a) {
+  out << "Measure(" << a.y << ")";
+  return out;
+}
+
 inline QTextStream &operator<<(QTextStream &out, const MouseParamEdit &a) {
   out << "Param(" << a.current_param << ")";
   return out;

@@ -500,7 +500,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
-                            m_client->editState().scale.clockPerPx, true);
+                            m_client->editState().scale.clockPerPx, false);
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
