@@ -2,6 +2,7 @@
 #define pxtnService_H
 
 #include <vector>
+#include <deque>
 
 #include "./pxtn.h"
 #include "./pxtnDelay.h"
@@ -260,7 +261,8 @@ class pxtnService {
   bool Moo(mooState &moo_state, void *p_buf, int32_t size,
            int32_t *filled_size = nullptr) const;
 
-  int32_t moo_tone_sample(pxtnUnitTone *p_u, const mooParams &params,
+  int32_t moo_tone_sample_multi(std::deque<std::shared_ptr<pxtnUnitTone>> p_us,
+                                const mooParams &params,
                           void *data, int32_t buf_size,
                           int32_t time_pan_index) const;
 

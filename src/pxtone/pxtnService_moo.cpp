@@ -306,24 +306,27 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
 ///////////////////////
 
 #include <QDebug>
-int32_t pxtnService::moo_tone_sample(pxtnUnitTone* p_u,
+int32_t pxtnService::moo_tone_sample_multi(std::deque<std::shared_ptr<pxtnUnitTone>> p_us,
                                      const mooParams& moo_params, void* data,
                                      int32_t buf_size,
                                      int32_t time_pan_index) const {
   // TODO: Try to deduplicate this with _moo_PXTONE_SAMPLE
-  if (!p_u) return 0;
   if (buf_size < _dst_ch_num) return 0;
 
-  p_u->Tone_Sample(false, _dst_ch_num, time_pan_index, moo_params.smp_smooth);
-  int32_t key_now = p_u->Tone_Increment_Key();
-  p_u->Tone_Increment_Sample(pxtnPulse_Frequency::Get2(key_now) *
-                             moo_params.smp_stride);
+  for (auto &p_u : p_us) {
+    if (!p_u) return 0;
+    p_u->Tone_Sample(false, _dst_ch_num, time_pan_index, moo_params.smp_smooth);
+    int32_t key_now = p_u->Tone_Increment_Key();
+    p_u->Tone_Increment_Sample(pxtnPulse_Frequency::Get2(key_now) *
+                               moo_params.smp_stride);
+  }
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
-    int32_t work = p_u->Tone_Supple_get(ch, time_pan_index);
+    int32_t work = 0;
+    for (auto &p_u : p_us) work += p_u->Tone_Supple_get(ch, time_pan_index);
     work *= moo_params.master_vol;
     if (work > moo_params.top) work = moo_params.top;
     if (work < -moo_params.top) work = -moo_params.top;
-    *((int16_t*)data + ch) = (int16_t)(work);
+    *((int16_t*)data + ch) += (int16_t)(work);
   }
 
   return _dst_ch_num * sizeof(int16_t);

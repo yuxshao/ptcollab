@@ -30,7 +30,7 @@ class NotePreview : public QObject {
               QObject *parent = nullptr);
   const pxtnService *m_pxtn;
   //PxtoneUnitIODevice *m_device;
-  std::shared_ptr<pxtnUnitTone> m_unit;
+  std::deque<std::shared_ptr<pxtnUnitTone>>::iterator m_unit;
   const mooParams *m_moo_params;
  // QAudioOutput *m_audio;
 };
