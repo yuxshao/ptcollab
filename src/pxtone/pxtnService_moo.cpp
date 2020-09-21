@@ -88,7 +88,7 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
       /// Normally setting a woice resets the key, but this messes up some note
       /// previews. Use the sign of [value] to signal whether or not to reset
       /// the key.
-      p_u->set_woice(pxtn->Woice_Get(value >= 0 ? value : -value),
+      p_u->set_woice(pxtn->Woice_Get(value >= 0 ? value : -value - 1),
                      (value >= 0));
       resetVoiceOn(p_u);
     } break;
@@ -306,14 +306,13 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
 ///////////////////////
 
 #include <QDebug>
-int32_t pxtnService::moo_tone_sample_multi(std::deque<std::shared_ptr<pxtnUnitTone>> p_us,
-                                     const mooParams& moo_params, void* data,
-                                     int32_t buf_size,
-                                     int32_t time_pan_index) const {
+int32_t pxtnService::moo_tone_sample_multi(
+    std::deque<std::shared_ptr<pxtnUnitTone>> p_us, const mooParams& moo_params,
+    void* data, int32_t buf_size, int32_t time_pan_index) const {
   // TODO: Try to deduplicate this with _moo_PXTONE_SAMPLE
   if (buf_size < _dst_ch_num) return 0;
 
-  for (auto &p_u : p_us) {
+  for (auto& p_u : p_us) {
     if (!p_u) return 0;
     p_u->Tone_Sample(false, _dst_ch_num, time_pan_index, moo_params.smp_smooth);
     int32_t key_now = p_u->Tone_Increment_Key();
@@ -322,7 +321,7 @@ int32_t pxtnService::moo_tone_sample_multi(std::deque<std::shared_ptr<pxtnUnitTo
   }
   for (int ch = 0; ch < _dst_ch_num; ++ch) {
     int32_t work = 0;
-    for (auto &p_u : p_us) work += p_u->Tone_Supple_get(ch, time_pan_index);
+    for (auto& p_u : p_us) work += p_u->Tone_Supple_get(ch, time_pan_index);
     work *= moo_params.master_vol;
     if (work > moo_params.top) work = moo_params.top;
     if (work < -moo_params.top) work = -moo_params.top;

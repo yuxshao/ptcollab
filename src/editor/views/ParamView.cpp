@@ -49,7 +49,7 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       /// Since woice changes reset the unit key, I added a hack so
       /// that the sound engine will interpret negative values the same as
       /// positive but without resetting.
-      e.value = -maybe_woice_no.value();
+      e.value = -maybe_woice_no.value() - 1;
       m_audio_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
           m_client->editState().mouse_edit_state.start_clock, 48000,
