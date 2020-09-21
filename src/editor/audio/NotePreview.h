@@ -21,10 +21,7 @@ class NotePreview : public QObject {
               int vel, int duration, std::shared_ptr<const pxtnWoice> woice,
               int bufferSize, QObject *parent = nullptr);
   void processEvent(EVENTKIND kind, int32_t value);
-  void suspend() { m_audio->suspend(); }
   ~NotePreview();
- signals:
-  void finished();
 
  private:
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
@@ -32,10 +29,10 @@ class NotePreview : public QObject {
               std::shared_ptr<const pxtnWoice> starting_woice, int bufferSize,
               QObject *parent = nullptr);
   const pxtnService *m_pxtn;
-  pxtnUnitTone m_unit;
-  PxtoneUnitIODevice *m_device;
+  //PxtoneUnitIODevice *m_device;
+  std::shared_ptr<pxtnUnitTone> m_unit;
   const mooParams *m_moo_params;
-  QAudioOutput *m_audio;
+ // QAudioOutput *m_audio;
 };
 
 #endif  // NOTEPREVIEW_H

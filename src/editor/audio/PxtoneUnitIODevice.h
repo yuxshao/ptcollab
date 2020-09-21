@@ -12,18 +12,18 @@ class PxtoneUnitIODevice : public QIODevice {
 
  public:
   PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
-                     const mooParams *moo_params, pxtnUnitTone *unit);
+                     const mooParams *moo_params, std::shared_ptr<pxtnUnitTone> unit);
+  void set(const mooParams *moo_params, std::shared_ptr<pxtnUnitTone> unit);
+  void stopNote();
   virtual ~PxtoneUnitIODevice() { close(); };
 
  signals:
   void MooError();
-  void ZeroLives();
 
  private:
   const pxtnService *m_pxtn;
   const mooParams *m_moo_params;
-  pxtnUnitTone *m_unit;
-  bool m_zero_lives;
+  std::shared_ptr<pxtnUnitTone> m_unit;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);
 };
