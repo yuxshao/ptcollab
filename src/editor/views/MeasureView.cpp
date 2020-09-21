@@ -318,23 +318,20 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
                             1;
             int meas = half_meas / 2;
             bool left_half = half_meas % 2 == 1;
-            if (event->button() & Qt::LeftButton) {
-              if (left_half)
+            if (left_half) {
+              if (m_client->pxtn()->master->get_repeat_meas() == meas)
+                m_client->sendAction(SetRepeatMeas{});
+              else
                 m_client->sendAction(SetRepeatMeas{meas});
+            } else {
+              if (m_client->pxtn()->master->get_play_meas() == meas)
+                m_client->sendAction(SetLastMeas{});
               else
                 m_client->sendAction(SetLastMeas{meas});
-            } else {
-              if (left_half &&
-                  m_client->pxtn()->master->get_repeat_meas() == meas)
-                m_client->sendAction(SetRepeatMeas{});
-              if (!left_half &&
-                  m_client->pxtn()->master->get_play_meas() == meas)
-                m_client->sendAction(SetLastMeas{});
             }
+            break;
           }
-          break;
       }
-
       if (actions.size() > 0) {
         m_client->applyAction(actions);
       }
