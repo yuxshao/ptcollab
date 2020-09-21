@@ -49,17 +49,17 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
   }
 
   if (m_device == nullptr) {
-      m_device = new PxtoneUnitIODevice(this, m_pxtn, moo_params, m_unit);
-      m_device->open(QIODevice::ReadOnly);
+    m_device = new PxtoneUnitIODevice(nullptr, m_pxtn, moo_params, m_unit);
+    m_device->open(QIODevice::ReadOnly);
   } else {
-     m_device->set(moo_params, m_unit);
+    m_device->set(moo_params, m_unit);
   }
 
   if (m_audio == nullptr) {
-      m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
-      m_audio->setVolume(1.0);
-      m_audio->setBufferSize(bufferSize);
-      m_audio->start(m_device);
+    m_audio = new QAudioOutput(pxtoneAudioFormat(), m_device);
+    m_audio->setVolume(1.0);
+    m_audio->setBufferSize(bufferSize);
+    m_audio->start(m_device);
   }
 }
 
@@ -110,5 +110,5 @@ NotePreview::~NotePreview() {
   // seems to fix a crash that'd happen if I change quickly between woices
   // causing note previews.
   m_device->stopNote();
-  //suspend();
+  // suspend();
 }
