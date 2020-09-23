@@ -118,7 +118,8 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                        QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
       break;
     case MouseEditState::Type::Select: {
-      Interval interval(mouse_edit_state.clock_int(quantizeClock));
+      Interval interval(mouse_edit_state.clock_int(quantizeClock) /
+                        state.scale.clockPerPx);
       drawSelection(painter, interval, height, selectionAlphaMultiplier);
     } break;
   }
