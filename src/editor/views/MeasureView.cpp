@@ -205,7 +205,8 @@ void MeasureView::paintEvent(QPaintEvent *) {
                             selectionAlphaMultiplier);
       drawOngoingAction(
           adjusted_state, painter, height(),
-          m_client->quantizeClock(adjusted_state.m_quantize_clock_idx),
+          m_client->quantizeClock(
+              quantizeXOptions[adjusted_state.m_quantize_clock_idx].second),
           clockPerMeas, alphaMultiplier, selectionAlphaMultiplier);
     }
   }
