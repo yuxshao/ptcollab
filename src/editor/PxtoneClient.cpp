@@ -34,22 +34,8 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
   // some sounds choppier
   // m_audio->setCategory("game");
   m_audio->setVolume(1.0);
-  connect(m_audio, &QAudioOutput::stateChanged, [this](QAudio::State state) {
-    switch (state) {
-      case QAudio::ActiveState:
-      case QAudio::IdleState:
-        emit playStateChanged(true);
-        break;
-      case QAudio::SuspendedState:
-      case QAudio::StoppedState:
-        emit playStateChanged(false);
-        break;
-      case QAudio::InterruptedState:
-        qWarning() << "Entered unexpected play state" << state;
-        emit playStateChanged(false);
-        break;
-    }
-  });
+  connect(m_pxtn_device, &PxtoneIODevice::playingChanged, this,
+          &PxtoneClient::playStateChanged);
 
   connect(m_client, &Client::connected,
           [this, client_status](pxtnDescriptor &desc,
@@ -98,9 +84,9 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
                    .toDouble(&ok);
     if (ok) setBufferSize(v);
   }
+  m_pxtn_device->setPlaying(false);
   m_audio->start(m_pxtn_device);
   qDebug() << "Actual" << m_audio->bufferSize();
-  m_audio->suspend();
 }
 
 void PxtoneClient::setBufferSize(double secs) {
@@ -118,33 +104,22 @@ void PxtoneClient::setBufferSize(double secs) {
   if (started) {
     resetAndSuspendAudio();
     m_audio->start(m_pxtn_device);
-    m_audio->suspend();
+    m_pxtn_device->setPlaying(false);
   }
 }
+
+bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }
 
 // TODO: Factor this out into a PxtoneAudioPlayer class. Setting play state,
 // seeking. Unfortunately start / stop don't even fix this because stopping
 // still waits for the buffer to drain (instead of flushing and throwing away)
 void PxtoneClient::togglePlayState() {
-  switch (m_audio->state()) {
-    case QAudio::ActiveState:
-    case QAudio::IdleState:
-      m_audio->suspend();
-      break;
-    case QAudio::SuspendedState:
-      m_audio->resume();
-      break;
-    case QAudio::InterruptedState:
-    case QAudio::StoppedState:
-      qWarning() << "Toggling play state of audio that is not playing"
-                 << m_audio->state();
-      break;
-  }
+  m_pxtn_device->setPlaying(!m_pxtn_device->playing());
 }
 
 void PxtoneClient::resetAndSuspendAudio() {
   seekMoo(0);
-  m_audio->suspend();
+  m_pxtn_device->setPlaying(false);
 }
 
 qint32 PxtoneClient::quantizeClock(int idx) {

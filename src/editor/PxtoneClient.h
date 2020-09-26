@@ -70,6 +70,7 @@ class PxtoneClient : public QObject {
   Clipboard *clipboard() { return m_clipboard; }
 
   void setBufferSize(double secs);
+  bool isPlaying();
 
  private:
   void processRemoteAction(const ServerAction &a);

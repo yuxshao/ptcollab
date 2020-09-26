@@ -13,13 +13,17 @@ class PxtoneIODevice : public QIODevice {
  public:
   PxtoneIODevice(QObject *parent, const pxtnService *pxtn, mooState *moo_state);
   virtual ~PxtoneIODevice(){};
+  void setPlaying(bool playing);
+  bool playing();
 
  signals:
   void MooError();
+  void playingChanged(bool);
 
  private:
   const pxtnService *pxtn;
   mooState *moo_state;
+  bool m_playing;
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);
 };

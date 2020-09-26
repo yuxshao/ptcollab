@@ -316,10 +316,12 @@ fill architecture could work well.
 4. Set repeat and last flags
 5. I think note previews are fast on windows now
 
+9/25
+1. Highlight row on play or on input
+2. Remove blip after play
+
 Todo by priority
 ----------------
- - remove blip after play
- - highlight row on play or on input
  - dark mode icons
  - midi input???
    - start with qwerty input

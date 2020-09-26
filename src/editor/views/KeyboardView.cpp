@@ -241,7 +241,7 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
   if (interval_intersect(interval, bounds).empty()) return;
   bool playing = on.contains(current_clock);
   bool firstBlock = interval.start == on.start;
-  if (playing && firstBlock)
+  if (playing && firstBlock && !muted && alpha > 0)
     paintBlock(state.pitch.value, Interval{0, int(scale.clockPerPx * width)},
                painter,
                brush.toQColor(

@@ -52,7 +52,7 @@ int MooClock::now() {
 
   double estimated_buffer_offset =
       -offset_from_buffer / double(bytes_per_second);
-  if (m_client->audioState()->state() != QAudio::ActiveState)
+  if (!m_client->isPlaying())
     timeSinceLastClock.restart();
   else
     estimated_buffer_offset += timeSinceLastClock.elapsed() / 1000.0;
