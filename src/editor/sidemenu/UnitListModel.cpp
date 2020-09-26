@@ -1,7 +1,10 @@
 #include "UnitListModel.h"
 
+#include <QApplication>
 #include <QEvent>
 #include <QPainter>
+
+#include "IconHelper.h"
 
 inline Qt::CheckState checked_of_bool(bool b) {
   return b ? Qt::Checked : Qt::Unchecked;
@@ -135,11 +138,11 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
     if (role == Qt::DecorationRole) {
       switch (UnitListColumn(section)) {
         case UnitListColumn::Visible:
-          return QIcon(":/icons/visible");
+          return getIcon("visible");
         case UnitListColumn::Played:
-          return QIcon(":/icons/audio-on");
+          return getIcon("audio-on");
         case UnitListColumn::Select:
-          return QIcon(":/icons/select");
+          return getIcon("select");
         default:
           break;
       }

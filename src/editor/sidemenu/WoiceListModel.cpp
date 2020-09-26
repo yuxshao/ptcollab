@@ -3,6 +3,8 @@
 #include <QEvent>
 #include <QPainter>
 
+#include "IconHelper.h"
+
 inline Qt::CheckState checked_of_bool(bool b) {
   return b ? Qt::Checked : Qt::Unchecked;
 }
@@ -151,9 +153,9 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
     if (role == Qt::DecorationRole) {
       switch (WoiceListColumn(section)) {
         case WoiceListColumn::Loop:
-          return QIcon(":/icons/loop");
+          return getIcon("loop");
         case WoiceListColumn::BeatFit:
-          return QIcon(":/icons/measure");
+          return getIcon("measure");
         case WoiceListColumn::Key:
         case WoiceListColumn::Name:
           break;

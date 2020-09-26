@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
+#include "IconHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "ui_SideMenu.h"
@@ -45,6 +46,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
   ui->unitList->setItemDelegate(new UnitListDelegate);
+  setPlay(false);
   for (auto* list :
        {ui->unitList, ui->woiceList, ui->delayList, ui->overdriveList}) {
     list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -291,9 +293,10 @@ void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing) {
     ui->playBtn->setText(" (SPC)");
-    ui->playBtn->setIcon(QIcon(":/icons/pause"));
+    ui->playBtn->setIcon(getIcon("pause"));
   } else {
     ui->playBtn->setText(" (SPC)");
-    ui->playBtn->setIcon(QIcon(":/icons/play"));
+    ui->playBtn->setIcon(getIcon("play"));
   }
+  ui->stopBtn->setIcon(getIcon("stop"));
 }

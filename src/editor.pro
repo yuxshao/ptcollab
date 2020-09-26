@@ -33,6 +33,7 @@ HEADERS += \
            editor/Settings.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
+           editor/sidemenu/IconHelper.h \
            editor/sidemenu/OverdriveEffectModel.h \
            editor/sidemenu/WoiceListModel.h \
            editor/views/Animation.h \
@@ -95,6 +96,7 @@ SOURCES += main.cpp \
            editor/Settings.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
+           editor/sidemenu/IconHelper.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
            editor/sidemenu/WoiceListModel.cpp \
            editor/views/Animation.cpp \
@@ -161,5 +163,4 @@ RC_ICONS = icon.ico
 
 DISTFILES +=
 
-RESOURCES += \
-    icons.qrc
+RESOURCES += icons.qrc

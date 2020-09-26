@@ -319,10 +319,10 @@ fill architecture could work well.
 9/25
 1. Highlight row on play or on input
 2. Remove blip after play
+3. Dark mode icons
 
 Todo by priority
 ----------------
- - dark mode icons
  - midi input???
    - start with qwerty input
  - Unit view, at least for drums

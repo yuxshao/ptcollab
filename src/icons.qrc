@@ -1,4 +1,22 @@
 <RCC>
+    <qresource prefix="/icons-dark">
+        <file alias="audio-on">icons/icons-dark/status/16/audio-on.svg</file>
+        <file alias="audio-off">icons/icons-dark/status/16/audio-volume-muted.svg</file>
+        <file alias="visible">icons/icons-dark/actions/16/view-visible.svg</file>
+        <file alias="select">icons/icons-dark/actions/16/edit-select.svg</file>
+        <file alias="loop">icons/icons-dark/actions/16/media-playlist-repeat.svg</file>
+        <file alias="measure">icons/icons-dark/actions/16/measure.svg</file>
+        <file alias="select-rect">icons/icons-dark/actions/16/select-rectangular.svg</file>
+        <file alias="invisible">icons/icons-dark/actions/16/view-hidden.svg</file>
+        <file alias="pause">icons/icons-dark/actions/16/media-playback-pause.svg</file>
+        <file alias="play">icons/icons-dark/actions/16/media-playback-start.svg</file>
+        <file alias="stop">icons/icons-dark/actions/16/media-playback-stop.svg</file>
+        <file alias="save">icons/icons-dark/actions/16/document-save.svg</file>
+        <file alias="last">last-icon.svg</file>
+        <file alias="repeat">repeat-icon.svg</file>
+        <file alias="up">icons/icons-dark/actions/16/go-up.svg</file>
+        <file alias="down">icons/icons-dark/actions/16/go-down.svg</file>
+    </qresource>
     <qresource prefix="/icons">
         <file alias="audio-on">icons/icons/status/16/audio-on.svg</file>
         <file alias="audio-off">icons/icons/status/16/audio-volume-muted.svg</file>
