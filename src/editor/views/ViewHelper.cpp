@@ -45,11 +45,11 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
   if (moo_clock->has_last())
     painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
-                     Qt::white);
+                     halfWhite);
 
-  if (moo_clock->repeat_clock() > 0)
-    painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
-                     Qt::white);
+  // if (moo_clock->repeat_clock() > 0)
+  painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
+                   halfWhite);
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
