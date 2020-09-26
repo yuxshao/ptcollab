@@ -454,14 +454,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     }
   }
 
-  // Print measure numbers
-  /*painter.setPen(brightGreen);
-  for (int meas = 0; true; ++meas) {
-    int x = m_pxtn->master->get_beat_clock() * m_pxtn->master->get_beat_num()
-  * meas / m_client->editState().scale.clockPerPx; if (x > size().width())
-  break; painter.drawText(x, 1, 1000, 1000, Qt::AlignTop,
-  QString("%1").arg(meas));
-  }*/
   // Draw existing selections
 
   // Draw selections & ongoing edits / selections / seeks
