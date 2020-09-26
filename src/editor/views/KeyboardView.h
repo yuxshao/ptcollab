@@ -45,6 +45,7 @@ class KeyboardView : public QWidget {
   void copySelection();
   void clearSelection();
   void paste();
+  void toggleDark();
 
  private:
   void mousePressEvent(QMouseEvent *event) override;
@@ -58,6 +59,7 @@ class KeyboardView : public QWidget {
   const pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
   int painted;
+  bool m_dark;
   LocalEditState m_edit_state;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;

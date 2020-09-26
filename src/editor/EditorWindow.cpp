@@ -165,6 +165,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_D:
       if (event->modifiers() & Qt::ControlModifier)
         m_client->deselect();
+      else if (event->modifiers() & Qt::ShiftModifier)
+        m_keyboard_view->toggleDark();
       else {
         m_client->changeEditState([&](EditState &s) {
           ++s.m_current_param_kind_idx;

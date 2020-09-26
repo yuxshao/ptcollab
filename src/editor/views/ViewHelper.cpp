@@ -47,7 +47,6 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
     painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
                      halfWhite);
 
-  // if (moo_clock->repeat_clock() > 0)
   painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
                    halfWhite);
 }

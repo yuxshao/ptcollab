@@ -33,6 +33,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_pxtn(client->pxtn()),
       m_timer(new QElapsedTimer),
       painted(0),
+      m_dark(false),
       m_edit_state(m_pxtn, client->editState()),
       m_audio_note_preview(nullptr),
       m_anim(new Animation(this)),
@@ -313,23 +314,28 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QBrush rootNoteBrush(QColor::fromRgb(84, 76, 76));
   QBrush whiteNoteBrush(QColor::fromRgb(64, 64, 64));
   QBrush blackNoteBrush(QColor::fromRgb(32, 32, 32));
+  QBrush black(Qt::black);
   for (int row = 0; true; ++row) {
     QBrush *brush;
 
-    if (row == 39)
-      brush = &rootNoteBrush;
-    else
-      switch (row % 12) {
-        case 2:
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-          brush = &blackNoteBrush;
-          break;
-        default:
-          brush = &whiteNoteBrush;
-      }
+    if (m_dark)
+      brush = &black;
+    else {
+      if (row == 39)
+        brush = &rootNoteBrush;
+      else
+        switch (row % 12) {
+          case 2:
+          case 4:
+          case 6:
+          case 9:
+          case 11:
+            brush = &blackNoteBrush;
+            break;
+          default:
+            brush = &whiteNoteBrush;
+        }
+    }
 
     if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
         size().height())
@@ -339,6 +345,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     int next_y =
         (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     int h = next_y - this_y - 1;
+    if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y, size().width(), h, *brush);
   }
 
@@ -369,6 +376,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // TODO: Draw the current unit at the top.
   std::optional<Interval> selection = std::nullopt;
   std::set<int> selected_unit_nos = selectedUnitNos();
+  if (m_dark)
+    painter.setCompositionMode(QPainter::CompositionMode_Plus);
+  else
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
   if (m_client->editState().mouse_edit_state.selection.has_value())
     selection = m_client->editState().mouse_edit_state.selection.value();
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
@@ -482,6 +493,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                         1);
   drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
                     height(), 1, 1);
+  painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -864,3 +876,5 @@ void KeyboardView::paste() {
     selection.end = selection.start + m_client->clipboard()->copyLength();
   });
 }
+
+void KeyboardView::toggleDark() { m_dark = !m_dark; }
