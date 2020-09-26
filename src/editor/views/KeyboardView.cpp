@@ -155,7 +155,8 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                    arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
 }
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
-                       QPainter &painter, int height, double alphaMultiplier,
+                       QPainter &painter, int width, int height,
+                       double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
@@ -180,6 +181,11 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                   localState.m_quantize_pitch;
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
+      if (mouse_edit_state.type != MouseEditState::Nothing)
+        paintBlock(
+            pitch, Interval{0, int(state.scale.clockPerPx * width)}, painter,
+            brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
+            state.scale);
       paintBlock(pitch, interval, painter,
                  brush.toQColor(velocity, false, alpha * alphaMultiplier),
                  state.scale);
@@ -228,17 +234,25 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                       const std::optional<Interval> &selection,
                       const Interval &bounds, const Brush &brush, qint32 alpha,
                       const Scale &scale, qint32 current_clock,
-                      const MouseEditState &mouse, bool drawTooltip,
-                      bool muted) {
+                      const MouseEditState &mouse, bool drawTooltip, bool muted,
+                      int width) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
   if (interval_intersect(interval, bounds).empty()) return;
-  QColor color = brush.toQColor(state.velocity.value,
-                                on.contains(current_clock) && !muted, alpha);
+  bool playing = on.contains(current_clock);
+  bool firstBlock = interval.start == on.start;
+  if (playing && firstBlock)
+    paintBlock(state.pitch.value, Interval{0, int(scale.clockPerPx * width)},
+               painter,
+               brush.toQColor(
+                   128, false,
+                   16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256),
+               scale);
+  QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
   if (muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
   paintBlock(state.pitch.value, interval, painter, color, scale);
-  if (interval.start == on.start) {
+  if (firstBlock) {
     paintHighlight(state.pitch.value, interval.start, painter,
                    brush.toQColor(255, true, alpha), scale);
     if (drawTooltip) {
@@ -322,7 +336,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       break;
     int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     // Because of rounding error, calculate height by subbing next from this
-    // TODO: change scale so that pitchPerPx is necessarily an int
     int next_y =
         (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     int h = next_y - this_y - 1;
@@ -383,10 +396,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         // Draw the last block of the previous on event if there's one to
         // draw.
         if (state.ongoingOnEvent.has_value())
-          drawStateSegment(
-              painter, state, {state.pitch.clock, e->clock}, thisSelection,
-              clockBounds, brush, alpha, m_client->editState().scale, clock,
-              m_client->editState().mouse_edit_state, matchingUnit, muted);
+          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+                           thisSelection, clockBounds, brush, alpha,
+                           m_client->editState().scale, clock,
+                           m_client->editState().mouse_edit_state, matchingUnit,
+                           muted, width());
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
@@ -396,10 +410,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       case EVENTKIND_KEY:
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
-          drawStateSegment(
-              painter, state, {state.pitch.clock, e->clock}, thisSelection,
-              clockBounds, brush, alpha, m_client->editState().scale, clock,
-              m_client->editState().mouse_edit_state, matchingUnit, muted);
+          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+                           thisSelection, clockBounds, brush, alpha,
+                           m_client->editState().scale, clock,
+                           m_client->editState().mouse_edit_state, matchingUnit,
+                           muted, width());
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -432,7 +447,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       drawStateSegment(
           painter, state, {state.pitch.clock, state.ongoingOnEvent.value().end},
           thisSelection, clockBounds, brush, alpha, m_client->editState().scale,
-          clock, m_client->editState().mouse_edit_state, matchingUnit, muted);
+          clock, m_client->editState().mouse_edit_state, matchingUnit, muted,
+          width());
 
       state.ongoingOnEvent.reset();
     }
@@ -465,15 +481,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                             adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
-                        painter, size().height(), alphaMultiplier,
+                        painter, width(), height(), alphaMultiplier,
                         selectionAlphaMultiplier);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, size().height(),
                         1);
-  drawOngoingAction(m_client->editState(), m_edit_state, painter,
-                    size().height(), 1, 1);
+  drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
+                    height(), 1, 1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
