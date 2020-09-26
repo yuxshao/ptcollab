@@ -131,7 +131,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         "cycle unit.\n1..9 to jump to a unit directly.\n(E/D) to cycle "
         "parameter.\nF to follow playhead.\n C to "
         "toggle if a parameter is copied. Velocity is tied to note and on "
-        "events.\n(F1..F4) to switch tabs.");
+        "events.\n(F1..F4) to switch tabs.\nShift+D to toggle a dark piano "
+        "roll.");
   });
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
