@@ -33,18 +33,18 @@ available to make editing easy (for me at least). These are:
    up / down while something is selected. Ctrl shifts by an
    octave.
 4. Keyboard shortcuts for navigation
-  - W/S for next previous / next unit (PgUp / PgDn also work)
-  - Q/A for previous / next parameter
-  - F1..F4 for the tabs in the menu
-  - 1..9 for jumping to a unit directly
-5. Mouse-related shortcuts for view / mode changes
-  - Middle-click drag to move around
-  - Shift+wheel to scroll horizontally
-  - Ctrl+(shift)+wheel to zoom vertically (horizontally)
-  - Alt+wheel to change quantization
+   - W/S for next previous / next unit (PgUp / PgDn also work)
+   - Q/A for previous / next parameter
+   - F1..F4 for the tabs in the menu
+   - 1..9 for jumping to a unit directly
+5. Mouse -related shortcuts for view / mode changes
+   - Middle -click drag to move around
+   - Shift+wheel to scroll horizontally
+   - Ctrl+(shift)+wheel to zoom vertically (horizontally)
+   - Alt+wheel to change quantization
 6. Various dragging gestures
-  - Drag in the keyboard view to modify velocity
-  - Drag in the parameter view for linear editing
+   - Drag in the keyboard view to modify velocity
+   - Drag in the parameter view for linear editing
   
 ## Thanks
 Again, huge thanks to everyone who helped support this! pxtone
