@@ -63,3 +63,5 @@ let me know if I forgot anyone:
 7. arcofdream, nanoplink, easynam for general programming, UX
    discussion and consulting!
 8. Jade for testing, finding UI bugs, and providing valuable
+   feedback and suggestions!
+9. Everyone in the pxtone discord servers!
