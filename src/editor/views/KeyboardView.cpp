@@ -239,7 +239,6 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                       int width) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
-  if (interval_intersect(interval, bounds).empty()) return;
   bool playing = on.contains(current_clock);
   bool firstBlock = interval.start == on.start;
   if (playing && firstBlock && !muted && alpha > 0)
@@ -249,6 +248,7 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                    128, false,
                    16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256),
                scale);
+  if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
   if (muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
@@ -384,7 +384,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     selection = m_client->editState().mouse_edit_state.selection.value();
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
        e = e->next) {
-    if (e->clock > clockBounds.end) break;
+    // if (e->clock > clockBounds.end) break;
     int unit_no = e->unit_no;
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
     DrawState &state = drawStates[unit_no];
