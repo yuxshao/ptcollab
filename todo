@@ -321,6 +321,9 @@ fill architecture could work well.
 2. Remove blip after play
 3. Dark mode icons
 
+10/4
+1. ptcollage-like palette by default. thanks gkpotter for extensive ui feedback!
+
 Todo by priority
 ----------------
  - midi input???
