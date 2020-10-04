@@ -22,11 +22,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string> (SPC)</string>
+        <string/>
        </property>
        <property name="icon">
         <iconset theme=":/icons/play" resource="../../icons.qrc">
-         <normaloff>:/icons/play</normaloff>:/icons/play</iconset>
+         <normaloff>:/icons/color/play</normaloff>:/icons/color/play</iconset>
        </property>
       </widget>
      </item>
@@ -36,11 +36,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string> (ESC)</string>
+        <string/>
        </property>
        <property name="icon">
         <iconset theme=":/icons/stop" resource="../../icons.qrc">
-         <normaloff>:/icons/stop</normaloff>:/icons/stop</iconset>
+         <normaloff>:/icons/color/stop</normaloff>:/icons/color/stop</iconset>
        </property>
       </widget>
      </item>
@@ -52,18 +52,18 @@
       <enum>Qt::NoFocus</enum>
      </property>
      <property name="text">
-      <string>Save locally (C-s)</string>
+      <string/>
      </property>
      <property name="icon">
-      <iconset theme=":/icons/save">
-       <normaloff>.</normaloff>.</iconset>
+      <iconset theme=":/icons/save" resource="../../icons.qrc">
+       <normaloff>:/icons/light/save</normaloff>:/icons/light/save</iconset>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -82,6 +82,12 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="showGrid">
+          <bool>false</bool>
+         </property>
+         <property name="gridStyle">
+          <enum>Qt::NoPen</enum>
+         </property>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>24</number>
          </attribute>
@@ -94,6 +100,15 @@
         <widget class="QTableView" name="overdriveList">
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="showGrid">
+          <bool>false</bool>
+         </property>
+         <property name="gridStyle">
+          <enum>Qt::NoPen</enum>
          </property>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>24</number>
@@ -289,8 +304,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset theme=":/icons/up" resource="../../icons.qrc">
-             <normaloff>:/icons/up</normaloff>:/icons/up</iconset>
+            <iconset resource="../../icons.qrc">
+             <normaloff>:/icons/light/up</normaloff>:/icons/light/up</iconset>
            </property>
           </widget>
          </item>
@@ -303,8 +318,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset theme=":/icons/down" resource="../../icons.qrc">
-             <normaloff>:/icons/down</normaloff>:/icons/down</iconset>
+            <iconset resource="../../icons.qrc">
+             <normaloff>:/icons/light/down</normaloff>:/icons/light/down</iconset>
            </property>
           </widget>
          </item>
@@ -363,7 +378,7 @@
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="text">
-            <string>Host (C-S-o)</string>
+            <string>Host</string>
            </property>
           </widget>
          </item>
@@ -373,7 +388,7 @@
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="text">
-            <string>Connect (C-o)</string>
+            <string>Connect</string>
            </property>
           </widget>
          </item>

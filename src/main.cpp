@@ -1,9 +1,16 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFile>
+#include <QSettings>
 #include <QStyleFactory>
+
 #include "editor/EditorWindow.h"
 #include "network/BroadcastServer.h"
+
+const static QString stylesheet =
+    "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
+    "QLineEdit { background-color: #00003e; color: #00F080; font-weight: bold; "
+    "}";
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
@@ -12,22 +19,34 @@ int main(int argc, char *argv[]) {
   a.setOrganizationName("ptcollab");
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
-  if (QFileInfo("./fusion.style").exists()) QApplication::setStyle(QStyleFactory::create("Fusion"));
- /* QPalette palette = qApp->palette();
-  palette.setColor(QPalette::Window, QColor(78, 75, 97));
-  palette.setColor(QPalette::WindowText, Qt::white);
-  palette.setColor(QPalette::Base, QColor(25, 25, 25));
-  palette.setColor(QPalette::AlternateBase, QColor(52, 50, 85));
-  palette.setColor(QPalette::ToolTipBase, Qt::white);
-  palette.setColor(QPalette::ToolTipText, Qt::white);
-  palette.setColor(QPalette::Text, Qt::white);
-  palette.setColor(QPalette::Button, QColor(78, 75, 97));
-  palette.setColor(QPalette::ButtonText, Qt::white);
-  palette.setColor(QPalette::BrightText, Qt::red);
-  palette.setColor(QPalette::Link, QColor(157, 151, 132));
-  palette.setColor(QPalette::Highlight, QColor(157, 151, 132));
-  palette.setColor(QPalette::HighlightedText, Qt::black);
-  qApp->setPalette(palette);*/
+
+  QSettings style_settings("style.ini", QSettings::IniFormat);
+  QString style = style_settings.value("style", "").toString();
+  if (style != "") QApplication::setStyle(style);
+  bool use_custom_palette =
+      style_settings.value("use_custom_palette", true).toBool();
+  if (use_custom_palette) {
+    QPalette palette = qApp->palette();
+    QColor text(222, 217, 187);
+    QColor base(78, 75, 97);
+    QColor button = base;
+    QColor highlight(157, 151, 132);
+    palette.setBrush(QPalette::Window, base);
+    palette.setColor(QPalette::WindowText, text);
+    palette.setBrush(QPalette::Base, base);
+    palette.setColor(QPalette::ToolTipBase, base);
+    palette.setColor(QPalette::ToolTipText, text);
+    palette.setColor(QPalette::Text, text);
+    palette.setBrush(QPalette::Button, base);
+    palette.setColor(QPalette::ButtonText, text);
+    palette.setColor(QPalette::BrightText, Qt::red);
+    palette.setColor(QPalette::Link, highlight);
+    palette.setColor(QPalette::Highlight, highlight);
+    palette.setColor(QPalette::Light, button.lighter(120));
+    palette.setColor(QPalette::Dark, button.darker(120));
+    qApp->setPalette(palette);
+    qApp->setStyleSheet(stylesheet);
+  }
 
   a.setApplicationVersion(QString(GIT_VERSION));
   QCommandLineParser parser;

@@ -256,9 +256,9 @@ void SideMenu::setQuantYIndex(int i) { ui->quantY->setCurrentIndex(i); }
 
 void SideMenu::setModified(bool modified) {
   if (modified)
-    ui->saveBtn->setText("Save locally* (C-s)");
+    ui->saveBtn->setText("*");
   else
-    ui->saveBtn->setText("Save locally (C-s)");
+    ui->saveBtn->setText("");
 }
 
 void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
@@ -292,11 +292,12 @@ void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing) {
-    ui->playBtn->setText(" (SPC)");
-    ui->playBtn->setIcon(getIcon("pause"));
+    ui->playBtn->setIcon(QIcon(":/icons/color/pause"));
   } else {
-    ui->playBtn->setText(" (SPC)");
-    ui->playBtn->setIcon(getIcon("play"));
+    ui->playBtn->setIcon(QIcon(":/icons/color/play"));
   }
-  ui->stopBtn->setIcon(getIcon("stop"));
+  ui->stopBtn->setIcon(QIcon(":/icons/color/stop"));
+  ui->saveBtn->setIcon(getIcon("save"));
+  ui->upUnitBtn->setIcon(getIcon("up"));
+  ui->downUnitBtn->setIcon(getIcon("down"));
 }
