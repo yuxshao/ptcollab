@@ -143,7 +143,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
         [&](EditState &s) { s.m_quantize_pitch_idx = index; });
   });
 
-  connect(this, &SideMenu::followChanged, [this](bool follow) {
+  connect(this, &SideMenu::followPlayheadChanged, [this](bool follow) {
     m_client->changeEditState(
         [&](EditState &s) { s.m_follow_playhead = follow; });
   });
@@ -195,7 +195,7 @@ void PxtoneSideMenu::handleNewEditState(const EditState &s) {
     if (x.has_value()) setCurrentWoice(x.value());
   }
   if (m_last_edit_state.m_follow_playhead != s.m_follow_playhead)
-    setFollow(s.m_follow_playhead);
+    setFollowPlayhead(s.m_follow_playhead);
   if (m_last_edit_state.current_param_kind_idx() !=
       s.current_param_kind_idx()) {
     setParamKindIndex(s.current_param_kind_idx());
