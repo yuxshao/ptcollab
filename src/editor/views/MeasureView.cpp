@@ -326,7 +326,7 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               else
                 m_client->sendAction(SetRepeatMeas{meas});
             } else {
-              if (m_client->pxtn()->master->get_play_meas() == meas)
+              if (m_client->pxtn()->master->get_last_meas() == meas)
                 m_client->sendAction(SetLastMeas{});
               else
                 m_client->sendAction(SetLastMeas{meas});

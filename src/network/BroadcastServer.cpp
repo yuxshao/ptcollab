@@ -31,6 +31,7 @@ BroadcastServer::BroadcastServer(const QByteArray &data, int port,
   m_history_elapsed.restart();
 
   if (load_history != "") {
+    double playback_speed = 1;
     QFile *file = new QFile(load_history, this);
     if (!file->open(QIODevice::ReadOnly | QIODevice::ExistingOnly))
       throw QString("Unable to load history");
@@ -46,21 +47,29 @@ BroadcastServer::BroadcastServer(const QByteArray &data, int port,
     m_timer->setSingleShot(true);
     qint64 elapsed;
     *m_load_history >> elapsed;
-    qDebug() << "Waiting" << elapsed;
-    m_timer->start(elapsed);
-    connect(m_timer, &QTimer::timeout, [this]() {
-      ServerAction a;
-      *m_load_history >> a;
-      broadcastServerAction(a);
+    m_timer->start(elapsed / playback_speed);
+    connect(m_timer, &QTimer::timeout, [this, playback_speed]() {
+      qint64 interval = 0;
+      while (interval <= 0) {
+        if (m_load_history->atEnd()) {
+          qWarning() << "Unexpected end of recording";
+          return;
+        }
 
-      if (m_load_history->atEnd()) {
-        qDebug() << "At end of recording";
-        return;
+        ServerAction a;
+        *m_load_history >> a;
+        broadcastServerAction(a);
+
+        if (m_load_history->atEnd()) {
+          qDebug() << "At end of recording";
+          return;
+        }
+
+        qint64 next_elapsed;
+        *m_load_history >> next_elapsed;
+        interval = next_elapsed / playback_speed - m_history_elapsed.elapsed();
       }
-
-      qint64 next_elapsed;
-      *m_load_history >> next_elapsed;
-      m_timer->start(std::max(0LL, next_elapsed - m_history_elapsed.elapsed()));
+      m_timer->start(interval);
     });
   }
 

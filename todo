@@ -324,11 +324,13 @@ fill architecture could work well.
 10/4
 1. ptcollage-like palette by default. thanks gkpotter for extensive ui feedback!
 
+10/5
+1. Watching other users
+2. Recording sessions that you can jump into live (bit janky)
+
 Todo by priority
 ----------------
- - following other users
-   - double click in sidebar to follow
-   - emit and follow their playheads too
+ - emit and follow other users' their playheads too
 
  - midi input???
    - start with qwerty input
