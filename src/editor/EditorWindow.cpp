@@ -338,6 +338,8 @@ const QString PTCOP_DIR_KEY("ptcop_dir");
 const QString DISPLAY_NAME_KEY("display_name");
 const QString HOST_SERVER_PORT_KEY("host_server_port");
 constexpr int DEFAULT_PORT = 15835;
+
+static const QString HISTORY_SAVE_FILE = "history_save_file";
 void EditorWindow::Host(bool load_file) {
   if (!maybeSave()) return;
   if (m_server) {
@@ -350,13 +352,10 @@ void EditorWindow::Host(bool load_file) {
   if (load_file) {
     filename = QFileDialog::getOpenFileName(
         this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
-        "pxtone projects (*.ptcop)");
+        "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
 
     if (!filename.isEmpty())
       settings.setValue(PTCOP_DIR_KEY, QFileInfo(filename).absolutePath());
-
-    // filename =
-    //    "/home/steven/Projects/Music/pxtone/Examples/for-web/basic-rect.ptcop";
   }
 
   if (load_file && filename.isEmpty()) return;
@@ -381,17 +380,23 @@ void EditorWindow::Host(bool load_file) {
     qDebug() << "Stopped old server";
   }
   try {
+    QSettings settings("settings.ini", QSettings::IniFormat);
+    QString history_save = settings.value(HISTORY_SAVE_FILE, "").toString();
     if (load_file) {
-      QFile file(filename);
-      if (!file.open(QIODevice::ReadOnly))
-        // TODO: Probably make a class for common kinds of errors like this.
-        throw QString("Could not read file.");
-
-      m_server =
-          new BroadcastServer(file.readAll(), port, this);  //, 3000, 0.3);
+      if (QFileInfo(filename).suffix() == "ptrec")
+        m_server =
+            new BroadcastServer(QByteArray(), port, filename, history_save,
+                                this);  // , 3000, 0.3);
+      else {
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+          throw QString("Could not read file.");
+        m_server = new BroadcastServer(file.readAll(), port, "", history_save,
+                                       this);  //, 3000, 0.3);
+      }
     } else
-      m_server =
-          new BroadcastServer(QByteArray(), port, this);  // , 3000, 0.3);
+      m_server = new BroadcastServer(QByteArray(), port, "", history_save,
+                                     this);  // , 3000, 0.3);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;

@@ -20,11 +20,10 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  QSettings style_settings("style.ini", QSettings::IniFormat);
-  QString style = style_settings.value("style", "").toString();
+  QSettings settings("settings.ini", QSettings::IniFormat);
+  QString style = settings.value("style", "").toString();
   if (style != "") QApplication::setStyle(style);
-  bool use_custom_palette =
-      style_settings.value("use_custom_palette", true).toBool();
+  bool use_custom_palette = settings.value("use_custom_palette", true).toBool();
   if (use_custom_palette) {
     QPalette palette = qApp->palette();
     QColor text(222, 217, 187);
