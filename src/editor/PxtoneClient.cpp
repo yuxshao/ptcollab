@@ -20,6 +20,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
       m_client(new Client(this)),
+      m_following_user(std::nullopt),
       m_clipboard(new Clipboard(pxtn, this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
@@ -122,6 +123,26 @@ void PxtoneClient::resetAndSuspendAudio() {
   m_pxtn_device->setPlaying(false);
 }
 
+void PxtoneClient::setFollowing(std::optional<int> following) {
+  m_following_user = following;
+
+  if (following.has_value() && following != m_controller->uid()) {
+    const auto it = m_remote_edit_states.find(following.value());
+    if (it != m_remote_edit_states.end() && it->second.state.has_value())
+      emit followActivity(it->second.state.value());
+  }
+}
+
+bool PxtoneClient::isFollowing() {
+  return (m_following_user.has_value() &&
+          m_following_user.value() != m_controller->uid());
+}
+
+qint64 PxtoneClient::following_uid() const {
+  if (m_following_user.has_value()) return m_following_user.value();
+  return m_controller->uid();
+}
+
 qint32 PxtoneClient::quantizeClock(int idx) {
   return pxtn()->master->get_beat_clock() / idx;
 }
@@ -158,9 +179,13 @@ void PxtoneClient::connectToServer(QString hostname, quint16 port,
   m_client->connectToServer(hostname, port, username);
 }
 
-void PxtoneClient::changeEditState(std::function<void(EditState &)> f) {
+void PxtoneClient::changeEditState(std::function<void(EditState &)> f,
+                                   bool preserveFollow) {
   f(m_edit_state);
-  m_client->sendAction(m_edit_state);
+  if (!preserveFollow) setFollowing(std::nullopt);
+  if (!m_following_user.has_value() ||
+      m_following_user.value() == m_controller->uid())
+    m_client->sendAction(m_edit_state);
   emit editStateChanged(m_edit_state);
 }
 
@@ -176,8 +201,12 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       if (it == m_remote_edit_states.end())
                         qWarning()
                             << "Received edit state for unknown session" << uid;
-                      else
+                      else {
                         it->second.state.emplace(s);
+                        if (uid != m_controller->uid() &&
+                            m_following_user == uid)
+                          emit followActivity(s);
+                      }
                     },
                     [this, uid](const EditAction &s) {
                       m_controller->applyRemoteAction(s, uid);

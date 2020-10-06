@@ -3,6 +3,7 @@
 #include <pxtone/pxtnEvelist.h>
 
 #include <QObject>
+#include <QRect>
 #include <optional>
 #include <variant>
 
@@ -88,6 +89,7 @@ bool operator==(const Scale &x, const Scale &y);
 struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
+  QRect viewport;
   int m_current_unit_id;
   int m_current_woice_id;
   int m_current_param_kind_idx;

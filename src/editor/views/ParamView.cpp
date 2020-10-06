@@ -390,7 +390,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   // draw ongoing edit
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       const EditState &state = remote_state.state.value();
       if (state.current_param_kind_idx() !=
@@ -426,7 +426,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       if (state.current_param_kind_idx() !=
@@ -445,10 +445,10 @@ void ParamView::paintEvent(QPaintEvent *event) {
   }
   {
     QString my_username = "";
-    auto it = m_client->remoteEditStates().find(m_client->uid());
+    auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), painter, Qt::white, my_username,
-               m_client->uid(), current_kind, height());
+               m_client->following_uid(), current_kind, height());
   }
 }
 
@@ -643,7 +643,9 @@ void ParamView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
-  m_client->changeEditState(
-      [&](auto &s) { updateStatePositions(s, event, current_kind, height()); });
+  if (!m_client->isFollowing())
+    m_client->changeEditState([&](auto &s) {
+      updateStatePositions(s, event, current_kind, height());
+    });
   event->ignore();
 }

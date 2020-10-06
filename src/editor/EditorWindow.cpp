@@ -70,6 +70,30 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX, [this](int x) {
     m_scroll_area->ensureWithinMargin(x, -0.02, 0.15, 0.15, 0.75);
   });
+  connect(m_scroll_area, &EditorScrollArea::viewportChanged,
+          [this](const QRect &viewport) {
+            m_client->changeEditState(
+                [&](EditState &e) { e.viewport = viewport; }, true);
+          });
+  connect(m_client, &PxtoneClient::followActivity, [this](const EditState &r) {
+    m_client->changeEditState(
+        [&](EditState &e) {
+          double startClock = r.scale.clockPerPx * r.viewport.left();
+          double startPitch = r.scale.pitchPerPx * r.viewport.top();
+          QRect old = e.viewport;
+          e = r;
+          e.scale.clockPerPx =
+              e.scale.clockPerPx * e.viewport.width() / old.width();
+          e.scale.pitchPerPx =
+              e.scale.pitchPerPx * e.viewport.height() / old.height();
+          e.viewport = old;
+          m_scroll_area->horizontalScrollBar()->setValue(startClock /
+                                                         e.scale.clockPerPx);
+          m_scroll_area->verticalScrollBar()->setValue(startPitch /
+                                                       e.scale.pitchPerPx);
+        },
+        true);
+  });
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -201,6 +225,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
         m_keyboard_view->cycleCurrentUnit(1);
+      break;
+    case Qt::Key_I:
+      m_client->setFollowing(0);
       break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);

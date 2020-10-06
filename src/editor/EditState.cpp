@@ -62,6 +62,7 @@ int EditState::current_param_kind_idx() const {
 EditState::EditState()
     : mouse_edit_state(),
       scale(),
+      viewport(),
       m_current_unit_id(0),
       m_current_woice_id(0),
       m_current_param_kind_idx(0),
@@ -70,15 +71,15 @@ EditState::EditState()
       m_follow_playhead(false) {}
 
 QDataStream &operator<<(QDataStream &out, const EditState &a) {
-  return (out << a.mouse_edit_state << a.scale << a.m_current_unit_id
-              << a.m_current_woice_id << a.m_current_param_kind_idx
-              << a.m_quantize_clock_idx << a.m_quantize_pitch_idx
-              << a.m_follow_playhead);
+  return (out << a.mouse_edit_state << a.scale << a.viewport
+              << a.m_current_unit_id << a.m_current_woice_id
+              << a.m_current_param_kind_idx << a.m_quantize_clock_idx
+              << a.m_quantize_pitch_idx << a.m_follow_playhead);
 }
 
 QDataStream &operator>>(QDataStream &in, EditState &a) {
-  return (in >> a.mouse_edit_state >> a.scale >> a.m_current_unit_id >>
-          a.m_current_woice_id >> a.m_current_param_kind_idx >>
-          a.m_quantize_clock_idx >> a.m_quantize_pitch_idx >>
-          a.m_follow_playhead);
+  return (in >> a.mouse_edit_state >> a.scale >> a.viewport >>
+          a.m_current_unit_id >> a.m_current_woice_id >>
+          a.m_current_param_kind_idx >> a.m_quantize_clock_idx >>
+          a.m_quantize_pitch_idx >> a.m_follow_playhead);
 }

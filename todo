@@ -326,6 +326,10 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - following other users
+   - double click in sidebar to follow
+   - emit and follow their playheads too
+
  - midi input???
    - start with qwerty input
  - Unit view, at least for drums

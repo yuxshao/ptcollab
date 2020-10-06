@@ -469,7 +469,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       EditState adjusted_state(remote_state.state.value());
       bool same_unit = adjusted_state.m_current_unit_id ==
@@ -497,7 +497,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       state.scale =
@@ -513,10 +513,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   {
     QString my_username = "";
-    auto it = m_client->remoteEditStates().find(m_client->uid());
+    auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), painter, Qt::white, my_username,
-               m_client->uid());
+               m_client->following_uid());
   }
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
@@ -650,7 +650,8 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
         impliedVelocity(m_client->editState().mouse_edit_state,
                         m_client->editState().scale));
 
-  m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
+  if (!m_client->isFollowing())
+    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
   event->ignore();
 }
 

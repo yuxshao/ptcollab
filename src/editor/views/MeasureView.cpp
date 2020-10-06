@@ -191,7 +191,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, true);
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       EditState adjusted_state(remote_state.state.value());
       bool same_unit = adjusted_state.m_current_unit_id ==
@@ -217,7 +217,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->uid()) continue;
+    if (uid == m_client->following_uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       if (state.current_param_kind_idx() !=
@@ -236,10 +236,10 @@ void MeasureView::paintEvent(QPaintEvent *) {
 
   {
     QString my_username = "";
-    auto it = m_client->remoteEditStates().find(m_client->uid());
+    auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), painter, Qt::white, my_username,
-               m_client->uid());
+               m_client->following_uid());
   }
 }
 
@@ -349,6 +349,7 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
-  m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
+  if (!m_client->isFollowing())
+    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
   event->ignore();
 }

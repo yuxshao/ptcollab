@@ -13,6 +13,12 @@ class TransposableWheelEvent : QWheelEvent {
   }
 };
 
+QRect EditorScrollArea::viewportRect() {
+  return QRect(this->horizontalScrollBar()->value(),
+               this->verticalScrollBar()->value(), viewport()->width(),
+               viewport()->height());
+}
+
 EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
     : QScrollArea(parent),
       middleDown(false),
@@ -21,6 +27,10 @@ EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
   setWidgetResizable(true);
   setMouseTracking(true);
   setFrameStyle(QFrame::NoFrame);
+  for (const auto &bar : {horizontalScrollBar(), verticalScrollBar()}) {
+    connect(bar, &QAbstractSlider::valueChanged,
+            [this]() { emit viewportChanged(viewportRect()); });
+  };
 }
 
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
@@ -80,6 +90,7 @@ void EditorScrollArea::mouseReleaseEvent(QMouseEvent *event) {
   }
   lastPos = event->pos();
 }
+
 void EditorScrollArea::mouseMoveEvent(QMouseEvent *event) {
   event->ignore();
   if (middleDown) {
@@ -106,6 +117,11 @@ void EditorScrollArea::wheelEvent(QWheelEvent *event) {
   event->setModifiers(event->modifiers() & ~Qt::AltModifier);
 
   QScrollArea::wheelEvent(event);
+}
+
+void EditorScrollArea::resizeEvent(QResizeEvent *event) {
+  QScrollArea::resizeEvent(event);
+  emit viewportChanged(viewportRect());
 }
 
 void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,

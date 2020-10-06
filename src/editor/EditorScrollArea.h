@@ -14,6 +14,8 @@ class EditorScrollArea : public QScrollArea {
   void ensureWithinMargin(int x, qreal minDistFromLeft,
                           qreal jumpMinDistFromLeft, qreal jumpMaxDistFromLeft,
                           qreal maxDistFromLeft);
+ signals:
+  void viewportChanged(const QRect &viewport);
 
  protected:
   void keyPressEvent(QKeyEvent *event) override;
@@ -26,6 +28,8 @@ class EditorScrollArea : public QScrollArea {
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
+  QRect viewportRect();
 };
 
 #endif  // EDITORSCROLLAREA_H
