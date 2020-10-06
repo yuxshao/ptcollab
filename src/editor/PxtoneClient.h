@@ -22,8 +22,8 @@ class PxtoneClient : public QObject {
 
   PxtoneController *m_controller;
   Client *m_client;
-  std::unordered_map<qint64, RemoteEditState> m_remote_edit_states;
-  std::optional<int> m_following_user;
+  std::map<qint64, RemoteEditState> m_remote_edit_states;
+  std::optional<qint64> m_following_user;
   mooState m_moo_state;
   EditState m_edit_state;
   QAudioOutput *m_audio;
@@ -50,7 +50,7 @@ class PxtoneClient : public QObject {
                        bool preserveFollow = false);
   void togglePlayState();
   void resetAndSuspendAudio();
-  void setFollowing(std::optional<int> following);
+  void setFollowing(std::optional<qint64> following);
   bool isFollowing();
   const pxtnService *pxtn() { return m_controller->pxtn(); }
   const EditState &editState() { return m_edit_state; }
@@ -58,9 +58,10 @@ class PxtoneClient : public QObject {
   const QAudioOutput *audioState() { return m_audio; }
 
   const NoIdMap &unitIdMap() { return m_controller->unitIdMap(); }
-  const std::unordered_map<qint64, RemoteEditState> &remoteEditStates() {
+  const std::map<qint64, RemoteEditState> &remoteEditStates() {
     return m_remote_edit_states;
   }
+  qint64 uid() const;
   qint64 following_uid() const;
   qint32 quantizeClock(int idx);
   qint32 quantizeClock();

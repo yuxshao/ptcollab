@@ -231,6 +231,12 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       emit bufferLengthChanged(length);
     }
   });
+  connect(ui->userList, &QListView::activated,
+          [this](const QModelIndex& index) { emit userSelected(index.row()); });
+  connect(ui->watchBtn, &QPushButton::clicked, [this]() {
+    if (ui->userList->selectionModel()->hasSelection())
+      emit userSelected(ui->userList->currentIndex().row());
+  });
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {

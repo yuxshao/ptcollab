@@ -8,7 +8,7 @@
 #include "audio/AudioFormat.h"
 
 QList<std::pair<qint64, QString>> getUserList(
-    const std::unordered_map<qint64, RemoteEditState> &users) {
+    const std::map<qint64, RemoteEditState> &users) {
   QList<std::pair<qint64, QString>> list;
   for (auto it = users.begin(); it != users.end(); ++it)
     list.append(std::make_pair(it->first, it->second.user));
@@ -123,7 +123,7 @@ void PxtoneClient::resetAndSuspendAudio() {
   m_pxtn_device->setPlaying(false);
 }
 
-void PxtoneClient::setFollowing(std::optional<int> following) {
+void PxtoneClient::setFollowing(std::optional<qint64> following) {
   m_following_user = following;
 
   if (following.has_value() && following != m_controller->uid()) {
@@ -138,6 +138,7 @@ bool PxtoneClient::isFollowing() {
           m_following_user.value() != m_controller->uid());
 }
 
+qint64 PxtoneClient::uid() const { return m_controller->uid(); }
 qint64 PxtoneClient::following_uid() const {
   if (m_following_user.has_value()) return m_following_user.value();
   return m_controller->uid();

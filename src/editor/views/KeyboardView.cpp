@@ -469,7 +469,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState adjusted_state(remote_state.state.value());
       bool same_unit = adjusted_state.m_current_unit_id ==
@@ -497,7 +497,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       state.scale =

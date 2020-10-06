@@ -390,7 +390,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   // draw ongoing edit
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       const EditState &state = remote_state.state.value();
       if (state.current_param_kind_idx() !=
@@ -426,7 +426,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       if (state.current_param_kind_idx() !=

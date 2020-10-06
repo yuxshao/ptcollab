@@ -191,7 +191,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, true);
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState adjusted_state(remote_state.state.value());
       bool same_unit = adjusted_state.m_current_unit_id ==
@@ -217,7 +217,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
-    if (uid == m_client->following_uid()) continue;
+    if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState state = remote_state.state.value();
       if (state.current_param_kind_idx() !=
