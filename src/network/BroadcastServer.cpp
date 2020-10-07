@@ -47,8 +47,9 @@ BroadcastServer::BroadcastServer(const QByteArray &data, int port,
     m_timer->setSingleShot(true);
     qint64 elapsed;
     *m_load_history >> elapsed;
-    m_timer->start(elapsed / playback_speed);
-    connect(m_timer, &QTimer::timeout, [this, playback_speed]() {
+    qint64 offset = 0;
+    m_timer->start(elapsed / playback_speed + offset);
+    connect(m_timer, &QTimer::timeout, [this, playback_speed, offset]() {
       qint64 interval = 0;
       while (interval <= 0) {
         if (m_load_history->atEnd()) {
@@ -67,7 +68,8 @@ BroadcastServer::BroadcastServer(const QByteArray &data, int port,
 
         qint64 next_elapsed;
         *m_load_history >> next_elapsed;
-        interval = next_elapsed / playback_speed - m_history_elapsed.elapsed();
+        interval = next_elapsed / playback_speed + offset -
+                   m_history_elapsed.elapsed();
       }
       m_timer->start(interval);
     });
