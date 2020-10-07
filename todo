@@ -328,8 +328,13 @@ fill architecture could work well.
 1. Watching other users
 2. Recording sessions that you can jump into live (bit janky)
 
+10/7
+1. Prepare video (thanks gkpotter, arcofdream for feedback!)
+
 Todo by priority
 ----------------
+ - gh-pages
+ - test follow
  - emit and follow other users' their playheads too
 
  - midi input???
