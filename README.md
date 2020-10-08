@@ -45,7 +45,12 @@ available to make editing easy (for me at least). These are:
 6. Various dragging gestures
    - Drag in the keyboard view to modify velocity
    - Drag in the parameter view for linear editing
-  
+
+There are also a few (experimental) collaboration-related treats:
+1. Watching and following other users' cursors in a shared session
+2. Recording a session (via "history_save_file" in the settings file) and
+   playing it back later
+
 ## Thanks
 Again, huge thanks to everyone who helped support this! pxtone
 collage is a wonderful music tool and this is I hope is seen as
