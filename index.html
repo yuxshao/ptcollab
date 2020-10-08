@@ -1,0 +1,130 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>pxtone collab: collaborative music editor</title>
+  <meta name="description" content="pxtone collab: ">
+  <meta name="keywords" content="pxtone, ptcop, pttune, music, editor, collaborative, multiplayer, daw, chiptune, music, chipmusic">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+
+<body>
+  <header>
+    <div class="wrapper">
+      <img src="./logo.png" alt="pxtone collab" style="display:block;margin:auto" />
+      <img src="./multiplayer-music-editor.png" alt="multiplayer-music-editor" style="display:block;margin:auto" />
+      <!--<div style="text-align:center">multiplayer music editor</div>-->
+    </div>
+  </header>
+
+  <div class="wrapper">
+    <!-- <img src="./screenshot.png" alt="screenshot" style="width:100%" /> -->
+
+    <div style="position:relative; width:100%; padding-bottom: 56.25%">
+      <iframe style="position:absolute; top:0; left:0; width:100%; height:100%" src="https://www.youtube.com/embed/MqW87yrzHv8" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <section>
+      <h3>About</h3>
+      <p class="text">pxtone collab (ptcollab) is a piano-roll-based music editor where you can
+      collaborate with friends! It uses the same instrument and project file
+      formats as pxtone, a sample-based music editor developed by Pixel, the
+      creator of Cave Story and Kero Blaster.</p>
+    </section>
+
+    <section>
+      <h3>Features</h3>
+      <div class="text">Multiplayer editing is the primary feature of ptcollab. But, if you've
+      used pxtone collage before, most features you're familiar with are available
+      here in some form:
+      <ul style="margin-bottom:0">
+        <li>Note and parameter input</li>
+        <li>Instrument import (ptvoice, ogg, wav, ptnoise)</li>
+        <li>Song parameter settings (tempo, time signature)</li>
+      </ul></div>
+    </section>
+
+    <section>
+      <h3>Install</h3>
+      <div class="text">
+      <p>You can download the latest version <a
+        href="https://github.com/yuxshao/ptcollab/releases/latest/download/ptcollab.zip">here</a>.
+        If you're
+    running a different operating system, there are build instructions in the <a
+      href="https://github.com/yuxshao/ptcollab">source repo</a>, which also has changelogs and more information.</p>
+      </div>
+    </section>
+
+    <section>
+      <h3>Controls</h3>
+      <div class="text">
+      <p>The basic workflow is similar to pxtone collage's:</p>
+      <ul>
+        <li>Start a project</li>
+        <li>Load a number of instruments (voices)</li>
+        <li>Create a number of units assigned to voices</li>
+        <li>In the piano roll, left-click to input notes, and right-click to
+          delete.</li>
+      </ul>
+      <p>The primary difference is that starting a project now either starts
+      a server or connects to one. If you want to work alone, it's reasonable to
+      choose a port that's not open to the internet so that only you can connect to
+      it.</p>
+
+      <p>In addition to the piano roll, there are certain other song parameters
+      that come from pxtone collage:</p>
+      <ul>
+        <li>Loop points, via the measure ribbon above the piano roll</li>
+        <li>Automation for each unit, including pan, tuning, instrument, volume, portamento
+          via the bar below the piano roll</li>
+        <li>Tempo and time signature, via the Song tab</li>
+        <li>Echo and overdrive effects you can apply to groups of units, via the
+          Song tab</li>
+      </ul>
+
+      <p>There are also a bunch of shortcuts, some of which are in pxtone collage,
+      that make certain actions easier:</p>
+      <ul style="margin-bottom:0">
+        <li>Space to play/pause, Escape to stop, Shift+click to seek</li>
+        <li>Ctrl+Z and Ctrl+Y/Ctrl+Shift+Z to undo and redo</li>
+        <li>Ctrl+click to modify just pitch values, not notes (useful for portamento)</li>
+        <li>Selection
+          <ul>
+            <li>Ctrl+shift+click to select</li>
+            <li>Ctrl+A to select all</li>
+            <li>Ctrl+shift+rclick or Ctrl+D to deselect</li>
+          </ul>
+        </li>
+        <li>While something is selected:
+          <ul>
+            <li>(shift) up / down to transpose or shift
+              parameters. Add Ctrl to shift by an octave.</li>
+            <li>Ctrl+C and Ctrl+V to copy/paste</li>
+          </ul>
+        </li>
+        <li>Keyboard shortcuts for navigation:
+          <ul>
+            <li>W/S for next previous / next unit (PgUp / PgDn also work)</li>
+            <li>Q/A for previous / next parameter</li>
+            <li>F1..F4 for the tabs in the menu</li>
+            <li>1..9 for jumping to a unit directly</li>
+          </ul>
+        </li>
+        <li>Mouse-related shortcuts for view / mode changes
+          <ul>
+            <li>Middle-click drag to move around</li>
+            <li>Shift+wheel to scroll horizontally</li>
+            <li>Ctrl+(shift)+wheel to zoom vertically (horizontally)</li>
+            <li>Alt+wheel to change quantization</li>
+          </ul>
+        </li>
+      </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
