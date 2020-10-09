@@ -20,6 +20,7 @@ class BroadcastServer : public QObject {
   ~BroadcastServer();
   int port();
 
+  QHostAddress address();
  private slots:
   void newClient();
 

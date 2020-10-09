@@ -19,6 +19,7 @@ class HostDialog : public QDialog {
   QString username();
   std::optional<QString> port();
   int start(bool open_file);
+  void persistSettings();
 
   // TODO: Maybe validate here
 

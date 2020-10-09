@@ -111,6 +111,7 @@ BroadcastServer::~BroadcastServer() {
 }
 
 int BroadcastServer::port() { return m_server->serverPort(); }
+QHostAddress BroadcastServer::address() { return m_server->serverAddress(); }
 
 static QMap<qint64, QString> sessionMapping(
     const std::list<ServerSession *> &sessions) {

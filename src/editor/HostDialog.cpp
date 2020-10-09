@@ -14,10 +14,13 @@ HostDialog::HostDialog(QWidget *parent)
   QSettings settings;
   ui->usernameInput->setText(
       settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
-  ui->openProjectFile->setText(settings.value(PTCOP_DIR_KEY).toString());
   ui->portInput->setText(
       settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
   ui->portInput->setValidator(new QIntValidator(0, 65535, this));
+  ui->saveRecordingGroup->setChecked(
+      settings.value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
+  ui->saveRecordingGroup->setChecked(
+      settings.value(HOSTING_ENABLED_KEY, false).toBool());
 
   connect(ui->openProjectGroup, &QGroupBox::toggled, [this](bool on) {
     ui->openProjectBtn->setEnabled(on);
@@ -52,8 +55,10 @@ HostDialog::HostDialog(QWidget *parent)
 
 void HostDialog::selectProjectFile() {
   QSettings settings;
+  QString dir = settings.value(PTCOP_DIR_KEY).toString();
+  // ui->openProjectFile->setText(dir);
   QString filename = QFileDialog::getOpenFileName(
-      this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
+      this, "Open file", dir,
       "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
   if (filename.isEmpty()) return;
   ui->openProjectFile->setText(filename);
@@ -80,6 +85,34 @@ std::optional<QString> HostDialog::port() {
 
 int HostDialog::start(bool open_file) {
   ui->openProjectGroup->setChecked(open_file);
-  if (open_file) selectProjectFile();
+  if (open_file)
+    selectProjectFile();
+  else
+    ui->openProjectFile->setText("");
   return QDialog::exec();
+}
+
+void HostDialog::persistSettings() {
+  QSettings settings;
+
+  std::optional<QString> filename = projectName();
+  if (filename.has_value())
+    settings.setValue(PTCOP_DIR_KEY,
+                      QFileInfo(filename.value()).absolutePath());
+
+  filename = recordingName();
+  if (filename.has_value())
+    settings.setValue(PTREC_SAVE_DIR_KEY,
+                      QFileInfo(filename.value()).absolutePath());
+
+  if (port().has_value()) {
+    bool ok;
+    int p = port().value().toInt(&ok);
+    if (ok) settings.setValue(HOST_SERVER_PORT_KEY, p);
+  }
+
+  settings.setValue(SAVE_RECORDING_ENABLED_KEY,
+                    ui->saveRecordingGroup->isChecked());
+  settings.setValue(HOSTING_ENABLED_KEY, ui->hostGroup->isChecked());
+  settings.setValue(DISPLAY_NAME_KEY, username());
 }

@@ -345,16 +345,10 @@ void EditorWindow::Host(bool load_file) {
     if (result != QMessageBox::Yes) return;
   }
   if (!m_host_dialog->start(load_file)) return;
-  QSettings settings;
+  m_host_dialog->persistSettings();
 
   std::optional<QString> filename = m_host_dialog->projectName();
-  if (filename.has_value())
-    settings.setValue(PTCOP_DIR_KEY,
-                      QFileInfo(filename.value()).absolutePath());
-
   QString username = m_host_dialog->username();
-  settings.setValue(DISPLAY_NAME_KEY, username);
-
   std::optional<int> port = std::nullopt;
   if (m_host_dialog->port().has_value()) {
     bool ok;
@@ -363,7 +357,6 @@ void EditorWindow::Host(bool load_file) {
       QMessageBox::warning(this, tr("Invalid port"), tr("Invalid port"));
       return;
     }
-    settings.setValue(HOST_SERVER_PORT_KEY, p);
     port = p;
   }
 
@@ -383,7 +376,9 @@ void EditorWindow::Host(bool load_file) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
   }
-  m_server_status->setText(tr("Hosting on port %1").arg(m_server->port()));
+  m_server_status->setText(
+      tr("Hosting on %1:%2")
+          .arg(m_server->address().toString(), m_server->port()));
   m_filename = filename;
   m_modified = false;
   m_side_menu->setModified(false);
