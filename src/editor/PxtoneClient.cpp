@@ -42,11 +42,9 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
           [this, client_status](pxtnDescriptor &desc,
                                 QList<ServerAction> &history, qint64 uid) {
             HostAndPort host_and_port = m_client->currentlyConnectedTo();
-            client_status->setText(tr("Connected to %1:%2")
-                                       .arg(host_and_port.host)
-                                       .arg(host_and_port.port));
-            QMessageBox::information(nullptr, "Connected",
-                                     "Connected to server.");
+            client_status->setText(
+                tr("Connected to %1").arg(host_and_port.toString()));
+            qDebug() << "Connected to server" << host_and_port.toString();
             loadDescriptor(desc);
             emit connected();
             m_controller->setUid(uid);

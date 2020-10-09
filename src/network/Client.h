@@ -8,6 +8,7 @@
 struct HostAndPort {
   QString host;
   int port;
+  QString toString();
 };
 class Client : public QObject {
   Q_OBJECT

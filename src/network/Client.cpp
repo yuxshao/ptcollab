@@ -6,6 +6,9 @@
 #include <QMessageBox>
 
 #include "protocol/Hello.h"
+
+QString HostAndPort::toString() { return QString("%1:%2").arg(host).arg(port); }
+
 Client::Client(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
@@ -26,9 +29,11 @@ Client::Client(QObject *parent)
   m_write_stream.setVersion(QDataStream::Qt_5_5);
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
+
 HostAndPort Client::currentlyConnectedTo() {
   return HostAndPort{m_socket->peerAddress().toString(), m_socket->peerPort()};
 }
+
 void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->abort();
   m_socket->connectToHost(hostname, port);
