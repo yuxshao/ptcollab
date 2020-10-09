@@ -18,7 +18,7 @@ Client::Client(QObject *parent)
   connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, [this]() {
     m_received_hello = false;
-    if (!m_suppress_disconnect) emit disconnected();
+    emit disconnected(m_suppress_disconnect);
     m_suppress_disconnect = false;
   });
 

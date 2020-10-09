@@ -23,7 +23,7 @@ class Client : public QObject {
  signals:
   void connected(pxtnDescriptor &desc, QList<ServerAction> &history,
                  qint64 uid);
-  void disconnected();
+  void disconnected(bool suppress);
   void receivedAction(ServerAction &m);
   void errorOccurred(QString error);
 

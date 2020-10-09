@@ -11,6 +11,7 @@
 
 struct RemoteEditState {
   std::optional<EditState> state;
+  std::optional<quint64> last_ping;
   QString user;
 };
 
@@ -28,6 +29,8 @@ class PxtoneClient : public QObject {
   EditState m_edit_state;
   QAudioOutput *m_audio;
   PxtoneIODevice *m_pxtn_device;
+  std::optional<quint64> m_last_ping;
+  QTimer *m_ping_timer;
   Clipboard *m_clipboard;
 
  signals:
@@ -35,6 +38,7 @@ class PxtoneClient : public QObject {
   void editStateChanged(const EditState &m_edit_state);
   void playStateChanged(bool playing);
   void followActivity(const EditState &r);
+  void updatePing(std::optional<qint64> ping_length);
   void connected();
 
  public:

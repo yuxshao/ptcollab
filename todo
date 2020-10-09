@@ -338,9 +338,13 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
- - gh-pages
- - test follow
+ - gh-pages - update style?
+ - test follow, add syncing of playhead
+ - ping, and show other ping (msg includes last duration)
  - emit and follow other users' their playheads too
+ - cross-platform binaries
+ - update thanks
+ - spice up the demo song
 
  - midi input???
    - start with qwerty input

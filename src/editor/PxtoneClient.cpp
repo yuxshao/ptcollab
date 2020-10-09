@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QSettings>
+#include <QTimer>
 
 #include "ComboOptions.h"
 #include "Settings.h"
@@ -15,12 +16,16 @@ QList<std::pair<qint64, QString>> getUserList(
   return list;
 }
 
+using namespace std::chrono_literals;
+const static std::chrono::milliseconds PING_INTERVAL = 5000ms;
+
 PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
                            QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
       m_client(new Client(this)),
       m_following_user(std::nullopt),
+      m_ping_timer(new QTimer(this)),
       m_clipboard(new Clipboard(pxtn, this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
@@ -38,6 +43,10 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
   connect(m_pxtn_device, &PxtoneIODevice::playingChanged, this,
           &PxtoneClient::playStateChanged);
 
+  connect(m_ping_timer, &QTimer::timeout, [this]() {
+    sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
+  });
+
   connect(m_client, &Client::connected,
           [this, client_status](pxtnDescriptor &desc,
                                 QList<ServerAction> &history, qint64 uid) {
@@ -49,14 +58,19 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
             emit connected();
             m_controller->setUid(uid);
             for (ServerAction &a : history) processRemoteAction(a);
+            m_ping_timer->start(PING_INTERVAL);
           });
-  connect(m_client, &Client::disconnected, [this, client_status]() {
-    client_status->setText(tr("Not connected"));
-    m_remote_edit_states.clear();
-    emit userListChanged(getUserList(m_remote_edit_states));
-    QMessageBox::information(nullptr, "Disconnected",
-                             "Disconnected from server.");
-  });
+  connect(m_client, &Client::disconnected,
+          [this, client_status](bool suppress_alert) {
+            client_status->setText(tr("Not connected"));
+            m_remote_edit_states.clear();
+            emit userListChanged(getUserList(m_remote_edit_states));
+            if (!suppress_alert)
+              QMessageBox::information(nullptr, "Disconnected",
+                                       "Disconnected from server.");
+            m_last_ping = std::nullopt;
+            updatePing(m_last_ping);
+          });
   connect(m_client, &Client::errorOccurred, [](QString error) {
     QMessageBox::information(nullptr, "Connection error",
                              tr("Connection error: %1").arg(error));
@@ -213,6 +227,19 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                           emit followActivity(s);
                       }
                     },
+                    [this, uid](const Ping &s) {
+                      auto it = m_remote_edit_states.find(uid);
+                      if (it == m_remote_edit_states.end())
+                        qWarning()
+                            << "Received ping for unknown session" << uid;
+                      else
+                        it->second.last_ping = s.last_ping_length;
+                      if (uid == m_controller->uid()) {
+                        m_last_ping =
+                            QDateTime::currentMSecsSinceEpoch() - s.now;
+                        updatePing(m_last_ping);
+                      }
+                    },
                     [this, uid](const EditAction &s) {
                       m_controller->applyRemoteAction(s, uid);
                     },
@@ -319,7 +346,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
               qWarning() << "Remote session already exists for uid" << uid
                          << "; overwriting";
             m_remote_edit_states[uid] =
-                RemoteEditState{std::nullopt, s.username};
+                RemoteEditState{std::nullopt, std::nullopt, s.username};
             emit userListChanged(getUserList(m_remote_edit_states));
           },
           [this, uid](const DeleteSession &s) {

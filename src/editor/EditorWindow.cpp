@@ -32,6 +32,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_server_status(new QLabel("Not hosting", this)),
       m_client_status(new QLabel("Not connected", this)),
       m_fps_status(new QLabel("FPS", this)),
+      m_ping_status(new QLabel("", this)),
       m_modified(false),
       m_host_dialog(new HostDialog),
       m_connect_dialog(new ConnectDialog),
@@ -52,6 +53,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
   statusBar()->addPermanentWidget(m_fps_status);
+  statusBar()->addPermanentWidget(m_ping_status);
   statusBar()->addPermanentWidget(m_server_status);
   statusBar()->addPermanentWidget(m_client_status);
 
@@ -99,6 +101,18 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   connect(m_client->controller(), &PxtoneController::newSong,
           [this]() { m_scroll_area->horizontalScrollBar()->setValue(0); });
+  connect(m_client, &PxtoneClient::updatePing,
+          [this](std::optional<qint64> ping_ms) {
+            if (ping_ms.has_value()) {
+              QString s;
+              if (ping_ms > 1000)
+                s = QString("%1s").arg(ping_ms.value() / 1000);
+              else
+                s = QString("%1ms").arg(ping_ms.value());
+              m_ping_status->setText(QString("Ping: %1").arg(s));
+            } else
+              m_ping_status->setText("");
+          });
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -429,16 +443,10 @@ void EditorWindow::save() {
 
 void EditorWindow::connectToHost() {
   if (!maybeSave()) return;
-  if (m_server) {
-    auto result =
-        QMessageBox::question(this, "Server running", "Stop the server first?");
-    if (result != QMessageBox::Yes)
-      return;
-    else {
-      delete m_server;
-      m_server = nullptr;
-    }
-  }
+  if (m_server &&
+      QMessageBox::question(this, "Server running", "Stop the server first?") !=
+          QMessageBox::Yes)
+    return;
 
   if (!m_connect_dialog->exec()) return;
   m_connect_dialog->persistSettings();
@@ -465,5 +473,9 @@ void EditorWindow::connectToHost() {
   m_side_menu->setModified(false);
 
   m_client->disconnectFromServerSuppressSignal();
+  if (m_server) {
+    delete m_server;
+    m_server = nullptr;
+  }
   m_client->connectToServer(host, port, m_connect_dialog->username());
 }

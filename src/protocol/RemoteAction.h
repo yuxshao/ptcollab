@@ -4,6 +4,7 @@
 
 #include <QCryptographicHash>
 #include <QDataStream>
+#include <QDateTime>
 #include <variant>
 #include <vector>
 
@@ -412,14 +413,36 @@ inline QTextStream &operator<<(QTextStream &out, const Set &a) {
 }
 }  // namespace Woice
 
+struct Ping {
+  qint64 now;
+  std::optional<qint64> last_ping_length;
+};
+inline QDataStream &operator<<(QDataStream &out, const Ping &a) {
+  out << a.now << a.last_ping_length;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, Ping &a) {
+  in >> a.now >> a.last_ping_length;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const Ping &a) {
+  if (a.last_ping_length.has_value())
+    out << "Ping(" << a.now << ", " << a.last_ping_length.value() << ")";
+  else
+    out << "Ping(" << a.now << ")";
+  return out;
+}
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, MoveUnit,
                  AddWoice, RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
-                 Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set>;
+                 Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set,
+                 Ping>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },
+                        [&ret](const Ping &) { ret = false; },
                         [&ret](const auto &) { ret = true; }},
              a);
   return ret;

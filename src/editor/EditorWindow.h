@@ -52,7 +52,7 @@ class EditorWindow : public QMainWindow {
   PxtoneClient* m_client;
   MooClock* m_moo_clock;
   std::optional<QString> m_filename;
-  QLabel *m_server_status, *m_client_status, *m_fps_status;
+  QLabel *m_server_status, *m_client_status, *m_fps_status, *m_ping_status;
   bool m_modified;
   HostDialog* m_host_dialog;
   ConnectDialog* m_connect_dialog;
