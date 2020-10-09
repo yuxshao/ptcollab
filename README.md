@@ -69,4 +69,5 @@ let me know if I forgot anyone:
    discussion and consulting!
 8. Jade for testing, finding UI bugs, and providing valuable
    feedback and suggestions!
-9. Everyone in the pxtone discord servers!
+9. gkpotter and arcofdream for helping getting this ready for release!
+10. Everyone in the pxtone discord servers!
