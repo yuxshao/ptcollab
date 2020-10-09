@@ -20,7 +20,8 @@ QList<UserListEntry> getUserList(
 using namespace std::chrono_literals;
 const static std::chrono::milliseconds PING_INTERVAL = 3000ms;
 
-PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
+PxtoneClient::PxtoneClient(pxtnService *pxtn,
+                           ConnectionStatusLabel *connection_status,
                            QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
@@ -50,22 +51,22 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
     sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
   });
 
-  connect(m_client, &Client::connected,
-          [this, client_status](pxtnDescriptor &desc,
+  connect(
+      m_client, &Client::connected,
+      [this, connection_status](pxtnDescriptor &desc,
                                 QList<ServerAction> &history, qint64 uid) {
-            HostAndPort host_and_port = m_client->currentlyConnectedTo();
-            client_status->setText(
-                tr("Connected to %1").arg(host_and_port.toString()));
-            qDebug() << "Connected to server" << host_and_port.toString();
-            loadDescriptor(desc);
-            emit connected();
-            m_controller->setUid(uid);
-            for (ServerAction &a : history) processRemoteAction(a);
-            m_ping_timer->start(PING_INTERVAL);
-          });
+        HostAndPort host_and_port = m_client->currentlyConnectedTo();
+        connection_status->setClientConnectionState(host_and_port.toString());
+        qDebug() << "Connected to server" << host_and_port.toString();
+        loadDescriptor(desc);
+        emit connected();
+        m_controller->setUid(uid);
+        for (ServerAction &a : history) processRemoteAction(a);
+        m_ping_timer->start(PING_INTERVAL);
+      });
   connect(m_client, &Client::disconnected,
-          [this, client_status](bool suppress_alert) {
-            client_status->setText(tr("Not connected"));
+          [this, connection_status](bool suppress_alert) {
+            connection_status->setClientConnectionState(std::nullopt);
             m_remote_edit_states.clear();
             emit userListChanged(getUserList(m_remote_edit_states));
             if (!suppress_alert)

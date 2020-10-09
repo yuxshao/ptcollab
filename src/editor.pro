@@ -31,6 +31,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 # Input
 HEADERS += \
            editor/ConnectDialog.h \
+           editor/ConnectionStatusLabel.h \
            editor/FileSettings.h \
            editor/HostDialog.h \
            editor/Settings.h \
@@ -99,6 +100,7 @@ FORMS += \
     editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
+           editor/ConnectionStatusLabel.cpp \
            editor/FileSettings.cpp \
            editor/HostDialog.cpp \
            editor/Settings.cpp \

@@ -29,8 +29,7 @@ EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
       m_server(nullptr),
       m_filename(""),
-      m_server_status(new QLabel("Not hosting", this)),
-      m_client_status(new QLabel("Not connected", this)),
+      m_connection_status(new ConnectionStatusLabel(this)),
       m_fps_status(new QLabel("FPS", this)),
       m_ping_status(new QLabel("", this)),
       m_modified(false),
@@ -47,15 +46,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
 
-  m_client = new PxtoneClient(&m_pxtn, m_client_status, this);
+  m_client = new PxtoneClient(&m_pxtn, m_connection_status, this);
   m_moo_clock = new MooClock(m_client);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
   statusBar()->addPermanentWidget(m_fps_status);
   statusBar()->addPermanentWidget(m_ping_status);
-  statusBar()->addPermanentWidget(m_server_status);
-  statusBar()->addPermanentWidget(m_client_status);
+  statusBar()->addPermanentWidget(m_connection_status);
 
   m_side_menu = new PxtoneSideMenu(m_client, this);
   m_measure_splitter = new QFrame(m_splitter);
@@ -382,7 +380,7 @@ void EditorWindow::Host(bool load_file) {
     m_client->disconnectFromServerSuppressSignal();
     delete m_server;
     m_server = nullptr;
-    m_server_status->setText("Not hosting");
+    m_connection_status->setServerConnectionState(std::nullopt);
     qDebug() << "Stopped old server";
   }
 
@@ -395,9 +393,10 @@ void EditorWindow::Host(bool load_file) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
   }
-  m_server_status->setText(tr("Hosting on %1:%2")
-                               .arg(m_server->address().toString())
-                               .arg(m_server->port()));
+  m_connection_status->setServerConnectionState(
+      QString("%1:%2")
+          .arg(m_server->address().toString())
+          .arg(m_server->port()));
   m_filename = filename;
   m_modified = false;
   m_side_menu->setModified(false);

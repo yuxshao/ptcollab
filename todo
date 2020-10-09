@@ -337,6 +337,7 @@ fill architecture could work well.
 3. connect dialog
 4. Show ping
 5. Watch other users includes getting updates for their play states.
+6. Don't show 'hosting on' and 'connected to' simultaneously
 
 Todo by priority
 ----------------
@@ -344,7 +345,6 @@ Todo by priority
  - test watching other users
  - cross-platform binaries
  - update thanks
- - don't show 'hosting on' and 'connected to' simultaneously
  - spice up the demo song
 
  - midi input???

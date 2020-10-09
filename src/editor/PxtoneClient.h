@@ -6,6 +6,7 @@
 #include <QObject>
 
 #include "Clipboard.h"
+#include "ConnectionStatusLabel.h"
 #include "PxtoneController.h"
 #include "network/Client.h"
 
@@ -48,7 +49,7 @@ class PxtoneClient : public QObject {
   void connected();
 
  public:
-  PxtoneClient(pxtnService *pxtn, QLabel *client_status,
+  PxtoneClient(pxtnService *pxtn, ConnectionStatusLabel *connection_status,
 
                QObject *parent = nullptr);
   void applyAction(const std::list<Action::Primitive> &);
