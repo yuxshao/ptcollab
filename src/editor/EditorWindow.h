@@ -7,6 +7,7 @@
 #include <QScrollArea>
 #include <QSplitter>
 
+#include "ConnectDialog.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
@@ -54,6 +55,7 @@ class EditorWindow : public QMainWindow {
   QLabel *m_server_status, *m_client_status, *m_fps_status;
   bool m_modified;
   HostDialog* m_host_dialog;
+  ConnectDialog* m_connect_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

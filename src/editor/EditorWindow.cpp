@@ -34,6 +34,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_fps_status(new QLabel("FPS", this)),
       m_modified(false),
       m_host_dialog(new HostDialog),
+      m_connect_dialog(new ConnectDialog),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -425,8 +426,6 @@ void EditorWindow::save() {
     saveToFile(m_filename.value());
 }
 
-const QString CONNECT_SERVER_NAME_KEY("connect_server_name");
-const QString CONNECT_SERVER_PORT_KEY("connect_server_port");
 void EditorWindow::connectToHost() {
   if (!maybeSave()) return;
   if (m_server) {
@@ -439,30 +438,30 @@ void EditorWindow::connectToHost() {
       m_server = nullptr;
     }
   }
-  bool ok;
+
+  // TODO: Don't show 'disconnected' if it's your local server.
+  if (!m_connect_dialog->exec()) return;
+  m_connect_dialog->persistSettings();
   QSettings settings;
-  QString host = QInputDialog::getText(
-      this, "Host", "What host should I connect to?", QLineEdit::Normal,
-      settings.value(CONNECT_SERVER_NAME_KEY, "localhost").toString(), &ok);
-  if (!ok) return;
-  settings.setValue(CONNECT_SERVER_NAME_KEY, host);
+  QStringList parsed_host_and_port = m_connect_dialog->address().split(":");
+  if (parsed_host_and_port.length() != 2) {
+    QMessageBox::warning(this, tr("Invalid address"),
+                         tr("Address must be of the form HOST:PORT."));
+    return;
+  }
+  QString host = parsed_host_and_port[0];
 
-  int port = QInputDialog::getInt(
-      this, "Port", "What port should I connect to?",
-      settings.value(CONNECT_SERVER_PORT_KEY, DEFAULT_PORT).toInt(), 0, 65536,
-      1, &ok);
-  if (!ok) return;
-  settings.setValue(CONNECT_SERVER_PORT_KEY, port);
-
-  QString username = QInputDialog::getText(
-      this, "Username", "What's your display name?", QLineEdit::Normal,
-      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString(), &ok);
-  if (!ok) return;
-  settings.setValue(DISPLAY_NAME_KEY, username);
+  bool ok;
+  int port = parsed_host_and_port[1].toInt(&ok);
+  if (!ok) {
+    QMessageBox::warning(this, tr("Invalid address"),
+                         tr("Port must be a number."));
+    return;
+  }
 
   // TODO: some validation here? e.g., maybe disallow exotic chars in case
   // type isn't supported on other clients?
   m_modified = false;
   m_side_menu->setModified(false);
-  m_client->connectToServer(host, port, username);
+  m_client->connectToServer(host, port, m_connect_dialog->username());
 }

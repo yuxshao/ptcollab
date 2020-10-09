@@ -9,3 +9,5 @@ const int DEFAULT_PORT = 15835;
 
 const QString SAVE_RECORDING_ENABLED_KEY("save_recording_enabled");
 const QString HOSTING_ENABLED_KEY("hosting_enabled");
+
+const QString CONNECT_SERVER_KEY("connect_server");
