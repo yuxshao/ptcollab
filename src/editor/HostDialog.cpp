@@ -19,7 +19,7 @@ HostDialog::HostDialog(QWidget *parent)
   ui->portInput->setValidator(new QIntValidator(0, 65535, this));
   ui->saveRecordingGroup->setChecked(
       settings.value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
-  ui->saveRecordingGroup->setChecked(
+  ui->hostGroup->setChecked(
       settings.value(HOSTING_ENABLED_KEY, false).toBool());
 
   connect(ui->openProjectGroup, &QGroupBox::toggled, [this](bool on) {
