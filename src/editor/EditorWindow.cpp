@@ -14,6 +14,7 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "ComboOptions.h"
+#include "FileSettings.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
@@ -32,6 +33,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_client_status(new QLabel("Not connected", this)),
       m_fps_status(new QLabel("FPS", this)),
       m_modified(false),
+      m_host_dialog(new HostDialog),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -227,7 +229,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->cycleCurrentUnit(1);
       break;
     case Qt::Key_I:
-      m_client->setFollowing(0);
+      m_host_dialog->exec();
       break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
@@ -334,11 +336,6 @@ void EditorWindow::closeEvent(QCloseEvent *event) {
     event->ignore();
 }
 
-const QString PTCOP_DIR_KEY("ptcop_dir");
-const QString DISPLAY_NAME_KEY("display_name");
-const QString HOST_SERVER_PORT_KEY("host_server_port");
-constexpr int DEFAULT_PORT = 15835;
-
 static const QString HISTORY_SAVE_FILE = "history_save_file";
 void EditorWindow::Host(bool load_file) {
   if (!maybeSave()) return;
@@ -347,31 +344,28 @@ void EditorWindow::Host(bool load_file) {
                                         "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
-  QString filename = "";
+  if (!m_host_dialog->start(load_file)) return;
   QSettings settings;
-  if (load_file) {
-    filename = QFileDialog::getOpenFileName(
-        this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
-        "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
 
-    if (!filename.isEmpty())
-      settings.setValue(PTCOP_DIR_KEY, QFileInfo(filename).absolutePath());
-  }
+  std::optional<QString> filename = m_host_dialog->projectName();
+  if (filename.has_value())
+    settings.setValue(PTCOP_DIR_KEY,
+                      QFileInfo(filename.value()).absolutePath());
 
-  if (load_file && filename.isEmpty()) return;
-  bool ok;
-  int port = QInputDialog::getInt(
-      this, "Port", "What port should this server run on?",
-      settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toInt(), 0, 65536, 1,
-      &ok);
-  if (!ok) return;
-  settings.setValue(HOST_SERVER_PORT_KEY, port);
-
-  QString username = QInputDialog::getText(
-      this, "Username", "What's your display name?", QLineEdit::Normal,
-      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString(), &ok);
-  if (!ok) return;
+  QString username = m_host_dialog->username();
   settings.setValue(DISPLAY_NAME_KEY, username);
+
+  std::optional<int> port = std::nullopt;
+  if (m_host_dialog->port().has_value()) {
+    bool ok;
+    int p = m_host_dialog->port().value().toInt(&ok);
+    if (!ok) {
+      QMessageBox::warning(this, tr("Invalid port"), tr("Invalid port"));
+      return;
+    }
+    settings.setValue(HOST_SERVER_PORT_KEY, p);
+    port = p;
+  }
 
   if (m_server) {
     delete m_server;
@@ -379,24 +373,12 @@ void EditorWindow::Host(bool load_file) {
     m_server_status->setText("Not hosting");
     qDebug() << "Stopped old server";
   }
+
+  std::optional<QString> recording_save_file = m_host_dialog->recordingName();
+
   try {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    QString history_save = settings.value(HISTORY_SAVE_FILE, "").toString();
-    if (load_file) {
-      if (QFileInfo(filename).suffix() == "ptrec")
-        m_server =
-            new BroadcastServer(QByteArray(), port, filename, history_save,
-                                this);  // , 3000, 0.3);
-      else {
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly))
-          throw QString("Could not read file.");
-        m_server = new BroadcastServer(file.readAll(), port, "", history_save,
-                                       this);  //, 3000, 0.3);
-      }
-    } else
-      m_server = new BroadcastServer(QByteArray(), port, "", history_save,
-                                     this);  // , 3000, 0.3);
+    m_server = new BroadcastServer(filename, port, recording_save_file,
+                                   this);  // , 3000, 0.3);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
@@ -406,7 +388,7 @@ void EditorWindow::Host(bool load_file) {
   m_modified = false;
   m_side_menu->setModified(false);
 
-  m_client->connectToServer("localhost", port, username);
+  m_client->connectToServer("localhost", m_server->port(), username);
 }
 
 bool EditorWindow::saveToFile(QString filename) {
@@ -443,10 +425,10 @@ void EditorWindow::saveAs() {
   if (saveToFile(filename)) m_filename = filename;
 }
 void EditorWindow::save() {
-  if (m_filename == "")
+  if (!m_filename.has_value())
     saveAs();
   else
-    saveToFile(m_filename);
+    saveToFile(m_filename.value());
 }
 
 const QString CONNECT_SERVER_NAME_KEY("connect_server_name");

@@ -9,6 +9,7 @@
 
 #include "EditState.h"
 #include "EditorScrollArea.h"
+#include "HostDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
@@ -49,9 +50,10 @@ class EditorWindow : public QMainWindow {
   BroadcastServer* m_server;
   PxtoneClient* m_client;
   MooClock* m_moo_clock;
-  QString m_filename;
+  std::optional<QString> m_filename;
   QLabel *m_server_status, *m_client_status, *m_fps_status;
   bool m_modified;
+  HostDialog* m_host_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

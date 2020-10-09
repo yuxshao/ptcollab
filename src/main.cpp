@@ -10,7 +10,9 @@
 const static QString stylesheet =
     "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
     "QLineEdit { background-color: #00003e; color: #00F080; font-weight: bold; "
-    "}";
+    "}"
+    "QLineEdit:disabled { background-color: #343255; color: #9D9784; }"
+    "QPushButton:disabled { color: #9D9784; }";
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
@@ -79,13 +81,9 @@ int main(int argc, char *argv[]) {
     else {
       qInfo() << "Running on port" << port;
       QString filename = parser.value(serverFileOption);
-      QByteArray data;
-      if (filename != "") {
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly)) qFatal("Could not read file.");
-        data = file.readAll();
-      }
-      BroadcastServer s(std::move(data), port);
+      BroadcastServer s(
+          (filename == "" ? std::nullopt : std::optional(filename)), port,
+          std::nullopt);
 
       return a.exec();
     }

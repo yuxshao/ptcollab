@@ -30,6 +30,9 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
+           editor/ConnectDialog.h \
+           editor/FileSettings.h \
+           editor/HostDialog.h \
            editor/Settings.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
@@ -89,10 +92,15 @@ HEADERS += \
            network/Client.h \
            network/ServerSession.h
 FORMS += \
+    editor/ConnectDialog.ui \
     editor/EditorWindow.ui \
+    editor/HostDialog.ui \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
+           editor/ConnectDialog.cpp \
+           editor/FileSettings.cpp \
+           editor/HostDialog.cpp \
            editor/Settings.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \

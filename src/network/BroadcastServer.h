@@ -13,10 +13,10 @@
 class BroadcastServer : public QObject {
   Q_OBJECT
  public:
-  // TODO: Add a configurable delay
-  BroadcastServer(const QByteArray &data, int port, QString load_history = "",
-                  QString save_history = "", QObject *parent = nullptr,
-                  int delay_msec = 0, double drop_rate = 0);
+  BroadcastServer(std::optional<QString> filename, std::optional<int> port,
+                  std::optional<QString> save_history,
+                  QObject *parent = nullptr, int delay_msec = 0,
+                  double drop_rate = 0);
   ~BroadcastServer();
   int port();
 
