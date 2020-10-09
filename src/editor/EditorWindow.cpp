@@ -361,6 +361,7 @@ void EditorWindow::Host(bool load_file) {
   }
 
   if (m_server) {
+    m_client->disconnectFromServerSuppressSignal();
     delete m_server;
     m_server = nullptr;
     m_server_status->setText("Not hosting");
@@ -439,7 +440,6 @@ void EditorWindow::connectToHost() {
     }
   }
 
-  // TODO: Don't show 'disconnected' if it's your local server.
   if (!m_connect_dialog->exec()) return;
   m_connect_dialog->persistSettings();
   QSettings settings;
@@ -463,5 +463,7 @@ void EditorWindow::connectToHost() {
   // type isn't supported on other clients?
   m_modified = false;
   m_side_menu->setModified(false);
+
+  m_client->disconnectFromServerSuppressSignal();
   m_client->connectToServer(host, port, m_connect_dialog->username());
 }

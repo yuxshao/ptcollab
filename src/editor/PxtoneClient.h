@@ -46,6 +46,7 @@ class PxtoneClient : public QObject {
   void removeCurrentUnit();
   void seekMoo(int64_t clock);
   void connectToServer(QString hostname, quint16 port, QString username);
+  void disconnectFromServerSuppressSignal();
   void changeEditState(std::function<void(EditState &)>,
                        bool preserveFollow = false);
   void togglePlayState();

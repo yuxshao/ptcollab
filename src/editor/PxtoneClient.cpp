@@ -180,6 +180,10 @@ void PxtoneClient::connectToServer(QString hostname, quint16 port,
   m_client->connectToServer(hostname, port, username);
 }
 
+void PxtoneClient::disconnectFromServerSuppressSignal() {
+  m_client->disconnectFromServerSuppressSignal();
+}
+
 void PxtoneClient::changeEditState(std::function<void(EditState &)> f,
                                    bool preserveFollow) {
   f(m_edit_state);

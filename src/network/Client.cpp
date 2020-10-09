@@ -18,7 +18,8 @@ Client::Client(QObject *parent)
   connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, [this]() {
     m_received_hello = false;
-    emit disconnected();
+    if (!m_suppress_disconnect) emit disconnected();
+    m_suppress_disconnect = false;
   });
 
   connect(m_socket, &QTcpSocket::errorOccurred,
@@ -47,6 +48,13 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
     disconnect(*conn);
     delete conn;
   });
+}
+
+void Client::disconnectFromServerSuppressSignal() {
+  if (m_socket->state() == QAbstractSocket::ConnectedState) {
+    m_suppress_disconnect = true;
+    m_socket->disconnectFromHost();
+  }
 }
 
 void Client::sendAction(const ClientAction &m) {

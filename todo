@@ -334,13 +334,13 @@ fill architecture could work well.
 10/8
 1. new session dialog
 2. scroll to start on song load, reset some other state
+3. connect dialog
 
 Todo by priority
 ----------------
  - gh-pages
  - test follow
  - emit and follow other users' their playheads too
- - connect dialog
 
  - midi input???
    - start with qwerty input

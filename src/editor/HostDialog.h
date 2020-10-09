@@ -25,7 +25,7 @@ class HostDialog : public QDialog {
 
  private:
   Ui::HostDialog *ui;
-  void selectProjectFile();
+  bool selectProjectFile();
 };
 
 #endif  // HOSTDIALOG_H

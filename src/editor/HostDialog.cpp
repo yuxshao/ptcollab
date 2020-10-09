@@ -53,15 +53,16 @@ HostDialog::HostDialog(QWidget *parent)
   });
 }
 
-void HostDialog::selectProjectFile() {
+bool HostDialog::selectProjectFile() {
   QSettings settings;
   QString dir = settings.value(PTCOP_DIR_KEY).toString();
   // ui->openProjectFile->setText(dir);
   QString filename = QFileDialog::getOpenFileName(
       this, "Open file", dir,
       "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
-  if (filename.isEmpty()) return;
+  if (filename.isEmpty()) return false;
   ui->openProjectFile->setText(filename);
+  return true;
 }
 
 HostDialog::~HostDialog() { delete ui; }
@@ -85,9 +86,9 @@ std::optional<QString> HostDialog::port() {
 
 int HostDialog::start(bool open_file) {
   ui->openProjectGroup->setChecked(open_file);
-  if (open_file)
-    selectProjectFile();
-  else
+  if (open_file) {
+    if (!selectProjectFile()) return QDialog::Rejected;
+  } else
     ui->openProjectFile->setText("");
   return QDialog::exec();
 }

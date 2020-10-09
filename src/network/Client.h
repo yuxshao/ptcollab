@@ -17,6 +17,7 @@ class Client : public QObject {
 
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port, QString username);
+  void disconnectFromServerSuppressSignal();
   void sendAction(const ClientAction &m);
   qint64 uid();
  signals:
@@ -32,6 +33,7 @@ class Client : public QObject {
   // currently in the middle of a fragmented read.
   QDataStream m_write_stream, m_read_stream;
   bool m_received_hello;
+  bool m_suppress_disconnect;
   qint64 m_uid;
   void tryToRead();
   void tryToStart();
