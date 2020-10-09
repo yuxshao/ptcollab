@@ -92,6 +92,10 @@ EditorWindow::EditorWindow(QWidget *parent)
           e.scale.pitchPerPx =
               e.scale.pitchPerPx * e.viewport.height() / old.height();
           e.viewport = old;
+
+          // disable follow playhead b/c otherwise it could compete with follow
+          // user for adjusting scrollbars.
+          e.m_follow_playhead = false;
           m_scroll_area->horizontalScrollBar()->setValue(startClock /
                                                          e.scale.clockPerPx);
           m_scroll_area->verticalScrollBar()->setValue(startPitch /

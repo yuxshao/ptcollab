@@ -46,6 +46,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
 
   connect(m_ping_timer, &QTimer::timeout, [this]() {
     emit userListChanged(getUserList(m_remote_edit_states));
+    sendPlayState(false);
     sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
   });
 
@@ -132,11 +133,17 @@ bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }
 // still waits for the buffer to drain (instead of flushing and throwing away)
 void PxtoneClient::togglePlayState() {
   m_pxtn_device->setPlaying(!m_pxtn_device->playing());
+  sendPlayState(true);
+}
+
+void PxtoneClient::sendPlayState(bool from_action) {
+  sendAction(PlayState{pxtn()->moo_get_now_clock(*moo()),
+                       m_pxtn_device->playing(), from_action});
 }
 
 void PxtoneClient::resetAndSuspendAudio() {
-  seekMoo(0);
   m_pxtn_device->setPlaying(false);
+  seekMoo(0);
 }
 
 void PxtoneClient::setFollowing(std::optional<qint64> following) {
@@ -144,8 +151,12 @@ void PxtoneClient::setFollowing(std::optional<qint64> following) {
 
   if (following.has_value() && following != m_controller->uid()) {
     const auto it = m_remote_edit_states.find(following.value());
-    if (it != m_remote_edit_states.end() && it->second.state.has_value())
+    if (it != m_remote_edit_states.end() && it->second.state.has_value()) {
+      // stop audio, that the next playstate msg causes us to sync if the other
+      // user's playing.
+      resetAndSuspendAudio();
       emit followActivity(it->second.state.value());
+    }
   }
 }
 
@@ -189,7 +200,10 @@ void PxtoneClient::removeCurrentUnit() {
     m_client->sendAction(RemoveUnit{m_edit_state.m_current_unit_id});
 }
 
-void PxtoneClient::seekMoo(int64_t clock) { m_controller->seekMoo(clock); }
+void PxtoneClient::seekMoo(int64_t clock) {
+  m_controller->seekMoo(clock);
+  sendPlayState(true);
+}
 
 void PxtoneClient::connectToServer(QString hostname, quint16 port,
                                    QString username) {
@@ -240,6 +254,18 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         m_last_ping =
                             QDateTime::currentMSecsSinceEpoch() - s.now;
                         updatePing(m_last_ping);
+                      }
+                    },
+                    [this, uid](const PlayState &s) {
+                      if (uid == following_uid() &&
+                          uid != m_controller->uid()) {
+                        // Since playstates come with heartbeats, we only reset
+                        // the moo for non-heartbeat updates or if there's a
+                        // drastic diff.
+                        if (m_pxtn_device->playing() != s.playing ||
+                            s.from_action)
+                          m_controller->seekMoo(s.clock);
+                        m_pxtn_device->setPlaying(s.playing);
                       }
                     },
                     [this, uid](const EditAction &s) {

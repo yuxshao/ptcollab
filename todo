@@ -336,14 +336,15 @@ fill architecture could work well.
 2. scroll to start on song load, reset some other state
 3. connect dialog
 4. Show ping
+5. Watch other users includes getting updates for their play states.
 
 Todo by priority
 ----------------
  - gh-pages - update style?
- - test follow, add syncing of playhead
- - emit and follow other users' their playheads too
+ - test watching other users
  - cross-platform binaries
  - update thanks
+ - don't show 'hosting on' and 'connected to' simultaneously
  - spice up the demo song
 
  - midi input???

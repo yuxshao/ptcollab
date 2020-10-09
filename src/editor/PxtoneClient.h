@@ -92,6 +92,7 @@ class PxtoneClient : public QObject {
  private:
   void processRemoteAction(const ServerAction &a);
   void loadDescriptor(pxtnDescriptor &desc);
+  void sendPlayState(bool from_action);
 };
 
 #endif  // PXTONECLIENT_H
