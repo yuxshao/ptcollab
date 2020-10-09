@@ -410,6 +410,7 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit endRefresh();
   emit measureNumChanged();
   emit tempoBeatChanged();
+  emit newSong();
   return true;
 }
 

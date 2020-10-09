@@ -68,6 +68,8 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
+  changeEditState([](EditState &e) { e.m_current_unit_id = 0; });
+  m_following_user.reset();
 
   resetAndSuspendAudio();
   m_pxtn_device->open(QIODevice::ReadOnly);

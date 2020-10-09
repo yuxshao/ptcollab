@@ -96,6 +96,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         },
         true);
   });
+  connect(m_client->controller(), &PxtoneController::newSong,
+          [this]() { m_scroll_area->horizontalScrollBar()->setValue(0); });
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
