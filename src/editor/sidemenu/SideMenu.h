@@ -69,7 +69,7 @@ class SideMenu : public QWidget {
   void setCurrentWoice(int unit_no);
   void setPlay(bool);
   void setModified(bool);
-  void setUserList(QList<std::pair<qint64, QString>> users);
+  void setUserList(QList<UserListEntry> users);
   void setTempo(int tempo);
   void setBeats(int beats);
   void setFollowPlayhead(bool follow);

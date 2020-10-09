@@ -8,16 +8,17 @@
 #include "Settings.h"
 #include "audio/AudioFormat.h"
 
-QList<std::pair<qint64, QString>> getUserList(
+QList<UserListEntry> getUserList(
     const std::map<qint64, RemoteEditState> &users) {
-  QList<std::pair<qint64, QString>> list;
+  QList<UserListEntry> list;
   for (auto it = users.begin(); it != users.end(); ++it)
-    list.append(std::make_pair(it->first, it->second.user));
+    list.append(
+        UserListEntry{it->first, it->second.last_ping, it->second.user});
   return list;
 }
 
 using namespace std::chrono_literals;
-const static std::chrono::milliseconds PING_INTERVAL = 5000ms;
+const static std::chrono::milliseconds PING_INTERVAL = 3000ms;
 
 PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
                            QObject *parent)
@@ -44,6 +45,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn, QLabel *client_status,
           &PxtoneClient::playStateChanged);
 
   connect(m_ping_timer, &QTimer::timeout, [this]() {
+    emit userListChanged(getUserList(m_remote_edit_states));
     sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
   });
 

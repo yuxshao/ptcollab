@@ -267,10 +267,20 @@ void SideMenu::setModified(bool modified) {
     ui->saveBtn->setText("");
 }
 
-void SideMenu::setUserList(QList<std::pair<qint64, QString>> users) {
+void SideMenu::setUserList(QList<UserListEntry> users) {
   QList<QString> usernames;
-  for (const auto& [uid, username] : users)
-    usernames.append(QString("%1 (%2)").arg(username).arg(uid));
+  for (const auto& entry : users) {
+    QString ping = "";
+    if (entry.last_ping.has_value()) {
+      qint64 p = entry.last_ping.value();
+      if (p > 1000)
+        ping = QString("[%1s]").arg(p / 1000);
+      else
+        ping = QString("[%1ms]").arg(p);
+    }
+    usernames.append(
+        QString("%1 (%2) %3").arg(entry.user).arg(entry.id).arg(ping));
+  }
   m_users->setStringList(usernames);
 }
 

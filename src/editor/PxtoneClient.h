@@ -15,6 +15,12 @@ struct RemoteEditState {
   QString user;
 };
 
+struct UserListEntry {
+  qint64 id;
+  std::optional<quint64> last_ping;
+  QString user;
+};
+
 // A class that hopefully all modifications to a project will through. It'll
 // route the changes to the server and the responses to the controller, which
 // will actually modify pxtnService.
@@ -34,7 +40,7 @@ class PxtoneClient : public QObject {
   Clipboard *m_clipboard;
 
  signals:
-  void userListChanged(const QList<std::pair<qint64, QString>> &users);
+  void userListChanged(const QList<UserListEntry> &users);
   void editStateChanged(const EditState &m_edit_state);
   void playStateChanged(bool playing);
   void followActivity(const EditState &r);
