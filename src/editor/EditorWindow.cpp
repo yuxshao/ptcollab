@@ -373,9 +373,9 @@ void EditorWindow::Host(bool load_file) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
   }
-  m_server_status->setText(
-      tr("Hosting on %1:%2")
-          .arg(m_server->address().toString(), m_server->port()));
+  m_server_status->setText(tr("Hosting on %1:%2")
+                               .arg(m_server->address().toString())
+                               .arg(m_server->port()));
   m_filename = filename;
   m_modified = false;
   m_side_menu->setModified(false);
