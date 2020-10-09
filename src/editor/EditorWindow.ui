@@ -34,6 +34,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
+    <addaction name="actionClearSettings"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -49,10 +50,10 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpenHost">
    <property name="text">
-    <string>Open &amp;&amp; Host</string>
+    <string>Open</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+O</string>
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
@@ -73,7 +74,7 @@
     <string>Connect</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string>Ctrl+K</string>
    </property>
   </action>
   <action name="actionSaveAs">
@@ -91,7 +92,7 @@
   </action>
   <action name="actionNewHost">
    <property name="text">
-    <string>New &amp;&amp; Host</string>
+    <string>New</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -105,6 +106,11 @@
   <action name="actionShortcuts">
    <property name="text">
     <string>Shortcuts</string>
+   </property>
+  </action>
+  <action name="actionClearSettings">
+   <property name="text">
+    <string>Clear settings</string>
    </property>
   </action>
  </widget>

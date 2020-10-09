@@ -143,6 +143,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
+  connect(ui->actionClearSettings, &QAction::triggered, [this]() {
+    if (QMessageBox::question(this, "Clear settings",
+                              "Are you sure you want to clear your settings?"))
+      QSettings().clear();
+  });
   connect(ui->actionShortcuts, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "Shortcuts",
@@ -216,21 +221,13 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->toggleTestActivity();
       }
       break;
-    case Qt::Key_K:
-      if (event->modifiers() & Qt::ControlModifier &&
-          event->modifiers() & Qt::ShiftModifier &&
-          QMessageBox::question(
-              this, "Clear settings",
-              "Are you sure you want to clear your settings?"))
-        QSettings().clear();
-      break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
         m_keyboard_view->cycleCurrentUnit(1);
       break;
-    case Qt::Key_I:
+    /*case Qt::Key_I:
       m_host_dialog->exec();
-      break;
+      break;*/
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
       break;
