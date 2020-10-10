@@ -14,6 +14,8 @@ HostDialog::HostDialog(QWidget *parent)
   QSettings settings;
   ui->usernameInput->setText(
       settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
+  ui->saveRecordingFile->setText(
+      settings.value(PTREC_SAVE_FILE_KEY, "").toString());
   ui->portInput->setText(
       settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
   ui->portInput->setValidator(new QIntValidator(0, 65535, this));
@@ -36,14 +38,11 @@ HostDialog::HostDialog(QWidget *parent)
   connect(ui->saveRecordingBtn, &QPushButton::pressed, [this]() {
     QSettings settings;
     QString filename = QFileDialog::getSaveFileName(
-        this, "Save file", settings.value(PTREC_SAVE_DIR_KEY).toString(),
+        this, "Save file", settings.value(PTREC_SAVE_FILE_KEY).toString(),
         "ptcollab recordings (*.ptrec)");
     if (filename.isEmpty()) return;
 
     if (QFileInfo(filename).suffix() != "ptrec") filename += ".ptrec";
-    // TODO: Save on accept
-    // settings.setValue(PTREC_SAVE_DIR_KEY,
-    // QFileInfo(filename).absolutePath());
     ui->saveRecordingFile->setText(filename);
   });
 
@@ -55,7 +54,8 @@ HostDialog::HostDialog(QWidget *parent)
 
 bool HostDialog::selectProjectFile() {
   QSettings settings;
-  QString dir = settings.value(PTCOP_DIR_KEY).toString();
+  QString dir =
+      QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath();
   // ui->openProjectFile->setText(dir);
   QString filename = QFileDialog::getOpenFileName(
       this, "Open file", dir,
@@ -98,13 +98,13 @@ void HostDialog::persistSettings() {
 
   std::optional<QString> filename = projectName();
   if (filename.has_value())
-    settings.setValue(PTCOP_DIR_KEY,
-                      QFileInfo(filename.value()).absolutePath());
+    settings.setValue(PTCOP_FILE_KEY,
+                      QFileInfo(filename.value()).absoluteFilePath());
 
   filename = recordingName();
   if (filename.has_value())
-    settings.setValue(PTREC_SAVE_DIR_KEY,
-                      QFileInfo(filename.value()).absolutePath());
+    settings.setValue(PTREC_SAVE_FILE_KEY,
+                      QFileInfo(filename.value()).absoluteFilePath());
 
   if (port().has_value()) {
     bool ok;

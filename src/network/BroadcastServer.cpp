@@ -26,13 +26,13 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
       m_save_history(nullptr),
       m_save_history_metadata(nullptr) {
   if (filename.has_value()) {
-    QFile file(filename.value());
-    if (!file.open(QIODevice::ReadOnly | QIODevice::ExistingOnly))
+    QFile *file = new QFile(filename.value(), this);
+    if (!file->open(QIODevice::ReadOnly | QIODevice::ExistingOnly))
       throw QString("Could not read file.");
 
+    m_history_elapsed.restart();
     if (QFileInfo(filename.value()).suffix() == "ptrec") {
-      m_history_elapsed.restart();
-      m_load_history = std::make_unique<QDataStream>(&file);
+      m_load_history = std::make_unique<QDataStream>(file);
       *m_load_history >> m_data;
       QSettings metadata(filename.value() + "-meta", QSettings::IniFormat);
       bool ok;
@@ -70,7 +70,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
         m_timer->start(interval);
       });
     } else
-      m_data = file.readAll();
+      m_data = file->readAll();
   }
 
   if (save_history.has_value()) {
@@ -105,6 +105,7 @@ BroadcastServer::~BroadcastServer() {
   for (ServerSession *s : m_sessions) s->disconnect();
   m_server->close();
   if (m_save_history_metadata) {
+    m_save_history->device()->close();
     m_save_history_metadata->setValue("next_uid", m_next_uid);
     m_save_history_metadata->sync();
   }

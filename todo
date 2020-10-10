@@ -343,12 +343,12 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - test watching, recording
+ - redo demo
+ - spice up demo song
  - gh-pages - update style?
  - gh-pages - thank-you section
- - test watching other users
- - redo demo
  - cross-platform binaries
- - spice up the demo song
 
  - midi input???
    - start with qwerty input

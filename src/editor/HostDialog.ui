@@ -39,7 +39,7 @@
    <item>
     <widget class="QGroupBox" name="saveRecordingGroup">
      <property name="title">
-      <string>Save Recording</string>
+      <string>Record Session</string>
      </property>
      <property name="flat">
       <bool>false</bool>

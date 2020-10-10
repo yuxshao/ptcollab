@@ -432,11 +432,12 @@ bool EditorWindow::saveToFile(QString filename) {
 void EditorWindow::saveAs() {
   QSettings settings;
   QString filename = QFileDialog::getSaveFileName(
-      this, "Open file", settings.value(PTCOP_DIR_KEY).toString(),
+      this, "Open file",
+      QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
       "pxtone projects (*.ptcop)");
   if (filename.isEmpty()) return;
 
-  settings.setValue(PTCOP_DIR_KEY, QFileInfo(filename).absolutePath());
+  settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   if (saveToFile(filename)) m_filename = filename;
