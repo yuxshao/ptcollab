@@ -12,7 +12,7 @@
 #define _smp_num_rand 44100
 #define _smp_num (int32_t)(_BASIC_SPS / _BASIC_FREQUENCY)
 
-enum _RANDOMTYPE {
+enum _RANDOMTYPE : int8_t {
   _RANDOM_None = 0,
   _RANDOM_Saw,
   _RANDOM_Rect,

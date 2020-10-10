@@ -9,7 +9,7 @@
 #include "editor/PxtoneClient.h"
 #include "protocol/NoIdMap.h"
 
-enum struct WoiceListColumn { Loop, BeatFit, Key, Name, MAX = Name };
+enum struct WoiceListColumn : qint8 { Loop, BeatFit, Key, Name, MAX = Name };
 
 class WoiceListModel : public QAbstractTableModel {
   Q_OBJECT

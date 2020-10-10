@@ -26,7 +26,7 @@
 #define PTV_DATAFLAG_ENVELOPE 0x00000002
 #define PTV_DATAFLAG_UNCOVERED 0xfffffffc
 
-enum pxtnWOICETYPE {
+enum pxtnWOICETYPE : int8_t {
   pxtnWOICE_None = 0,
   pxtnWOICE_PCM,
   pxtnWOICE_PTV,

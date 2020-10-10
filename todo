@@ -340,6 +340,12 @@ fill architecture could work well.
 6. Don't show 'hosting on' and 'connected to' simultaneously
 
 10/9
+1. cleaner fps
+2. save session recording to 1 file
+3. test + make watch a bit more robust
+
+10/10
+1. appimage, standardize enum sizes
 
 Todo by priority
 ----------------

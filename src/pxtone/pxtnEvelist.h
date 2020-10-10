@@ -4,7 +4,7 @@
 #include "./pxtn.h"
 #include "./pxtnDescriptor.h"
 
-typedef enum {
+typedef enum : int8_t {
   EVENTKIND_NULL = 0,  //  0
 
   EVENTKIND_ON,          //  1 - indicates a block of time a note is on

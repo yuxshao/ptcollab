@@ -12,7 +12,7 @@
 
 #include "./pxtn.h"
 
-enum pxtnSEEK {
+enum pxtnSEEK : int8_t {
   pxtnSEEK_set = 0,
   pxtnSEEK_cur,
   pxtnSEEK_end,

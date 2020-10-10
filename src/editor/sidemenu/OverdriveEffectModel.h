@@ -7,7 +7,7 @@
 #include "editor/PxtoneClient.h"
 #include "pxtone/pxtnService.h"
 
-enum struct OverdriveEffectColumn { Group, Cut, Amp, MAX = Amp };
+enum struct OverdriveEffectColumn : qint8 { Group, Cut, Amp, MAX = Amp };
 
 class OverdriveEffectModel : public QAbstractTableModel {
   Q_OBJECT

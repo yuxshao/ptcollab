@@ -48,7 +48,15 @@ inline QDataStream &operator>>(QDataStream &in, MouseMeasureEdit &a) {
   return in;
 }
 struct MouseEditState {
-  enum Type { Nothing, Seek, SetNote, SetOn, DeleteNote, DeleteOn, Select };
+  enum Type : qint8 {
+    Nothing,
+    Seek,
+    SetNote,
+    SetOn,
+    DeleteNote,
+    DeleteOn,
+    Select
+  };
   Type type;
   qreal base_velocity;
   qint32 last_pitch;
@@ -86,7 +94,7 @@ QDataStream &operator<<(QDataStream &out, const Scale &a);
 QDataStream &operator>>(QDataStream &in, Scale &a);
 bool operator==(const Scale &x, const Scale &y);
 
-enum struct FollowPlayhead { None, Jump, Follow, MAX = Follow };
+enum struct FollowPlayhead : qint8 { None, Jump, Follow, MAX = Follow };
 
 struct EditState {
   MouseEditState mouse_edit_state;

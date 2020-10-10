@@ -6,7 +6,13 @@
 #include "editor/PxtoneClient.h"
 #include "pxtone/pxtnService.h"
 
-enum struct DelayEffectColumn { Group, Unit, Frequency, Rate, MAX = Rate };
+enum struct DelayEffectColumn : qint8 {
+  Group,
+  Unit,
+  Frequency,
+  Rate,
+  MAX = Rate
+};
 class DelayEffectModel : public QAbstractTableModel {
   Q_OBJECT
 

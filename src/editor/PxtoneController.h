@@ -11,7 +11,7 @@
 // from the local branch.
 
 struct LoggedAction {
-  enum UndoState { DONE, UNDONE, GONE };
+  enum UndoState : qint8 { DONE, UNDONE, GONE };
   UndoState state;
   qint64 uid;
   qint64 idx;

@@ -44,7 +44,7 @@ inline QTextStream &operator<<(QTextStream &out, const EditAction &a) {
   return out;
 }
 
-enum UndoRedo { UNDO, REDO };
+enum UndoRedo : qint8 { UNDO, REDO };
 
 inline QTextStream &operator<<(QTextStream &out, const UndoRedo &a) {
   out << "UndoRedo(";
@@ -381,7 +381,7 @@ inline QDataStream &operator>>(QDataStream &in, Name &a) {
   return in;
 }
 struct Flag {
-  enum { LOOP, BEATFIT } flag;
+  enum : qint8 { LOOP, BEATFIT } flag;
   bool set;
 };
 inline QDataStream &operator<<(QDataStream &out, const Flag &a) {

@@ -113,7 +113,7 @@ class pxtnService {
   void operator=(const pxtnService &src) = delete;
   pxtnService(const pxtnService &src) = delete;
 
-  enum _enum_FMTVER {
+  enum _enum_FMTVER : int8_t {
     _enum_FMTVER_unknown = 0,
     _enum_FMTVER_x1x,  // fix event num = 10000
     _enum_FMTVER_x2x,  // no version of exe

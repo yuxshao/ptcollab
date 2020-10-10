@@ -54,7 +54,7 @@ static const char *_code_assiUNIT = "assiUNIT";
 static const char *_code_assiWOIC = "assiWOIC";
 static const char *_code_pxtoneND = "pxtoneND";
 
-enum _enum_Tag {
+enum _enum_Tag : int8_t {
   _TAG_Unknown = 0,
   _TAG_antiOPER,
 

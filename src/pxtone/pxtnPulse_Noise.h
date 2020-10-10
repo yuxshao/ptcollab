@@ -7,7 +7,7 @@
 #include "./pxtnPulse_Oscillator.h"
 #include "./pxtnPulse_PCM.h"
 
-enum pxWAVETYPE {
+enum pxWAVETYPE : int8_t {
   pxWAVETYPE_None = 0,
   pxWAVETYPE_Sine,
   pxWAVETYPE_Saw,

@@ -14,7 +14,7 @@
 #include "editor/audio/NotePreview.h"
 #include "pxtone/pxtnService.h"
 
-enum struct Direction { UP, DOWN };
+enum struct Direction : qint8 { UP, DOWN };
 
 struct LocalEditState {
   qint32 m_quantize_clock, m_quantize_pitch;

@@ -3,7 +3,9 @@
 #ifndef pxtnError_H
 #define pxtnError_H
 
-enum pxtnERR {
+#include <cstdint>
+
+enum pxtnERR : int8_t {
   pxtnOK = 0,
   pxtnERR_VOID,
   pxtnERR_INIT,

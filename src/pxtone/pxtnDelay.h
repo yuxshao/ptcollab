@@ -9,7 +9,7 @@
 #include "./pxtnDescriptor.h"
 #include "./pxtnMax.h"
 
-enum DELAYUNIT {
+enum DELAYUNIT : int8_t {
   DELAYUNIT_Beat = 0,
   DELAYUNIT_Meas,
   DELAYUNIT_Second,

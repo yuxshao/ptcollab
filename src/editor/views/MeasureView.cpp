@@ -54,7 +54,7 @@ static void drawNum(QPainter *painter, int x, int y, int w, int num) {
   } while (num > 0);
 }
 
-enum struct FlagType { Top, Repeat, Last };
+enum struct FlagType : qint8 { Top, Repeat, Last };
 constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
 static void drawFlag(QPainter *painter, FlagType type, bool outline,
