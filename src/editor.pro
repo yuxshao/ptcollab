@@ -10,7 +10,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
-GIT_VERSION = $$system(git --git-dir $$PWD/../.git --work-tree $$PWD describe --always)
+GIT_VERSION = $$system(git --git-dir $$PWD/../.git --work-tree $$PWD describe --tags)
 DEFINES += GIT_VERSION=\"\\\"$$GIT_VERSION\\\"\"
 
 CONFIG += c++17
