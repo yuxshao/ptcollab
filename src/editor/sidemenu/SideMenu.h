@@ -51,7 +51,7 @@ class SideMenu : public QWidget {
   void selectedUnitsChanged(QList<qint32> idx);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
-  void followPlayheadChanged(bool);
+  void followPlayheadChanged(FollowPlayhead);
   void copyChanged(bool);
   void moveUnit(bool up);
   void volumeChanged(int volume);
@@ -70,7 +70,7 @@ class SideMenu : public QWidget {
   void setUserList(QList<UserListEntry> users);
   void setTempo(int tempo);
   void setBeats(int beats);
-  void setFollowPlayhead(bool follow);
+  void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
 
  private:

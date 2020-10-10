@@ -49,10 +49,17 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
     // This is not part of paintEvent because it causes some widgets to get
     // rendered outside their viewport, prob. because it causes a repaint in a
     // paintEvent.
-    if (m_client->editState().m_follow_playhead &&
-        m_client->audioState()->state() == QAudio::ActiveState)
-      emit ensureVisibleX(m_moo_clock->now() /
-                          m_client->editState().scale.clockPerPx);
+    if (!m_client->isPlaying()) return;
+    switch (m_client->editState().m_follow_playhead) {
+      case FollowPlayhead::None:
+        break;
+      case FollowPlayhead::Jump:
+      case FollowPlayhead::Follow:
+        emit ensureVisibleX(
+            m_moo_clock->now() / m_client->editState().scale.clockPerPx,
+            m_client->editState().m_follow_playhead == FollowPlayhead::Follow);
+        break;
+    }
   });
 
   connect(m_client, &PxtoneClient::editStateChanged,

@@ -34,7 +34,7 @@ class KeyboardView : public QWidget {
   void setCurrentUnitNo(int unit_no);
 
  signals:
-  void ensureVisibleX(int x);
+  void ensureVisibleX(int x, bool strict);
   void fpsUpdated(qreal fps);
 
  public slots:

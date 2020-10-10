@@ -68,7 +68,7 @@ EditState::EditState()
       m_current_param_kind_idx(0),
       m_quantize_clock_idx(0),
       m_quantize_pitch_idx(0),
-      m_follow_playhead(false) {}
+      m_follow_playhead(FollowPlayhead::None) {}
 
 QDataStream &operator<<(QDataStream &out, const EditState &a) {
   return (out << a.mouse_edit_state << a.scale << a.viewport

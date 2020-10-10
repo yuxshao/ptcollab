@@ -143,10 +143,11 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
         [&](EditState &s) { s.m_quantize_pitch_idx = index; });
   });
 
-  connect(this, &SideMenu::followPlayheadChanged, [this](bool follow) {
-    m_client->changeEditState(
-        [&](EditState &s) { s.m_follow_playhead = follow; });
-  });
+  connect(this, &SideMenu::followPlayheadChanged,
+          [this](FollowPlayhead follow) {
+            m_client->changeEditState(
+                [&](EditState &s) { s.m_follow_playhead = follow; });
+          });
   connect(this, &SideMenu::copyChanged, [this](bool copy) {
     EVENTKIND kind =
         paramOptions[m_client->editState().current_param_kind_idx()].second;

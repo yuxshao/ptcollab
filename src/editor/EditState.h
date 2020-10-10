@@ -86,6 +86,8 @@ QDataStream &operator<<(QDataStream &out, const Scale &a);
 QDataStream &operator>>(QDataStream &in, Scale &a);
 bool operator==(const Scale &x, const Scale &y);
 
+enum struct FollowPlayhead { None, Jump, Follow, MAX = Follow };
+
 struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
@@ -95,7 +97,7 @@ struct EditState {
   int m_current_param_kind_idx;
   int m_quantize_clock_idx;
   int m_quantize_pitch_idx;
-  bool m_follow_playhead;
+  FollowPlayhead m_follow_playhead;
   int current_param_kind_idx() const;
   EditState();
 };

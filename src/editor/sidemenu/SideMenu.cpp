@@ -84,8 +84,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->followCheckbox, &QCheckBox::toggled, this,
-          &SideMenu::followPlayheadChanged);
+  connect(ui->followCheckbox, &QCheckBox::toggled, [this](bool) {
+    emit followPlayheadChanged(
+        FollowPlayhead(ui->followCheckbox->checkState()));
+  });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
@@ -287,8 +289,8 @@ void SideMenu::setBeats(int beats) {
   ui->beatsField->setText(QString("%1").arg(beats));
 }
 
-void SideMenu::setFollowPlayhead(bool follow) {
-  ui->followCheckbox->setCheckState(follow ? Qt::Checked : Qt::Unchecked);
+void SideMenu::setFollowPlayhead(FollowPlayhead follow) {
+  ui->followCheckbox->setCheckState(Qt::CheckState(follow));
 }
 
 void SideMenu::setCopy(bool copy) {

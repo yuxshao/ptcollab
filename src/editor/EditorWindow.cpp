@@ -70,9 +70,13 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
   // TODO: find a better place for this.
-  connect(m_keyboard_view, &KeyboardView::ensureVisibleX, [this](int x) {
-    m_scroll_area->ensureWithinMargin(x, -0.02, 0.15, 0.15, 0.75);
-  });
+  connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
+          [this](int x, bool strict) {
+            if (!strict)
+              m_scroll_area->ensureWithinMargin(x, -0.02, 0.15, 0.15, 0.75);
+            else
+              m_scroll_area->ensureWithinMargin(x, 0.5, 0.5, 0.5, 0.5);
+          });
   connect(m_scroll_area, &EditorScrollArea::viewportChanged,
           [this](const QRect &viewport) {
             m_client->changeEditState(
@@ -93,7 +97,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
           // disable follow playhead b/c otherwise it could compete with follow
           // user for adjusting scrollbars.
-          e.m_follow_playhead = false;
+          e.m_follow_playhead = FollowPlayhead::None;
           m_scroll_area->horizontalScrollBar()->setValue(startClock /
                                                          e.scale.clockPerPx);
           m_scroll_area->verticalScrollBar()->setValue(startPitch /
@@ -229,8 +233,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       });
       break;
     case Qt::Key_F:
-      m_client->changeEditState(
-          [&](EditState &s) { s.m_follow_playhead = !s.m_follow_playhead; });
+      m_client->changeEditState([&](EditState &s) {
+        int shift = (event->modifiers() & Qt::ShiftModifier ? -1 : 1);
+        int n = int(FollowPlayhead::MAX) + 1;
+        s.m_follow_playhead =
+            FollowPlayhead((int(s.m_follow_playhead) + n + shift) % n);
+      });
       break;
     case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
