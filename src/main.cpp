@@ -60,16 +60,22 @@ int main(int argc, char *argv[]) {
                     << "port",
       QCoreApplication::translate("main", "Just run a server on port <port>."),
       QCoreApplication::translate("main", "port"));
-
   parser.addOption(serverPortOption);
+
   QCommandLineOption serverFileOption(
       QStringList() << "f"
                     << "file",
       QCoreApplication::translate("main",
                                   "Load this file when starting the server."),
       QCoreApplication::translate("main", "file"));
-
   parser.addOption(serverFileOption);
+
+  QCommandLineOption serverRecordOption(
+      QStringList() << "r"
+                    << "record",
+      QCoreApplication::translate("main", "Record the session to this file."),
+      QCoreApplication::translate("main", "record"));
+  parser.addOption(serverRecordOption);
 
   parser.process(a);
   QString portStr = parser.value(serverPortOption);
@@ -81,9 +87,11 @@ int main(int argc, char *argv[]) {
     else {
       qInfo() << "Running on port" << port;
       QString filename = parser.value(serverFileOption);
+      QString recording_file = parser.value(serverRecordOption);
       BroadcastServer s(
           (filename == "" ? std::nullopt : std::optional(filename)), port,
-          std::nullopt);
+          (recording_file == "" ? std::nullopt
+                                : std::optional(recording_file)));
 
       return a.exec();
     }
