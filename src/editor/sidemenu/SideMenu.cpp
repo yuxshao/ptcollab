@@ -70,10 +70,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           });
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
-  connect(ui->hostBtn, &QPushButton::clicked, this,
-          &SideMenu::hostButtonPressed);
-  connect(ui->connectBtn, &QPushButton::clicked, this,
-          &SideMenu::connectButtonPressed);
   connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
           &QDialog::open);
   connect(ui->removeUnitBtn, &QPushButton::clicked, [this]() {

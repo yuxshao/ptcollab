@@ -148,9 +148,6 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
   connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);
-  connect(m_side_menu, &SideMenu::hostButtonPressed, [this]() { Host(true); });
-  connect(m_side_menu, &SideMenu::connectButtonPressed, this,
-          &EditorWindow::connectToHost);
 
   connect(m_client->controller(), &PxtoneController::edited, [this]() {
     m_modified = true;
