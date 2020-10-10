@@ -1,6 +1,7 @@
 #ifndef HOSTDIALOG_H
 #define HOSTDIALOG_H
 
+#include <optional>
 #include <QDialog>
 
 namespace Ui {

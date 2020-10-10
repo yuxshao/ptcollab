@@ -76,8 +76,10 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
         }
         m_timer->start(interval);
       });
-    } else
+    } else {
       m_data = file->readAll();
+      file->deleteLater();
+    }
   }
 
   if (save_history.has_value()) {

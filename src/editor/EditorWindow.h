@@ -61,8 +61,8 @@ class EditorWindow : public QMainWindow {
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);
-  void save();
-  void saveAs();
+  bool save();
+  bool saveAs();
   bool maybeSave();
 };
 #endif  // MAINWINDOW_H

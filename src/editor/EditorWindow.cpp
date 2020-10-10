@@ -338,8 +338,7 @@ bool EditorWindow::maybeSave() {
       QMessageBox::Save);
   switch (ret) {
     case QMessageBox::Save:
-      save();
-      return true;
+      return save();
     case QMessageBox::Discard:
       return true;
     case QMessageBox::Cancel:
@@ -420,6 +419,7 @@ bool EditorWindow::saveToFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(f_raw, &fclose);
   if (!f) {
     qWarning() << "Could not open file" << filename;
+    QMessageBox::warning(this, tr("Could not save file"), tr("Could not open file %1 for writing").arg(filename));
     return false;
   }
   pxtnDescriptor desc;
@@ -431,24 +431,27 @@ bool EditorWindow::saveToFile(QString filename) {
   m_side_menu->setModified(false);
   return true;
 }
-void EditorWindow::saveAs() {
+bool EditorWindow::saveAs() {
   QSettings settings;
   QString filename = QFileDialog::getSaveFileName(
       this, "Open file",
       QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
       "pxtone projects (*.ptcop)");
-  if (filename.isEmpty()) return;
+  if (filename.isEmpty()) return false;
 
   settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
-  if (saveToFile(filename)) m_filename = filename;
+  bool saved = saveToFile(filename);
+  if (saved) m_filename = filename;
+  return saved;
 }
-void EditorWindow::save() {
+
+bool EditorWindow::save() {
   if (!m_filename.has_value())
-    saveAs();
+    return saveAs();
   else
-    saveToFile(m_filename.value());
+    return saveToFile(m_filename.value());
 }
 
 void EditorWindow::connectToHost() {
