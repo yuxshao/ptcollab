@@ -461,6 +461,7 @@ inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },
                         [&ret](const Ping &) { ret = false; },
+                        [&ret](const PlayState &) { ret = false; },
                         [&ret](const auto &) { ret = true; }},
              a);
   return ret;

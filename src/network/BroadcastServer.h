@@ -21,6 +21,7 @@ class BroadcastServer : public QObject {
   int port();
 
   QHostAddress address();
+  bool isReadingHistory();
  private slots:
   void newClient();
 

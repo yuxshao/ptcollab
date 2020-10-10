@@ -401,7 +401,7 @@ void EditorWindow::Host(bool load_file) {
       QString("%1:%2")
           .arg(m_server->address().toString())
           .arg(m_server->port()));
-  m_filename = filename;
+  m_filename = (m_server->isReadingHistory() ? std::nullopt : filename);
   m_modified = false;
   m_side_menu->setModified(false);
 

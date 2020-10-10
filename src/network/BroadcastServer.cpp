@@ -31,7 +31,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
   if (filename.has_value()) {
     QFile *file = new QFile(filename.value(), this);
     if (!file->open(QIODevice::ReadOnly | QIODevice::ExistingOnly))
-      throw QString("Could not read file.");
+      throw tr("Could not read file %1").arg(filename.value());
 
     m_history_elapsed.restart();
     if (QFileInfo(filename.value()).suffix() == "ptrec") {
@@ -81,10 +81,11 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
   }
 
   if (save_history.has_value()) {
-    QFile *file = new QFile(save_history.value() + ".tmp", this);
+    QString name = save_history.value() + ".tmp";
+    QFile *file = new QFile(name, this);
     m_save_history_filename = save_history.value();
-    if (!file->open(QIODevice::ReadWrite | QIODevice::NewOnly))
-      throw QString("Unable to open history file for saving");
+    if (!file->open(QIODevice::ReadWrite))
+      throw tr("Unable to open %1 for writing").arg(name);
     m_save_history = std::make_unique<QDataStream>(file);
   }
 
@@ -102,6 +103,8 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
           &BroadcastServer::newClient);
 }
 
+bool BroadcastServer::isReadingHistory() { return m_load_history != nullptr; }
+
 BroadcastServer::~BroadcastServer() {
   // Without these disconnects, I think the sessions' destructors emit the
   // socket disconnected signal which ends up trying to call
@@ -114,7 +117,11 @@ BroadcastServer::~BroadcastServer() {
 void BroadcastServer::finalizeSaveHistory() {
   if (!m_save_history) return;
   QFile final_file(m_save_history_filename);
-  if (!final_file.open(QIODevice::WriteOnly)) return;
+  if (!final_file.open(QIODevice::WriteOnly)) {
+    qWarning() << "Cannot open" << m_save_history_filename
+               << "for saving recording";
+    return;
+  }
 
   QDataStream stream(&final_file);
   stream << PROTOCOL_VERSION << RECORDING_VERSION << m_next_uid << m_data;
@@ -129,6 +136,7 @@ void BroadcastServer::finalizeSaveHistory() {
   stream.device()->close();
   m_save_history->device()->close();
   QFile(m_save_history_filename + ".tmp").remove();
+  qDebug() << "Finalized save history successfully";
 }
 
 int BroadcastServer::port() { return m_server->serverPort(); }

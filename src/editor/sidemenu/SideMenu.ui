@@ -401,6 +401,9 @@
        </item>
        <item>
         <widget class="QListView" name="userList">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>

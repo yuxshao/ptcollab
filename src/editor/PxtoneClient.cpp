@@ -339,13 +339,16 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     },
                     [this, uid](const AddUnit &s) {
                       bool success = m_controller->applyAddUnit(s, uid);
-                      changeEditState([&](EditState &s) {
-                        if (uid == m_controller->uid() && success) {
-                          const NoIdMap &unitIdMap = m_controller->unitIdMap();
-                          s.m_current_unit_id =
-                              unitIdMap.noToId(unitIdMap.numUnits() - 1);
-                        }
-                      });
+                      changeEditState(
+                          [&](EditState &s) {
+                            if (uid == m_controller->uid() && success) {
+                              const NoIdMap &unitIdMap =
+                                  m_controller->unitIdMap();
+                              s.m_current_unit_id =
+                                  unitIdMap.noToId(unitIdMap.numUnits() - 1);
+                            }
+                          },
+                          false);
                     },
                     [this, uid](const SetUnitName &s) {
                       m_controller->applySetUnitName(s, uid);
@@ -357,16 +360,20 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       auto unit_no = m_controller->unitIdMap().idToNo(
                           m_edit_state.m_current_unit_id);
                       m_controller->applyRemoveUnit(s, uid);
-                      changeEditState([&](EditState &s) {
-                        if (unit_no != std::nullopt) {
-                          const NoIdMap &unitIdMap = m_controller->unitIdMap();
-                          if (unitIdMap.numUnits() <= size_t(unit_no.value()) &&
-                              unitIdMap.numUnits() > 0) {
-                            s.m_current_unit_id =
-                                unitIdMap.noToId(unit_no.value() - 1);
-                          }
-                        }
-                      });
+                      changeEditState(
+                          [&](EditState &s) {
+                            if (unit_no != std::nullopt) {
+                              const NoIdMap &unitIdMap =
+                                  m_controller->unitIdMap();
+                              if (unitIdMap.numUnits() <=
+                                      size_t(unit_no.value()) &&
+                                  unitIdMap.numUnits() > 0) {
+                                s.m_current_unit_id =
+                                    unitIdMap.noToId(unit_no.value() - 1);
+                              }
+                            }
+                          },
+                          false);
                     }},
                 s);
           },
@@ -382,6 +389,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
             (void)s;
             if (!m_remote_edit_states.erase(uid))
               qWarning() << "Received delete for unknown remote session";
+            if (following_uid() == uid) setFollowing(std::nullopt);
             emit userListChanged(getUserList(m_remote_edit_states));
           },
       },
@@ -389,15 +397,17 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
 }
 
 void PxtoneClient::setCurrentUnitNo(int unit_no) {
-  changeEditState([&](EditState &s) {
-    s.m_current_unit_id = m_controller->unitIdMap().noToId(unit_no);
-  });
+  // This check is also so that when watching someone, a unit change doesn't
+  // break the watch.
+  qint32 unit_id = m_controller->unitIdMap().noToId(unit_no);
+  if (editState().m_current_unit_id != unit_id)
+    changeEditState([&](EditState &s) { s.m_current_unit_id = unit_id; });
 }
 
 void PxtoneClient::setCurrentWoiceNo(int woice_no) {
-  changeEditState([&](EditState &s) {
-    s.m_current_woice_id = m_controller->woiceIdMap().noToId(woice_no);
-  });
+  qint32 woice_id = m_controller->woiceIdMap().noToId(woice_no);
+  if (editState().m_current_woice_id != woice_id)
+    changeEditState([&](EditState &s) { s.m_current_woice_id = woice_id; });
 }
 
 void PxtoneClient::setVolume(int volume) { m_controller->setVolume(volume); }
