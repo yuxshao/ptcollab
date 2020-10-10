@@ -234,10 +234,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_F:
       m_client->changeEditState([&](EditState &s) {
-        int shift = (event->modifiers() & Qt::ShiftModifier ? -1 : 1);
-        int n = int(FollowPlayhead::MAX) + 1;
-        s.m_follow_playhead =
-            FollowPlayhead((int(s.m_follow_playhead) + n + shift) % n);
+        s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
+                                  ? FollowPlayhead::Jump
+                                  : FollowPlayhead::None;
       });
       break;
     case Qt::Key_H:
