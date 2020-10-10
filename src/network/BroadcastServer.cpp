@@ -27,8 +27,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
       m_delay_msec(delay_msec),
       m_drop_rate(drop_rate),
       m_load_history(nullptr),
-      m_save_history(nullptr),
-      m_save_history_metadata(nullptr) {
+      m_save_history(nullptr) {
   if (filename.has_value()) {
     QFile *file = new QFile(filename.value(), this);
     if (!file->open(QIODevice::ReadOnly | QIODevice::ExistingOnly))
@@ -46,12 +45,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
             .arg(recording_version)
             .arg(PROTOCOL_VERSION)
             .arg(RECORDING_VERSION);
-      *m_load_history >> m_data;
-      QSettings metadata(filename.value() + "-meta", QSettings::IniFormat);
-      bool ok;
-      m_next_uid = metadata.value(NEXT_UID_KEY, -1).toInt(&ok);
-      if (m_next_uid == -1 || !ok)
-        throw QString("Unable to load history metadata");
+      *m_load_history >> m_next_uid >> m_data;
 
       m_timer = new QTimer(this);
       m_timer->setSingleShot(true);
@@ -87,14 +81,11 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
   }
 
   if (save_history.has_value()) {
-    // TODO: Save to tmp file and prepend.
-    QFile *file = new QFile(save_history.value(), this);
-    if (!file->open(QIODevice::WriteOnly))
+    QFile *file = new QFile(save_history.value() + ".tmp", this);
+    m_save_history_filename = save_history.value();
+    if (!file->open(QIODevice::ReadWrite | QIODevice::NewOnly))
       throw QString("Unable to open history file for saving");
     m_save_history = std::make_unique<QDataStream>(file);
-    *m_save_history << PROTOCOL_VERSION << RECORDING_VERSION << m_data;
-    m_save_history_metadata = std::make_unique<QSettings>(
-        save_history.value() + "-meta", QSettings::IniFormat);
   }
 
   bool result;
@@ -121,11 +112,23 @@ BroadcastServer::~BroadcastServer() {
 }
 
 void BroadcastServer::finalizeSaveHistory() {
-  if (m_save_history_metadata) {
-    m_save_history->device()->close();
-    m_save_history_metadata->setValue("next_uid", m_next_uid);
-    m_save_history_metadata->sync();
+  if (!m_save_history) return;
+  QFile final_file(m_save_history_filename);
+  if (!final_file.open(QIODevice::WriteOnly)) return;
+
+  QDataStream stream(&final_file);
+  stream << PROTOCOL_VERSION << RECORDING_VERSION << m_next_uid << m_data;
+
+  constexpr int SIZE = 4096;
+  char buf[SIZE];
+  m_save_history->device()->seek(0);
+  while (!m_save_history->atEnd()) {
+    int read_size = m_save_history->readRawData(buf, SIZE);
+    stream.writeRawData(buf, read_size);
   }
+  stream.device()->close();
+  m_save_history->device()->close();
+  QFile(m_save_history_filename + ".tmp").remove();
 }
 
 int BroadcastServer::port() { return m_server->serverPort(); }

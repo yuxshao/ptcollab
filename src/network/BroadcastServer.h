@@ -36,8 +36,8 @@ class BroadcastServer : public QObject {
   int m_delay_msec;
   double m_drop_rate;
   std::unique_ptr<QDataStream> m_load_history;
+  QString m_save_history_filename;
   std::unique_ptr<QDataStream> m_save_history;
-  std::unique_ptr<QSettings> m_save_history_metadata;
   QElapsedTimer m_history_elapsed;
   QTimer *m_timer;
   void broadcastServerAction(const ServerAction &a);
