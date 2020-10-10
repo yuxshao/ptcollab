@@ -2,6 +2,7 @@
 #define HELLO_H
 
 #include <QDataStream>
+extern const qint64 PROTOCOL_VERSION;
 // Two classes to encapsulate the data sent between client and server on initial
 // connection.
 class ClientHello {

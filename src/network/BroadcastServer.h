@@ -42,6 +42,7 @@ class BroadcastServer : public QObject {
   QTimer *m_timer;
   void broadcastServerAction(const ServerAction &a);
   void broadcastUnreliable(const ServerAction &a);
+  void finalizeSaveHistory();
 };
 
 #endif  // SEQUENCINGSERVER_H

@@ -7,9 +7,13 @@
 #include <QTcpSocket>
 #include <QTimer>
 
+#include "protocol/Hello.h"
+
 const static QString NEXT_UID_KEY("next_uid");
 const static double playback_speed = 1;
 const static qint64 offset = 0;
+
+constexpr qint64 RECORDING_VERSION = 1;
 
 BroadcastServer::BroadcastServer(std::optional<QString> filename,
                                  std::optional<int> port,
@@ -33,6 +37,15 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
     m_history_elapsed.restart();
     if (QFileInfo(filename.value()).suffix() == "ptrec") {
       m_load_history = std::make_unique<QDataStream>(file);
+      qint64 protocol_version, recording_version;
+      *m_load_history >> protocol_version >> recording_version;
+      if (protocol_version != PROTOCOL_VERSION ||
+          recording_version != RECORDING_VERSION)
+        throw QString("Incompatible recording version. %1.%2 (%3.%4)")
+            .arg(protocol_version)
+            .arg(recording_version)
+            .arg(PROTOCOL_VERSION)
+            .arg(RECORDING_VERSION);
       *m_load_history >> m_data;
       QSettings metadata(filename.value() + "-meta", QSettings::IniFormat);
       bool ok;
@@ -79,7 +92,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
     if (!file->open(QIODevice::WriteOnly))
       throw QString("Unable to open history file for saving");
     m_save_history = std::make_unique<QDataStream>(file);
-    *m_save_history << m_data;
+    *m_save_history << PROTOCOL_VERSION << RECORDING_VERSION << m_data;
     m_save_history_metadata = std::make_unique<QSettings>(
         save_history.value() + "-meta", QSettings::IniFormat);
   }
@@ -104,6 +117,10 @@ BroadcastServer::~BroadcastServer() {
   // [broadcastDeleteSession] even after this destructor's been called.
   for (ServerSession *s : m_sessions) s->disconnect();
   m_server->close();
+  finalizeSaveHistory();
+}
+
+void BroadcastServer::finalizeSaveHistory() {
   if (m_save_history_metadata) {
     m_save_history->device()->close();
     m_save_history_metadata->setValue("next_uid", m_next_uid);
