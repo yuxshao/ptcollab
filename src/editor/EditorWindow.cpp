@@ -190,8 +190,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
-        "Experimental collaborative pxtone editor. Special "
-        "thanks to all testers and everyone in the pxtone discord!");
+        tr("Experimental multiplayer pxtone music editor. Special "
+           "thanks to all testers and everyone in the pxtone discord! Version: "
+           "%1")
+            .arg(QApplication::applicationVersion()));
   });
 }
 
