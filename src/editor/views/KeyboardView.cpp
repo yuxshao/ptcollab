@@ -44,6 +44,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
   setMouseTracking(true);
+  m_timer->restart();
   connect(m_anim, &Animation::nextFrame, [this]() { update(); });
   connect(m_anim, &Animation::nextFrame, [this]() {
     // This is not part of paintEvent because it causes some widgets to get
@@ -292,8 +293,6 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
     }
   }
 }
-// TODO: Make an FPS tracker singleton
-static qreal iFps;
 constexpr int WINDOW_BOUND_SLACK = 32;
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
@@ -361,12 +360,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   pen.setBrush(Qt::white);
   painter.setPen(pen);
   {
-    int interval = 20;
-    if (!(painted % interval)) {
-      qint64 elapsed = m_timer->nsecsElapsed();
+    int elapsed = m_timer->elapsed();
+    if (elapsed >= 2000) {
       m_timer->restart();
-      iFps = 1E9 / elapsed * interval;
-      emit fpsUpdated(iFps);
+      int fps = painted * 1000 / elapsed;
+      painted = 0;
+      emit fpsUpdated(fps);
     }
   }
 
