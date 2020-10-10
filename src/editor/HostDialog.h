@@ -25,6 +25,7 @@ class HostDialog : public QDialog {
   // TODO: Maybe validate here
 
  private:
+  QString m_last_project_file, m_last_record_file;
   Ui::HostDialog *ui;
   bool selectProjectFile();
 };

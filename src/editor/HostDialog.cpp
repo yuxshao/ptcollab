@@ -11,20 +11,12 @@ HostDialog::HostDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::HostDialog) {
   ui->setupUi(this);
 
-  QSettings settings;
-  ui->usernameInput->setText(
-      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
-  ui->saveRecordingFile->setText(
-      settings.value(PTREC_SAVE_FILE_KEY, "").toString());
-  ui->portInput->setText(
-      settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
-  ui->portInput->setValidator(new QIntValidator(0, 65535, this));
-  ui->saveRecordingGroup->setChecked(
-      settings.value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
-  ui->hostGroup->setChecked(
-      settings.value(HOSTING_ENABLED_KEY, false).toBool());
-
   connect(ui->openProjectGroup, &QGroupBox::toggled, [this](bool on) {
+    if (!on) {
+      m_last_project_file = ui->openProjectFile->text();
+      ui->openProjectFile->setText(tr("New Project"));
+    }
+    else ui->openProjectFile->setText(m_last_project_file);
     ui->openProjectBtn->setEnabled(on);
     ui->openProjectFile->setEnabled(on);
   });
@@ -32,6 +24,11 @@ HostDialog::HostDialog(QWidget *parent)
           &HostDialog::selectProjectFile);
 
   connect(ui->saveRecordingGroup, &QGroupBox::toggled, [this](bool on) {
+    if (!on) {
+      m_last_record_file = ui->saveRecordingFile->text();
+      ui->saveRecordingFile->setText(tr("No Recording"));
+    }
+    else ui->saveRecordingFile->setText(m_last_record_file);
     ui->saveRecordingBtn->setEnabled(on);
     ui->saveRecordingFile->setEnabled(on);
   });
@@ -50,6 +47,19 @@ HostDialog::HostDialog(QWidget *parent)
     ui->portInput->setEnabled(on);
     ui->usernameInput->setEnabled(on);
   });
+
+  QSettings settings;
+  ui->usernameInput->setText(
+      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
+  ui->saveRecordingFile->setText(
+      settings.value(PTREC_SAVE_FILE_KEY, "").toString());
+  ui->portInput->setText(
+      settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
+  ui->portInput->setValidator(new QIntValidator(0, 65535, this));
+  ui->saveRecordingGroup->setChecked(
+      settings.value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
+  ui->hostGroup->setChecked(
+      settings.value(HOSTING_ENABLED_KEY, false).toBool());
 }
 
 bool HostDialog::selectProjectFile() {
@@ -86,10 +96,9 @@ std::optional<QString> HostDialog::port() {
 
 int HostDialog::start(bool open_file) {
   ui->openProjectGroup->setChecked(open_file);
-  if (open_file) {
+  if (open_file)
     if (!selectProjectFile()) return QDialog::Rejected;
-  } else
-    ui->openProjectFile->setText("");
+
   return QDialog::exec();
 }
 
