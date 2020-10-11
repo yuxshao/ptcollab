@@ -199,19 +199,22 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
   /* Notify all the units of events that occurred since the last time increment
      and adjust sampling parameters accordingly */
   // events..
-  // TODO: Be able to handle changes while playing.
-  // 1. Adding between last and current event for this unit, or deleting the
-  // next event, or changing note length.
-  // I think _dynmoo_state.p_eve is incremented past clock at the end of this
-  // loop b/c that way, events are only triggered once even if multiple samples
-  // have the same clock.
-  for (; moo_state.p_eve && moo_state.p_eve->clock <= clock;
-       moo_state.p_eve = moo_state.p_eve->next) {
-    int32_t u = moo_state.p_eve->unit_no;
+
+  // Keep the last played event in moo_state, so that if a new event pops up
+  // during playback at the end, it's not missed.
+  // Handling arbitrary changes while playing is a bit more difficult. You'd
+  // have to split by event type at least, since something near the beginning
+  // could have lasting effects to now.
+  const EVERECORD* next =
+      (moo_state.p_eve ? moo_state.p_eve->next : evels->get_Records());
+  while (next && next->clock <= clock) {
+    int32_t u = next->unit_no;
     // TODO: Be robust to if there's a mention of a new unit. Generate the new
-    // unit on the fly?
-    moo_state.params.processEvent(&moo_state.units[u], moo_state.p_eve, clock,
-                                  smp_end, this);
+    // unit on the fly? (update: currently done by adding in the controller)
+    moo_state.params.processEvent(&moo_state.units[u], next, clock, smp_end,
+                                  this);
+    moo_state.p_eve = next;
+    next = moo_state.p_eve->next;
   }
 
   // sampling..
@@ -295,7 +298,7 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
     moo_state.smp_count =
         master->get_this_clock(master->get_repeat_meas(), 0, 0) *
         moo_state.params.clock_rate;
-    moo_state.p_eve = evels->get_Records();
+    moo_state.p_eve = nullptr;
     _moo_InitUnitTone(moo_state);
   }
   return true;
@@ -438,7 +441,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep,
 
   moo_state.tones_clear();
 
-  moo_state.p_eve = evels->get_Records();
+  moo_state.p_eve = nullptr;
   moo_state.num_loop = 0;
 
   _moo_InitUnitTone(moo_state);

@@ -348,10 +348,11 @@ fill architecture could work well.
 1. appimage, standardize enum sizes
 2. cleaner user list
 3. Some fixes with watching another user randomly stopping
+4. If the playhead passes over the last event, new events added to the song
+   will still be played.
 
 Todo by priority
 ----------------
- - last event doesn't end song
  - include starter kit / tutorial
  - test watching, recording
  - redo demo
