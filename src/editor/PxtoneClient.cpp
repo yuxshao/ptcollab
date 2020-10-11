@@ -151,6 +151,7 @@ void PxtoneClient::setFollowing(std::optional<qint64> following) {
   m_following_user = following;
 
   if (following.has_value() && following != m_controller->uid()) {
+    sendAction(WatchUser{following.value()});
     const auto it = m_remote_edit_states.find(following.value());
     if (it != m_remote_edit_states.end() && it->second.state.has_value()) {
       // stop audio, that the next playstate msg causes us to sync if the other
@@ -243,6 +244,15 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                             m_following_user == uid)
                           emit followActivity(s);
                       }
+                    },
+                    [this, uid](const WatchUser &) {
+                      // TODO: Maybe remember who's watching whom so that if you
+                      // watch them you follow their watchee too?
+                      auto it = m_remote_edit_states.find(uid);
+                      if (it == m_remote_edit_states.end())
+                        qWarning()
+                            << "Received watch user for unknown session" << uid;
+                      it->second.state.reset();
                     },
                     [this, uid](const Ping &s) {
                       auto it = m_remote_edit_states.find(uid);

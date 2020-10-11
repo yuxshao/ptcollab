@@ -350,10 +350,9 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - alt+scroll stops watch
  - last event doesn't end song
  - include starter kit / tutorial
- - alt+scroll stops watch
- - don't show your own cursor if you're watching
  - test watching, recording
  - redo demo
  - spice up demo song
