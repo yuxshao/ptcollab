@@ -351,20 +351,20 @@ fill architecture could work well.
 4. If the playhead passes over the last event, new events added to the song
    will still be played.
 
+10/11
+1. Build on mac
+2. Better help
+3. Update pages
+
 Todo by priority
 ----------------
+ - mac icons
+ - redo demo
  - include starter kit / tutorial 
    - ask ppl if they're willing to have their instrument packs included or a
      sample song!
- - test watching, recording
- - test windows / linux
- - redo demo
  - spice up demo song
- - clean up the user list to not deselect
- - gh-pages - update style?
- - gh-pages - thank-you section -
-    gkpotter and steedfarmer for mac build, arcofdream
- - cross-platform binaries
+ - gh-pages - thanks and links
 
  - midi input???
    - start with qwerty input

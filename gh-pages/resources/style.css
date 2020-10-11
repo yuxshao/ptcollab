@@ -46,10 +46,18 @@ a:hover { color: #DED9BB; }
 
 .download-list {
   display:flex;
-  align-items:stretch;
-  margin:10px 0;
+  align-items:center;
+  margin:25px 0;
+}
+
+.download-list > div img {
+  max-width:150px;
+  display:block;
+  margin:auto;
 }
 
 .download-list > div {
-  flex: 1
+  flex-grow:1;
+  flex-shrink:1;
+  text-align:center;
 }

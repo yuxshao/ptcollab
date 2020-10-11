@@ -39,7 +39,6 @@
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
     <addaction name="actionStyle"/>
-    <addaction name="actionClearSettings"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -115,7 +114,7 @@
   </action>
   <action name="actionClearSettings">
    <property name="text">
-    <string>Clear settings</string>
+    <string>Clear app settings</string>
    </property>
   </action>
   <action name="actionStyle">

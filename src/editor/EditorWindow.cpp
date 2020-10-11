@@ -164,11 +164,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
-  connect(ui->actionClearSettings, &QAction::triggered, [this]() {
+  /*connect(ui->actionClearSettings, &QAction::triggered, [this]() {
     if (QMessageBox::question(this, "Clear settings",
-                              "Are you sure you want to clear your settings?"))
-      QSettings().clear();
-  });
+                              "Are you sure you want to clear your app "
+                              "settings (default username, last connected
+  server)?")) QSettings().clear();
+  });*/
   connect(ui->actionShortcuts, &QAction::triggered, m_shortcuts_dialog,
           &QDialog::exec);
   connect(ui->actionExit, &QAction::triggered,
@@ -467,7 +468,6 @@ void EditorWindow::connectToHost() {
 
   if (!m_connect_dialog->exec()) return;
   m_connect_dialog->persistSettings();
-  QSettings settings;
   QStringList parsed_host_and_port = m_connect_dialog->address().split(":");
   if (parsed_host_and_port.length() != 2) {
     QMessageBox::warning(this, tr("Invalid address"),
