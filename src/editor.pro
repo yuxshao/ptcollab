@@ -39,6 +39,7 @@ HEADERS += \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
            editor/sidemenu/OverdriveEffectModel.h \
+           editor/sidemenu/UserListModel.h \
            editor/sidemenu/WoiceListModel.h \
            editor/views/Animation.h \
            editor/audio/AudioFormat.h \
@@ -108,6 +109,7 @@ SOURCES += main.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
+           editor/sidemenu/UserListModel.cpp \
            editor/sidemenu/WoiceListModel.cpp \
            editor/views/Animation.cpp \
            editor/audio/AudioFormat.cpp \

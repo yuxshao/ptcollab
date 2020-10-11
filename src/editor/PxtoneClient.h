@@ -41,12 +41,18 @@ class PxtoneClient : public QObject {
   Clipboard *m_clipboard;
 
  signals:
-  void userListChanged(const QList<UserListEntry> &users);
   void editStateChanged(const EditState &m_edit_state);
   void playStateChanged(bool playing);
   void followActivity(const EditState &r);
   void updatePing(std::optional<qint64> ping_length);
   void connected();
+
+  void beginAddUser(int index);
+  void endAddUser();
+  void beginRemoveUser(int index);
+  void endRemoveUser();
+  void beginUserListRefresh();
+  void endUserListRefresh();
 
  public:
   PxtoneClient(pxtnService *pxtn, ConnectionStatusLabel *connection_status,

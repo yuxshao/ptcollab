@@ -17,8 +17,7 @@ QList<UserListEntry> getUserList(
   return list;
 }
 
-using namespace std::chrono_literals;
-const static std::chrono::milliseconds PING_INTERVAL = 3000ms;
+const static int PING_INTERVAL = 2000;
 
 PxtoneClient::PxtoneClient(pxtnService *pxtn,
                            ConnectionStatusLabel *connection_status,
@@ -46,7 +45,6 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
           &PxtoneClient::playStateChanged);
 
   connect(m_ping_timer, &QTimer::timeout, [this]() {
-    emit userListChanged(getUserList(m_remote_edit_states));
     sendPlayState(false);
     sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
   });
@@ -62,13 +60,15 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
         emit connected();
         m_controller->setUid(uid);
         for (ServerAction &a : history) processRemoteAction(a);
+        sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
         m_ping_timer->start(PING_INTERVAL);
       });
   connect(m_client, &Client::disconnected,
           [this, connection_status](bool suppress_alert) {
             connection_status->setClientConnectionState(std::nullopt);
+            emit beginUserListRefresh();
             m_remote_edit_states.clear();
-            emit userListChanged(getUserList(m_remote_edit_states));
+            emit endUserListRefresh();
             if (!suppress_alert)
               QMessageBox::information(nullptr, "Disconnected",
                                        "Disconnected from server.");
@@ -378,19 +378,32 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                 s);
           },
           [this, uid](const NewSession &s) {
-            if (m_remote_edit_states.find(uid) != m_remote_edit_states.end())
+            bool overwriting =
+                (m_remote_edit_states.find(uid) != m_remote_edit_states.end());
+            if (overwriting)
               qWarning() << "Remote session already exists for uid" << uid
                          << "; overwriting";
+            else {
+              auto pos = m_remote_edit_states.lower_bound(uid);
+              emit beginAddUser(
+                  std::distance(pos, m_remote_edit_states.begin()));
+            }
             m_remote_edit_states[uid] =
                 RemoteEditState{std::nullopt, std::nullopt, s.username};
-            emit userListChanged(getUserList(m_remote_edit_states));
+            if (!overwriting) emit endAddUser();
           },
           [this, uid](const DeleteSession &s) {
             (void)s;
-            if (!m_remote_edit_states.erase(uid))
+            auto pos = m_remote_edit_states.find(uid);
+            if (pos == m_remote_edit_states.end()) {
               qWarning() << "Received delete for unknown remote session";
+              return;
+            }
+            emit beginRemoveUser(
+                std::distance(pos, m_remote_edit_states.begin()));
+            m_remote_edit_states.erase(pos);
             if (following_uid() == uid) setFollowing(std::nullopt);
-            emit userListChanged(getUserList(m_remote_edit_states));
+            emit endRemoveUser();
           },
       },
       a.action);

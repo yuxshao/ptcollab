@@ -20,17 +20,18 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
 }
 
 SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
+                   UserListModel* users,
                    QAbstractListModel* woices_for_add_unit,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
-      m_users(new QStringListModel(this)),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(new SelectWoiceDialog(woices_for_add_unit, this)),
       m_units(units),
       m_woices(woices),
+      m_users(users),
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
@@ -43,16 +44,19 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   ui->unitList->setModel(m_units);
   ui->woiceList->setModel(m_woices);
+  ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
   ui->unitList->setItemDelegate(new UnitListDelegate);
   setPlay(false);
-  for (auto* list :
-       {ui->unitList, ui->woiceList, ui->delayList, ui->overdriveList}) {
+  for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
+                     ui->overdriveList, ui->usersList}) {
     list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     list->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
   }
+  ui->usersList->horizontalHeader()->setSectionResizeMode(
+      int(UserListModel::Column::Name), QHeaderView::Stretch);
 
   void (QComboBox::*indexChanged)(int) = &QComboBox::currentIndexChanged;
 
@@ -188,7 +192,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       QMessageBox::warning(this, "Invalid unit options",
                            "Name or selected instrument invalid");
   });
-  ui->userList->setModel(m_users);
 
   connect(ui->paramSelection, indexChanged, this,
           &SideMenu::paramKindIndexChanged);
@@ -229,11 +232,11 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       emit bufferLengthChanged(length);
     }
   });
-  connect(ui->userList, &QListView::activated,
+  connect(ui->usersList, &QTableView::activated,
           [this](const QModelIndex& index) { emit userSelected(index.row()); });
   connect(ui->watchBtn, &QPushButton::clicked, [this]() {
-    if (ui->userList->selectionModel()->hasSelection())
-      emit userSelected(ui->userList->currentIndex().row());
+    if (ui->usersList->selectionModel()->hasSelection())
+      emit userSelected(ui->usersList->currentIndex().row());
   });
 }
 
@@ -263,23 +266,6 @@ void SideMenu::setModified(bool modified) {
     ui->saveBtn->setText("*");
   else
     ui->saveBtn->setText("");
-}
-
-void SideMenu::setUserList(QList<UserListEntry> users) {
-  QList<QString> usernames;
-  for (const auto& entry : users) {
-    QString ping = "";
-    if (entry.last_ping.has_value()) {
-      qint64 p = entry.last_ping.value();
-      if (p > 1000)
-        ping = QString("[%1s]").arg(p / 1000);
-      else
-        ping = QString("[%1ms]").arg(p);
-    }
-    usernames.append(
-        QString("%1 (%2) %3").arg(entry.user).arg(entry.id).arg(ping));
-  }
-  m_users->setStringList(usernames);
 }
 
 void SideMenu::setTempo(int tempo) {

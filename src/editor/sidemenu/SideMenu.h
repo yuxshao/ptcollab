@@ -10,6 +10,7 @@
 #include "OverdriveEffectModel.h"
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
+#include "UserListModel.h"
 #include "WoiceListModel.h"
 
 namespace Ui {
@@ -23,6 +24,7 @@ class SideMenu : public QWidget {
 
  public:
   explicit SideMenu(UnitListModel *units, WoiceListModel *woices,
+                    UserListModel *users,
                     QAbstractListModel *woices_for_add_unit,
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     QWidget *parent = nullptr);
@@ -67,7 +69,6 @@ class SideMenu : public QWidget {
   void setCurrentWoice(int unit_no);
   void setPlay(bool);
   void setModified(bool);
-  void setUserList(QList<UserListEntry> users);
   void setTempo(int tempo);
   void setBeats(int beats);
   void setFollowPlayhead(FollowPlayhead follow);
@@ -75,12 +76,12 @@ class SideMenu : public QWidget {
 
  private:
   Ui::SideMenu *ui;
-  QStringListModel *m_users;
   QFileDialog *m_add_woice_dialog;
   QFileDialog *m_change_woice_dialog;
   SelectWoiceDialog *m_add_unit_dialog;
   UnitListModel *m_units;
   WoiceListModel *m_woices;
+  UserListModel *m_users;
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
 };
