@@ -386,7 +386,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
             else {
               auto pos = m_remote_edit_states.lower_bound(uid);
               emit beginAddUser(
-                  std::distance(pos, m_remote_edit_states.begin()));
+                  std::distance(m_remote_edit_states.begin(), pos));
             }
             m_remote_edit_states[uid] =
                 RemoteEditState{std::nullopt, std::nullopt, s.username};
@@ -400,7 +400,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
               return;
             }
             emit beginRemoveUser(
-                std::distance(pos, m_remote_edit_states.begin()));
+                std::distance(m_remote_edit_states.begin(), pos));
             m_remote_edit_states.erase(pos);
             if (following_uid() == uid) setFollowing(std::nullopt);
             emit endRemoveUser();
