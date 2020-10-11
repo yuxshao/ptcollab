@@ -12,6 +12,7 @@
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
+#include "ShortcutsDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
@@ -58,6 +59,7 @@ class EditorWindow : public QMainWindow {
   bool m_modified;
   HostDialog* m_host_dialog;
   ConnectDialog* m_connect_dialog;
+  ShortcutsDialog* m_shortcuts_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

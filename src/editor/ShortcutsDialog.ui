@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ShortcutsDialog</class>
+ <widget class="QDialog" name="ShortcutsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>568</width>
+    <height>433</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <attribute name="horizontalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>24</number>
+     </attribute>
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>47</number>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>24</number>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>26</number>
+     </attribute>
+     <row>
+      <property name="text">
+       <string>Shift+scroll</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Middle-click</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Ctrl+(shift)+scroll</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Alt+scroll</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Shift+click</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string/>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
+     <column>
+      <property name="text">
+       <string>Shortcut</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Description</string>
+      </property>
+     </column>
+     <item row="0" column="0">
+      <property name="text">
+       <string>Shift+scroll</string>
+      </property>
+     </item>
+     <item row="0" column="1">
+      <property name="text">
+       <string>Scroll horizontally</string>
+      </property>
+     </item>
+     <item row="1" column="0">
+      <property name="text">
+       <string>Middle-click drag</string>
+      </property>
+     </item>
+     <item row="1" column="1">
+      <property name="text">
+       <string>Scroll</string>
+      </property>
+     </item>
+     <item row="2" column="0">
+      <property name="text">
+       <string>Ctrl+(shift)+scroll</string>
+      </property>
+     </item>
+     <item row="2" column="1">
+      <property name="text">
+       <string>Zoom</string>
+      </property>
+     </item>
+     <item row="3" column="0">
+      <property name="text">
+       <string>Alt+scroll</string>
+      </property>
+     </item>
+     <item row="3" column="1">
+      <property name="text">
+       <string>Change quantization</string>
+      </property>
+     </item>
+     <item row="4" column="0">
+      <property name="text">
+       <string>Ctrl+click</string>
+      </property>
+     </item>
+     <item row="4" column="1">
+      <property name="text">
+       <string>Change pitch only, not note starts</string>
+      </property>
+     </item>
+     <item row="5" column="0">
+      <property name="text">
+       <string>Shift+click</string>
+      </property>
+     </item>
+     <item row="5" column="1">
+      <property name="text">
+       <string>Seek</string>
+      </property>
+     </item>
+     <item row="6" column="0">
+      <property name="text">
+       <string>Ctrl+shift+click</string>
+      </property>
+     </item>
+     <item row="6" column="1">
+      <property name="text">
+       <string>Select</string>
+      </property>
+     </item>
+     <item row="7" column="0">
+      <property name="text">
+       <string>Ctrl+D</string>
+      </property>
+     </item>
+     <item row="7" column="1">
+      <property name="text">
+       <string>Deselect</string>
+      </property>
+     </item>
+     <item row="8" column="0">
+      <property name="text">
+       <string>(Shift)+(Ctrl)+up/down</string>
+      </property>
+     </item>
+     <item row="8" column="1">
+      <property name="text">
+       <string>Transpose or shift selection parameters</string>
+      </property>
+     </item>
+     <item row="9" column="0">
+      <property name="text">
+       <string>W/S/PgUp/PgDn</string>
+      </property>
+     </item>
+     <item row="9" column="1">
+      <property name="text">
+       <string>Cycle unit</string>
+      </property>
+     </item>
+     <item row="10" column="0">
+      <property name="text">
+       <string>1..9</string>
+      </property>
+     </item>
+     <item row="10" column="1">
+      <property name="text">
+       <string>Jump to unit directly</string>
+      </property>
+     </item>
+     <item row="11" column="0">
+      <property name="text">
+       <string>E/D</string>
+      </property>
+     </item>
+     <item row="11" column="1">
+      <property name="text">
+       <string>Cycle parameter</string>
+      </property>
+     </item>
+     <item row="12" column="0">
+      <property name="text">
+       <string>F</string>
+      </property>
+     </item>
+     <item row="12" column="1">
+      <property name="text">
+       <string>Follow playhead</string>
+      </property>
+     </item>
+     <item row="13" column="0">
+      <property name="text">
+       <string>F1..F4</string>
+      </property>
+     </item>
+     <item row="13" column="1">
+      <property name="text">
+       <string>Switch tabs</string>
+      </property>
+     </item>
+     <item row="14" column="0">
+      <property name="text">
+       <string>C</string>
+      </property>
+     </item>
+     <item row="14" column="1">
+      <property name="text">
+       <string>Toggle if a parameter is copied</string>
+      </property>
+     </item>
+     <item row="15" column="0">
+      <property name="text">
+       <string>Shift+D</string>
+      </property>
+     </item>
+     <item row="15" column="1">
+      <property name="text">
+       <string>Toggle dark piano roll</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ShortcutsDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ShortcutsDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

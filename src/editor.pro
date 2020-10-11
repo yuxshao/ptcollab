@@ -35,6 +35,7 @@ HEADERS += \
            editor/FileSettings.h \
            editor/HostDialog.h \
            editor/Settings.h \
+           editor/ShortcutsDialog.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
@@ -97,6 +98,7 @@ FORMS += \
     editor/ConnectDialog.ui \
     editor/EditorWindow.ui \
     editor/HostDialog.ui \
+    editor/ShortcutsDialog.ui \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
@@ -105,6 +107,7 @@ SOURCES += main.cpp \
            editor/FileSettings.cpp \
            editor/HostDialog.cpp \
            editor/Settings.cpp \
+           editor/ShortcutsDialog.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \

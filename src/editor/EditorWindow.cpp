@@ -33,8 +33,9 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_fps_status(new QLabel("FPS", this)),
       m_ping_status(new QLabel("", this)),
       m_modified(false),
-      m_host_dialog(new HostDialog),
-      m_connect_dialog(new ConnectDialog),
+      m_host_dialog(new HostDialog(this)),
+      m_connect_dialog(new ConnectDialog(this)),
+      m_shortcuts_dialog(new ShortcutsDialog(this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -168,30 +169,16 @@ EditorWindow::EditorWindow(QWidget *parent)
                               "Are you sure you want to clear your settings?"))
       QSettings().clear();
   });
-  connect(ui->actionShortcuts, &QAction::triggered, [=]() {
-    QMessageBox::about(
-        this, "Shortcuts",
-        "Ctrl+(Shift)+scroll to zoom.\nShift+scroll to scroll "
-        "horizontally.\nMiddle-click drag also "
-        "scrolls.\nAlt+Scroll to change quantization.\nShift+click to "
-        "seek.\nCtrl+click to modify note instead of on "
-        "values.\nCtrl+shift+click to select.\nShift+rclick or Ctrl+D to "
-        "deselect.\nWith "
-        "a selection, (shift)+(ctrl)+up/down shifts velocity / key.\n (W or "
-        "PgUp/S or PgDn) to "
-        "cycle unit.\n1..9 to jump to a unit directly.\n(E/D) to cycle "
-        "parameter.\nF to follow playhead.\n C to "
-        "toggle if a parameter is copied. Velocity is tied to note and on "
-        "events.\n(F1..F4) to switch tabs.\nShift+D to toggle a dark piano "
-        "roll.");
-  });
+  connect(ui->actionShortcuts, &QAction::triggered, m_shortcuts_dialog,
+          &QDialog::exec);
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
         tr("Experimental multiplayer pxtone music editor. Special "
-           "thanks to all testers and everyone in the pxtone discord! Version: "
+           "thanks to all testers and everyone in the pxtone "
+           "discord!\n\nVersion: "
            "%1")
             .arg(QApplication::applicationVersion()));
   });
