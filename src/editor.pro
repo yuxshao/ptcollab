@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = ptcollab
 INCLUDEPATH += .
 win32:INCLUDEPATH += ../deps/include
+macx:INCLUDEPATH += ../deps/include
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia

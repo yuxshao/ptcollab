@@ -3,11 +3,14 @@
 <div align="center">Experimental pxtone editor where you can collaborate with friends!</div>
 
 ## Installation
-If you're building from source, it should work with a Qt5 install, but does
-require ogg/vorbis.
+If you're building from source, it should work with a Qt5.15 install, but does
+require ogg/vorbis and C++17.
 
-Windows build included in releases page. You will need the Visual C++ 2017
-runtime.
+On Mac, you may need to install a later version of clang (e.g., through `brew
+install llvm`). Then, in the Makefile, point to those compilers, change the
+mac deployment target to 10.14 and use `-std=c++20`.
+
+Windows build included in releases page. 
 
 ## Features
 Most features in pxtone collage are available here:
@@ -70,4 +73,6 @@ let me know if I forgot anyone:
 8. Jade for testing, finding UI bugs, and providing valuable
    feedback and suggestions!
 9. gkpotter and arcofdream for helping getting this ready for release!
-10. Everyone in the pxtone discord servers!
+10. steedfarmer for figuring out the mac build, and gkpotter for providing the
+    deployment!
+11. Everyone in the pxtone discord servers!
