@@ -182,6 +182,14 @@ EditorWindow::EditorWindow(QWidget *parent)
            "%1")
             .arg(QApplication::applicationVersion()));
   });
+  ui->actionStyle->setChecked(
+      QSettings().value(CUSTOM_STYLE_KEY, true).toBool());
+  connect(ui->actionStyle, &QAction::toggled, [this](bool checked) {
+    QMessageBox::information(
+        this, tr("Style change"),
+        tr("Style change will take effect after program restart."));
+    QSettings().setValue(CUSTOM_STYLE_KEY, checked);
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

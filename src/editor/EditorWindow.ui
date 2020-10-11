@@ -38,6 +38,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
+    <addaction name="actionStyle"/>
     <addaction name="actionClearSettings"/>
     <addaction name="actionExit"/>
    </widget>
@@ -115,6 +116,17 @@
   <action name="actionClearSettings">
    <property name="text">
     <string>Clear settings</string>
+   </property>
+  </action>
+  <action name="actionStyle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use custom style</string>
    </property>
   </action>
  </widget>

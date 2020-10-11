@@ -12,5 +12,6 @@ const extern QString SAVE_RECORDING_ENABLED_KEY;
 const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
+const extern QString CUSTOM_STYLE_KEY;
 
 #endif  // FILESETTINGS_H

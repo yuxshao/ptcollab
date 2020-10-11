@@ -5,6 +5,7 @@
 #include <QStyleFactory>
 
 #include "editor/EditorWindow.h"
+#include "editor/FileSettings.h"
 #include "network/BroadcastServer.h"
 
 const static QString stylesheet =
@@ -22,11 +23,7 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  QSettings settings("settings.ini", QSettings::IniFormat);
-  QString style = settings.value("style", "").toString();
-  if (style != "") QApplication::setStyle(style);
-  bool use_custom_palette = settings.value("use_custom_palette", true).toBool();
-  if (use_custom_palette) {
+  if (QSettings().value(CUSTOM_STYLE_KEY, true).toBool()) {
     QPalette palette = qApp->palette();
     QColor text(222, 217, 187);
     QColor base(78, 75, 97);
