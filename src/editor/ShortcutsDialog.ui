@@ -42,6 +42,31 @@
      </attribute>
      <row>
       <property name="text">
+       <string>Space</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Esc</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Ctrl+Z</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Ctrl+Shift+Z</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Ctrl+Y</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
        <string>Shift+scroll</string>
       </property>
      </row>
@@ -132,160 +157,210 @@
      </column>
      <item row="0" column="0">
       <property name="text">
-       <string>Shift+scroll</string>
+       <string>Space</string>
       </property>
      </item>
      <item row="0" column="1">
       <property name="text">
-       <string>Scroll horizontally</string>
+       <string>Play/Pause</string>
       </property>
      </item>
      <item row="1" column="0">
       <property name="text">
-       <string>Middle-click drag</string>
+       <string>Esc</string>
       </property>
      </item>
      <item row="1" column="1">
       <property name="text">
-       <string>Scroll</string>
+       <string>Stop</string>
       </property>
      </item>
      <item row="2" column="0">
       <property name="text">
-       <string>Ctrl+(shift)+scroll</string>
+       <string>Ctrl+Z</string>
       </property>
      </item>
      <item row="2" column="1">
       <property name="text">
-       <string>Zoom</string>
+       <string>Undo</string>
       </property>
      </item>
      <item row="3" column="0">
       <property name="text">
-       <string>Alt+scroll</string>
+       <string>Ctrl+Shift+Z</string>
       </property>
      </item>
      <item row="3" column="1">
       <property name="text">
-       <string>Change quantization</string>
+       <string>Redo</string>
       </property>
      </item>
      <item row="4" column="0">
       <property name="text">
-       <string>Ctrl+click</string>
+       <string>Ctrl+Y</string>
       </property>
      </item>
      <item row="4" column="1">
       <property name="text">
-       <string>Change pitch only, not note starts</string>
+       <string>Redo</string>
       </property>
      </item>
      <item row="5" column="0">
       <property name="text">
-       <string>Shift+click</string>
+       <string>Shift+scroll</string>
       </property>
      </item>
      <item row="5" column="1">
       <property name="text">
-       <string>Seek</string>
+       <string>Scroll horizontally</string>
       </property>
      </item>
      <item row="6" column="0">
       <property name="text">
-       <string>Ctrl+shift+click</string>
+       <string>Middle-click drag</string>
       </property>
      </item>
      <item row="6" column="1">
       <property name="text">
-       <string>Select</string>
+       <string>Scroll</string>
       </property>
      </item>
      <item row="7" column="0">
       <property name="text">
-       <string>Ctrl+D</string>
+       <string>Ctrl+(shift)+scroll</string>
       </property>
      </item>
      <item row="7" column="1">
       <property name="text">
-       <string>Deselect</string>
+       <string>Zoom</string>
       </property>
      </item>
      <item row="8" column="0">
       <property name="text">
-       <string>(Shift)+(Ctrl)+up/down</string>
+       <string>Alt+scroll</string>
       </property>
      </item>
      <item row="8" column="1">
       <property name="text">
-       <string>Transpose or shift selection parameters</string>
+       <string>Change quantization</string>
       </property>
      </item>
      <item row="9" column="0">
       <property name="text">
-       <string>W/S/PgUp/PgDn</string>
+       <string>Ctrl+click</string>
       </property>
      </item>
      <item row="9" column="1">
       <property name="text">
-       <string>Cycle unit</string>
+       <string>Change pitch only, not note starts</string>
       </property>
      </item>
      <item row="10" column="0">
       <property name="text">
-       <string>1..9</string>
+       <string>Shift+click</string>
       </property>
      </item>
      <item row="10" column="1">
       <property name="text">
-       <string>Jump to unit directly</string>
+       <string>Seek</string>
       </property>
      </item>
      <item row="11" column="0">
       <property name="text">
-       <string>E/D</string>
+       <string>Ctrl+shift+click</string>
       </property>
      </item>
      <item row="11" column="1">
       <property name="text">
-       <string>Cycle parameter</string>
+       <string>Select</string>
       </property>
      </item>
      <item row="12" column="0">
       <property name="text">
-       <string>F</string>
+       <string>Ctrl+D</string>
       </property>
      </item>
      <item row="12" column="1">
       <property name="text">
-       <string>Follow playhead</string>
+       <string>Deselect</string>
       </property>
      </item>
      <item row="13" column="0">
       <property name="text">
-       <string>F1..F4</string>
+       <string>(Shift)+(Ctrl)+up/down</string>
       </property>
      </item>
      <item row="13" column="1">
       <property name="text">
-       <string>Switch tabs</string>
+       <string>Transpose or shift selection parameters</string>
       </property>
      </item>
      <item row="14" column="0">
       <property name="text">
-       <string>C</string>
+       <string>W/S/PgUp/PgDn</string>
       </property>
      </item>
      <item row="14" column="1">
       <property name="text">
-       <string>Toggle if a parameter is copied</string>
+       <string>Cycle unit</string>
       </property>
      </item>
      <item row="15" column="0">
       <property name="text">
-       <string>Shift+D</string>
+       <string>1..9</string>
       </property>
      </item>
      <item row="15" column="1">
+      <property name="text">
+       <string>Jump to unit directly</string>
+      </property>
+     </item>
+     <item row="16" column="0">
+      <property name="text">
+       <string>E/D</string>
+      </property>
+     </item>
+     <item row="16" column="1">
+      <property name="text">
+       <string>Cycle parameter</string>
+      </property>
+     </item>
+     <item row="17" column="0">
+      <property name="text">
+       <string>F</string>
+      </property>
+     </item>
+     <item row="17" column="1">
+      <property name="text">
+       <string>Follow playhead</string>
+      </property>
+     </item>
+     <item row="18" column="0">
+      <property name="text">
+       <string>F1..F4</string>
+      </property>
+     </item>
+     <item row="18" column="1">
+      <property name="text">
+       <string>Switch tabs</string>
+      </property>
+     </item>
+     <item row="19" column="0">
+      <property name="text">
+       <string>C</string>
+      </property>
+     </item>
+     <item row="19" column="1">
+      <property name="text">
+       <string>Toggle if a parameter is copied</string>
+      </property>
+     </item>
+     <item row="20" column="0">
+      <property name="text">
+       <string>Shift+D</string>
+      </property>
+     </item>
+     <item row="20" column="1">
       <property name="text">
        <string>Toggle dark piano roll</string>
       </property>
