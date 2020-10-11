@@ -37,4 +37,7 @@
         <file alias="pause">icons/color/pause-icon.svg</file>
         <file alias="stop">icons/color/stop-icon.svg</file>
     </qresource>
+    <qresource prefix="/favicon">
+        <file alias="icon">icon.ico</file>
+    </qresource>
 </RCC>
