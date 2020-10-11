@@ -43,12 +43,14 @@ QVariant DelayEffectModel::data(const QModelIndex &index, int role) const {
 DELAYUNIT DELAYUNIT_fromQString(const QString &s, bool *ok) {
   *ok = true;
   char firstChar = s.front().toLower().toLatin1();
-  if (firstChar == 's' || s == QString::fromUtf8(u8"秒"))
+  // Needt to cast to char * to work for mac.
+  if (firstChar == 's' || s == QString::fromUtf8((char *)(u8"秒")))
     return DELAYUNIT_Second;
-  else if (firstChar == 'b' || s == QString::fromUtf8(u8"拍"))
+  else if (firstChar == 'b' || s == QString::fromUtf8((char *)(u8"拍")))
     return DELAYUNIT_Beat;
-  else if (firstChar == 'm' || s == QString::fromUtf8(u8"小節") ||
-           s == QString::fromUtf8(u8"小") || s == QString::fromUtf8(u8"節"))
+  else if (firstChar == 'm' || s == QString::fromUtf8((char *)(u8"小節")) ||
+           s == QString::fromUtf8((char *)(u8"小")) ||
+           s == QString::fromUtf8((char *)(u8"節")))
     return DELAYUNIT_Meas;
 
   *ok = false;
