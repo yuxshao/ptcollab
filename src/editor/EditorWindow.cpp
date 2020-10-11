@@ -204,7 +204,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   switch (key) {
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->selectAll();
+        m_keyboard_view->selectAll(false);
       break;
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
@@ -218,28 +218,34 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_D:
       if (event->modifiers() & Qt::ControlModifier)
-        m_client->deselect();
+        m_client->deselect(false);
       else if (event->modifiers() & Qt::ShiftModifier)
         m_keyboard_view->toggleDark();
       else {
-        m_client->changeEditState([&](EditState &s) {
-          ++s.m_current_param_kind_idx;
-          s.m_current_param_kind_idx = s.current_param_kind_idx();
-        });
+        m_client->changeEditState(
+            [&](EditState &s) {
+              ++s.m_current_param_kind_idx;
+              s.m_current_param_kind_idx = s.current_param_kind_idx();
+            },
+            false);
       }
       break;
     case Qt::Key_E:
-      m_client->changeEditState([&](EditState &s) {
-        --s.m_current_param_kind_idx;
-        s.m_current_param_kind_idx = s.current_param_kind_idx();
-      });
+      m_client->changeEditState(
+          [&](EditState &s) {
+            --s.m_current_param_kind_idx;
+            s.m_current_param_kind_idx = s.current_param_kind_idx();
+          },
+          false);
       break;
     case Qt::Key_F:
-      m_client->changeEditState([&](EditState &s) {
-        s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
-                                  ? FollowPlayhead::Jump
-                                  : FollowPlayhead::None;
-      });
+      m_client->changeEditState(
+          [&](EditState &s) {
+            s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
+                                      ? FollowPlayhead::Jump
+                                      : FollowPlayhead::None;
+          },
+          false);
       break;
     case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
@@ -257,7 +263,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->cycleCurrentUnit(-1);
       break;
     case Qt::Key_V:
-      if (event->modifiers() & Qt::ControlModifier) m_keyboard_view->paste();
+      if (event->modifiers() & Qt::ControlModifier)
+        m_keyboard_view->paste(false);
       break;
     case Qt::Key_X:
       if (event->modifiers() & Qt::ControlModifier)
@@ -291,10 +298,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_7:
     case Qt::Key_8:
     case Qt::Key_9:
-      m_keyboard_view->setCurrentUnitNo(key - Qt::Key_1);
+      m_keyboard_view->setCurrentUnitNo(key - Qt::Key_1, false);
       break;
     case Qt::Key_0:
-      m_keyboard_view->setCurrentUnitNo(9);
+      m_keyboard_view->setCurrentUnitNo(9, false);
       break;
     case Qt::Key_PageDown:
       m_keyboard_view->cycleCurrentUnit(1);
@@ -419,7 +426,9 @@ bool EditorWindow::saveToFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(f_raw, &fclose);
   if (!f) {
     qWarning() << "Could not open file" << filename;
-    QMessageBox::warning(this, tr("Could not save file"), tr("Could not open file %1 for writing").arg(filename));
+    QMessageBox::warning(
+        this, tr("Could not save file"),
+        tr("Could not open file %1 for writing").arg(filename));
     return false;
   }
   pxtnDescriptor desc;

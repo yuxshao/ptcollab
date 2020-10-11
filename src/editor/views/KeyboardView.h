@@ -31,7 +31,7 @@ class KeyboardView : public QWidget {
   explicit KeyboardView(PxtoneClient *client, MooClock *moo_clock,
                         QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset);
-  void setCurrentUnitNo(int unit_no);
+  void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
  signals:
   void ensureVisibleX(int x, bool strict);
@@ -39,12 +39,12 @@ class KeyboardView : public QWidget {
 
  public slots:
   void toggleTestActivity();
-  void selectAll();
+  void selectAll(bool preserveFollow);
   void transposeSelection(Direction dir, bool wide, bool shift);
   void cutSelection();
   void copySelection();
   void clearSelection();
-  void paste();
+  void paste(bool preserveFollow);
   void toggleDark();
 
  private:

@@ -57,19 +57,23 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
   if (event->modifiers() & Qt::ControlModifier) {
     if (event->modifiers() & Qt::ShiftModifier) {
       // scale X
-      client->changeEditState([&](EditState &e) {
-        e.scale.clockPerPx *= pow(2, delta / 240.0);
-        if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
-        if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
-      });
+      client->changeEditState(
+          [&](EditState &e) {
+            e.scale.clockPerPx *= pow(2, delta / 240.0);
+            if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
+            if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
+          },
+          false);
     } else if (scaleY) {
       // scale Y
-      client->changeEditState([&](EditState &e) {
-        e.scale.pitchPerPx *= pow(2, delta / 240.0);
-        if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
-        if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
-          e.scale.pitchPerPx = PITCH_PER_KEY / 4;
-      });
+      client->changeEditState(
+          [&](EditState &e) {
+            e.scale.pitchPerPx *= pow(2, delta / 240.0);
+            if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
+            if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
+              e.scale.pitchPerPx = PITCH_PER_KEY / 4;
+          },
+          false);
     }
 
     event->accept();
@@ -78,11 +82,13 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
     // Maybe alt shift could handle quantize y?
     delta = event->angleDelta().x();
     int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
-    client->changeEditState([&](EditState &e) {
-      auto &qx = e.m_quantize_clock_idx;
-      if (delta < 0 && qx < size - 1) qx++;
-      if (delta > 0 && qx > 0) qx--;
-    });
+    client->changeEditState(
+        [&](EditState &e) {
+          auto &qx = e.m_quantize_clock_idx;
+          if (delta < 0 && qx < size - 1) qx++;
+          if (delta > 0 && qx > 0) qx--;
+        },
+        false);
     event->accept();
   }
 }

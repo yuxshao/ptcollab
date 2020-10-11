@@ -34,10 +34,10 @@ class SideMenu : public QWidget {
   ~SideMenu();
 
  signals:
-  void quantXIndexUpdated(int);
-  void quantYIndexUpdated(int);
+  void quantXIndexActivated(int);
+  void quantYIndexActivated(int);
   void currentUnitChanged(int);
-  void paramKindIndexChanged(int);
+  void paramKindIndexActivated(int);
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();
@@ -50,10 +50,9 @@ class SideMenu : public QWidget {
   void changeWoice(int idx, QString name, QString filename);
   void selectWoice(int idx);
   void candidateWoiceSelected(QString filename);
-  void selectedUnitsChanged(QList<qint32> idx);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
-  void followPlayheadChanged(FollowPlayhead);
+  void followPlayheadClicked(FollowPlayhead);
   void copyChanged(bool);
   void moveUnit(bool up);
   void volumeChanged(int volume);

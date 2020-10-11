@@ -64,8 +64,7 @@ class PxtoneClient : public QObject {
   void seekMoo(int64_t clock);
   void connectToServer(QString hostname, quint16 port, QString username);
   void disconnectFromServerSuppressSignal();
-  void changeEditState(std::function<void(EditState &)>,
-                       bool preserveFollow = false);
+  void changeEditState(std::function<void(EditState &)>, bool preserveFollow);
   void togglePlayState();
   void resetAndSuspendAudio();
   void setFollowing(std::optional<qint64> following);
@@ -86,10 +85,10 @@ class PxtoneClient : public QObject {
   qint32 quantizePitch(int idx);
   qint32 quantizePitch();
 
-  void setCurrentUnitNo(int unit_no);
-  void setCurrentWoiceNo(int woice_no);
+  void setCurrentUnitNo(int unit_no, bool preserveFollow);
+  void setCurrentWoiceNo(int woice_no, bool preserveFollow);
   void setVolume(int volume);
-  void deselect();
+  void deselect(bool preserveFollow);
   const PxtoneController *controller() { return m_controller; }
   Clipboard *clipboard() { return m_clipboard; }
 

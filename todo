@@ -347,10 +347,10 @@ fill architecture could work well.
 10/10
 1. appimage, standardize enum sizes
 2. cleaner user list
+3. Some fixes with watching another user randomly stopping
 
 Todo by priority
 ----------------
- - alt+scroll stops watch
  - last event doesn't end song
  - include starter kit / tutorial
  - test watching, recording

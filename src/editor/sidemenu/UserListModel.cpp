@@ -27,7 +27,6 @@ UserListModel::UserListModel(PxtoneClient *client, QObject *parent,
     }
   });
   m_ping_refresh_timer->start(ping_refresh);
-  qDebug() << "Create UserListModel";
 }
 QVariant UserListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();

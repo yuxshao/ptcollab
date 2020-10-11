@@ -264,20 +264,23 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
     return;
   }
 
-  m_client->changeEditState([&](EditState &s) {
-    s.mouse_edit_state.start_clock =
-        std::max(0., event->localPos().x() * s.scale.clockPerPx);
-    MouseEditState::Type &type = s.mouse_edit_state.type;
-    if (event->modifiers() & Qt::ShiftModifier) {
-      if (event->modifiers() & Qt::ControlModifier &&
-          event->button() != Qt::RightButton)
-        type = MouseEditState::Type::Select;
-      else {
-        if (event->button() == Qt::RightButton) m_client->deselect();
-        type = MouseEditState::Type::Seek;
-      }
-    }
-  });
+  m_client->changeEditState(
+      [&](EditState &s) {
+        s.mouse_edit_state.start_clock =
+            std::max(0., event->localPos().x() * s.scale.clockPerPx);
+        MouseEditState::Type &type = s.mouse_edit_state.type;
+        if (event->modifiers() & Qt::ShiftModifier) {
+          if (event->modifiers() & Qt::ControlModifier &&
+              event->button() != Qt::RightButton)
+            type = MouseEditState::Type::Select;
+          else {
+            if (event->button() == Qt::RightButton)
+              s.mouse_edit_state.selection.reset();
+            type = MouseEditState::Type::Seek;
+          }
+        }
+      },
+      false);
 }
 
 void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
@@ -290,57 +293,60 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
   //  return;
 
   qint32 current_clock = m_client->editState().mouse_edit_state.current_clock;
-  m_client->changeEditState([&](EditState &s) {
-    if (m_client->pxtn()->Unit_Num() > 0) {
-      using namespace Action;
-      std::list<Primitive> actions;
-      switch (s.mouse_edit_state.type) {
-        case MouseEditState::SetOn:
-        case MouseEditState::DeleteOn:
-        case MouseEditState::SetNote:
-        case MouseEditState::DeleteNote:
-          break;
-          // TODO: Dedup w/ the other seek / select responses
-        case MouseEditState::Seek:
-          if (event->button() & Qt::LeftButton)
-            m_client->seekMoo(current_clock);
-          break;
-        case MouseEditState::Select: {
-          Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
-              m_client->quantizeClock()));
-          s.mouse_edit_state.selection.emplace(clock_int);
-          break;
-        }
-        case MouseEditState::Nothing:
-          if (std::holds_alternative<MouseMeasureEdit>(
-                  s.mouse_edit_state.kind)) {
-            int half_meas = 2 * current_clock /
-                                m_client->pxtn()->master->get_beat_clock() /
-                                m_client->pxtn()->master->get_beat_num() +
-                            1;
-            int meas = half_meas / 2;
-            bool left_half = half_meas % 2 == 1;
-            if (left_half) {
-              if (m_client->pxtn()->master->get_repeat_meas() == meas)
-                m_client->sendAction(SetRepeatMeas{});
-              else
-                m_client->sendAction(SetRepeatMeas{meas});
-            } else {
-              if (m_client->pxtn()->master->get_last_meas() == meas)
-                m_client->sendAction(SetLastMeas{});
-              else
-                m_client->sendAction(SetLastMeas{meas});
+  m_client->changeEditState(
+      [&](EditState &s) {
+        if (m_client->pxtn()->Unit_Num() > 0) {
+          using namespace Action;
+          std::list<Primitive> actions;
+          switch (s.mouse_edit_state.type) {
+            case MouseEditState::SetOn:
+            case MouseEditState::DeleteOn:
+            case MouseEditState::SetNote:
+            case MouseEditState::DeleteNote:
+              break;
+              // TODO: Dedup w/ the other seek / select responses
+            case MouseEditState::Seek:
+              if (event->button() & Qt::LeftButton)
+                m_client->seekMoo(current_clock);
+              break;
+            case MouseEditState::Select: {
+              Interval clock_int(
+                  m_client->editState().mouse_edit_state.clock_int(
+                      m_client->quantizeClock()));
+              s.mouse_edit_state.selection.emplace(clock_int);
+              break;
             }
-            break;
+            case MouseEditState::Nothing:
+              if (std::holds_alternative<MouseMeasureEdit>(
+                      s.mouse_edit_state.kind)) {
+                int half_meas = 2 * current_clock /
+                                    m_client->pxtn()->master->get_beat_clock() /
+                                    m_client->pxtn()->master->get_beat_num() +
+                                1;
+                int meas = half_meas / 2;
+                bool left_half = half_meas % 2 == 1;
+                if (left_half) {
+                  if (m_client->pxtn()->master->get_repeat_meas() == meas)
+                    m_client->sendAction(SetRepeatMeas{});
+                  else
+                    m_client->sendAction(SetRepeatMeas{meas});
+                } else {
+                  if (m_client->pxtn()->master->get_last_meas() == meas)
+                    m_client->sendAction(SetLastMeas{});
+                  else
+                    m_client->sendAction(SetLastMeas{meas});
+                }
+                break;
+              }
           }
-      }
-      if (actions.size() > 0) {
-        m_client->applyAction(actions);
-      }
-    }
-    s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-    updateStatePositions(s, event);
-  });
+          if (actions.size() > 0) {
+            m_client->applyAction(actions);
+          }
+        }
+        s.mouse_edit_state.type = MouseEditState::Type::Nothing;
+        updateStatePositions(s, event);
+      },
+      false);
 }
 
 void MeasureView::wheelEvent(QWheelEvent *event) {
@@ -350,6 +356,7 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
   if (!m_client->isFollowing())
-    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); });
+    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
+                              true);
   event->ignore();
 }

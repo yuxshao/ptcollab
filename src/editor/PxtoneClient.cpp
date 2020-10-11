@@ -86,7 +86,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
-  changeEditState([](EditState &e) { e.m_current_unit_id = 0; });
+  changeEditState([](EditState &e) { e.m_current_unit_id = 0; }, false);
   m_following_user.reset();
 
   resetAndSuspendAudio();
@@ -358,7 +358,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                                   unitIdMap.noToId(unitIdMap.numUnits() - 1);
                             }
                           },
-                          false);
+                          true);
                     },
                     [this, uid](const SetUnitName &s) {
                       m_controller->applySetUnitName(s, uid);
@@ -383,7 +383,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                               }
                             }
                           },
-                          false);
+                          true);
                     }},
                 s);
           },
@@ -419,22 +419,26 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
       a.action);
 }
 
-void PxtoneClient::setCurrentUnitNo(int unit_no) {
-  // This check is also so that when watching someone, a unit change doesn't
-  // break the watch.
-  qint32 unit_id = m_controller->unitIdMap().noToId(unit_no);
+void PxtoneClient::setCurrentUnitNo(int unit_no, bool preserveFollow) {
+  // Unfortunately, we need this check because it's hard to distinguish to the
+  // caller if this was called because the followee chaned unit.
+  int unit_id = m_controller->unitIdMap().noToId(unit_no);
   if (editState().m_current_unit_id != unit_id)
-    changeEditState([&](EditState &s) { s.m_current_unit_id = unit_id; });
+    changeEditState([&](EditState &s) { s.m_current_unit_id = unit_id; },
+                    preserveFollow);
 }
 
-void PxtoneClient::setCurrentWoiceNo(int woice_no) {
-  qint32 woice_id = m_controller->woiceIdMap().noToId(woice_no);
-  if (editState().m_current_woice_id != woice_id)
-    changeEditState([&](EditState &s) { s.m_current_woice_id = woice_id; });
+void PxtoneClient::setCurrentWoiceNo(int woice_no, bool preserveFollow) {
+  changeEditState(
+      [&](EditState &s) {
+        s.m_current_woice_id = m_controller->woiceIdMap().noToId(woice_no);
+      },
+      preserveFollow);
 }
 
 void PxtoneClient::setVolume(int volume) { m_controller->setVolume(volume); }
 
-void PxtoneClient::deselect() {
-  changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); });
+void PxtoneClient::deselect(bool preserveFollow) {
+  changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); },
+                  preserveFollow);
 }

@@ -52,8 +52,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
   connect(m_client->controller(), &PxtoneController::tempoBeatChanged, this,
           &PxtoneSideMenu::refreshTempoBeat);
   connect(m_client, &PxtoneClient::playStateChanged, this, &SideMenu::setPlay);
-  connect(this, &SideMenu::currentUnitChanged, m_client,
-          &PxtoneClient::setCurrentUnitNo);
+  connect(this, &SideMenu::currentUnitChanged,
+          [this](int unit_no) { m_client->setCurrentUnitNo(unit_no, false); });
   connect(this, &SideMenu::tempoChanged,
           [this](int tempo) { m_client->sendAction(TempoChange{tempo}); });
   connect(this, &SideMenu::beatsChanged,
@@ -120,7 +120,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           m_client->audioState()->bufferSize(), this);
     else
       m_note_preview = nullptr;
-    m_client->setCurrentWoiceNo(idx);
+    m_client->setCurrentWoiceNo(idx, false);
   });
   connect(this, &SideMenu::removeUnit, m_client,
           &PxtoneClient::removeCurrentUnit);
@@ -129,23 +129,23 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           &PxtoneClient::togglePlayState);
   connect(this, &SideMenu::stopButtonPressed, m_client,
           &PxtoneClient::resetAndSuspendAudio);
-  connect(this, &SideMenu::paramKindIndexChanged, [this](int index) {
+  connect(this, &SideMenu::paramKindIndexActivated, [this](int index) {
     m_client->changeEditState(
-        [&](EditState &s) { s.m_current_param_kind_idx = index; });
+        [&](EditState &s) { s.m_current_param_kind_idx = index; }, false);
   });
-  connect(this, &SideMenu::quantXIndexUpdated, [this](int index) {
+  connect(this, &SideMenu::quantXIndexActivated, [this](int index) {
     m_client->changeEditState(
-        [&](EditState &s) { s.m_quantize_clock_idx = index; });
+        [&](EditState &s) { s.m_quantize_clock_idx = index; }, false);
   });
-  connect(this, &SideMenu::quantYIndexUpdated, [this](int index) {
+  connect(this, &SideMenu::quantYIndexActivated, [this](int index) {
     m_client->changeEditState(
-        [&](EditState &s) { s.m_quantize_pitch_idx = index; });
+        [&](EditState &s) { s.m_quantize_pitch_idx = index; }, false);
   });
 
-  connect(this, &SideMenu::followPlayheadChanged,
+  connect(this, &SideMenu::followPlayheadClicked,
           [this](FollowPlayhead follow) {
             m_client->changeEditState(
-                [&](EditState &s) { s.m_follow_playhead = follow; });
+                [&](EditState &s) { s.m_follow_playhead = follow; }, false);
           });
   connect(this, &SideMenu::copyChanged, [this](bool copy) {
     EVENTKIND kind =

@@ -485,43 +485,47 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
   }
 
   bool make_note_preview = false;
-  m_client->changeEditState([&](EditState &s) {
-    MouseEditState::Type &type = s.mouse_edit_state.type;
-    if (event->modifiers() & Qt::ShiftModifier) {
-      if (event->modifiers() & Qt::ControlModifier &&
-          event->button() != Qt::RightButton)
-        type = MouseEditState::Type::Select;
-      else {
-        if (event->button() == Qt::RightButton) m_client->deselect();
-        type = MouseEditState::Type::Seek;
-      }
-    } else {
-      if (event->button() == Qt::RightButton)
-        type = MouseEditState::Type::DeleteOn;
-      else {
-        type = MouseEditState::Type::SetOn;
-        make_note_preview = true;
-      }
-    }
-    if (make_note_preview) {
-      auto maybe_unit_no =
-          m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-      if (maybe_unit_no != std::nullopt &&
-          std::holds_alternative<MouseParamEdit>(s.mouse_edit_state.kind)) {
-        int unit_no = maybe_unit_no.value();
-        EVERECORD e;
-        e.kind =
-            paramOptions[m_client->editState().current_param_kind_idx()].second;
-        e.value =
-            std::get<MouseParamEdit>(s.mouse_edit_state.kind).current_param;
-        qint32 current_clock = s.mouse_edit_state.current_clock;
-        m_audio_note_preview = std::make_unique<NotePreview>(
-            m_client->pxtn(), &m_client->moo()->params, unit_no, current_clock,
-            std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
-            this);
-      }
-    }
-  });
+  m_client->changeEditState(
+      [&](EditState &s) {
+        MouseEditState::Type &type = s.mouse_edit_state.type;
+        if (event->modifiers() & Qt::ShiftModifier) {
+          if (event->modifiers() & Qt::ControlModifier &&
+              event->button() != Qt::RightButton)
+            type = MouseEditState::Type::Select;
+          else {
+            if (event->button() == Qt::RightButton)
+              s.mouse_edit_state.selection.reset();
+            type = MouseEditState::Type::Seek;
+          }
+        } else {
+          if (event->button() == Qt::RightButton)
+            type = MouseEditState::Type::DeleteOn;
+          else {
+            type = MouseEditState::Type::SetOn;
+            make_note_preview = true;
+          }
+        }
+        if (make_note_preview) {
+          auto maybe_unit_no = m_client->unitIdMap().idToNo(
+              m_client->editState().m_current_unit_id);
+          if (maybe_unit_no != std::nullopt &&
+              std::holds_alternative<MouseParamEdit>(s.mouse_edit_state.kind)) {
+            int unit_no = maybe_unit_no.value();
+            EVERECORD e;
+            e.kind =
+                paramOptions[m_client->editState().current_param_kind_idx()]
+                    .second;
+            e.value =
+                std::get<MouseParamEdit>(s.mouse_edit_state.kind).current_param;
+            qint32 current_clock = s.mouse_edit_state.current_clock;
+            m_audio_note_preview = std::make_unique<NotePreview>(
+                m_client->pxtn(), &m_client->moo()->params, unit_no,
+                current_clock, std::list<EVERECORD>({e}),
+                m_client->audioState()->bufferSize(), this);
+          }
+        }
+      },
+      false);
 }
 
 static void setVelInRange(const EVERECORD *&p, int32_t unit_no, qint32 unit_id,
@@ -554,85 +558,88 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
   if (kind == EVENTKIND_PORTAMENT)
     clock_int = m_client->editState().mouse_edit_state.clock_int_short(
         m_client->quantizeClock());
-  m_client->changeEditState([&](EditState &s) {
-    if (m_client->pxtn()->Unit_Num() > 0) {
-      using namespace Action;
-      std::list<Primitive> actions;
-      switch (s.mouse_edit_state.type) {
-        case MouseEditState::SetOn:
-        case MouseEditState::DeleteOn:
-        case MouseEditState::SetNote:
-        case MouseEditState::DeleteNote:
-          // Has gotten a bit convoluted, though this is because there are
-          // like 3 different cases of adding something.
-          actions.push_back({kind, s.m_current_unit_id, clock_int.start,
-                             Delete{clock_int.end}});
-          // Velocity deletion is hard, so just interpret deletion as setting.
-          if (s.mouse_edit_state.type == MouseEditState::SetOn ||
-              s.mouse_edit_state.type == MouseEditState::SetNote ||
-              kind == EVENTKIND_VELOCITY) {
-            if (kind == EVENTKIND_VOICENO) {
-              m_woice_menu->clear();
-              for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i) {
-                int32_t id = m_client->controller()->woiceIdMap().noToId(i);
-                QAction *action = m_woice_menu->addAction(
-                    m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
-                action->setData(id);
-              }
-              QAction *action = m_woice_menu->exec(event->globalPos());
-              if (m_audio_note_preview) m_audio_note_preview = nullptr;
-              if (action != nullptr) {
-                bool ok = true;
-                int woice_id = action->data().toInt(&ok);
-                if (!ok) {
-                  qWarning() << "Invalid woice menu action woice ID";
-                  return;
-                }
-                actions.push_back({kind, s.m_current_unit_id, clock_int.start,
-                                   Add{woice_id}});
-              }
-            } else if (!Evelist_Kind_IsTail(kind)) {
-              const std::list<ParamEditInterval> intervals =
-                  lineEdit(s.mouse_edit_state, kind, m_client->quantizeClock());
-              if (kind == EVENTKIND_VELOCITY) {
-                std::optional<qint32> unit_no =
-                    m_client->unitIdMap().idToNo(s.m_current_unit_id);
-                if (unit_no.has_value()) {
-                  const EVERECORD *records =
-                      m_client->pxtn()->evels->get_Records();
-                  for (const ParamEditInterval &p : intervals)
-                    setVelInRange(records, unit_no.value(), s.m_current_unit_id,
-                                  p, actions);
-                }
-              } else
-                for (const ParamEditInterval &p : intervals)
-                  actions.push_back(
-                      {kind, s.m_current_unit_id, p.clock.start, Add{p.param}});
-            } else {
+  m_client->changeEditState(
+      [&](EditState &s) {
+        if (m_client->pxtn()->Unit_Num() > 0) {
+          using namespace Action;
+          std::list<Primitive> actions;
+          switch (s.mouse_edit_state.type) {
+            case MouseEditState::SetOn:
+            case MouseEditState::DeleteOn:
+            case MouseEditState::SetNote:
+            case MouseEditState::DeleteNote:
+              // Has gotten a bit convoluted, though this is because there are
+              // like 3 different cases of adding something.
               actions.push_back({kind, s.m_current_unit_id, clock_int.start,
-                                 Add{clock_int.length()}});
-            }
+                                 Delete{clock_int.end}});
+              // Velocity deletion is hard, so just interpret deletion as
+              // setting.
+              if (s.mouse_edit_state.type == MouseEditState::SetOn ||
+                  s.mouse_edit_state.type == MouseEditState::SetNote ||
+                  kind == EVENTKIND_VELOCITY) {
+                if (kind == EVENTKIND_VOICENO) {
+                  m_woice_menu->clear();
+                  for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i) {
+                    int32_t id = m_client->controller()->woiceIdMap().noToId(i);
+                    QAction *action = m_woice_menu->addAction(
+                        m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
+                    action->setData(id);
+                  }
+                  QAction *action = m_woice_menu->exec(event->globalPos());
+                  if (m_audio_note_preview) m_audio_note_preview = nullptr;
+                  if (action != nullptr) {
+                    bool ok = true;
+                    int woice_id = action->data().toInt(&ok);
+                    if (!ok) {
+                      qWarning() << "Invalid woice menu action woice ID";
+                      return;
+                    }
+                    actions.push_back({kind, s.m_current_unit_id,
+                                       clock_int.start, Add{woice_id}});
+                  }
+                } else if (!Evelist_Kind_IsTail(kind)) {
+                  const std::list<ParamEditInterval> intervals = lineEdit(
+                      s.mouse_edit_state, kind, m_client->quantizeClock());
+                  if (kind == EVENTKIND_VELOCITY) {
+                    std::optional<qint32> unit_no =
+                        m_client->unitIdMap().idToNo(s.m_current_unit_id);
+                    if (unit_no.has_value()) {
+                      const EVERECORD *records =
+                          m_client->pxtn()->evels->get_Records();
+                      for (const ParamEditInterval &p : intervals)
+                        setVelInRange(records, unit_no.value(),
+                                      s.m_current_unit_id, p, actions);
+                    }
+                  } else
+                    for (const ParamEditInterval &p : intervals)
+                      actions.push_back({kind, s.m_current_unit_id,
+                                         p.clock.start, Add{p.param}});
+                } else {
+                  actions.push_back({kind, s.m_current_unit_id, clock_int.start,
+                                     Add{clock_int.length()}});
+                }
+              }
+              break;
+              // TODO: Dedup
+            case MouseEditState::Seek:
+              if (event->button() & Qt::LeftButton)
+                m_client->seekMoo(
+                    m_client->editState().mouse_edit_state.current_clock);
+              break;
+            case MouseEditState::Select:
+              s.mouse_edit_state.selection.emplace(clock_int);
+              break;
+            case MouseEditState::Nothing:
+              break;
           }
-          break;
-          // TODO: Dedup
-        case MouseEditState::Seek:
-          if (event->button() & Qt::LeftButton)
-            m_client->seekMoo(
-                m_client->editState().mouse_edit_state.current_clock);
-          break;
-        case MouseEditState::Select:
-          s.mouse_edit_state.selection.emplace(clock_int);
-          break;
-        case MouseEditState::Nothing:
-          break;
-      }
-      if (actions.size() > 0) {
-        m_client->applyAction(actions);
-      }
-    }
-    s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-    updateStatePositions(s, event, kind, height());
-  });
+          if (actions.size() > 0) {
+            m_client->applyAction(actions);
+          }
+        }
+        s.mouse_edit_state.type = MouseEditState::Type::Nothing;
+        updateStatePositions(s, event, kind, height());
+      },
+      false);
 }
 
 void ParamView::wheelEvent(QWheelEvent *event) {
@@ -644,8 +651,10 @@ void ParamView::mouseMoveEvent(QMouseEvent *event) {
   EVENTKIND current_kind =
       paramOptions[m_client->editState().current_param_kind_idx()].second;
   if (!m_client->isFollowing())
-    m_client->changeEditState([&](auto &s) {
-      updateStatePositions(s, event, current_kind, height());
-    });
+    m_client->changeEditState(
+        [&](auto &s) {
+          updateStatePositions(s, event, current_kind, height());
+        },
+        true);
   event->ignore();
 }

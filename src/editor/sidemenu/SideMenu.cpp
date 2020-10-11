@@ -58,10 +58,12 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->horizontalHeader()->setSectionResizeMode(
       int(UserListModel::Column::Name), QHeaderView::Stretch);
 
-  void (QComboBox::*indexChanged)(int) = &QComboBox::currentIndexChanged;
+  void (QComboBox::*comboItemActivated)(int) = &QComboBox::activated;
 
-  connect(ui->quantX, indexChanged, this, &SideMenu::quantXIndexUpdated);
-  connect(ui->quantY, indexChanged, this, &SideMenu::quantYIndexUpdated);
+  connect(ui->quantX, comboItemActivated, this,
+          &SideMenu::quantXIndexActivated);
+  connect(ui->quantY, comboItemActivated, this,
+          &SideMenu::quantYIndexActivated);
   connect(ui->playBtn, &QPushButton::clicked, this,
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
@@ -88,8 +90,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->followCheckbox, &QCheckBox::toggled, [this](bool is_checked) {
-    emit followPlayheadChanged(is_checked ? FollowPlayhead::Jump
+  connect(ui->followCheckbox, &QCheckBox::clicked, [this](bool is_checked) {
+    emit followPlayheadClicked(is_checked ? FollowPlayhead::Jump
                                           : FollowPlayhead::None);
   });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
@@ -193,8 +195,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                            "Name or selected instrument invalid");
   });
 
-  connect(ui->paramSelection, indexChanged, this,
-          &SideMenu::paramKindIndexChanged);
+  connect(ui->paramSelection, comboItemActivated, this,
+          &SideMenu::paramKindIndexActivated);
   connect(ui->addOverdriveBtn, &QPushButton::clicked, this,
           &SideMenu::addOverdrive);
   connect(ui->removeOverdriveBtn, &QPushButton::clicked, [this]() {
