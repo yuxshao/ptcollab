@@ -172,6 +172,7 @@ SOURCES += main.cpp \
 
 !win32:LIBS += -logg -lvorbisfile
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile
+macx:LIBS += -L/usr/local/lib
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
