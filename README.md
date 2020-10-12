@@ -7,8 +7,7 @@ If you're building from source, it should work with a Qt5.15 install, but does
 require ogg/vorbis and C++17.
 
 On Mac, you may need to install a later version of clang (e.g., through `brew
-install llvm`). Then, in the Makefile, point to those compilers, change the
-mac deployment target to 10.14 and use `-std=c++20`.
+install llvm`).
 
 Windows build included in releases page. 
 
