@@ -40,6 +40,7 @@ h1,h2,h3,h4,h5,h6{
 
 .text > p:first-child { margin-top:0; }
 .text > p:last-child { margin-bottom:0; }
+.text > ul:last-child { margin-bottom:0; }
 
 a { color: #D2CA9C; }
 a:hover { color: #DED9BB; }
