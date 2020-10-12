@@ -8,6 +8,8 @@ INCLUDEPATH += .
 win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
 macx:ICON = icon.icns
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
