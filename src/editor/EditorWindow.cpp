@@ -28,7 +28,7 @@ static constexpr int EVENT_MAX = 1000000;
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
       m_server(nullptr),
-      m_filename(""),
+      m_filename(std::nullopt),
       m_connection_status(new ConnectionStatusLabel(this)),
       m_fps_status(new QLabel("FPS", this)),
       m_ping_status(new QLabel("", this)),
@@ -439,7 +439,7 @@ bool EditorWindow::saveToFile(QString filename) {
 bool EditorWindow::saveAs() {
   QSettings settings;
   QString filename = QFileDialog::getSaveFileName(
-      this, "Open file",
+      this, "Save file",
       QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
       "pxtone projects (*.ptcop)");
   if (filename.isEmpty()) return false;
