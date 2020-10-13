@@ -197,8 +197,8 @@ unix {
 
   iconres = 64x64
   icon = iconfile_$${iconres}
-  icon.files = $$PWD/../res/ptcollab.png
-  icon.path = $$PREFIX/share/icons/hicolor/$${iconres}/apps/
+  $${icon}.files = $$PWD/../res/ptcollab.png
+  $${icon}.path = $$PREFIX/share/icons/hicolor/$${iconres}/apps/
   INSTALLS += $${icon}
 
   license.files = $$PWD/../LICENSE
