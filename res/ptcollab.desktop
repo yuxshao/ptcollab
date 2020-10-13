@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=pxtone collab
+Comment=pxtone collab: multiplayer music editor
+Exec=ptcollab
+Icon=ptcollab
+Categories=Audio;AudioVideo;

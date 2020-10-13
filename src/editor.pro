@@ -7,7 +7,6 @@ TARGET = ptcollab
 INCLUDEPATH += .
 win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
-macx:ICON = icon.icns
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 
 QT       += core gui
@@ -174,13 +173,39 @@ SOURCES += main.cpp \
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile
 macx:LIBS += -L/usr/local/lib
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# Rules for deployment.
+isEmpty(PREFIX) {
+    win32:PREFIX = C:/$${TARGET}
+    else:PREFIX = /opt/$${TARGET}
+}
+win32:target.path = $$PREFIX
+else:target.path = $$PREFIX/bin
+INSTALLS += target
 
-RC_ICONS = icon.ico
+# Icons
+win32:RC_ICONS = icon.ico
+macx:ICON = icon.icns
 
 DISTFILES +=
 
 RESOURCES += icons.qrc
+
+unix {
+  desktopfile.files = $$PWD/../res/ptcollab.desktop
+  desktopfile.path = $$PREFIX/share/applications/
+  INSTALLS += desktopfile
+
+  iconres = 64x64
+  icon = iconfile_$${iconres}
+  icon.files = $$PWD/../res/ptcollab.png
+  icon.path = $$PREFIX/share/icons/hicolor/$${iconres}/apps/
+  INSTALLS += $${icon}
+
+  license.files = $$PWD/../LICENSE
+  license.path = $$PREFIX/share/doc/ptcollab
+  INSTALLS += license
+
+  pxtone_license.files = $$PWD/pxtone/LICENSE
+  pxtone_license.path = $$PREFIX/share/doc/pxtone
+  INSTALLS += pxtone_license
+}
