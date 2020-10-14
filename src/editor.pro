@@ -208,6 +208,10 @@ unix {
   svgicon.path = $$PREFIX/share/icons/hicolor/scalable/apps/
   INSTALLS += svgicon
 
+  distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs
+  distfiles.path = $$PREFIX/share/ptcollab/
+  INSTALLS += distfiles
+
   license.files = $$PWD/../LICENSE
   license.path = $$PREFIX/share/doc/ptcollab
   INSTALLS += license
