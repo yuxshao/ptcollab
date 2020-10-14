@@ -195,11 +195,18 @@ unix {
   desktopfile.path = $$PREFIX/share/applications/
   INSTALLS += desktopfile
 
-  iconres = 64x64
-  icon = iconfile_$${iconres}
-  $${icon}.files = $$PWD/../res/ptcollab.png
-  $${icon}.path = $$PREFIX/share/icons/hicolor/$${iconres}/apps/
-  INSTALLS += $${icon}
+  iconsizes = 16 32 48 64
+  for(iconsize, iconsizes) {
+    iconres = $${iconsize}x$${iconsize}
+    thisicon = iconfile_$${iconres}
+    $${thisicon}.files = $$PWD/../res/app_icons/$${iconres}/ptcollab.png
+    $${thisicon}.path = $$PREFIX/share/icons/hicolor/$${iconres}/apps/
+    INSTALLS += $${thisicon}
+  }
+
+  svgicon.files = $$PWD/../res/app_icons/scalable/ptcollab.svg
+  svgicon.path = $$PREFIX/share/icons/hicolor/scalable/apps/
+  INSTALLS += svgicon
 
   license.files = $$PWD/../LICENSE
   license.path = $$PREFIX/share/doc/ptcollab
