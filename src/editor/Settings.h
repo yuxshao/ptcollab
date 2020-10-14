@@ -21,4 +21,8 @@ const extern QString HOSTING_ENABLED_KEY;
 const extern QString CONNECT_SERVER_KEY;
 const extern QString CUSTOM_STYLE_KEY;
 
+namespace Version {
+const QString &string();
+}
+
 #endif  // SETTINGS_H

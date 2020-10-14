@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     qApp->setStyleSheet(stylesheet);
   }
 
-  a.setApplicationVersion(QString(GIT_VERSION));
+  a.setApplicationVersion(Version::string());
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
 

@@ -17,3 +17,13 @@ const QString HOSTING_ENABLED_KEY("hosting_enabled");
 
 const QString CONNECT_SERVER_KEY("connect_server");
 const QString CUSTOM_STYLE_KEY("use_custom_style");
+
+namespace Version {
+const int major = 0;
+const int minor = 3;
+const int patch = 4;
+const QString &string() {
+  static QString v = QString("%1.%2.%3").arg(major).arg(minor).arg(patch);
+  return v;
+}
+}  // namespace Version
