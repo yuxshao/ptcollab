@@ -14,7 +14,7 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "ComboOptions.h"
-#include "FileSettings.h"
+#include "Settings.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"

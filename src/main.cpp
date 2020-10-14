@@ -5,7 +5,7 @@
 #include <QStyleFactory>
 
 #include "editor/EditorWindow.h"
-#include "editor/FileSettings.h"
+#include "editor/Settings.h"
 #include "network/BroadcastServer.h"
 
 const static QString stylesheet =

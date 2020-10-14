@@ -4,7 +4,7 @@
 #include <QIntValidator>
 #include <QSettings>
 
-#include "FileSettings.h"
+#include "Settings.h"
 #include "ui_HostDialog.h"
 
 HostDialog::HostDialog(QWidget *parent)
@@ -15,8 +15,8 @@ HostDialog::HostDialog(QWidget *parent)
     if (!on) {
       m_last_project_file = ui->openProjectFile->text();
       ui->openProjectFile->setText(tr("New Project"));
-    }
-    else ui->openProjectFile->setText(m_last_project_file);
+    } else
+      ui->openProjectFile->setText(m_last_project_file);
     ui->openProjectBtn->setEnabled(on);
     ui->openProjectFile->setEnabled(on);
   });
@@ -27,8 +27,8 @@ HostDialog::HostDialog(QWidget *parent)
     if (!on) {
       m_last_record_file = ui->saveRecordingFile->text();
       ui->saveRecordingFile->setText(tr("No Recording"));
-    }
-    else ui->saveRecordingFile->setText(m_last_record_file);
+    } else
+      ui->saveRecordingFile->setText(m_last_record_file);
     ui->saveRecordingBtn->setEnabled(on);
     ui->saveRecordingFile->setEnabled(on);
   });

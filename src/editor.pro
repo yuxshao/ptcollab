@@ -35,7 +35,6 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
-           editor/FileSettings.h \
            editor/HostDialog.h \
            editor/Settings.h \
            editor/ShortcutsDialog.h \
@@ -107,7 +106,6 @@ FORMS += \
 SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
-           editor/FileSettings.cpp \
            editor/HostDialog.cpp \
            editor/Settings.cpp \
            editor/ShortcutsDialog.cpp \

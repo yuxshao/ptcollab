@@ -2,7 +2,7 @@
 
 #include <QSettings>
 
-#include "FileSettings.h"
+#include "Settings.h"
 #include "ui_ConnectDialog.h"
 
 ConnectDialog::ConnectDialog(QWidget *parent)
