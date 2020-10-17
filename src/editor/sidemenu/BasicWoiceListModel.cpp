@@ -1,5 +1,8 @@
 #include "BasicWoiceListModel.h"
 
+#include <QTextCodec>
+static QTextCodec *codec = QTextCodec::codecForName("Shift-JIS");
+
 BasicWoiceListModel::BasicWoiceListModel(PxtoneClient *client, QObject *parent)
     : QAbstractListModel(parent), m_client(client) {
   const PxtoneController *controller = m_client->controller();
@@ -27,7 +30,8 @@ QVariant BasicWoiceListModel::data(const QModelIndex &index, int role) const {
   std::shared_ptr<const pxtnWoice> woice =
       m_client->pxtn()->Woice_Get(index.row());
 
-  if (role == Qt::DisplayRole) return QString(woice->get_name_buf(nullptr));
+  if (role == Qt::DisplayRole)
+    return codec->toUnicode(woice->get_name_buf_jis(nullptr));
 
   return QVariant();
 }

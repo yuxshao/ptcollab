@@ -1,6 +1,7 @@
 #ifndef PXTONECONTROLLER_H
 #define PXTONECONTROLLER_H
 #include <QObject>
+#include <QTextCodec>
 #include <list>
 
 #include "audio/PxtoneIODevice.h"
@@ -107,5 +108,7 @@ class PxtoneController : public QObject {
   NoIdMap m_unit_id_map, m_woice_id_map;
   int m_remote_index;
 };
+
+const extern QTextCodec *shift_jis_codec;
 
 #endif  // PXTONECONTROLLER_H

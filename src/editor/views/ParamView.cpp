@@ -190,8 +190,9 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
     int32_t thisX = curr.clock / clockPerPx;
     painter.setPen(QColor::fromRgb(255, 255, 255, onColor.alpha()));
     painter.setFont(QFont("Sans serif", 6));
-    painter.drawText(lastX + s, height / 2, thisX - lastX - s, 10000,
-                     Qt::AlignTop, QString(woice->get_name_buf(nullptr)));
+    painter.drawText(
+        lastX + s, height / 2, thisX - lastX - s, 10000, Qt::AlignTop,
+        shift_jis_codec->toUnicode(woice->get_name_buf_jis(nullptr)));
   }
 }
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
@@ -581,8 +582,10 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                   m_woice_menu->clear();
                   for (int i = 0; i < m_client->pxtn()->Woice_Num(); ++i) {
                     int32_t id = m_client->controller()->woiceIdMap().noToId(i);
-                    QAction *action = m_woice_menu->addAction(
-                        m_client->pxtn()->Woice_Get(i)->get_name_buf(nullptr));
+                    QAction *action =
+                        m_woice_menu->addAction(shift_jis_codec->toUnicode(
+                            m_client->pxtn()->Woice_Get(i)->get_name_buf_jis(
+                                nullptr)));
                     action->setData(id);
                   }
                   QAction *action = m_woice_menu->exec(event->globalPos());

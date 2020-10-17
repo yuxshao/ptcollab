@@ -147,8 +147,8 @@ class pxtnWoice {
 
   const pxtnVOICEINSTANCE* get_instance(int32_t idx) const;
 
-  bool set_name_buf(const char* name_buf, int32_t buf_size);
-  const char* get_name_buf(int32_t* p_buf_size) const;
+  bool set_name_buf_jis(const char* name_buf, int32_t buf_size);
+  const char* get_name_buf_jis(int32_t* p_buf_size) const;
   bool is_name_buf() const;
 
   bool Voice_Allocate(int32_t voice_num);

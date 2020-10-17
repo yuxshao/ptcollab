@@ -2,6 +2,10 @@
 
 #include <QDebug>
 #include <QDialog>
+#include <QTextCodec>
+
+const QTextCodec *shift_jis_codec = QTextCodec::codecForName("Shift-JIS");
+
 PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
                                    mooState *moo_state, QObject *parent)
     : QObject(parent),
@@ -198,10 +202,10 @@ void PxtoneController::applyUndoRedo(const UndoRedo &r, qint64 uid) {
 }
 
 bool auxSetUnitName(pxtnUnit *unit, QString name) {
-  std::string unit_name_str =
-      name.toStdString().substr(0, pxtnMAX_TUNEUNITNAME);
-  const char *unit_name_buf = unit_name_str.c_str();
-  return unit->set_name_buf(unit_name_buf, int32_t(unit_name_str.length()));
+  QByteArray unit_name_str = shift_jis_codec->fromUnicode(name);
+  return unit->set_name_buf_jis(
+      unit_name_str.data(),
+      std::min(pxtnMAX_TUNEUNITNAME, int32_t(unit_name_str.length())));
 }
 
 // TODO: Could probably also make adding and deleting units undoable. The main
@@ -213,7 +217,8 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
     return false;
   }
-  QString woice_name = m_pxtn->Woice_Get(a.woice_id)->get_name_buf(nullptr);
+  QString woice_name = shift_jis_codec->toUnicode(
+      m_pxtn->Woice_Get(a.woice_id)->get_name_buf_jis(nullptr));
   if (woice_name != a.woice_name) {
     qWarning("Voice doesn't exist. (Name doesn't match)");
     return false;
@@ -430,9 +435,10 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   int32_t woice_idx = m_pxtn->Woice_Num() - 1;
   std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_idx);
 
-  QString name(a.name);
-  name.truncate(pxtnMAX_TUNEWOICENAME);
-  woice->set_name_buf(name.toStdString().c_str(), name.length());
+  QByteArray name_str = shift_jis_codec->fromUnicode(a.name);
+  woice->set_name_buf_jis(
+      name_str.data(),
+      std::min(pxtnMAX_TUNEWOICENAME, int32_t(name_str.length())));
   m_pxtn->Woice_ReadyTone(woice);
   emit edited();
   return true;
@@ -449,7 +455,8 @@ bool validateRemoveName(const RemoveWoice &a, const pxtnService *pxtn) {
     return false;
   }
 
-  QString actual_name(woice->get_name_buf(nullptr));
+  QString actual_name(
+      shift_jis_codec->toUnicode(woice->get_name_buf_jis(nullptr)));
   if (actual_name != expected_name) {
     qWarning() << "Received command to remove woice" << a.id
                << "with mismatched name" << expected_name << actual_name;
@@ -495,9 +502,10 @@ bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
     return false;
   }
 
-  QString name(a.add.name);
-  name.truncate(pxtnMAX_TUNEWOICENAME);
-  woice->set_name_buf(name.toStdString().c_str(), name.length());
+  QByteArray name_str = shift_jis_codec->fromUnicode(a.add.name);
+  woice->set_name_buf_jis(
+      name_str.data(),
+      std::min(pxtnMAX_TUNEWOICENAME, int32_t(name_str.length())));
   m_pxtn->Woice_ReadyTone(woice);
   emit woiceEdited(a.remove.id);
   emit edited();
@@ -535,8 +543,11 @@ bool PxtoneController::applyWoiceSet(const Woice::Set &a, qint64 uid) {
                             }
                           },
                           [&](const Woice::Name &a) {
-                            woice->set_name_buf(a.name.toStdString().c_str(),
-                                                a.name.length());
+                            QByteArray name =
+                                shift_jis_codec->fromUnicode(a.name);
+                            woice->set_name_buf_jis(
+                                name.data(),
+                                std::min(pxtnMAX_TUNEWOICENAME, name.length()));
                           }},
                a.setting);
   }

@@ -62,7 +62,7 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
       break;
     case UnitListColumn::Name:
       if (role == Qt::DisplayRole || role == Qt::EditRole)
-        return QString(unit->get_name_buf(nullptr));
+        return shift_jis_codec->toUnicode(unit->get_name_buf_jis(nullptr));
       break;
   }
   return QVariant();

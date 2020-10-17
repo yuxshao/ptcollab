@@ -358,9 +358,11 @@ fill architecture could work well.
 4. mac icons
 5. Record again
 
+10/17
+1. Use shift-JIS
+
 Todo by priority
 ----------------
- - just use shift-jis
  - escape once brings you back to previous position, escape twice to beginning
  - wav export
 

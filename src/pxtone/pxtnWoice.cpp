@@ -36,7 +36,7 @@ const pxtnVOICEINSTANCE* pxtnWoice::get_instance(int32_t idx) const {
   return &_voinsts[idx];
 }
 
-bool pxtnWoice::set_name_buf(const char* name, int32_t buf_size) {
+bool pxtnWoice::set_name_buf_jis(const char* name, int32_t buf_size) {
   if (!name || buf_size < 0 || buf_size > pxtnMAX_TUNEWOICENAME) return false;
   memset(_name_buf, 0, sizeof(_name_buf));
   if (buf_size) memcpy(_name_buf, name, buf_size);
@@ -44,7 +44,7 @@ bool pxtnWoice::set_name_buf(const char* name, int32_t buf_size) {
   return true;
 }
 
-const char* pxtnWoice::get_name_buf(int32_t* p_buf_size) const {
+const char* pxtnWoice::get_name_buf_jis(int32_t* p_buf_size) const {
   if (p_buf_size) *p_buf_size = _name_size;
   return _name_buf;
 }

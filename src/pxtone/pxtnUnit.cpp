@@ -90,7 +90,7 @@ bool pxtnUnitTone::set_woice(std::shared_ptr<const pxtnWoice> p_woice,
   return true;
 }
 
-bool pxtnUnit::set_name_buf(const char *name, int32_t buf_size) {
+bool pxtnUnit::set_name_buf_jis(const char *name, int32_t buf_size) {
   if (!name || buf_size < 0 || buf_size > pxtnMAX_TUNEUNITNAME) return false;
   memset(_name_buf, 0, sizeof(_name_buf));
   if (buf_size) memcpy(_name_buf, name, buf_size);
@@ -98,7 +98,7 @@ bool pxtnUnit::set_name_buf(const char *name, int32_t buf_size) {
   return true;
 }
 
-const char *pxtnUnit::get_name_buf(int32_t *p_buf_size) const {
+const char *pxtnUnit::get_name_buf_jis(int32_t *p_buf_size) const {
   if (p_buf_size) *p_buf_size = _name_size;
   return _name_buf;
 }

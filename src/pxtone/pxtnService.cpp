@@ -748,7 +748,7 @@ bool pxtnService::_io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const {
   _ASSIST_WOICE assi{};
   int32_t size;
   int32_t name_size = 0;
-  const char *p_name = _woices[idx]->get_name_buf(&name_size);
+  const char *p_name = _woices[idx]->get_name_buf_jis(&name_size);
 
   if (name_size > pxtnMAX_TUNEWOICENAME) return false;
 
@@ -774,8 +774,8 @@ pxtnERR pxtnService::_io_assiWOIC_r(pxtnDescriptor *p_doc) {
   if (assi.rrr) return pxtnERR_fmt_unknown;
   if (assi.woice_index >= _woice_num) return pxtnERR_fmt_unknown;
 
-  if (!_woices[assi.woice_index]->set_name_buf(assi.name,
-                                               pxtnMAX_TUNEWOICENAME))
+  if (!_woices[assi.woice_index]->set_name_buf_jis(assi.name,
+                                                   pxtnMAX_TUNEWOICENAME))
     return pxtnERR_FATAL;
 
   return pxtnOK;
@@ -797,7 +797,7 @@ bool pxtnService::_io_assiUNIT_w(pxtnDescriptor *p_doc, int32_t idx) const {
   _ASSIST_UNIT assi{};
   int32_t size;
   int32_t name_size;
-  const char *p_name = _units[idx]->get_name_buf(&name_size);
+  const char *p_name = _units[idx]->get_name_buf_jis(&name_size);
 
   memcpy(assi.name, p_name, name_size);
   assi.unit_index = (uint16_t)idx;
@@ -821,7 +821,8 @@ pxtnERR pxtnService::_io_assiUNIT_r(pxtnDescriptor *p_doc) {
   if (assi.rrr) return pxtnERR_fmt_unknown;
   if (assi.unit_index >= _unit_num) return pxtnERR_fmt_unknown;
 
-  if (!_units[assi.unit_index]->set_name_buf(assi.name, pxtnMAX_TUNEUNITNAME))
+  if (!_units[assi.unit_index]->set_name_buf_jis(assi.name,
+                                                 pxtnMAX_TUNEUNITNAME))
     return pxtnERR_FATAL;
 
   return pxtnOK;
@@ -1320,7 +1321,7 @@ bool pxtnService::_x3x_SetVoiceNames() {
   for (int32_t i = 0; i < _woice_num; i++) {
     char name[pxtnMAX_TUNEWOICENAME + 1];
     sprintf(name, "voice_%02d", i);
-    _woices[i]->set_name_buf(name, 8);
+    _woices[i]->set_name_buf_jis(name, 8);
   }
   return true;
 }

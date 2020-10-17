@@ -113,7 +113,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     qDebug() << "Getting saved woice dir for changeWoice"
              << QSettings().value(WOICE_DIR_KEY).toString();
     if (!dir.isEmpty()) {
-      qDebug() << "add woice dialog directory setting to " << dir;
+      qDebug() << "change woice dialog directory setting to " << dir;
       m_change_woice_dialog->setDirectory(dir);
     }
     if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();

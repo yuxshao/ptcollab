@@ -88,8 +88,8 @@ class pxtnUnit {
   pxtnUnit();
   ~pxtnUnit();
 
-  bool set_name_buf(const char *name_buf, int32_t buf_size);
-  const char *get_name_buf(int32_t *p_buf_size) const;
+  bool set_name_buf_jis(const char *name_buf, int32_t buf_size);
+  const char *get_name_buf_jis(int32_t *p_buf_size) const;
   bool is_name_buf() const;
 
   void set_visible(bool b);
