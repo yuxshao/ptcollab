@@ -471,8 +471,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     }
   }
 
-  // Draw existing selections
-
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
@@ -525,6 +523,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                m_client->following_uid());
   }
 
+  drawLastSeek(painter, m_client, height(), false);
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, false);
   drawRepeatAndEndBars(painter, m_moo_clock,

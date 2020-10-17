@@ -22,12 +22,8 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
 QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
 QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
 
-void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
-                               int height, qreal clockPerPx, bool drawHead) {
-  QColor color =
-      (moo_clock->this_seek_caught_up() && moo_clock->now() > 0 ? Qt::white
-                                                                : halfWhite);
-  const int x = moo_clock->now() / clockPerPx;
+void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
+                  bool drawHead) {
   int s = 0;
   if (drawHead) {
     s = 4;
@@ -39,6 +35,23 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
     painter.fillPath(path, color);
   }
   painter.fillRect(x, s, 1, height, color);
+}
+
+void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
+                               int height, qreal clockPerPx, bool drawHead) {
+  QColor color =
+      (moo_clock->this_seek_caught_up() && moo_clock->now() > 0 ? Qt::white
+                                                                : halfWhite);
+  const int x = moo_clock->now() / clockPerPx;
+  drawPlayhead(painter, x, height, color, drawHead);
+}
+
+void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
+                  bool drawHead) {
+  if (client->following_uid() == client->uid())
+    drawPlayhead(painter,
+                 client->lastSeek() / client->editState().scale.clockPerPx,
+                 height, QColor::fromRgb(255, 255, 255, 128), drawHead);
 }
 
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,

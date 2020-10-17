@@ -113,9 +113,9 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
       break;
     }
     case MouseEditState::Type::Seek:
-      painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
-                       0, 1, height,
-                       QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
+      drawPlayhead(
+          painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
+          height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier), true);
       break;
     case MouseEditState::Type::Select: {
       Interval interval(mouse_edit_state.clock_int(quantizeClock) /
@@ -188,6 +188,7 @@ void MeasureView::paintEvent(QPaintEvent *) {
              FLAG_Y);
   }
 
+  drawLastSeek(painter, m_client, height(), true);
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, true);
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {

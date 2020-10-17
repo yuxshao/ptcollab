@@ -27,6 +27,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
       m_client(new Client(this)),
       m_following_user(std::nullopt),
       m_ping_timer(new QTimer(this)),
+      m_last_seek(0),
       m_clipboard(new Clipboard(pxtn, this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
@@ -88,8 +89,9 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   m_controller->loadDescriptor(desc);
   changeEditState([](EditState &e) { e.m_current_unit_id = 0; }, false);
   m_following_user.reset();
+  m_pxtn_device->setPlaying(false);
+  seekMoo(0);
 
-  resetAndSuspendAudio();
   m_pxtn_device->open(QIODevice::ReadOnly);
   {
     bool ok;
@@ -113,18 +115,17 @@ void PxtoneClient::setBufferSize(double secs) {
                   m_audio->state() != QAudio::IdleState);
   QAudioFormat fmt = pxtoneAudioFormat();
 
-  if (started) m_audio->stop();
+  if (started) {
+    m_audio->stop();
+    m_pxtn_device->setPlaying(false);
+  }
 
   if (secs < 0.01) secs = 0.01;
   if (secs > 10) secs = 10;
   qDebug() << "Setting buffer size: " << secs;
   m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
 
-  if (started) {
-    resetAndSuspendAudio();
-    m_audio->start(m_pxtn_device);
-    m_pxtn_device->setPlaying(false);
-  }
+  if (started) m_audio->start(m_pxtn_device);
 }
 
 bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }
@@ -144,7 +145,10 @@ void PxtoneClient::sendPlayState(bool from_action) {
 
 void PxtoneClient::resetAndSuspendAudio() {
   m_pxtn_device->setPlaying(false);
-  seekMoo(0);
+  if (pxtn()->moo_get_now_clock(*moo()) > m_last_seek)
+    seekMoo(m_last_seek);
+  else
+    seekMoo(0);
 }
 
 void PxtoneClient::setFollowing(std::optional<qint64> following) {
@@ -154,9 +158,9 @@ void PxtoneClient::setFollowing(std::optional<qint64> following) {
     sendAction(WatchUser{following.value()});
     const auto it = m_remote_edit_states.find(following.value());
     if (it != m_remote_edit_states.end() && it->second.state.has_value()) {
-      // stop audio, that the next playstate msg causes us to sync if the other
-      // user's playing.
-      resetAndSuspendAudio();
+      // stop audio, so that the next playstate msg causes us to sync if the
+      // other user's playing.
+      m_pxtn_device->setPlaying(false);
       emit followActivity(it->second.state.value());
     }
   }
@@ -189,6 +193,8 @@ qint32 PxtoneClient::quantizePitch() {
       quantizeYOptions[editState().m_quantize_pitch_idx].second);
 }
 
+qint32 PxtoneClient::lastSeek() const { return m_last_seek; }
+
 void PxtoneClient::applyAction(const std::list<Action::Primitive> &as) {
   m_client->sendAction(m_controller->applyLocalAction(as));
 }
@@ -203,6 +209,7 @@ void PxtoneClient::removeCurrentUnit() {
 }
 
 void PxtoneClient::seekMoo(int64_t clock) {
+  m_last_seek = clock;
   m_controller->seekMoo(clock);
   sendPlayState(true);
 }

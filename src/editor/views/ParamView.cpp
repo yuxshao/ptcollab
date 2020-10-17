@@ -250,13 +250,13 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                             qreal clockPerPx, int height,
                             double alphaMultiplier,
                             double selectionAlphaMultiplier, int unitOffset) {
-  if (!std::holds_alternative<MouseParamEdit>(state.kind)) return;
   switch (state.type) {
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
+      if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
       QColor c(brightGreen);
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
@@ -422,6 +422,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
   drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
                   m_client->quantizeClock(), clockPerPx, height(), 1, 1, 0);
 
+  drawLastSeek(painter, m_client, height(), false);
   drawCurrentPlayerPosition(painter, m_moo_clock, height(), clockPerPx, false);
   drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 

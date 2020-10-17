@@ -360,10 +360,11 @@ fill architecture could work well.
 
 10/17
 1. Use shift-JIS
+2. escape once brings you back to previous position, escape twice to beginning
+3. Draw playhead / last seek more consistently among 3 views
 
 Todo by priority
 ----------------
- - escape once brings you back to previous position, escape twice to beginning
  - wav export
 
  - midi input???

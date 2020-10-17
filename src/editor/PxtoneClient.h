@@ -38,6 +38,7 @@ class PxtoneClient : public QObject {
   PxtoneIODevice *m_pxtn_device;
   std::optional<quint64> m_last_ping;
   QTimer *m_ping_timer;
+  qint32 m_last_seek;
   Clipboard *m_clipboard;
 
  signals:
@@ -70,7 +71,7 @@ class PxtoneClient : public QObject {
   void setFollowing(std::optional<qint64> following);
   bool isFollowing();
   const pxtnService *pxtn() { return m_controller->pxtn(); }
-  const EditState &editState() { return m_edit_state; }
+  const EditState &editState() const { return m_edit_state; }
   const mooState *moo() { return m_controller->moo(); }
   const QAudioOutput *audioState() { return m_audio; }
 
@@ -84,6 +85,7 @@ class PxtoneClient : public QObject {
   qint32 quantizeClock();
   qint32 quantizePitch(int idx);
   qint32 quantizePitch();
+  qint32 lastSeek() const;
 
   void setCurrentUnitNo(int unit_no, bool preserveFollow);
   void setCurrentWoiceNo(int woice_no, bool preserveFollow);

@@ -13,6 +13,10 @@ extern void drawCursor(const QPoint &position, QPainter &painter,
 extern void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                       int height, qreal clockPerPx,
                                       bool drawHead);
+extern void drawPlayhead(QPainter &painter, qint32 x, qint32 height,
+                         QColor color, bool drawHead);
+extern void drawLastSeek(QPainter &painter, const PxtoneClient *client,
+                         qint32 height, bool drawHead);
 extern void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                                  qreal clockPerPx, int height);
 extern void handleWheelEventWithModifier(QWheelEvent *event,
