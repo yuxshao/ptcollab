@@ -13,6 +13,8 @@
 #include "ui_SideMenu.h"
 
 static QFileDialog* make_add_woice_dialog(QWidget* parent) {
+  qDebug() << "Making addWoice dialog dir"
+           << QSettings().value(WOICE_DIR_KEY).toString();
   return new QFileDialog(
       parent, parent->tr("Select voice"),
       QSettings().value(WOICE_DIR_KEY).toString(),
@@ -98,12 +100,22 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-    if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    qDebug() << "Getting saved woice dir for addWoice"
+             << QSettings().value(WOICE_DIR_KEY).toString();
+    if (!dir.isEmpty()) {
+      qDebug() << "add woice dialog directory setting to " << dir;
+      m_add_woice_dialog->setDirectory(dir);
+    }
     m_add_woice_dialog->show();
   });
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
     QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-    if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
+    qDebug() << "Getting saved woice dir for changeWoice"
+             << QSettings().value(WOICE_DIR_KEY).toString();
+    if (!dir.isEmpty()) {
+      qDebug() << "add woice dialog directory setting to " << dir;
+      m_change_woice_dialog->setDirectory(dir);
+    }
     if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
@@ -115,6 +127,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     for (const auto& filename : m_add_woice_dialog->selectedFiles())
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
+        qDebug() << "Setting saved woice dir"
+                 << QFileInfo(filename).absolutePath();
         emit addWoice(filename);
       }
   });
@@ -153,6 +167,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     for (const auto& filename : m_change_woice_dialog->selectedFiles())
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
+        qDebug() << "Setting saved woice dir"
+                 << QFileInfo(filename).absolutePath();
         emit changeWoice(idx, name, filename);
       }
   });
