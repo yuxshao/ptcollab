@@ -360,7 +360,10 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - just use shift-jis
+ - escape once brings you back to previous position, escape twice to beginning
  - wav export
+
  - midi input???
    - start with qwerty input
  - Unit view, at least for drums
