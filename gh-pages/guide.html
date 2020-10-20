@@ -1,0 +1,122 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>pxtone collab: guide</title>
+    <meta name="description" content="pxtone collab: guide">
+    <meta name="keywords" content="pxtone, ptcop, pttune, music, editor, collaborative, multiplayer, daw, chiptune, music, chipmusic">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <link rel="shortcut icon" type="image/x-icon" href="./resources/favicon.ico">
+  </head>
+
+  <body>
+    <header>
+      <div class="wrapper">
+        <div style="padding:10px 20px">
+          <a href="./index.html">
+            <img src="./resources/logo.png" alt="pxtone collab" style="display:block;margin:auto; max-width:100%" />
+            <img src="./resources/multiplayer-music-editor.png" alt="multiplayer-music-editor" style="display:block;margin:auto;max-width:100%;" />
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrapper">
+      <section>
+        <h3>Editing</h3>
+        <div class="text">
+          <p>To get started making music on your own, go to File &gt; New to open up the <a href="./resources/new-project.png">New Session</a> window. You don't have to change anything here.</p>
+          <p>Once you have a new project, click the "+" on the left side in the "Voices" tab to <a href="./resources/load-voice.png">load some instruments</a>. Some sample instruments / voices are included with the program.</p>
+          <p>With the instruments loaded, you can <a href="./resources/create-units.png">create units</a> for each instrument by going to the "Units" tab and pressing the "+" button. Each unit can play one instrument at a time.</p>
+          <p>Once you have your units, you can start <a href="./resources/piano-roll.png">putting notes down</a> with left and right-click in the piano roll!</p>
+        </div>
+        <p class="text">This is a super quick and dirty intro. There are plenty more and better guides for pxtone <i>collage</i> out there on the internet. This software is based off that and has a similar UI.</p>
+      </section>
+    </div>
+
+    <div class="wrapper">
+      <section>
+        <h3>Hosting</h3>
+        <div class="text"><p>To edit with friends, one person has to host a server. This can be a bit complicated depending on your network setup.</p>
+          <p>First, you have to <a href="./resources/host-session.png">tick "Host"</a> in the New Session window.</p>
+          <p>If your home internet uses a router, though, you might have to set up port forwarding, so that computers outside of your network can connect to you. Many multiplayer game servers usually need something similar.</p>
+          <p>Copied below is a brief guide on how to do this, from <a href="https://drawpile.net/help/hosting/">here</a>.</p>
+          <ul>
+            <li>Go to the router configuration site (Often 192.168.1.1 or 10.0.0.1; it depends on your router model, so you should probably find that out). <ul><li>You might see a login screen that looks like <a href="./resources/port-forwarding-login.png">this</a>. Your router usually will have information about how to log in.</li></ul></li>
+            <li>Go to the "forwarding" or "virtual servers" page</li>
+            <li>Create a new forwarding entry: port 15835 (or whatever port you want to host on), TCP protocol (or Both) and the local IP address of your computer.
+              <ul>
+                <li>There are guides online to help figure out your local IP address, for example <a href="https://www.tp-link.com/us/support/faq/838/">here</a>.</li>
+                <li>My own setup looks something like <a href="./resources/port-forwarding.png">this</a>.</li>
+              </ul>
+              </li>
+          </ul>
+          <p>If you have a local firewall (Windows firewall, Comodo, McAfee, F-secure, etc.), you need to configure that as well. For more detailed guides, check out <a href="https://portforward.com/router.htm">portforward.com</a> (you generally don't need to download anything).</p>
+          <p>Once the server is up, others can connect to it by going to File &gt; Connect, and in the <a href="./resources/connect.png">Connect dialog</a>, type in your public IP (which you can find <a href="https://ipecho.net/">here</a>), then a colon, then the port you're hosting on.</p>
+        </div>
+      </section>
+
+      <section>
+        <h3>Editor details</h3>
+        <div class="text">
+          <p>Here's a more dry summary of some of the other features in ptcollab. In addition to the piano roll, you can configure other song parameters:</p>
+          <ul>
+            <li>Loop points, via the measure ribbon above the piano roll</li>
+            <li>Automation for each unit, including pan, tuning, voice, volume, portamento
+              via the bar below the piano roll</li>
+            <li>Tempo and time signature, via the Song tab</li>
+            <li>Echo and overdrive effects you can apply to groups of units, via the
+              Song tab</li>
+          </ul>
+        </div>
+
+        <h3>Shortcuts</h3>
+        <div class="text">
+          <p>Once you're familiar with the basic workflow, there are a bunch of
+          shortcuts to make certain actions easier:</p>
+          <ul>
+            <li>Space to play/pause, Escape to stop, Shift+click to seek</li>
+            <li>Ctrl+Z and Ctrl+Y/Ctrl+Shift+Z to undo and redo</li>
+            <li>Ctrl+click to modify just pitch values, not notes (useful for portamento)</li>
+            <li>Selection
+              <ul>
+                <li>Ctrl+shift+click to select</li>
+                <li>Ctrl+A to select all</li>
+                <li>Ctrl+shift+rclick or Ctrl+D to deselect</li>
+              </ul>
+            </li>
+            <li>While something is selected:
+              <ul>
+                <li>(shift) up / down to transpose or shift
+                  parameters. Add Ctrl to shift by an octave.</li>
+                <li>Ctrl+C and Ctrl+V to copy/paste</li>
+              </ul>
+            </li>
+            <li>Keyboard shortcuts for navigation:
+              <ul>
+                <li>W/S for next previous / next unit (PgUp / PgDn also work)</li>
+                <li>Q/A for previous / next parameter</li>
+                <li>F1..F4 for the tabs in the menu</li>
+                <li>1..9 for jumping to a unit directly</li>
+              </ul>
+            </li>
+            <li>Mouse-related shortcuts for view / mode changes
+              <ul>
+                <li>Middle-click drag to move around</li>
+                <li>Shift+wheel to scroll horizontally</li>
+                <li>Ctrl+(shift)+wheel to zoom vertically (horizontally)</li>
+                <li>Alt+wheel to change quantization</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+
+  </body>
+</html>
