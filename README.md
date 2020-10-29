@@ -1,6 +1,6 @@
 # pxtone collab
 <div align="center"> <img src="screenshot.png" alt="ptcollab" style="display: block" /> </div>
-<div align="center">Experimental pxtone editor where you can collaborate with friends!</div>
+<div align="center">pxtone collab is a music editor where you can collaborate with friends!</div>
 
 ## Installation
 If you're building from source, it should work with a Qt5.15 install, but does
