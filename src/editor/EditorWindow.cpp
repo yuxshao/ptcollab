@@ -170,6 +170,8 @@ EditorWindow::EditorWindow(QWidget *parent)
                               "settings (default username, last connected
   server)?")) QSettings().clear();
   });*/
+  connect(ui->actionDecrease_font_size, &QAction::triggered, &TextSize::decrease);
+  connect(ui->actionIncrease_font_size, &QAction::triggered, &TextSize::increase);
   connect(ui->actionShortcuts, &QAction::triggered, m_shortcuts_dialog,
           &QDialog::exec);
   connect(ui->actionExit, &QAction::triggered,

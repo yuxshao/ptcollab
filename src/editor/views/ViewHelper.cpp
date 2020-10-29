@@ -4,6 +4,7 @@
 
 #include "editor/ComboOptions.h"
 #include "pxtone/pxtnEvelist.h"
+#include "editor/Settings.h"
 
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
@@ -14,7 +15,7 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
   path.closeSubpath();
   painter.fillPath(path, color);
   painter.setPen(color);
-  painter.setFont(QFont("Sans serif", 6));
+  painter.setFont(QFont("Sans serif", TextSize::get()));
   painter.drawText(position + QPoint(8, 13),
                    QString("%1 (%2)").arg(username).arg(uid));
 }

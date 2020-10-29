@@ -19,11 +19,31 @@ const QString CONNECT_SERVER_KEY("connect_server");
 const QString CUSTOM_STYLE_KEY("use_custom_style");
 
 namespace Version {
-const int major = 0;
-const int minor = 3;
-const int patch = 4;
+static QString v("0.3.4.1");
 const QString &string() {
-  static QString v = QString("%1.%2.%3").arg(major).arg(minor).arg(patch);
   return v;
 }
 }  // namespace Version
+
+namespace TextSize {
+const QString TEXT_SIZE_KEY("text_size");
+int default_size = 6;
+int max_size = 18;
+int min_size = 4;
+
+int get() {
+  bool ok;
+  int value = QSettings().value(TEXT_SIZE_KEY, default_size).toInt(&ok);
+  if (!ok) return default_size;
+  return std::clamp(value, min_size, max_size);
+}
+
+void increase() {
+  QSettings().setValue(TEXT_SIZE_KEY, std::min(get() + 1, max_size));
+}
+
+void decrease() {
+  QSettings().setValue(TEXT_SIZE_KEY, std::max(get() - 1, min_size));
+}
+}  // namespace TextSize
+

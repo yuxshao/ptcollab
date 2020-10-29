@@ -2,6 +2,7 @@
 #define SETTINGS_H
 
 #include <QString>
+#include <QSettings>
 
 const extern QString WOICE_DIR_KEY;
 const extern QString BUFFER_LENGTH_KEY;
@@ -20,6 +21,12 @@ const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
 const extern QString CUSTOM_STYLE_KEY;
+
+namespace TextSize {
+int get();
+void increase();
+void decrease();
+}
 
 namespace Version {
 const QString &string();

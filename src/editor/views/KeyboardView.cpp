@@ -11,6 +11,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
+#include "editor/Settings.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
@@ -158,7 +159,7 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
   painter.setPen(brush.toQColor(draw_vel, true, alpha));
-  painter.setFont(QFont("Sans serif", 6));
+  painter.setFont(QFont("Sans serif", TextSize::get()));
   painter.drawText(clock / scale.clockPerPx,
                    scale.pitchToY(pitch) - arbitrarily_tall, arbitrarily_tall,
                    arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
