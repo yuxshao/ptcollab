@@ -365,7 +365,12 @@ fill architecture could work well.
 
 Todo by priority
 ----------------
+ - improve guide
+   - make it more visible
+   - show how to do porta
+   - link to it from readme
  - wav export
+ - select to the end and have the scrollwheel drag
 
  - midi input???
    - start with qwerty input
