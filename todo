@@ -371,6 +371,9 @@ Todo by priority
    - link to it from readme
  - wav export
  - select to the end and have the scrollwheel drag
+ - solo / mute unit shortcut
+ - change note length
+ - open files without Ctrl+O
 
  - midi input???
    - start with qwerty input
