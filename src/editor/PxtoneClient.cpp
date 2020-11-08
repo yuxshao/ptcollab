@@ -449,3 +449,16 @@ void PxtoneClient::deselect(bool preserveFollow) {
   changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); },
                   preserveFollow);
 }
+
+void PxtoneClient::setUnitPlayed(int unit_no, bool played) {
+  m_controller->setUnitPlayed(unit_no, played);
+}
+void PxtoneClient::setUnitVisible(int unit_no, bool visible) {
+  m_controller->setUnitVisible(unit_no, visible);
+}
+void PxtoneClient::setUnitOperated(int unit_no, bool operated) {
+  m_controller->setUnitOperated(unit_no, operated);
+}
+void PxtoneClient::toggleSolo(int unit_no) {
+  m_controller->toggleSolo(unit_no);
+}

@@ -170,8 +170,10 @@ EditorWindow::EditorWindow(QWidget *parent)
                               "settings (default username, last connected
   server)?")) QSettings().clear();
   });*/
-  connect(ui->actionDecrease_font_size, &QAction::triggered, &TextSize::decrease);
-  connect(ui->actionIncrease_font_size, &QAction::triggered, &TextSize::increase);
+  connect(ui->actionDecrease_font_size, &QAction::triggered,
+          &TextSize::decrease);
+  connect(ui->actionIncrease_font_size, &QAction::triggered,
+          &TextSize::increase);
   connect(ui->actionShortcuts, &QAction::triggered, m_shortcuts_dialog,
           &QDialog::exec);
   connect(ui->actionExit, &QAction::triggered,
@@ -254,9 +256,22 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (!(event->modifiers() & Qt::ControlModifier))
         m_keyboard_view->cycleCurrentUnit(1);
       break;
-    /*case Qt::Key_I:
-      m_host_dialog->exec();
-      break;*/
+    case Qt::Key_M: {
+      std::optional<int> maybe_unit_no =
+          m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+      if (maybe_unit_no.has_value()) {
+        int unit_no = maybe_unit_no.value();
+        if (event->modifiers() & Qt::ShiftModifier)
+          m_client->toggleSolo(unit_no);
+        else {
+          const pxtnUnit *u = m_pxtn.Unit_Get(unit_no);
+          if (u) m_client->setUnitPlayed(unit_no, !u->get_played());
+        }
+      }
+      break;
+    } /*case Qt::Key_I:
+       m_host_dialog->exec();
+       break;*/
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
       break;

@@ -145,6 +145,16 @@
        <string>New Row</string>
       </property>
      </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
      <column>
       <property name="text">
        <string>Shortcut</string>
@@ -363,6 +373,26 @@
      <item row="20" column="1">
       <property name="text">
        <string>Toggle dark piano roll</string>
+      </property>
+     </item>
+     <item row="21" column="0">
+      <property name="text">
+       <string>M</string>
+      </property>
+     </item>
+     <item row="21" column="1">
+      <property name="text">
+       <string>Toggle mute</string>
+      </property>
+     </item>
+     <item row="22" column="0">
+      <property name="text">
+       <string>Shift+M</string>
+      </property>
+     </item>
+     <item row="22" column="1">
+      <property name="text">
+       <string>Toggle solo</string>
       </property>
      </item>
     </widget>

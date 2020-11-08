@@ -363,6 +363,9 @@ fill architecture could work well.
 2. escape once brings you back to previous position, escape twice to beginning
 3. Draw playhead / last seek more consistently among 3 views
 
+11/07
+1. mute/solo shortcuts
+
 Todo by priority
 ----------------
  - improve guide
@@ -371,7 +374,6 @@ Todo by priority
    - link to it from readme
  - wav export
  - select to the end and have the scrollwheel drag
- - solo / mute unit shortcut
  - change note length
  - open files without Ctrl+O
 

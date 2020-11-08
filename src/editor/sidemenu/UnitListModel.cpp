@@ -42,6 +42,14 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
     QModelIndex i = index(unit_no, int(UnitListColumn::Name));
     emit dataChanged(i, i);
   });
+  connect(controller, &PxtoneController::playedToggled, [this](int unit_no) {
+    QModelIndex i = index(unit_no, int(UnitListColumn::Played));
+    emit dataChanged(i, i);
+  });
+  connect(controller, &PxtoneController::soloToggled, [this]() {
+    int col = int(UnitListColumn::Played);
+    emit dataChanged(index(0, col), index(rowCount() - 1, col));
+  });
 }
 QVariant UnitListModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid()) return QVariant();
@@ -71,25 +79,22 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
 bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
                             int role) {
   if (!checkIndex(index)) return false;
-  // TODO: provide official channels for this
-  pxtnUnit *unit = const_cast<pxtnService *>(m_client->pxtn())
-                       ->Unit_Get_variable(index.row());
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole) {
-        unit->set_visible(value.toInt() == Qt::Checked);
+        m_client->setUnitVisible(index.row(), value.toInt() == Qt::Checked);
         return true;
       }
       return false;
     case UnitListColumn::Played:
       if (role == Qt::CheckStateRole) {
-        unit->set_played((value.toInt() == Qt::Checked));
+        m_client->setUnitPlayed(index.row(), value.toInt() == Qt::Checked);
         return true;
       }
       return false;
     case UnitListColumn::Select:
       if (role == Qt::CheckStateRole) {
-        unit->set_operated(value.toInt() == Qt::Checked);
+        m_client->setUnitOperated(index.row(), value.toInt() == Qt::Checked);
         dataChanged(index.siblingAtColumn(0),
                     index.siblingAtColumn(columnCount() - 1));
         return true;

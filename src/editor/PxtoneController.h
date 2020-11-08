@@ -49,6 +49,11 @@ class PxtoneController : public QObject {
   const pxtnService *pxtn() { return m_pxtn; };
   void setVolume(int volume);
 
+  void setUnitPlayed(int unit_no, bool played);
+  void setUnitVisible(int unit_no, bool visible);
+  void setUnitOperated(int unit_no, bool operated);
+  void toggleSolo(int unit_no);
+
  public slots:
   // Maybe these types could be grouped.
   void applyRemoteAction(const EditAction &a, qint64 uid);
@@ -66,6 +71,8 @@ class PxtoneController : public QObject {
  signals:
   void measureNumChanged();
   void tempoBeatChanged();
+  void playedToggled(int unit_no);
+  void soloToggled();
   void newSong();
   void edited();
 
