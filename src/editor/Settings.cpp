@@ -47,6 +47,6 @@ void decrease() {
 
 namespace ChordPreview {
 const QString KEY("chord_preview");
-bool get() { return QSettings().value(KEY, false).toBool(); }
+bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChordPreview
