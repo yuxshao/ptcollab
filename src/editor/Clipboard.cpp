@@ -1,13 +1,74 @@
 #include "Clipboard.h"
 
+#include <QClipboard>
 #include <QDebug>
+#include <QGuiApplication>
+#include <QMimeData>
 #include <algorithm>
 
 #include "ComboOptions.h"
 
+QDataStream &operator<<(QDataStream &out, const Item &a) {
+  out << a.clock << a.kind << a.unit_no << a.value;
+  return out;
+}
+QDataStream &operator>>(QDataStream &in, Item &a) {
+  in >> a.clock >> a.kind >> a.unit_no >> a.value;
+  return in;
+}
+
+template <typename T>
+QDataStream &operator<<(QDataStream &out, const std::list<T> &a) {
+  out << quint64(a.size());
+  for (const auto &i : a) out << i;
+  return out;
+}
+template <typename T>
+QDataStream &operator<<(QDataStream &out, const std::set<T> &a) {
+  out << quint64(a.size());
+  for (const auto &i : a) out << i;
+  return out;
+}
+
+template <typename T>
+QDataStream &operator>>(QDataStream &in, std::list<T> &a) {
+  quint64 size;
+  in >> size;
+  for (quint64 i = 0; i < size; ++i) {
+    T v;
+    in >> v;
+    a.push_back(v);
+  }
+  return in;
+}
+
+template <typename T>
+QDataStream &operator>>(QDataStream &in, std::set<T> &a) {
+  quint64 size;
+  in >> size;
+  for (quint64 i = 0; i < size; ++i) {
+    T v;
+    in >> v;
+    a.insert(v);
+  }
+  return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const Clipboard &a) {
+  out << a.m_items << a.m_unit_nos << a.m_kinds_to_copy << a.m_copy_length;
+  return out;
+}
+
+QDataStream &operator>>(QDataStream &in, Clipboard &a) {
+  in >> a.m_items >> a.m_unit_nos >> a.m_kinds_to_copy >> a.m_copy_length;
+  return in;
+}
+
 Clipboard::Clipboard(QObject *parent) : QObject(parent) {
   for (auto [name, kind] : paramOptions) setKindIsCopied(kind, true);
 }
+
+static const QString CLIPBOARD_MIME = "application/ptcollab-clipboard";
 
 // TODO: Maybe also be able to copy the tails of ONs, the existing state for
 // state kinds, and unset them at the end of the interval.
@@ -35,6 +96,13 @@ void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range,
       m_items.emplace_back(Item{e->clock - range.start, unit_no, kind, v});
     }
   }
+
+  QByteArray data;
+  QDataStream s(&data, QIODevice::ReadWrite);
+  s << *this;
+  QMimeData *mime = new QMimeData();
+  mime->setData(CLIPBOARD_MIME, data);
+  QGuiApplication::clipboard()->setMimeData(mime);
 }
 
 std::list<Action::Primitive> Clipboard::makePaste(
@@ -42,6 +110,12 @@ std::list<Action::Primitive> Clipboard::makePaste(
     const NoIdMap &map) {
   using namespace Action;
   std::list<Primitive> actions;
+
+  const QMimeData *mime = QGuiApplication::clipboard()->mimeData();
+  if (!mime->hasFormat(CLIPBOARD_MIME)) return actions;
+  QDataStream s(mime->data(CLIPBOARD_MIME));
+  s >> *this;
+
   auto min = std::min_element(paste_unit_nos.begin(), paste_unit_nos.end());
   if (min == paste_unit_nos.end()) return actions;
   uint8_t first_unit_no = *min;

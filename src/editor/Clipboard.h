@@ -22,6 +22,8 @@ class Clipboard : public QObject {
   // TODO: move this to editstate so you can see others' param selections too.
   std::set<EVENTKIND> m_kinds_to_copy;
   qint32 m_copy_length;
+  friend QDataStream &operator<<(QDataStream &out, const Clipboard &a);
+  friend QDataStream &operator>>(QDataStream &in, Clipboard &a);
 
  public:
   Clipboard(QObject *parent = nullptr);

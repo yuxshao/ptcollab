@@ -373,6 +373,7 @@ fill architecture could work well.
 2. drag and drop projects and instruments
 3. tiny bug where new project doesn't reset the project workspace
 4. Don't show server restart confirm if you're the only one connected
+5. Copy / paste across multiple projects
 
 Todo by priority
 ----------------
@@ -385,7 +386,6 @@ Todo by priority
  - open files without Ctrl+O
    - associate with file in windows -- actually don't do this, b/c ptcollage
      does it
- - copy / paste across multiple projects
 
  - midi input???
    - start with qwerty input
