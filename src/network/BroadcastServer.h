@@ -22,6 +22,7 @@ class BroadcastServer : public QObject {
 
   QHostAddress address();
   bool isReadingHistory();
+  const std::list<ServerSession *> &sessions() const;
  private slots:
   void newClient();
 

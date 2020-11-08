@@ -102,6 +102,10 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
 
 bool BroadcastServer::isReadingHistory() { return m_load_history != nullptr; }
 
+const std::list<ServerSession *> &BroadcastServer::sessions() const {
+  return m_sessions;
+}
+
 BroadcastServer::~BroadcastServer() {
   // Without these disconnects, I think the sessions' destructors emit the
   // socket disconnected signal which ends up trying to call

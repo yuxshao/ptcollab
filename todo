@@ -372,6 +372,7 @@ fill architecture could work well.
 1. better command line arg, hopefully can dbl click
 2. drag and drop projects and instruments
 3. tiny bug where new project doesn't reset the project workspace
+4. Don't show server restart confirm if you're the only one connected
 
 Todo by priority
 ----------------
@@ -384,7 +385,6 @@ Todo by priority
  - open files without Ctrl+O
    - associate with file in windows -- actually don't do this, b/c ptcollage
      does it
- - don't confirm restart server if you're the only user
  - copy / paste across multiple projects
 
  - midi input???

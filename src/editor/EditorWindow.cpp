@@ -387,9 +387,18 @@ static const QString HISTORY_SAVE_FILE = "history_save_file";
 void EditorWindow::Host(HostSetting host_setting) {
   if (!maybeSave()) return;
   if (m_server) {
-    auto result = QMessageBox::question(this, "Server already running",
-                                        "Stop the server and start a new one?");
-    if (result != QMessageBox::Yes) return;
+    int other_sessions = 0;
+    for (const auto *s : m_server->sessions())
+      if (s->uid() != m_client->uid()) ++other_sessions;
+    if (other_sessions > 0) {
+      auto result =
+          QMessageBox::question(this, tr("Others connected to server"),
+                                tr("There are other users (%n) connected to "
+                                   "the server. Stop the server and "
+                                   "start a new one?",
+                                   "", other_sessions));
+      if (result != QMessageBox::Yes) return;
+    }
   }
   switch (host_setting) {
     case HostSetting::NewFile:
