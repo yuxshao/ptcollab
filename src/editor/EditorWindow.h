@@ -35,6 +35,9 @@ class EditorWindow : public QMainWindow {
   EditorWindow(QWidget* parent = nullptr);
   ~EditorWindow();
 
+  void hostDirectly(std::optional<QString> filename, QHostAddress host,
+                    int port, std::optional<QString> recording_save_file,
+                    QString username);
  private slots:
   void connectToHost();
 

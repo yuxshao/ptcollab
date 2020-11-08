@@ -16,7 +16,7 @@ const static qint64 offset = 0;
 constexpr qint64 RECORDING_VERSION = 1;
 
 BroadcastServer::BroadcastServer(std::optional<QString> filename,
-                                 std::optional<int> port,
+                                 QHostAddress host, int port,
                                  std::optional<QString> save_history,
                                  QObject *parent, int delay_msec,
                                  double drop_rate)
@@ -91,16 +91,11 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
     m_save_history = std::make_unique<QDataStream>(file);
   }
 
-  bool result;
-  if (port.has_value())
-    result = m_server->listen(QHostAddress::Any, port.value());
-  else
-    result = m_server->listen(QHostAddress::LocalHost, 0);
-
-  if (!result)
+  if (!m_server->listen(host, port))
     throw QString("Unable to start TCP server: %1")
         .arg(m_server->errorString());
-  qInfo() << "Listening on" << m_server->serverPort();
+  qInfo() << "Listening on" << m_server->serverAddress()
+          << m_server->serverPort();
   connect(m_server, &QTcpServer::newConnection, this,
           &BroadcastServer::newClient);
 }

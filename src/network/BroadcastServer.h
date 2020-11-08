@@ -13,7 +13,7 @@
 class BroadcastServer : public QObject {
   Q_OBJECT
  public:
-  BroadcastServer(std::optional<QString> filename, std::optional<int> port,
+  BroadcastServer(std::optional<QString> filename, QHostAddress host, int port,
                   std::optional<QString> save_history,
                   QObject *parent = nullptr, int delay_msec = 0,
                   double drop_rate = 0);

@@ -368,6 +368,9 @@ fill architecture could work well.
 2. when inputting a note, preview everything else with it
 3. drag near the sides of the keyboard window to have it scroll for you
 
+11/08
+1. better command line arg, hopefully can dbl click
+
 Todo by priority
 ----------------
  - improve guide
@@ -377,6 +380,10 @@ Todo by priority
  - wav export
  - change note length
  - open files without Ctrl+O
+   - drag project into the window
+   - drag instr into window
+   - associate with file in windows -- actually don't do this, b/c ptcollage
+     does it
 
  - midi input???
    - start with qwerty input

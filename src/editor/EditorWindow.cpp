@@ -392,7 +392,8 @@ void EditorWindow::Host(bool load_file) {
 
   std::optional<QString> filename = m_host_dialog->projectName();
   QString username = m_host_dialog->username();
-  std::optional<int> port = std::nullopt;
+  QHostAddress host = QHostAddress::LocalHost;
+  int port = 0;
   if (m_host_dialog->port().has_value()) {
     bool ok;
     int p = m_host_dialog->port().value().toInt(&ok);
@@ -401,6 +402,7 @@ void EditorWindow::Host(bool load_file) {
       return;
     }
     port = p;
+    host = QHostAddress::Any;
   }
 
   if (m_server) {
@@ -413,8 +415,15 @@ void EditorWindow::Host(bool load_file) {
 
   std::optional<QString> recording_save_file = m_host_dialog->recordingName();
 
+  hostDirectly(filename, host, port, recording_save_file, username);
+}
+
+void EditorWindow::hostDirectly(std::optional<QString> filename,
+                                QHostAddress host, int port,
+                                std::optional<QString> recording_save_file,
+                                QString username) {
   try {
-    m_server = new BroadcastServer(filename, port, recording_save_file,
+    m_server = new BroadcastServer(filename, host, port, recording_save_file,
                                    this);  // , 3000, 0.3);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);

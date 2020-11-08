@@ -50,23 +50,25 @@ int main(int argc, char *argv[]) {
   a.setApplicationVersion(Version::string());
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
-
   parser.addHelpOption();
   parser.addVersionOption();
+
   QCommandLineOption serverPortOption(
       QStringList() << "p"
                     << "port",
-      QCoreApplication::translate("main", "Just run a server on port <port>."),
+      QCoreApplication::translate("main", "Fix the server port to <port>."),
       QCoreApplication::translate("main", "port"));
   parser.addOption(serverPortOption);
 
-  QCommandLineOption serverFileOption(
-      QStringList() << "f"
-                    << "file",
+  QCommandLineOption serverAddressOption(
+      QStringList() << "l"
+                    << "listen"
+                    << "address",
       QCoreApplication::translate("main",
-                                  "Load this file when starting the server."),
-      QCoreApplication::translate("main", "file"));
-  parser.addOption(serverFileOption);
+                                  "Listen on this address (use 127.0.0.1 for "
+                                  "private, 0.0.0.0 for public)."),
+      QCoreApplication::translate("main", "host"));
+  parser.addOption(serverAddressOption);
 
   QCommandLineOption serverRecordOption(
       QStringList() << "r"
@@ -75,27 +77,71 @@ int main(int argc, char *argv[]) {
       QCoreApplication::translate("main", "record"));
   parser.addOption(serverRecordOption);
 
+  QCommandLineOption headlessOption(
+      QStringList() << "headless",
+      QCoreApplication::translate("main", "Just run a server with no editor."));
+  parser.addOption(headlessOption);
+
+  parser.addPositionalArgument(
+      "file",
+      QCoreApplication::translate("main", "Load this file when starting."),
+      "[file]");
+
+  QCommandLineOption usernameOption(
+      QStringList() << "u"
+                    << "username",
+      QCoreApplication::translate("main", "Join with this username."));
+  parser.addOption(usernameOption);
+
   parser.process(a);
+
+  bool startServerImmediately = false;
+  std::optional<QString> filename = std::nullopt;
+  if (parser.positionalArguments().length() > 1)
+    qFatal("Too many positional arguments given.");
+  if (parser.positionalArguments().length() == 1) {
+    QString f = parser.positionalArguments().at(0);
+    if (f != "") {
+      filename = f;
+      startServerImmediately = true;
+    }
+  }
+
+  int port = 0;
   QString portStr = parser.value(serverPortOption);
   if (portStr != "") {
     bool ok;
-    int port = portStr.toInt(&ok);
-    if (!ok)
-      qFatal("Could not parse port");
-    else {
-      qInfo() << "Running on port" << port;
-      QString filename = parser.value(serverFileOption);
-      QString recording_file = parser.value(serverRecordOption);
-      BroadcastServer s(
-          (filename == "" ? std::nullopt : std::optional(filename)), port,
-          (recording_file == "" ? std::nullopt
-                                : std::optional(recording_file)));
+    port = portStr.toInt(&ok);
+    if (!ok) qFatal("Could not parse port");
+    startServerImmediately = true;
+  }
 
-      return a.exec();
-    }
+  QHostAddress host(QHostAddress::LocalHost);
+  QString hostStr = parser.value(serverAddressOption);
+  if (hostStr != "") {
+    host = QHostAddress(hostStr);
+    startServerImmediately = true;
+  }
+
+  std::optional<QString> recording_file = parser.value(serverRecordOption);
+  if (recording_file != "")
+    startServerImmediately = true;
+  else
+    recording_file = std::nullopt;
+
+  QString username = parser.value(usernameOption);
+  if (parser.value(usernameOption) != "")
+    QSettings().setValue(DISPLAY_NAME_KEY, username);
+  username = QSettings().value(DISPLAY_NAME_KEY).toString();
+
+  if (parser.isSet(headlessOption)) {
+    BroadcastServer s(filename, host, port, recording_file);
+    return a.exec();
   } else {
     EditorWindow w;
     w.show();
+    if (startServerImmediately)
+      w.hostDirectly(filename, host, port, recording_file, username);
     return a.exec();
   }
 }
