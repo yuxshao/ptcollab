@@ -11,7 +11,7 @@ PxtoneUnitIODevice::PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
 
 void PxtoneUnitIODevice::removeUnit(int unit_id) { m_units.erase(unit_id); }
 
-int PxtoneUnitIODevice::addUnit(std::shared_ptr<pxtnUnitTone> unit) {
+int PxtoneUnitIODevice::addUnit(pxtnUnitTone *unit) {
   int unit_id = m_next_unit_id++;
   m_units[unit_id] = unit;
   return unit_id;

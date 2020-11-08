@@ -20,9 +20,7 @@ const QString CUSTOM_STYLE_KEY("use_custom_style");
 
 namespace Version {
 static QString v("0.3.4.1");
-const QString &string() {
-  return v;
-}
+const QString &string() { return v; }
 }  // namespace Version
 
 namespace TextSize {
@@ -47,3 +45,8 @@ void decrease() {
 }
 }  // namespace TextSize
 
+namespace ChordPreview {
+const QString KEY("chord_preview");
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace ChordPreview

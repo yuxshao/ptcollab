@@ -187,6 +187,8 @@ EditorWindow::EditorWindow(QWidget *parent)
            "%1")
             .arg(QApplication::applicationVersion()));
   });
+  ui->actionChordPreview->setChecked(ChordPreview::get());
+  connect(ui->actionChordPreview, &QAction::toggled, ChordPreview::set);
   ui->actionStyle->setChecked(
       QSettings().value(CUSTOM_STYLE_KEY, true).toBool());
   connect(ui->actionStyle, &QAction::toggled, [this](bool checked) {

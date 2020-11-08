@@ -17,14 +17,14 @@ class PxtoneUnitIODevice : public QIODevice {
   PxtoneUnitIODevice(QObject *parent, const pxtnService *pxtn,
                      const mooParams *moo_params);
   void removeUnit(int unit_id);
-  int addUnit(std::shared_ptr<pxtnUnitTone> unit);
+  int addUnit(pxtnUnitTone *unit);
   virtual ~PxtoneUnitIODevice() { close(); };
 
  signals:
   void MooError();
 
  private:
-  std::map<int, std::shared_ptr<pxtnUnitTone>> m_units;
+  std::map<int, pxtnUnitTone *> m_units;
   const pxtnService *m_pxtn;
   const mooParams *m_moo_params;
   int m_next_unit_id;

@@ -309,10 +309,10 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
 ///////////////////////
 
 #include <QDebug>
-int32_t pxtnService::moo_tone_sample_multi(
-    std::map<int, std::shared_ptr<pxtnUnitTone>> p_us,
-    const mooParams& moo_params, void* data, int32_t buf_size,
-    int32_t time_pan_index) const {
+int32_t pxtnService::moo_tone_sample_multi(std::map<int, pxtnUnitTone*> p_us,
+                                           const mooParams& moo_params,
+                                           void* data, int32_t buf_size,
+                                           int32_t time_pan_index) const {
   // TODO: Try to deduplicate this with _moo_PXTONE_SAMPLE
   if (buf_size < _dst_ch_num) return 0;
 

@@ -3,10 +3,13 @@
 #include <QAudioFormat>
 #include <QAudioOutput>
 #include <QDebug>
+#include <QSettings>
 
 #include "AudioFormat.h"
 #include "NotePreview.h"
 #include "PxtoneUnitIODevice.h"
+#include "editor/Settings.h"
+
 // TODO: m_unit should probably be not a member variable but an r-value passed
 // to the child.
 constexpr int32_t LONG_ON_VALUE = 100000000;
@@ -21,33 +24,65 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int bufferSize, QObject *parent)
     : QObject(parent),
       m_pxtn(pxtn),
-      m_unit(std::make_shared<pxtnUnitTone>(starting_woice)),
+      m_unit(nullptr),
+      m_moo_state(nullptr),
       m_moo_params(moo_params) {
-  // TODO: Initing a unit should not take 2 steps.
-  moo_params->resetVoiceOn(m_unit.get());
-
-  if (unit_no != -1)
+  if (!ChordPreview::get() || unit_no == -1) {
+    m_unit = std::make_unique<pxtnUnitTone>(starting_woice);
+    m_this_unit = m_unit.get();
+    moo_params->resetVoiceOn(m_this_unit);
+    if (unit_no != -1)
+      for (const EVERECORD *e = m_pxtn->evels->get_Records();
+           e && e->clock <= clock; e = e->next) {
+        if (e->unit_no == unit_no) {
+          moo_params->processEvent(m_this_unit, e, clock, -1, m_pxtn);
+        }
+      }
+  } else {
+    m_moo_state = std::make_unique<mooState>();
+    pxtnVOMITPREPARATION prep{};
+    prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
+    prep.start_pos_sample = clock * 60 * 44100 /
+                            m_pxtn->master->get_beat_clock() /
+                            m_pxtn->master->get_beat_tempo();
+    prep.master_volume = moo_params->master_vol;
+    pxtn->moo_preparation(&prep, *m_moo_state);
     for (const EVERECORD *e = m_pxtn->evels->get_Records();
          e && e->clock <= clock; e = e->next) {
-      if (e->unit_no == unit_no) {
-        moo_params->processEvent(m_unit.get(), e, clock, -1, m_pxtn);
-      }
+      if (e->unit_no < m_moo_state->units.size())
+        moo_params->processEvent(&m_moo_state->units.at(e->unit_no), e, clock,
+                                 -1, m_pxtn);
     }
+    m_this_unit = &m_moo_state->units.at(unit_no);
+  }
 
   for (const EVERECORD &e : additional_events)
-    moo_params->processEvent(m_unit.get(), &e, clock, -1, pxtn);
-  m_unit->Tone_KeyOn();
+    moo_params->processEvent(m_this_unit, &e, clock, -1, pxtn);
+  m_this_unit->Tone_KeyOn();
 
-  // Because woices are shared ptrs we can be confident this won't break if the
-  // woice is deleted.
   // We don't constantly reset because sometimes the audio engine forces
   // [life_count = 0] (say at the end of the sample)
-  std::shared_ptr<const pxtnWoice> woice = m_unit->get_woice();
-  for (int i = 0; i < woice->get_voice_num(); ++i) {
-    // TODO: calculating the life count should be more automatic.
-    auto tone = m_unit->get_tone(i);
-    tone->on_count = duration;
-    tone->life_count = duration + woice->get_instance(i)->env_release;
+  if (m_unit != nullptr) {
+    std::shared_ptr<const pxtnWoice> woice = m_this_unit->get_woice();
+    for (int i = 0; i < woice->get_voice_num(); ++i) {
+      // TODO: calculating the life count should be more automatic.
+      auto tone = m_this_unit->get_tone(i);
+      tone->on_count = duration;
+      tone->life_count = duration + woice->get_instance(i)->env_release;
+    }
+  }
+  if (m_moo_state != nullptr) {
+    for (auto &unit : m_moo_state->units) {
+      pxtnUnitTone *u = &unit;
+      std::shared_ptr<const pxtnWoice> woice = u->get_woice();
+      for (int i = 0; i < woice->get_voice_num(); ++i) {
+        auto tone = u->get_tone(i);
+        if (u == m_this_unit || tone->on_count > 0) {
+          tone->on_count = duration;
+          tone->life_count = duration + woice->get_instance(i)->env_release;
+        }
+      }
+    }
   }
 
   if (device == nullptr) {
@@ -55,7 +90,11 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
     device->open(QIODevice::ReadOnly);
   }
 
-  m_unit_id = device->addUnit(m_unit);
+  if (m_unit != nullptr) m_unit_ids.push_back(device->addUnit(m_unit.get()));
+  if (m_moo_state != nullptr) {
+    for (auto &unit : m_moo_state->units)
+      m_unit_ids.push_back(device->addUnit(&unit));
+  }
 
   if (audio == nullptr) {
     audio = new QAudioOutput(pxtoneAudioFormat(), device);
@@ -66,7 +105,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
 }
 
 void NotePreview::processEvent(EVENTKIND kind, int32_t value) {
-  m_moo_params->processNonOnEvent(m_unit.get(), kind, value, m_pxtn);
+  m_moo_params->processNonOnEvent(m_this_unit, kind, value, m_pxtn);
 }
 
 static EVERECORD ev(int32_t clock, EVENTKIND kind, int32_t value) {
@@ -108,4 +147,6 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                   {ev(0, EVENTKIND_KEY, pitch), ev(0, EVENTKIND_VELOCITY, vel)},
                   duration, woice, bufferSize, parent) {}
 
-NotePreview::~NotePreview() { device->removeUnit(m_unit_id); }
+NotePreview::~NotePreview() {
+  for (const auto &id : m_unit_ids) device->removeUnit(id);
+}

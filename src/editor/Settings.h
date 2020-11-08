@@ -1,8 +1,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QString>
 #include <QSettings>
+#include <QString>
 
 const extern QString WOICE_DIR_KEY;
 const extern QString BUFFER_LENGTH_KEY;
@@ -26,10 +26,15 @@ namespace TextSize {
 int get();
 void increase();
 void decrease();
-}
+}  // namespace TextSize
 
 namespace Version {
 const QString &string();
 }
+
+namespace ChordPreview {
+bool get();
+void set(bool);
+}  // namespace ChordPreview
 
 #endif  // SETTINGS_H

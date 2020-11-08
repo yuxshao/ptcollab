@@ -261,10 +261,9 @@ class pxtnService {
   bool Moo(mooState &moo_state, void *p_buf, int32_t size,
            int32_t *filled_size = nullptr) const;
 
-  int32_t moo_tone_sample_multi(
-      std::map<int, std::shared_ptr<pxtnUnitTone>> p_us,
-      const mooParams &params, void *data, int32_t buf_size,
-      int32_t time_pan_index) const;
+  int32_t moo_tone_sample_multi(std::map<int, pxtnUnitTone *> p_us,
+                                const mooParams &params, void *data,
+                                int32_t buf_size, int32_t time_pan_index) const;
 
   bool moo_is_valid_data() const;
   // TODO: Adjust delays here

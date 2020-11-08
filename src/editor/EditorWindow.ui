@@ -49,11 +49,12 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>Settings</string>
     </property>
     <addaction name="actionIncrease_font_size"/>
     <addaction name="actionDecrease_font_size"/>
     <addaction name="actionStyle"/>
+    <addaction name="actionChordPreview"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -140,10 +141,16 @@
    <property name="text">
     <string>Increase font size</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+=</string>
+   </property>
   </action>
   <action name="actionDecrease_font_size">
    <property name="text">
     <string>Decrease font size</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionDark_piano_roll">
@@ -157,6 +164,17 @@
   <action name="actionAuto_add_unit">
    <property name="text">
     <string>Auto-add unit</string>
+   </property>
+  </action>
+  <action name="actionChordPreview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Preview with all units</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

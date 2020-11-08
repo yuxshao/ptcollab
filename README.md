@@ -74,4 +74,6 @@ let me know if I forgot anyone:
 9. gkpotter and arcofdream for helping getting this ready for release!
 10. steedfarmer for figuring out the mac build, and gkpotter for providing the
     deployment!
-11. Everyone in the pxtone discord servers!
+11. crummybowl for testing & suggesting improvements (preview with all units)
+12. OPNA2608 for helping with packaging and getting this to build properly!
+13. Everyone in the pxtone discord servers!
