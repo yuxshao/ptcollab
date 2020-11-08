@@ -399,6 +399,12 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
       qWarning() << "Error reading pxtone data from descriptor";
       return false;
     }
+  } else {
+    qInfo() << "Empty descriptor (new project) load";
+    if (!m_pxtn->clear()) {
+      qWarning() << "Error clearing pxtone state";
+      return false;
+    }
   }
   m_unit_id_map = NoIdMap(m_pxtn->Unit_Num());
   m_woice_id_map = NoIdMap(m_pxtn->Woice_Num());

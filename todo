@@ -371,6 +371,7 @@ fill architecture could work well.
 11/08
 1. better command line arg, hopefully can dbl click
 2. drag and drop projects and instruments
+3. tiny bug where new project doesn't reset the project workspace
 
 Todo by priority
 ----------------
@@ -385,7 +386,6 @@ Todo by priority
      does it
  - don't confirm restart server if you're the only user
  - copy / paste across multiple projects
- - new project after a load project doesn't seem to work
 
  - midi input???
    - start with qwerty input
