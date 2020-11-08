@@ -370,6 +370,7 @@ fill architecture could work well.
 
 11/08
 1. better command line arg, hopefully can dbl click
+2. drag and drop projects and instruments
 
 Todo by priority
 ----------------
@@ -380,10 +381,11 @@ Todo by priority
  - wav export
  - change note length
  - open files without Ctrl+O
-   - drag project into the window
-   - drag instr into window
    - associate with file in windows -- actually don't do this, b/c ptcollage
      does it
+ - don't confirm restart server if you're the only user
+ - copy / paste across multiple projects
+ - new project after a load project doesn't seem to work
 
  - midi input???
    - start with qwerty input

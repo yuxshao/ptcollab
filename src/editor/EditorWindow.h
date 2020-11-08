@@ -28,6 +28,8 @@ class EditorWindow;
 }
 QT_END_NAMESPACE
 
+enum struct HostSetting { LoadFile, NewFile, SkipFile };
+
 class EditorWindow : public QMainWindow {
   Q_OBJECT
 
@@ -42,7 +44,7 @@ class EditorWindow : public QMainWindow {
   void connectToHost();
 
  private:
-  void Host(bool load_file);
+  void Host(HostSetting host_setting);
   void keyPressEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
@@ -69,5 +71,7 @@ class EditorWindow : public QMainWindow {
   bool save();
   bool saveAs();
   bool maybeSave();
+  void dragEnterEvent(QDragEnterEvent* event) override;
+  void dropEvent(QDropEvent* event) override;
 };
 #endif  // MAINWINDOW_H

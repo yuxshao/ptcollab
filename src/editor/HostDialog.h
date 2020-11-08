@@ -1,8 +1,8 @@
 #ifndef HOSTDIALOG_H
 #define HOSTDIALOG_H
 
-#include <optional>
 #include <QDialog>
+#include <optional>
 
 namespace Ui {
 class HostDialog;
@@ -15,6 +15,7 @@ class HostDialog : public QDialog {
   explicit HostDialog(QWidget *parent = nullptr);
   ~HostDialog();
   void openFile();
+  void setProjectName(std::optional<QString> name);
   std::optional<QString> projectName();
   std::optional<QString> recordingName();
   QString username();

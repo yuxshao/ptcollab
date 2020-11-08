@@ -7,6 +7,8 @@
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
 
+extern AddWoice make_addWoice_from_path(const QString &path);
+
 class PxtoneSideMenu : public SideMenu {
   Q_OBJECT
   PxtoneClient *m_client;

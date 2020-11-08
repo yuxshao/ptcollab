@@ -82,6 +82,11 @@ std::optional<QString> HostDialog::projectName() {
   return std::nullopt;
 }
 
+void HostDialog::setProjectName(std::optional<QString> name) {
+  ui->openProjectGroup->setChecked(name.has_value());
+  if (name.has_value()) ui->openProjectFile->setText(name.value());
+}
+
 std::optional<QString> HostDialog::recordingName() {
   if (ui->saveRecordingGroup->isChecked()) return ui->saveRecordingFile->text();
   return std::nullopt;

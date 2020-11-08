@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
@@ -43,6 +44,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_pxtn.set_destination_quality(channel_num, sample_rate);
   ui->setupUi(this);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
+  setAcceptDrops(true);
 
   m_splitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(m_splitter);
@@ -159,8 +161,10 @@ EditorWindow::EditorWindow(QWidget *parent)
     m_side_menu->setModified(true);
   });
 
-  connect(ui->actionNewHost, &QAction::triggered, [this]() { Host(false); });
-  connect(ui->actionOpenHost, &QAction::triggered, [this]() { Host(true); });
+  connect(ui->actionNewHost, &QAction::triggered,
+          [this]() { Host(HostSetting::NewFile); });
+  connect(ui->actionOpenHost, &QAction::triggered,
+          [this]() { Host(HostSetting::LoadFile); });
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
@@ -380,14 +384,24 @@ void EditorWindow::closeEvent(QCloseEvent *event) {
 }
 
 static const QString HISTORY_SAVE_FILE = "history_save_file";
-void EditorWindow::Host(bool load_file) {
+void EditorWindow::Host(HostSetting host_setting) {
   if (!maybeSave()) return;
   if (m_server) {
     auto result = QMessageBox::question(this, "Server already running",
                                         "Stop the server and start a new one?");
     if (result != QMessageBox::Yes) return;
   }
-  if (!m_host_dialog->start(load_file)) return;
+  switch (host_setting) {
+    case HostSetting::NewFile:
+      if (!m_host_dialog->start(false)) return;
+      break;
+    case HostSetting::LoadFile:
+      if (!m_host_dialog->start(true)) return;
+      break;
+    case HostSetting::SkipFile:
+      if (!m_host_dialog->exec()) return;
+      break;
+  }
   m_host_dialog->persistSettings();
 
   std::optional<QString> filename = m_host_dialog->projectName();
@@ -523,4 +537,46 @@ void EditorWindow::connectToHost() {
     m_server = nullptr;
   }
   m_client->connectToServer(host, port, m_connect_dialog->username());
+}
+
+void EditorWindow::dragEnterEvent(QDragEnterEvent *event) {
+  if (event->mimeData()->hasUrls()) event->acceptProposedAction();
+}
+
+void EditorWindow::dropEvent(QDropEvent *event) {
+  auto unsupported = [this]() {
+    QMessageBox::warning(
+        this, tr("Unsupported file type"),
+        tr("Unsupported file type. Must be local ptcop or instruments."));
+  };
+  if (!event->mimeData()->hasUrls()) {
+    unsupported();
+    return;
+  }
+  for (QUrl url : event->mimeData()->urls()) {
+    if (!url.isLocalFile()) {
+      unsupported();
+      return;
+    }
+  }
+  QString project = "";
+  if (event->mimeData()->urls().length() == 1) {
+    QString file = event->mimeData()->urls().at(0).toLocalFile();
+    if (QStringList{"ptcop", "ptrec"}.contains(QFileInfo(file).suffix())) {
+      m_host_dialog->setProjectName(
+          event->mimeData()->urls().at(0).toLocalFile());
+      Host(HostSetting::SkipFile);
+      return;
+    }
+  }
+
+  std::list<AddWoice> add_woices;
+  try {
+    for (QUrl url : event->mimeData()->urls())
+      add_woices.push_back(make_addWoice_from_path(url.toLocalFile()));
+  } catch (QString &e) {
+    QMessageBox::warning(this, tr("Unsupported instrument type"), e);
+    return;
+  }
+  for (const AddWoice &w : add_woices) m_client->sendAction(w);
 }
