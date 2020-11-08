@@ -898,10 +898,11 @@ void KeyboardView::paste(bool preserveFollow) {
   m_client->changeEditState(
       [&](auto &s) {
         Interval &selection = s.mouse_edit_state.selection.value();
-        std::list<Action::Primitive> actions = m_client->clipboard()->makePaste(
+        PasteResult paste_result = m_client->clipboard()->makePaste(
             selectedUnitNos(), selection.start, m_client->unitIdMap());
-        if (actions.size() > 0) m_client->applyAction(actions);
-        selection.end = selection.start + m_client->clipboard()->copyLength();
+        if (paste_result.actions.size() > 0)
+          m_client->applyAction(paste_result.actions);
+        selection.end = selection.start + paste_result.length;
       },
       preserveFollow);
 }
