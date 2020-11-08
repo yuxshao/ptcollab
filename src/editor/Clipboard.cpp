@@ -5,14 +5,14 @@
 
 #include "ComboOptions.h"
 
-Clipboard::Clipboard(const pxtnService *pxtn, QObject *parent)
-    : QObject(parent), m_pxtn(pxtn) {
+Clipboard::Clipboard(QObject *parent) : QObject(parent) {
   for (auto [name, kind] : paramOptions) setKindIsCopied(kind, true);
 }
 
 // TODO: Maybe also be able to copy the tails of ONs, the existing state for
 // state kinds, and unset them at the end of the interval.
-void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range) {
+void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range,
+                     const pxtnService *pxtn) {
   m_copy_length = range.length();
   m_items.clear();
 
@@ -22,7 +22,7 @@ void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range) {
   for (const int &i : unit_nos) m_unit_nos.insert(i - first_unit_no);
 
   const EVERECORD *e = nullptr;
-  for (e = m_pxtn->evels->get_Records(); e; e = e->next)
+  for (e = pxtn->evels->get_Records(); e; e = e->next)
     if (e->clock >= range.start) break;
 
   for (; e && e->clock < range.end; e = e->next) {

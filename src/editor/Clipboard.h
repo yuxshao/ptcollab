@@ -17,7 +17,6 @@ struct Item {
 
 class Clipboard : public QObject {
   Q_OBJECT
-  const pxtnService *m_pxtn;
   std::list<Item> m_items;
   std::set<int> m_unit_nos;
   // TODO: move this to editstate so you can see others' param selections too.
@@ -25,8 +24,9 @@ class Clipboard : public QObject {
   qint32 m_copy_length;
 
  public:
-  Clipboard(const pxtnService *pxtn, QObject *parent = nullptr);
-  void copy(const std::set<int> &unit_nos, const Interval &range);
+  Clipboard(QObject *parent = nullptr);
+  void copy(const std::set<int> &unit_nos, const Interval &range,
+            const pxtnService *pxtn);
   std::list<Action::Primitive> makePaste(const std::set<int> &unit_nos,
                                          qint32 start_clock,
                                          const NoIdMap &map);

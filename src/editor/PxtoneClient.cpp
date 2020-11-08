@@ -28,7 +28,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
       m_following_user(std::nullopt),
       m_ping_timer(new QTimer(this)),
       m_last_seek(0),
-      m_clipboard(new Clipboard(pxtn, this)) {
+      m_clipboard(new Clipboard(this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
     qWarning()
