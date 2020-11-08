@@ -5,6 +5,8 @@
 #include <QScrollArea>
 #include <QWheelEvent>
 
+#include "editor/views/Animation.h"
+
 class EditorScrollArea : public QScrollArea {
   Q_OBJECT
  public:
@@ -21,15 +23,18 @@ class EditorScrollArea : public QScrollArea {
   void keyPressEvent(QKeyEvent *event) override;
 
  private:
-  bool middleDown;
+  bool mouseDown;
   bool m_match_scale;
   QPoint lastPos;
+  Animation *anim;
   bool event(QEvent *e) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
   void resizeEvent(QResizeEvent *event) override;
+  void scrollWithMouseX();
   QRect viewportRect();
+  void updateMouseDownState(QMouseEvent *event);
 };
 
 #endif  // EDITORSCROLLAREA_H

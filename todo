@@ -366,6 +366,7 @@ fill architecture could work well.
 11/07
 1. mute/solo shortcuts
 2. when inputting a note, preview everything else with it
+3. drag near the sides of the keyboard window to have it scroll for you
 
 Todo by priority
 ----------------
@@ -374,7 +375,6 @@ Todo by priority
    - show how to do porta
    - link to it from readme
  - wav export
- - select to the end and have the scrollwheel drag
  - change note length
  - open files without Ctrl+O
 

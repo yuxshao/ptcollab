@@ -10,8 +10,8 @@
 
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
-#include "editor/audio/PxtoneUnitIODevice.h"
 #include "editor/Settings.h"
+#include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
@@ -550,7 +550,8 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
   handleWheelEventWithModifier(event, m_client, true);
   if (event->isAccepted()) return;
 
-  if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn) {
+  if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn &&
+      !(event->modifiers() & Qt::ShiftModifier)) {
     m_client->changeEditState(
         [&](EditState &e) {
           auto &vel = e.mouse_edit_state.base_velocity;

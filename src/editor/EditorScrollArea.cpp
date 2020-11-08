@@ -1,5 +1,6 @@
 #include "EditorScrollArea.h"
 
+#include <QApplication>
 #include <QDebug>
 #include <QScrollBar>
 #include <QStyle>
@@ -21,9 +22,10 @@ QRect EditorScrollArea::viewportRect() {
 
 EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
     : QScrollArea(parent),
-      middleDown(false),
+      mouseDown(false),
       m_match_scale(match_scale),
-      lastPos() {
+      lastPos(),
+      anim(new Animation(this)) {
   setWidgetResizable(true);
   setMouseTracking(true);
   setFrameStyle(QFrame::NoFrame);
@@ -31,16 +33,26 @@ EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
     connect(bar, &QAbstractSlider::valueChanged,
             [this]() { emit viewportChanged(viewportRect()); });
   };
+  connect(anim, &Animation::nextFrame, [this]() {
+    // This is a bit of a hack so that on release we can immediately stop
+    // scrolling.
+    if (!(QApplication::mouseButtons() & (Qt::LeftButton | Qt::RightButton)))
+      mouseDown = false;
+    if (mouseDown) scrollWithMouseX();
+  });
 }
 
 void EditorScrollArea::mousePressEvent(QMouseEvent *event) {
+  // TODO: In reality this mouseDown is never triggered because the child eats
+  // the event. Similarly in release.
+  mouseDown =
+      event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton;
   // double ratioH = double(lastPos.x()) / viewport()->width();
 
   /*qDebug() << horizontalScrollBar()->pageStep()
            << horizontalScrollBar()->value() << horizontalScrollBar()->maximum()
            << ratioH;*/
   if (event->button() & Qt::MiddleButton) {
-    middleDown = true;
     viewport()->setCursor(Qt::ClosedHandCursor);
     event->accept();
   }
@@ -81,10 +93,15 @@ bool EditorScrollArea::event(QEvent *e) {
   } else
     return QScrollArea::event(e);
 }
+
+void EditorScrollArea::updateMouseDownState(QMouseEvent *e) {
+  mouseDown = (e->buttons() & Qt::LeftButton || e->buttons() & Qt::RightButton);
+}
+
 void EditorScrollArea::mouseReleaseEvent(QMouseEvent *event) {
   event->ignore();
+  updateMouseDownState(event);
   if (event->button() & Qt::MiddleButton) {
-    middleDown = false;
     viewport()->unsetCursor();
     event->accept();
   }
@@ -93,7 +110,8 @@ void EditorScrollArea::mouseReleaseEvent(QMouseEvent *event) {
 
 void EditorScrollArea::mouseMoveEvent(QMouseEvent *event) {
   event->ignore();
-  if (middleDown) {
+  updateMouseDownState(event);
+  if (event->buttons() & Qt::MiddleButton) {
     // Copied from qgraphicsview
     QScrollBar *hBar = horizontalScrollBar();
     QScrollBar *vBar = verticalScrollBar();
@@ -169,6 +187,27 @@ void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
   } else if (logicalX - maxDistFromLeft > horizontalScrollBar()->value()) {
     horizontalScrollBar()->setValue(qMin(qint32(logicalX - jumpMinDistFromLeft),
                                          horizontalScrollBar()->maximum()));
+  }
+}
+
+constexpr int JUMP_MAX = 10;
+constexpr int MARGIN_MAX = 200;
+constexpr double MARGIN_FRAC = 0.25;
+void EditorScrollArea::scrollWithMouseX() {
+  int logicalX = QStyle::visualPos(layoutDirection(), viewport()->rect(),
+                                   mapFromGlobal(QCursor::pos()))
+                     .x();
+  int margin = std::min(MARGIN_MAX, int(viewport()->width() * MARGIN_FRAC));
+  double scroll = 0;
+  if (logicalX < margin) scroll = (logicalX - margin + 0.0) / margin;
+  if (logicalX > viewport()->width() - margin)
+    scroll = (logicalX - viewport()->width() + margin + 0.0) / margin;
+
+  if (scroll != 0) {
+    scroll *= abs(scroll);
+    scroll = std::clamp(scroll, -1.5, 1.5);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() +
+                                    JUMP_MAX * scroll);
   }
 }
 
