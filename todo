@@ -382,6 +382,7 @@ Todo by priority
    - show how to do porta
    - link to it from readme
  - wav export
+   - keep event loop running
  - change note length
  - open files without Ctrl+O
    - associate with file in windows -- actually don't do this, b/c ptcollage

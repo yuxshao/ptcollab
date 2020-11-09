@@ -275,9 +275,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         }
       }
       break;
-    } /*case Qt::Key_I:
-       m_host_dialog->exec();
-       break;*/
+    }
+    case Qt::Key_I: {
+      QFile f("/tmp/a.wav");
+      f.open(QIODevice::WriteOnly);
+      m_client->controller()->render(&f, 3, 3);
+    } break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
       break;

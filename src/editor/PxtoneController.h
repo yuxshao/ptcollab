@@ -53,6 +53,7 @@ class PxtoneController : public QObject {
   void setUnitVisible(int unit_no, bool visible);
   void setUnitOperated(int unit_no, bool operated);
   void toggleSolo(int unit_no);
+  bool render(QIODevice *file, double secs, double fadeout) const;
 
  public slots:
   // Maybe these types could be grouped.

@@ -600,3 +600,100 @@ void PxtoneController::toggleSolo(int solo_unit_no) {
   solo_u->set_played(true);
   emit soloToggled();
 }
+
+// from
+// https://stackoverflow.com/questions/40238343/qfile-write-a-wav-header-writes-only-4-byte-data
+struct WavHdr {
+  constexpr static quint32 k_riff_id = 0x46464952;
+  constexpr static quint32 k_wave_format = 0x45564157;
+  constexpr static quint32 k_fmt_id = 0x20746d66;
+  constexpr static quint32 k_data_id = 0x61746164;
+  // RIFF
+  quint32 chunk_id = k_riff_id;
+  quint32 chunk_size;
+  quint32 chunk_format = k_wave_format;
+  // fmt
+  quint32 fmt_id = k_fmt_id;
+  quint32 fmt_size;
+  quint16 audio_format;
+  quint16 num_channels;
+  quint32 sample_rate;
+  quint32 byte_rate;
+  quint16 block_align;
+  quint16 bits_per_sample;
+  // data
+  quint32 data_id = k_data_id;
+  quint32 data_size;
+};
+
+bool write(QIODevice *dev, const WavHdr &h) {
+  QDataStream s{dev};
+  s.setByteOrder(QDataStream::LittleEndian);  // for RIFF
+  s << h.chunk_id << h.chunk_size << h.chunk_format;
+  s << h.fmt_id << h.fmt_size << h.audio_format << h.num_channels
+    << h.sample_rate << h.byte_rate << h.block_align << h.bits_per_sample;
+  s << h.data_id << h.data_size;
+  return s.status() == QDataStream::Ok;
+}
+
+// TODO: This kind of file-writing is duplicated a bunch.
+bool PxtoneController::render(QIODevice *dev, double secs,
+                              double fadeout) const {
+  WavHdr h;
+  h.fmt_size = h.bits_per_sample = 16;
+  h.audio_format = 1;
+  int num_channels, sample_rate;
+  m_pxtn->get_destination_quality(&num_channels, &sample_rate);
+  h.num_channels = num_channels;
+  h.sample_rate = sample_rate;
+  h.block_align = h.num_channels * h.bits_per_sample / 8;
+  h.byte_rate = h.sample_rate * h.num_channels * h.bits_per_sample / 8;
+
+  int num_samples =
+      int(h.sample_rate * secs) + int(h.sample_rate * fadeout) + 10;
+  h.data_size = num_samples * h.num_channels * h.bits_per_sample / 8;
+
+  mooState moo_state;
+  if (m_pxtn->tones_ready(moo_state) != pxtnOK) {
+    qWarning() << "Error getting tones ready";
+    return false;
+  }
+  pxtnVOMITPREPARATION prep{};
+  prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
+  prep.start_pos_sample = 0;
+  prep.master_volume = moo_state.params.master_vol;
+  bool success = m_pxtn->moo_preparation(&prep, moo_state);
+  if (!success) {
+    qWarning() << "Moo preparation error";
+    return false;
+  }
+
+  write(dev, h);
+  int written = 0;
+  auto render = [&](int len) {
+    constexpr int SIZE = 4096;
+    char buf[SIZE];
+    while (written < len) {
+      int filled_len;
+      if (!m_pxtn->Moo(moo_state, buf, int32_t(std::min(len - written, SIZE)),
+                       &filled_len)) {
+        qWarning() << "Moo error during rendering";
+        return false;
+      }
+      if (dev->write(buf, filled_len) < filled_len) {
+        qWarning() << "Unable to fill file buffer";
+        return false;
+      }
+      written += filled_len;
+    }
+    return true;
+  };
+
+  if (!render(int(h.sample_rate * secs) * h.num_channels * h.bits_per_sample /
+              8))
+    return false;
+  m_pxtn->moo_set_fade(-1, fadeout, moo_state);
+  if (!render(h.data_size)) return false;
+
+  return true;
+}
