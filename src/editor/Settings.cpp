@@ -50,3 +50,9 @@ const QString KEY("chord_preview");
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChordPreview
+
+namespace RenderFileDestination {
+const QString KEY("render_file_destination");
+QString get() { return QSettings().value(KEY, "").toString(); }
+void set(QString value) { QSettings().setValue(KEY, value); }
+}  // namespace RenderFileDestination

@@ -12,6 +12,7 @@
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
+#include "RenderDialog.h"
 #include "ShortcutsDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
@@ -65,11 +66,13 @@ class EditorWindow : public QMainWindow {
   HostDialog* m_host_dialog;
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
+  RenderDialog* m_render_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);
   bool save();
   bool saveAs();
+  bool render();
   bool maybeSave();
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;

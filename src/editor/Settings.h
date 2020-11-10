@@ -36,5 +36,9 @@ namespace ChordPreview {
 bool get();
 void set(bool);
 }  // namespace ChordPreview
+namespace RenderFileDestination {
+QString get();
+void set(QString);
+}  // namespace RenderFileDestination
 
 #endif  // SETTINGS_H

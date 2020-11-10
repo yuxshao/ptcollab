@@ -637,8 +637,10 @@ bool write(QIODevice *dev, const WavHdr &h) {
 }
 
 // TODO: This kind of file-writing is duplicated a bunch.
-bool PxtoneController::render(QIODevice *dev, double secs,
-                              double fadeout) const {
+bool PxtoneController::render(
+    QIODevice *dev, double secs, double fadeout,
+    std::function<bool(double progress)> should_continue) const {
+  qDebug() << "Rendering" << secs << fadeout;
   WavHdr h;
   h.fmt_size = h.bits_per_sample = 16;
   h.audio_format = 1;
@@ -649,8 +651,8 @@ bool PxtoneController::render(QIODevice *dev, double secs,
   h.block_align = h.num_channels * h.bits_per_sample / 8;
   h.byte_rate = h.sample_rate * h.num_channels * h.bits_per_sample / 8;
 
-  int num_samples =
-      int(h.sample_rate * secs) + int(h.sample_rate * fadeout) + 10;
+  int num_samples = int(h.sample_rate * secs);
+  if (fadeout > 0) num_samples += int(h.sample_rate * fadeout) + 10;
   h.data_size = num_samples * h.num_channels * h.bits_per_sample / 8;
 
   mooState moo_state;
@@ -684,6 +686,8 @@ bool PxtoneController::render(QIODevice *dev, double secs,
         qWarning() << "Unable to fill file buffer";
         return false;
       }
+      if (!should_continue((0.0 + written) / h.data_size)) return false;
+
       written += filled_len;
     }
     return true;

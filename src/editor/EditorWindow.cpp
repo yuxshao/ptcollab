@@ -6,6 +6,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QProgressDialog>
+#include <QSaveFile>
 #include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
@@ -37,6 +39,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_host_dialog(new HostDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
+      m_render_dialog(new RenderDialog(this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -166,6 +169,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionOpenHost, &QAction::triggered,
           [this]() { Host(HostSetting::LoadFile); });
   connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
+  connect(ui->actionRender, &QAction::triggered, this, &EditorWindow::render);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
   /*connect(ui->actionClearSettings, &QAction::triggered, [this]() {
@@ -276,11 +280,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     }
-    case Qt::Key_I: {
-      QFile f("/tmp/a.wav");
-      f.open(QIODevice::WriteOnly);
-      m_client->controller()->render(&f, 3, 3);
-    } break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
       break;
@@ -504,6 +503,46 @@ bool EditorWindow::saveAs() {
   bool saved = saveToFile(filename);
   if (saved) m_filename = filename;
   return saved;
+}
+
+bool EditorWindow::render() {
+  double length, fadeout;
+  double secs_per_meas =
+      m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
+  const pxtnMaster *m = m_pxtn.master;
+  m_render_dialog->setSongLength(m->get_play_meas() * secs_per_meas);
+  m_render_dialog->setSongLoopLength(
+      (m->get_play_meas() - m->get_repeat_meas()) * secs_per_meas);
+
+  try {
+    if (!m_render_dialog->exec()) return false;
+    length = m_render_dialog->renderLength();
+    fadeout = m_render_dialog->renderFadeout();
+  } catch (QString &e) {
+    QMessageBox::warning(this, tr("Render settings invalid"), e);
+    return false;
+  }
+
+  QSaveFile file(m_render_dialog->renderDestination());
+  if (!file.open(QIODevice::WriteOnly)) {
+    QMessageBox::warning(this, tr("Could not render"),
+                         tr("Could not open file for rendering"));
+    return false;
+  }
+
+  constexpr int GRANULARITY = 1000;
+  QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
+  progress.setWindowModality(Qt::WindowModal);
+  bool result =
+      m_client->controller()->render(&file, length, fadeout, [&](double p) {
+        progress.setValue(p * GRANULARITY);
+        return !progress.wasCanceled();
+      });
+  progress.close();
+  if (!result) return false;
+  file.commit();
+  QMessageBox::information(this, tr("Rendering done"), tr("Rendering done"));
+  return true;
 }
 
 bool EditorWindow::save() {

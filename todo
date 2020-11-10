@@ -375,18 +375,18 @@ fill architecture could work well.
 4. Don't show server restart confirm if you're the only one connected
 5. Copy / paste across multiple projects
 
+11/09
+1. wav export
+2. verify files can be opened in windows via file association.
+  - make sure old file doesn't exist, or else association is cached
+
 Todo by priority
 ----------------
  - improve guide
    - make it more visible
    - show how to do porta
    - link to it from readme
- - wav export
-   - keep event loop running
  - change note length
- - open files without Ctrl+O
-   - associate with file in windows -- actually don't do this, b/c ptcollage
-     does it
 
  - midi input???
    - start with qwerty input

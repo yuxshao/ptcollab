@@ -33,6 +33,7 @@ HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
            editor/HostDialog.h \
+           editor/RenderDialog.h \
            editor/Settings.h \
            editor/ShortcutsDialog.h \
            editor/sidemenu/BasicWoiceListModel.h \
@@ -97,6 +98,7 @@ FORMS += \
     editor/ConnectDialog.ui \
     editor/EditorWindow.ui \
     editor/HostDialog.ui \
+    editor/RenderDialog.ui \
     editor/ShortcutsDialog.ui \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
@@ -104,6 +106,7 @@ SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
            editor/HostDialog.cpp \
+           editor/RenderDialog.cpp \
            editor/Settings.cpp \
            editor/ShortcutsDialog.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
