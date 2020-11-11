@@ -222,16 +222,35 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
   if (maybe_unit_no.has_value()) {
     int unit_no = maybe_unit_no.value();
+
+    std::optional<Interval> last_on = std::nullopt;
+    int last_vel = EVENTDEFAULT_VELOCITY;
+    int y = UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2;
+
+    auto drawLastOn = [&]() {
+      if (last_on.has_value()) {
+        const Interval &i = last_on.value();
+        drawUnitBullet(
+            painter, i.start / scaleX, y,
+            int(i.end / scaleX) - int(i.start / scaleX),
+            brush.toQColor(last_vel, i.contains(m_moo_clock->now()), 255));
+      }
+      last_on = std::nullopt;
+    };
+
     for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
          e = e->next) {
       if (e->clock > clockBounds.end) break;
-      if (e->unit_no == unit_no && e->kind == EVENTKIND_ON) {
-        bool on = m_moo_clock->now() >= e->clock &&
-                  m_moo_clock->now() < e->clock + e->value;
-        int start_x = e->clock / scaleX;
-        int width = (e->clock + e->value) / scaleX - start_x;
-        drawUnitBullet(painter, start_x, UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2,
-                       width, brush.toQColor(EVENTDEFAULT_VELOCITY, on, 255));
+      if (e->unit_no == unit_no) {
+        if (e->kind == EVENTKIND_ON) {
+          drawLastOn();
+          last_on = Interval{e->clock, e->clock + e->value};
+        }
+        if (e->kind == EVENTKIND_VELOCITY) {
+          if (last_on.has_value() && last_on.value().start < e->clock)
+            drawLastOn();
+          last_vel = e->value;
+        }
       }
     }
   }
