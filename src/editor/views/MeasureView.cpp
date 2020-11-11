@@ -109,7 +109,8 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
     painter.fillRect(
         interval.start, UNIT_EDIT_Y + 2, interval.length(),
         UNIT_EDIT_HEIGHT - 4,
-        brush.toQColor(EVENTDEFAULT_VELOCITY, false, alpha * alphaMultiplier));
+        brush.toQColor(qint32(round(mouse_edit_state.base_velocity)), false,
+                       alpha * alphaMultiplier));
   };
   switch (mouse_edit_state.type) {
     case MouseEditState::Type::SetOn:
@@ -339,6 +340,9 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
                   m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
                   clock, std::list<EVERECORD>(),
                   m_client->audioState()->bufferSize(), this);
+              s.mouse_edit_state.base_velocity =
+                  m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
+                                                     EVENTKIND_VELOCITY);
             }
           } else
             type = MouseEditState::Type::DeleteOn;
@@ -366,15 +370,26 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               m_client->quantizeClock()));
           switch (s.mouse_edit_state.type) {
             case MouseEditState::SetOn:
-            case MouseEditState::SetNote:
-              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                 clock_int.start, Delete{clock_int.end}});
-              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                 clock_int.start, Add{clock_int.length()}});
-              break;
+            case MouseEditState::SetNote: {
+              std::optional<int> maybe_unit_no =
+                  m_client->unitIdMap().idToNo(s.m_current_unit_id);
+              if (maybe_unit_no.has_value()) {
+                actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                   clock_int.start, Delete{clock_int.end}});
+                actions.push_back({EVENTKIND_VELOCITY, s.m_current_unit_id,
+                                   clock_int.start, Delete{clock_int.end}});
+                actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                   clock_int.start, Add{clock_int.length()}});
+                actions.push_back(
+                    {EVENTKIND_VELOCITY, s.m_current_unit_id, clock_int.start,
+                     Add{qint32(round(s.mouse_edit_state.base_velocity))}});
+              }
+            } break;
             case MouseEditState::DeleteOn:
             case MouseEditState::DeleteNote:
               actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                 clock_int.start, Delete{clock_int.end}});
+              actions.push_back({EVENTKIND_VELOCITY, s.m_current_unit_id,
                                  clock_int.start, Delete{clock_int.end}});
               break;
               // TODO: Dedup w/ the other seek / select responses
@@ -428,12 +443,32 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
 
 void MeasureView::wheelEvent(QWheelEvent *event) {
   handleWheelEventWithModifier(event, m_client, true);
+  if (event->isAccepted()) return;
+
+  if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn &&
+      !(event->modifiers() & Qt::ShiftModifier)) {
+    m_client->changeEditState(
+        [&](EditState &e) {
+          auto &vel = e.mouse_edit_state.base_velocity;
+          vel = clamp<double>(vel + event->angleDelta().y() * 8.0 / 120, 0,
+                              EVENTMAX_VELOCITY);
+          if (m_audio_note_preview != nullptr)
+            m_audio_note_preview->processEvent(
+                EVENTKIND_VELOCITY,
+                qint32(round(e.mouse_edit_state.base_velocity)));
+        },
+        false);
+    event->accept();
+  }
 }
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
-  // TODO: Change the note preview based off position.
   if (!m_client->isFollowing())
     m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
                               true);
+  if (m_audio_note_preview != nullptr)
+    m_audio_note_preview->processEvent(
+        EVENTKIND_VELOCITY,
+        qint32(round(m_client->editState().mouse_edit_state.base_velocity)));
   event->ignore();
 }
