@@ -226,9 +226,10 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       if (e->unit_no == unit_no && e->kind == EVENTKIND_ON) {
         bool on = m_moo_clock->now() >= e->clock &&
                   m_moo_clock->now() < e->clock + e->value;
-        drawUnitBullet(painter, e->clock / scaleX,
-                       UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2, e->value / scaleX,
-                       brush.toQColor(EVENTDEFAULT_VELOCITY, on, 255));
+        int start_x = e->clock / scaleX;
+        int width = (e->clock + e->value) / scaleX - start_x;
+        drawUnitBullet(painter, start_x, UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2,
+                       width, brush.toQColor(EVENTDEFAULT_VELOCITY, on, 255));
       }
     }
   }
