@@ -83,6 +83,7 @@ static qreal paramToY(int param, EVENTKIND current_kind, int height) {
 
 static qreal paramOfY(int y, EVENTKIND current_kind, int height, bool snap) {
   if (y > height) y = height;
+  if (y < 0) y = 0;
   switch (current_kind) {
     case EVENTKIND_TUNING: {
       double proportion;
