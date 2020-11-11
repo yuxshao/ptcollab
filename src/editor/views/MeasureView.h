@@ -16,6 +16,7 @@ class MeasureView : public QWidget {
   Animation *m_anim;
   Scale m_last_scale;
   MooClock *m_moo_clock;
+  std::unique_ptr<NotePreview> m_audio_note_preview;
 
   void paintEvent(QPaintEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;

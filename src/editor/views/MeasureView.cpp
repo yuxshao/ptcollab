@@ -12,7 +12,8 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
     : QWidget(parent),
       m_client(client),
       m_anim(new Animation(this)),
-      m_moo_clock(moo_clock) {
+      m_moo_clock(moo_clock),
+      m_audio_note_preview(nullptr) {
   setFocusPolicy(Qt::NoFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
   updateGeometry();
@@ -326,10 +327,21 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
             type = MouseEditState::Type::Seek;
           }
         } else if (std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).y >
-                   RIBBON_HEIGHT)
-          type = (event->button() == Qt::LeftButton
-                      ? MouseEditState::Type::SetOn
-                      : MouseEditState::Type::DeleteOn);
+                   RIBBON_HEIGHT) {
+          if (event->button() == Qt::LeftButton) {
+            type = MouseEditState::Type::SetOn;
+            qint32 current_clock = s.mouse_edit_state.current_clock;
+            std::optional<int> unit_no =
+                m_client->unitIdMap().idToNo(s.m_current_unit_id);
+            if (unit_no.has_value()) {
+              m_audio_note_preview = std::make_unique<NotePreview>(
+                  m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
+                  current_clock, std::list<EVERECORD>(),
+                  m_client->audioState()->bufferSize(), this);
+            }
+          } else
+            type = MouseEditState::Type::DeleteOn;
+        }
       },
       false);
 }
@@ -406,6 +418,7 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
             m_client->applyAction(actions);
           }
         }
+        m_audio_note_preview.reset();
         s.mouse_edit_state.type = MouseEditState::Type::Nothing;
         updateStatePositions(s, event);
       },
