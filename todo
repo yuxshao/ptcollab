@@ -382,6 +382,8 @@ fill architecture could work well.
 
 11/10
 1. change note length (unit edit under ribbon)
+2. quantize note preview time in param / measure view
+3. fix being able to set parameter above max
 
 Todo by priority
 ----------------
