@@ -19,7 +19,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 const QString CUSTOM_STYLE_KEY("use_custom_style");
 
 namespace Version {
-static QString v("0.3.4.1");
+static QString v("0.3.4.2");
 const QString &string() { return v; }
 }  // namespace Version
 
