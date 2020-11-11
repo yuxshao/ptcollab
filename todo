@@ -380,13 +380,15 @@ fill architecture could work well.
 2. verify files can be opened in windows via file association.
   - make sure old file doesn't exist, or else association is cached
 
+11/10
+1. change note length (unit edit under ribbon)
+
 Todo by priority
 ----------------
  - improve guide
    - make it more visible
    - show how to do porta
    - link to it from readme
- - change note length
 
  - midi input???
    - start with qwerty input

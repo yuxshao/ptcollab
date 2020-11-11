@@ -330,13 +330,14 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
                    RIBBON_HEIGHT) {
           if (event->button() == Qt::LeftButton) {
             type = MouseEditState::Type::SetOn;
-            qint32 current_clock = s.mouse_edit_state.current_clock;
+            qint32 clock = quantize(s.mouse_edit_state.current_clock,
+                                    m_client->quantizeClock());
             std::optional<int> unit_no =
                 m_client->unitIdMap().idToNo(s.m_current_unit_id);
             if (unit_no.has_value()) {
               m_audio_note_preview = std::make_unique<NotePreview>(
                   m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
-                  current_clock, std::list<EVERECORD>(),
+                  clock, std::list<EVERECORD>(),
                   m_client->audioState()->bufferSize(), this);
             }
           } else

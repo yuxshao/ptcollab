@@ -511,11 +511,13 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
                     .second;
             e.value =
                 std::get<MouseParamEdit>(s.mouse_edit_state.kind).current_param;
-            qint32 current_clock = s.mouse_edit_state.current_clock;
+
+            qint32 clock = quantize(s.mouse_edit_state.current_clock,
+                                    m_client->quantizeClock());
             m_audio_note_preview = std::make_unique<NotePreview>(
-                m_client->pxtn(), &m_client->moo()->params, unit_no,
-                current_clock, std::list<EVERECORD>({e}),
-                m_client->audioState()->bufferSize(), this);
+                m_client->pxtn(), &m_client->moo()->params, unit_no, clock,
+                std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+                this);
           }
         }
       },
