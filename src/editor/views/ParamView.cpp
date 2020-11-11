@@ -162,7 +162,6 @@ static const QColor darkTeal(QColor::fromRgb(0, 96, 96));
 
 constexpr int NUM_BACKGROUND_GAPS =
     sizeof(BACKGROUND_GAPS) / sizeof(BACKGROUND_GAPS[0]);
-constexpr int WINDOW_BOUND_SLACK = 32;
 constexpr int arbitrarily_tall = 1000;
 
 struct Event {
@@ -171,7 +170,6 @@ struct Event {
 
 constexpr int32_t lineHeight = 4;
 constexpr int32_t lineWidth = 2;
-constexpr int32_t tailLineHeight = 4;
 constexpr int32_t tailRowHeight = 8;
 static void drawLastVoiceNoEvent(QPainter &painter, int height,
                                  const Event &last, const Event &curr,
@@ -235,14 +233,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
       color.setAlpha(color.alpha() * (num_layer + 1 - abs(i)) /
                      (num_layer + 1));
       int32_t y = height / 2 + (unitOffset + i * numUnits) * tailRowHeight;
-      painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1,
-                       (tailLineHeight + 6), color);
-      painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
-                       (tailLineHeight + 2), color);
-      painter.fillRect(thisX + 2, y - tailLineHeight / 2, std::max(0, w - 3),
-                       tailLineHeight, color);
-      painter.fillRect(thisX + std::max(0, w - 1), y - (tailLineHeight - 2) / 2,
-                       1, tailLineHeight - 2, color);
+      drawUnitBullet(painter, thisX, y, w, color);
     }
   }
 }

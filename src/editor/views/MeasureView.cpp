@@ -89,26 +89,47 @@ constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
 constexpr int RULER_HEIGHT = 15;
 constexpr int SEPARATOR_OFFSET = 6;
 constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
+constexpr int UNIT_EDIT_HEIGHT = 15;
+constexpr int UNIT_EDIT_OFFSET = 2;
+constexpr int RIBBON_HEIGHT =
+    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
+constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                        int quantizeClock, int clockPerMeas,
                        double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
+  Interval interval(mouse_edit_state.clock_int(quantizeClock) /
+                    state.scale.clockPerPx);
+  auto drawVelAction = [&](int alpha) {
+    const Brush &brush =
+        brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
+    painter.fillRect(
+        interval.start, UNIT_EDIT_Y + 2, interval.length(),
+        UNIT_EDIT_HEIGHT - 4,
+        brush.toQColor(EVENTDEFAULT_VELOCITY, false, alpha * alphaMultiplier));
+  };
   switch (mouse_edit_state.type) {
     case MouseEditState::Type::SetOn:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote:
+      if (std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
+        drawVelAction(255);
       break;
     case MouseEditState::Type::Nothing: {
       if (std::holds_alternative<MouseMeasureEdit>(
               state.mouse_edit_state.kind)) {
-        int half_meas = 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
-        int meas = half_meas / 2;
-        int left_half = half_meas % 2 == 1;
-        drawFlag(&painter, (left_half ? FlagType::Repeat : FlagType::Last),
-                 true, meas * clockPerMeas / state.scale.clockPerPx, FLAG_Y);
+        if (std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y <
+            RIBBON_HEIGHT) {
+          int half_meas = 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
+          int meas = half_meas / 2;
+          int left_half = half_meas % 2 == 1;
+          drawFlag(&painter, (left_half ? FlagType::Repeat : FlagType::Last),
+                   true, meas * clockPerMeas / state.scale.clockPerPx, FLAG_Y);
+        } else
+          drawVelAction(96);
       }
       break;
     }
@@ -118,8 +139,6 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
           height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier), true);
       break;
     case MouseEditState::Type::Select: {
-      Interval interval(mouse_edit_state.clock_int(quantizeClock) /
-                        state.scale.clockPerPx);
       drawSelection(painter, interval, height, selectionAlphaMultiplier);
     } break;
   }
@@ -128,13 +147,14 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 QSize MeasureView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
-               2 + MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET);
+               1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET + UNIT_EDIT_HEIGHT);
 }
 
 const static QBrush measureBrush(Qt::white);
 const static QBrush beatBrush(QColor::fromRgb(128, 128, 128));
+const static QBrush unitEditBrush(QColor::fromRgb(64, 0, 112));
 const static QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
-void MeasureView::paintEvent(QPaintEvent *) {
+void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
 
   QPainter painter(this);
@@ -186,6 +206,31 @@ void MeasureView::paintEvent(QPaintEvent *) {
     drawFlag(&painter, FlagType::Last, false,
              m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx,
              FLAG_Y);
+  }
+
+  // Draw on events
+
+  painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT, unitEditBrush);
+  double scaleX = m_client->editState().scale.clockPerPx;
+  Interval clockBounds = {
+      qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
+      qint32(e->rect().right() * scaleX) + WINDOW_BOUND_SLACK};
+  int unit_id = m_client->editState().m_current_unit_id;
+  const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+  std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
+  if (maybe_unit_no.has_value()) {
+    int unit_no = maybe_unit_no.value();
+    for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
+         e = e->next) {
+      if (e->clock > clockBounds.end) break;
+      if (e->unit_no == unit_no && e->kind == EVENTKIND_ON) {
+        bool on = m_moo_clock->now() >= e->clock &&
+                  m_moo_clock->now() < e->clock + e->value;
+        drawUnitBullet(painter, e->clock / scaleX,
+                       UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2, e->value / scaleX,
+                       brush.toQColor(EVENTDEFAULT_VELOCITY, on, 255));
+      }
+    }
   }
 
   drawLastSeek(painter, m_client, height(), true);
@@ -248,14 +293,15 @@ static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
 
+  state.current_clock =
+      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
   if (state.type == MouseEditState::Nothing ||
       state.type == MouseEditState::Seek) {
+    state.start_clock = state.current_clock;
     bool shift = event->modifiers() & Qt::ShiftModifier;
     state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
   }
 
-  state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
   state.kind = MouseMeasureEdit{event->y()};
 }
 
@@ -267,8 +313,7 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
 
   m_client->changeEditState(
       [&](EditState &s) {
-        s.mouse_edit_state.start_clock =
-            std::max(0., event->localPos().x() * s.scale.clockPerPx);
+        updateStatePositions(s, event);
         MouseEditState::Type &type = s.mouse_edit_state.type;
         if (event->modifiers() & Qt::ShiftModifier) {
           if (event->modifiers() & Qt::ControlModifier &&
@@ -279,7 +324,11 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               s.mouse_edit_state.selection.reset();
             type = MouseEditState::Type::Seek;
           }
-        }
+        } else if (std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).y >
+                   RIBBON_HEIGHT)
+          type = (event->button() == Qt::LeftButton
+                      ? MouseEditState::Type::SetOn
+                      : MouseEditState::Type::DeleteOn);
       },
       false);
 }
@@ -299,11 +348,20 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
         if (m_client->pxtn()->Unit_Num() > 0) {
           using namespace Action;
           std::list<Primitive> actions;
+          Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
+              m_client->quantizeClock()));
           switch (s.mouse_edit_state.type) {
             case MouseEditState::SetOn:
-            case MouseEditState::DeleteOn:
             case MouseEditState::SetNote:
+              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                 clock_int.start, Delete{clock_int.end}});
+              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                 clock_int.start, Add{clock_int.length()}});
+              break;
+            case MouseEditState::DeleteOn:
             case MouseEditState::DeleteNote:
+              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
+                                 clock_int.start, Delete{clock_int.end}});
               break;
               // TODO: Dedup w/ the other seek / select responses
             case MouseEditState::Seek:
@@ -320,6 +378,9 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
             case MouseEditState::Nothing:
               if (std::holds_alternative<MouseMeasureEdit>(
                       s.mouse_edit_state.kind)) {
+                if (std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).y >=
+                    RIBBON_HEIGHT)
+                  break;
                 int half_meas = 2 * current_clock /
                                     m_client->pxtn()->master->get_beat_clock() /
                                     m_client->pxtn()->master->get_beat_num() +

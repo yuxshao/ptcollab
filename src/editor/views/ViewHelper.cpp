@@ -3,8 +3,8 @@
 #include <QWheelEvent>
 
 #include "editor/ComboOptions.h"
-#include "pxtone/pxtnEvelist.h"
 #include "editor/Settings.h"
+#include "pxtone/pxtnEvelist.h"
 
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
@@ -148,4 +148,19 @@ void drawExistingSelection(QPainter &painter, const MouseEditState &state,
   }
 }
 
+constexpr int32_t tailLineHeight = 4;
+void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
+                    const QColor &color) {
+  painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1, (tailLineHeight + 6),
+                   color);
+  painter.fillRect(thisX + 1, y - (tailLineHeight + 2) / 2, 1,
+                   (tailLineHeight + 2), color);
+  painter.fillRect(thisX + 2, y - tailLineHeight / 2, std::max(0, w - 3),
+                   tailLineHeight, color);
+  painter.fillRect(thisX + std::max(0, w - 1), y - (tailLineHeight - 2) / 2, 1,
+                   tailLineHeight - 2, color);
+}
+
 const QColor brightGreen(QColor::fromRgb(0, 240, 128));
+
+const int WINDOW_BOUND_SLACK = 32;

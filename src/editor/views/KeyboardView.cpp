@@ -294,7 +294,7 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
     }
   }
 }
-constexpr int WINDOW_BOUND_SLACK = 32;
+
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;

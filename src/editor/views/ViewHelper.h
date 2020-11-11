@@ -73,4 +73,7 @@ extern void drawExistingSelection(QPainter &painter,
                                   const MouseEditState &state, qreal clockPerPx,
                                   qint32 height, double alphaMultiplier);
 extern const QColor brightGreen;
+extern const int WINDOW_BOUND_SLACK;
+extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
+                           const QColor &color);
 #endif  // VIEWHELPER_H
