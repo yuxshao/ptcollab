@@ -253,6 +253,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         }
       }
     }
+    drawLastOn();
   }
 
   drawLastSeek(painter, m_client, height(), true);
