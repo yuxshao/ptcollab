@@ -385,12 +385,15 @@ fill architecture could work well.
 2. quantize note preview time in param / measure view
 3. fix being able to set parameter above max
 
+11/11
+1. update guide
+2. 
+
 Todo by priority
 ----------------
  - improve guide
-   - make it more visible
-   - show how to do porta
    - link to it from readme
+ - update readme.md
 
  - midi input???
    - start with qwerty input
