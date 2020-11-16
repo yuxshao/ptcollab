@@ -6,6 +6,9 @@
 }
 
 img { box-sizing: border-box; }
+.screenshot { display:block; margin:5px auto; border:2px solid #202020; }
+.screenshot img { margin:0 }
+text img.screenshot { border:2px solid #00F080; }
 
 header, section {
   background-color: #4E4B61;
@@ -49,6 +52,8 @@ h1,h2,h3,h4,h5,h6{
 .text > p:last-child { margin-bottom:0; }
 .text > ul:last-child { margin-bottom:0; }
 .text > ul:first-child { margin-top:0; }
+.text > ol:last-child { margin-bottom:0; }
+.text > ol:first-child { margin-top:0; }
 
 a { color: #D2CA9C; }
 a:hover { color: #DED9BB; }
