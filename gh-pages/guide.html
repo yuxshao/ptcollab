@@ -11,6 +11,18 @@
 
     <link rel="stylesheet" type="text/css" href="./resources/style.css">
     <link rel="shortcut icon" type="image/x-icon" href="./resources/favicon.ico">
+
+    <script>
+      function toggle(id) {
+              let x = document.getElementById(id);
+              if (x.style.display === "none") {
+                      x.style.display = "block";
+                    } else {
+                            x.style.display = "none";
+                          }
+              return false;
+            }
+    </script>
   </head>
 
   <body>
@@ -28,14 +40,15 @@
     <div class="wrapper">
       <section>
         <h2>For people new to pxtone</h2>
-          <hr />
-        <h3>Background on pxtone</h3>
-        <div class="text">
-pxtone is a set of music creation tools made by Pixel, the creator of Cave Story and Kero Blaster. It includes two instrument editors, pxtone voice and pxtone noise, and a sequencer called pxtone collage. pxtone collab is a fan sequence editor that uses the audio engine source with a slightly different workflow, and also a few other features like network collaboration.
+        <hr />
+        <a class="h3" href="#" onclick="toggle('pxtone-background');return false">Background on pxtone</a>
+        <div class="text" id="pxtone-background" style="display:none">
+          pxtone is a set of music creation tools made by Pixel, the creator of Cave Story and Kero Blaster. It includes two instrument editors, pxtone voice and pxtone noise, and a sequencer called pxtone collage. pxtone collab is a fan sequence editor that uses the audio engine source with a slightly different workflow, and also a few other features like network collaboration.
         </div>
-        <h3>Getting started</h3>
+        <a class="h3" href="#" onclick="toggle('getting-started');return false">Getting started</a>
+        <div id="getting-started" style="display:none">
           <p class="text">To get started making music on your own, go to File &gt; New to open up the New Session window. You don't have to change anything here.</p>
-        <img src="resources/gs-new-session.png" alt="new session window" class="screenshot" />
+          <img src="resources/gs-new-session.png" alt="new session window" class="screenshot" />
 
           <p class="text">Now, click the "+" on the left side in the "Voices" tab to load some instruments. Some sample instruments / voices are included with the program.</p>
           <div style="text-align:center">
@@ -43,48 +56,51 @@ pxtone is a set of music creation tools made by Pixel, the creator of Cave Story
             <img class="screenshot" style="display:inline-block" src="resources/gs-load-voice.png" alt="loading a voice" />
             <img class="screenshot" style="display:inline-block" src="resources/gs-loaded-voice.png" alt="voice tab after loading" />
           </div>
-        <p class="text">
+          <p class="text">
           With the instruments loaded, you can create units for each instrument by going to the "Units" tab and pressing the "+" button. Each unit can play one instrument at a time.</p>
           <div style="text-align:center">
             <img class="screenshot" style="display:inline-block" src="resources/gs-new-unit.png" alt="adding a unit" />
             <img class="screenshot" style="display:inline-block" src="resources/gs-load-unit.png" alt="loading a unit" />
             <img class="screenshot" style="display:inline-block" src="resources/gs-loaded-unit.png" alt="unit tab after loading" />
           </div>
-        <p class="text">Once you have your units, you can start putting notes down in the piano roll!</p>
-            <img class="screenshot" src="resources/gs-draw-notes.png" alt="draw notes in piano roll" />
-        <h3>More pxtone concepts</h3>
-        <p class="text">Once you’ve played around drawing a few tunes, you might be interested in some of the other things you can change in the editor.</p>
-        <h4>Unit parameters</h4>
-        <p class="text">Under the piano roll, there’s a panel called the parameter editor that you can draw in to change different aspects of how a unit sounds.</p>
-        <img src="resources/parameter-bar.png" alt="parameter bar" class="screenshot" />
-        <div class="text">The dropdown on the left changes which parameter you’re changing. Here’s a brief description of each option:
-<ul>
-<li>Velocity - how loud is each note?</li>
-<li>Pan (volume) - how loud is the unit on the left vs. the right?</li>
-<li>Pan (time) - how much should one side have compared to the other?</li>
-<li>Volume - how loud is the unit as a whole? This can also be used to change note volume while the note’s playing.</li>
-<li>Portamento length - how long should a pitch slide take? This can be useful for vibrato. (see “How do I…?” for more info about portamento)</li>
-<li>Fine-tune - should the unit be tuned sharp or flat? </li>
-<li>Voice - what voice should play the unit?</li>
-<li>Group - what effects should be associated with the unit? (See below for more info about effect groups)</li></ul>
+          <p class="text">Once you have your units, you can start putting notes down in the piano roll!</p>
+          <img class="screenshot" src="resources/gs-draw-notes.png" alt="draw notes in piano roll" />
         </div>
-        <h4>Effects</h4>
-        <div class="text">
-          <p>pxtone lets you apply 2 additional kinds of post-processing effects to groups of units. These effects are delay and overdrive, and in ptcollab, they can be set up in the Song tab. You can double click a cell to edit it.</p>
+        <a class="h3" href="#" onclick="toggle('more-pxtone-concepts');return false">More pxtone concepts</a>
+        <div id="more-pxtone-concepts" style="display:none">
+          <p class="text">Once you’ve played around drawing a few tunes, you might be interested in some of the other things you can change in the editor.</p>
+          <h4>Unit parameters</h4>
+          <p class="text">Under the piano roll, there’s a panel called the parameter editor that you can draw in to change different aspects of how a unit sounds.</p>
+          <img src="resources/parameter-bar.png" alt="parameter bar" class="screenshot" />
+          <div class="text">The dropdown on the left changes which parameter you’re changing. Here’s a brief description of each option:
+            <ul>
+              <li>Velocity - how loud is each note?</li>
+              <li>Pan (volume) - how loud is the unit on the left vs. the right?</li>
+              <li>Pan (time) - how much should one side have compared to the other?</li>
+              <li>Volume - how loud is the unit as a whole? This can also be used to change note volume while the note’s playing.</li>
+              <li>Portamento length - how long should a pitch slide take? This can be useful for vibrato. (see “How do I…?” for more info about portamento)</li>
+              <li>Fine-tune - should the unit be tuned sharp or flat? </li>
+              <li>Voice - what voice should play the unit?</li>
+              <li>Group - what effects should be associated with the unit? (See below for more info about effect groups)</li></ul>
+          </div>
+          <h4>Effects</h4>
+          <div class="text">
+            <p>pxtone lets you apply 2 additional kinds of post-processing effects to groups of units. These effects are delay and overdrive, and in ptcollab, they can be set up in the Song tab. You can double click a cell to edit it.</p>
 
-          <p><em>Delay</em> is a kind of echo. The ratio determines how loud each echo is compared to the last, and the frequency is how close together in time each echo is.
+            <p><em>Delay</em> is a kind of echo. The ratio determines how loud each echo is compared to the last, and the frequency is how close together in time each echo is.
 
-          <p><em>Overdrive</em> is a way to amplify sounds and also cut amplitudes above a threshold. It can lead to some nice distortion effects!</p>
+            <p><em>Overdrive</em> is a way to amplify sounds and also cut amplitudes above a threshold. It can lead to some nice distortion effects!</p>
 
-          <p>More detail about these effects are here.</p>
+            <p>More detail about these effects are here.</p>
 
-          <p>Groups are used to apply effects to units. This is the G tab in the effect panel. Take this example:</p>
+            <p>Groups are used to apply effects to units. This is the G tab in the effect panel. Take this example:</p>
+          </div>
+          <img src="resources/group-setting.png" class="screenshot" alt="group setting" />
+          <p class="text">
+          Which applies an echo to every unit in group 1. You can make a unit a part of the group by changing the group parameter at the bottom.
+          </p>
+          <img src="resources/group-param.png" class="screenshot" alt="group param" />
         </div>
-        <img src="resources/group-setting.png" class="screenshot" alt="group setting" />
-        <p class="text">
-Which applies an echo to every unit in group 1. You can make a unit a part of the group by changing the group parameter at the bottom.
-        </p>
-        <img src="resources/group-param.png" class="screenshot" alt="group param" />
       </section>
     </div>
 
@@ -92,137 +108,152 @@ Which applies an echo to every unit in group 1. You can make a unit a part of th
       <section>
         <h2>For pxtone collage users</h2>
         <hr />
-        <h3>Workflow differences</h3>
-        <div class="text">
-ptcollab tries to have a similar workflow to pxtone collage. Besides hosting / connection, some notable differences are:
-<ul>
-<li>Select with Ctrl+Shift+Click and Ctrl+A; Ctrl+D deselects. This replaces the selection ribbon in ptcollage.</li>
-<li>Once something’s selected, you can use Up/Down to shift a parameter, or Ctrl+Up/Down to transpose.</li>
-<li>The hand tool can be accessed by Ctrl+click, instead of being a separate tool.</li>
-<li>Seeking is by Shift+click. To reset the playhead after playback, stop the song (ESC) instead of pausing (space).</li>
-<li>There’s no unit view, but only a keyboard view (for now)</li>
-<li>More gestures and shortcuts for navigation and editing, described below.</li>
-</ul>
-      </section>
+        <a class="h3" href="#" onclick="toggle('workflow-differences');return false">Workflow differences</a>
+        <div class="text" id="workflow-differences" style="display:none">
+          ptcollab tries to have a similar workflow to pxtone collage. Besides hosting / connection, some notable differences are:
+          <ul>
+            <li>Select with Ctrl+Shift+Click and Ctrl+A; Ctrl+D deselects. This replaces the selection ribbon in ptcollage.</li>
+            <li>Once something’s selected, you can use Up/Down to shift a parameter, or Ctrl+Up/Down to transpose.</li>
+            <li>The hand tool can be accessed by Ctrl+click, instead of being a separate tool.</li>
+            <li>Seeking is by Shift+click. To reset the playhead after playback, stop the song (ESC) instead of pausing (space).</li>
+            <li>There’s no unit view, but only a keyboard view (for now)</li>
+            <li>More gestures and shortcuts for navigation and editing, described below.</li>
+          </ul>
         </div>
+      </section>
+    </div>
 
     <div class="wrapper">
       <section>
         <h2>What does X mean?</h2>
         <hr />
-        <h3>Voice tab</h3>
-        <img src="resources/what-voice.png" class="screenshot" alt="voice tab" />
-        <div class="text">
-          <ol>
-          <li>Repeat sample. For wav and ogg voices, you can toggle this to have the sample stop after one loop, or repeat as long as the note is held.</li>
-          <li>Beat fit. For wav and ogg voices, you can toggle this so that the sample always plays for 1 whole beat on note A4. This is useful for certain percussion sounds if you want to fix their start and end times.</li>
-          <li>Base key. If beat fit isn’t checked, change this to transpose this voice by a number of semitones. It’s inverted, so lower it if you want everything to sound higher. Double-click to edit.</li>
-          <li>Name. The name of the voice. Double-click to edit.</li>
-          </ol>
+        <a class="h3" href="#" onclick="toggle('what-voice-tab');return false">Voice tab</a>
+        <div id="what-voice-tab" style="display:none">
+          <img src="resources/what-voice.png" class="screenshot" alt="voice tab" />
+          <div class="text">
+            <ol>
+              <li>Repeat sample. For wav and ogg voices, you can toggle this to have the sample stop after one loop, or repeat as long as the note is held.</li>
+              <li>Beat fit. For wav and ogg voices, you can toggle this so that the sample always plays for 1 whole beat on note A4. This is useful for certain percussion sounds if you want to fix their start and end times.</li>
+              <li>Base key. If beat fit isn’t checked, change this to transpose this voice by a number of semitones. It’s inverted, so lower it if you want everything to sound higher. Double-click to edit.</li>
+              <li>Name. The name of the voice. Double-click to edit.</li>
+            </ol>
+          </div>
         </div>
-        <h3>Unit tab</h3>
-        <img src="resources/what-unit.png" class="screenshot" alt="unit tab" />
-        <div class="text">
+        <a class="h3" href="#" onclick="toggle('what-unit-tab');return false">Unit tab</a>
+        <div id="what-unit-tab" style="display:none">
+          <img src="resources/what-unit.png" class="screenshot" alt="unit tab" />
+          <div class="text">
 
-          <ol>
-<li>Visible. Toggle if the unit is visible in the background while you’re focused on a different unit.</li>
-<li>Playing. Toggle if the unit is playing or muted.</li>
-<li>Selected. When making a selection, toggle if the unit is included or not while you’re focused on a different unit. </li>
-<li>Name. The name of the unit. Double-click to edit.</li>
-          </ol>
-        </div>
-
-        <h3>Effects</h3>
-        <img src="resources/what-delay.png" class="screenshot" alt="delay effects" />
-        <div class="text">
-          <ol>
-<li>Group. Which unit group should this effect apply to?</li>
-<li>Unit. Together with frequency, determines how often the echo should play. The name is a bit misleading since units already have a different meaning in pxtone. Options are Beat, Meas, Sec.</li>
-<li>Frequency. How many times should the echo play within one “Unit”. For example, if set to 3Hz and Unit is Beat, it will play 3 times in a beat.</li>
-<li>Ratio. How loud should an echo be compared to the previous one?</li>
-          </ol>
+            <ol>
+              <li>Visible. Toggle if the unit is visible in the background while you’re focused on a different unit.</li>
+              <li>Playing. Toggle if the unit is playing or muted.</li>
+              <li>Selected. When making a selection, toggle if the unit is included or not while you’re focused on a different unit. </li>
+              <li>Name. The name of the unit. Double-click to edit.</li>
+            </ol>
+          </div>
         </div>
 
-        <img src="resources/what-overdrive.png" class="screenshot" alt="overdrive effects" />
-        <div class="text">
-          <ol>
-<li>Group. Which unit group should this effect apply to?</li>
-<li>Cut. What’s the amplitude ceiling in this group?</li>
-<li>Amplification. How should the volume be scaled for units in this group?</li>
-          </ol>
-          Overdrive is a bit difficult to explain. It might be best to play around and hear what you like. Additionally there're more information <a href="https://battleofthebits.org/lyceum/View/I+Am+New+To+pxtone/" target="_blank">here</a>.
-                  </div>
+        <a class="h3" href="#" onclick="toggle('what-effects');return false">Effects</a>
+        <div id="what-effects" style="display:none">
+          <img src="resources/what-delay.png" class="screenshot" alt="delay effects" />
+          <div class="text">
+            <ol>
+              <li>Group. Which unit group should this effect apply to?</li>
+              <li>Unit. Together with frequency, determines how often the echo should play. The name is a bit misleading since units already have a different meaning in pxtone. Options are Beat, Meas, Sec.</li>
+              <li>Frequency. How many times should the echo play within one “Unit”. For example, if set to 3Hz and Unit is Beat, it will play 3 times in a beat.</li>
+              <li>Ratio. How loud should an echo be compared to the previous one?</li>
+            </ol>
+          </div>
 
-        <h3>Miscellaneous</h3>
-        <img src="resources/what-misc.png" class="screenshot" alt="miscallaneous labels" />
-        <div class="text">
-          <ol>
-<li>Users connected to this session. Each row shows a user’s ID, name, and ping.</li>
-<li>Watch another user. You follow their cursor, window position, playhead, and current unit. You can input a note or watch yourself to stop following.</li>
-<li>Local playback volume (doesn’t affect song).</li>
-<li>Playback buffer length. If your audio is choppy, try raising this. It will add some audio latency though.</li>
-<li>The parameter you’re currently editing.</li>
-<li>Quantization for your current note (e.g., if Snap X is ⅓, you can place notes ⅓ of a beat long). Snap lets you do microtonal placements.</li>
-<li>When copying and pasting, this determines if you want to include the current parameter in the copy. Note: velocity controls whether or not the notes themselves are copied.</li>
-<li>Follow playhead. Toggle this to automatically scroll if the playhead falls offscreen.</li>
-          </ol>
-                  </div>
-                </section>
+          <img src="resources/what-overdrive.png" class="screenshot" alt="overdrive effects" />
+          <div class="text">
+            <ol>
+              <li>Group. Which unit group should this effect apply to?</li>
+              <li>Cut. What’s the amplitude ceiling in this group?</li>
+              <li>Amplification. How should the volume be scaled for units in this group?</li>
+            </ol>
+            Overdrive is a bit difficult to explain. It might be best to play around and hear what you like. Additionally there're more information <a href="https://battleofthebits.org/lyceum/View/I+Am+New+To+pxtone/" target="_blank">here</a>.
+          </div>
+        </div>
+
+        <a class="h3" href="#" onclick="toggle('what-misc');return false">Miscellaneous</a>
+        <div id="what-misc" style="display:none">
+          <img src="resources/what-misc.png" class="screenshot" alt="miscallaneous labels" />
+          <div class="text">
+            <ol>
+              <li>Users connected to this session. Each row shows a user’s ID, name, and ping.</li>
+              <li>Watch another user. You follow their cursor, window position, playhead, and current unit. You can input a note or watch yourself to stop following.</li>
+              <li>Local playback volume (doesn’t affect song).</li>
+              <li>Playback buffer length. If your audio is choppy, try raising this. It will add some audio latency though.</li>
+              <li>The parameter you’re currently editing.</li>
+              <li>Quantization for your current note (e.g., if Snap X is ⅓, you can place notes ⅓ of a beat long). Snap lets you do microtonal placements.</li>
+              <li>When copying and pasting, this determines if you want to include the current parameter in the copy. Note: velocity controls whether or not the notes themselves are copied.</li>
+              <li>Follow playhead. Toggle this to automatically scroll if the playhead falls offscreen.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="wrapper">
       <section>
         <h2>How do I...</h2>
         <hr />
-        <h3>Host?</h3>
-        <div class="text"><p>To edit with friends, one person has to host a server. This can be a bit complicated depending on your network setup.</p>
-          <p>First, you have to <a href="./resources/host-session.png">tick "Host"</a> in the New Session window.</p>
-          <p>If your home internet uses a router, though, you might have to set up port forwarding, so that computers outside of your network can connect to you. Many multiplayer game servers usually need something similar.</p>
-          <p>Copied below is a brief guide on how to do this, from <a href="https://drawpile.net/help/hosting/">here</a>.</p>
-          <ul>
-            <li>Go to the router configuration site (Often 192.168.1.1 or 10.0.0.1; it depends on your router model, so you should probably find that out). <ul><li>You might see a login screen that looks like <a href="./resources/port-forwarding-login.png">this</a>. Your router usually will have information about how to log in.</li></ul></li>
-            <li>Go to the "forwarding" or "virtual servers" page</li>
-            <li>Create a new forwarding entry: port 15835 (or whatever port you want to host on), TCP protocol (or Both) and the local IP address of your computer.
-              <ul>
-                <li>There are guides online to help figure out your local IP address, for example <a href="https://www.tp-link.com/us/support/faq/838/">here</a>.</li>
-                <li>My own setup looks something like <a href="./resources/port-forwarding.png">this</a>.</li>
-              </ul>
+        <a class="h3" href="#" onclick="toggle('how-host');return false">Edit with friends?</a>
+        <div id="how-host" style="display:none">
+          <div class="text"><p>To edit with friends, one person has to host a server. This can be a bit complicated depending on your network setup.</p>
+            <p>First, you have to <a href="./resources/host-session.png">tick "Host"</a> in the New Session window.</p>
+            <p>If your home internet uses a router, though, you might have to set up port forwarding, so that computers outside of your network can connect to you. Many multiplayer game servers usually need something similar.</p>
+            <p>Copied below is a brief guide on how to do this, from <a href="https://drawpile.net/help/hosting/">here</a>.</p>
+            <ul>
+              <li>Go to the router configuration site (Often 192.168.1.1 or 10.0.0.1; it depends on your router model, so you should probably find that out). <ul><li>You might see a login screen that looks like <a href="./resources/port-forwarding-login.png">this</a>. Your router usually will have information about how to log in.</li></ul></li>
+              <li>Go to the "forwarding" or "virtual servers" page</li>
+              <li>Create a new forwarding entry: port 15835 (or whatever port you want to host on), TCP protocol (or Both) and the local IP address of your computer.
+                <ul>
+                  <li>There are guides online to help figure out your local IP address, for example <a href="https://www.tp-link.com/us/support/faq/838/">here</a>.</li>
+                  <li>My own setup looks something like <a href="./resources/port-forwarding.png">this</a>.</li>
+                </ul>
               </li>
-          </ul>
-          <p>If you have a local firewall (Windows firewall, Comodo, McAfee, F-secure, etc.), you need to configure that as well. For more detailed guides, check out <a href="https://portforward.com/router.htm">portforward.com</a> (you generally don't need to download anything).</p>
-          <p>Once the server is up, others can connect to it by going to File &gt; Connect, and in the <a href="./resources/connect.png">Connect dialog</a>, type in your public IP (which you can find <a href="https://ipecho.net/">here</a>), then a colon, then the port you're hosting on.</p>
+            </ul>
+            <p>If you have a local firewall (Windows firewall, Comodo, McAfee, F-secure, etc.), you need to configure that as well. For more detailed guides, check out <a href="https://portforward.com/router.htm">portforward.com</a> (you generally don't need to download anything).</p>
+            <p>Once the server is up, others can connect to it by going to File &gt; Connect, and in the <a href="./resources/connect.png">Connect dialog</a>, type in your public IP (which you can find <a href="https://ipecho.net/">here</a>), then a colon, then the port you're hosting on.</p>
+          </div>
         </div>
 
-        <h3>Copy and paste?</h3>
-        <p class="text">Make a selection with Ctrl+Shift+Drag.</p>
-        <img src="resources/cnp-select.png" class="screenshot" alt="selection for copy and paste" />
-        <p class="text">Press Ctrl + C and make a new selection somewhere else.</p>
-        <img src="resources/cnp-select2.png" class="screenshot" alt="new selection for copy and paste" />
-        <p class="text">Press Ctrl + V.</p>
-        <img src="resources/cnp-paste.png" class="screenshot" alt="paste for copy and paste" />
-        <h4>Advanced copy and paste</h4>
-        <p class="text">You can also copy and paste over multiple units if you check the selection checkbox (the third box) in the Unit tab.</p>
-        <img src="resources/cnp-multi-unit.png" class="screenshot" alt="multi-unit copy" />
-        <p class="text">Additionally, the “Copy” checkbox in the bottom left can be used to set only certain parameters to be copied. If you want to only copy panning, for example, you can untick the checkbox for each other parameter setting, then copy and paste.</p>
-        <img src="resources/cnp-certain-params.png" class="screenshot" alt="copy certain params" />
+        <a class="h3" href="#" onclick="toggle('how-cnp');return false">Copy and paste?</a>
+        <div id="how-cnp" style="display:none">
+          <p class="text">Make a selection with Ctrl+Shift+Drag.</p>
+          <img src="resources/cnp-select.png" class="screenshot" alt="selection for copy and paste" />
+          <p class="text">Press Ctrl + C and make a new selection somewhere else.</p>
+          <img src="resources/cnp-select2.png" class="screenshot" alt="new selection for copy and paste" />
+          <p class="text">Press Ctrl + V.</p>
+          <img src="resources/cnp-paste.png" class="screenshot" alt="paste for copy and paste" />
+          <h4>Advanced copy and paste</h4>
+          <p class="text">You can also copy and paste over multiple units if you check the selection checkbox (the third box) in the Unit tab.</p>
+          <img src="resources/cnp-multi-unit.png" class="screenshot" alt="multi-unit copy" />
+          <p class="text">Additionally, the “Copy” checkbox in the bottom left can be used to set only certain parameters to be copied. If you want to only copy panning, for example, you can untick the checkbox for each other parameter setting, then copy and paste.</p>
+          <img src="resources/cnp-certain-params.png" class="screenshot" alt="copy certain params" />
+        </div>
 
-        <h3>Portamento / vibrato?</h3>
-        <p class="text">Copy and paste?</p>
-        <img src="resources/porta-set-porta.png" class="screenshot" alt="setting portamento" />
-        <p class="text">Ctrl+click somewhere in the middle of the note. This changes the pitch of the note without creating a new note.</p>
-        <div style="text-align:center"><img class="screenshot" style="display:inline-block" src="resources/porta-correct.png" alt="correct porta" />
+        <a class="h3" href="#" onclick="toggle('how-porta');return false">Portamento / vibrato?</a>
+        <div id="how-porta" style="display:none">
+          <p class="text">Copy and paste?</p>
+          <img src="resources/porta-set-porta.png" class="screenshot" alt="setting portamento" />
+          <p class="text">Ctrl+click somewhere in the middle of the note. This changes the pitch of the note without creating a new note.</p>
+          <div style="text-align:center"><img class="screenshot" style="display:inline-block" src="resources/porta-correct.png" alt="correct porta" />
             <img src="resources/porta-incorrect.png" style="display:inline-block" class="screenshot" src="resources/porta-correct.png" alt="incorrect porta" /></div>
-        <p class="text">
-        You can tell it’s the same note if the bullet in the measure ribbon isn’t broken into two, and there’s no highlight at the start of the second block, as in the picture on the left.</p>
-            <img src="resources/porta-slide.png" class="screenshot" src="resources/porta-correct.png" alt="incorrect porta" />
-        <p class="text">
-The note will slide smoothly from one pitch to the next over the portamento length you set earlier.
-</p>
+          <p class="text">
+          You can tell it’s the same note if the bullet in the measure ribbon isn’t broken into two, and there’s no highlight at the start of the second block, as in the picture on the left.</p>
+          <img src="resources/porta-slide.png" class="screenshot" src="resources/porta-correct.png" alt="incorrect porta" />
+          <p class="text">
+          The note will slide smoothly from one pitch to the next over the portamento length you set earlier.
+          </p>
+        </div>
       </section>
 
       <section>
-        <h3>Glossary of shortcuts</h3>
-        <div class="text">
+        <a class="h3" href="#" onclick="toggle('glossary-shortcuts');return false">Glossary of shortcuts</a>
+        <div class="text" id="glossary-shortcuts" style="display:none">
           <p>Once you're familiar with the basic workflow, there are a bunch of
           shortcuts to make certain actions easier:</p>
           <ul>
