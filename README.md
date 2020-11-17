@@ -2,6 +2,16 @@
 <div align="center"> <img src="screenshot.png" alt="ptcollab" style="display: block" /> </div>
 <div align="center">pxtone collab is a music editor where you can collaborate with friends!</div>
 
+## Features
+pxtone collab is based off pxtone collage, a music editor developed by Pixel, the creator of Cave Story and Kero Blaster. As such some features will be familiar:
+ * Simple note and parameter input (pan, volume, portamento, fine-tuning, effects)
+ * Hassle-free import of samples (ogg, wav) and custom instruments (ogg, wav, ptvoice, ptnoise)
+ * Song parameter settings (tempo, time signature)
+ 
+In addition, ptcollab supports:
+ * Collaborative editing: host a server and have others connect and work with you!
+ * Session recording: save a frame-by-frame recording of a session and play it back later!
+
 ## Information
 Check out the <a href="https://yuxshao.github.io/ptcollab/">landing page</a>
 for more info about pxtone collab, including downloads, guides, further
