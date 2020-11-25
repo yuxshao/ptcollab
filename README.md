@@ -15,7 +15,7 @@ In addition, ptcollab supports:
 ## Information
 Check out the <a href="https://yuxshao.github.io/ptcollab/">landing page</a>
 for more info about pxtone collab, including downloads, guides, further
-links, and thank yous.
+links, and thank you.
 
 ## Installation
 The <a href="https://github.com/yuxshao/ptcollab/releases">releases page</a>
