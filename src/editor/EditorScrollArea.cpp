@@ -128,9 +128,9 @@ void EditorScrollArea::mouseMoveEvent(QMouseEvent *event) {
 void EditorScrollArea::wheelEvent(QWheelEvent *event) {
   // Maybe scroll the other dimension. != is xor
   bool shift = event->modifiers() & Qt::ShiftModifier;
-  bool swap_horizontal =
-      (event->modifiers() & Qt::ControlModifier ? SwapZoomOrientation::get()
-                                                : SwapScrollOrientation::get());
+  bool swap_horizontal = (event->modifiers() & Qt::ControlModifier
+                              ? Settings::SwapZoomOrientation::get()
+                              : Settings::SwapScrollOrientation::get());
   if (shift != swap_horizontal) ((TransposableWheelEvent *)event)->transpose();
 
   // Disable modifier because QScrollArea takes it to mean scroll by a page

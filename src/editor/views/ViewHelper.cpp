@@ -15,7 +15,7 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
   path.closeSubpath();
   painter.fillPath(path, color);
   painter.setPen(color);
-  painter.setFont(QFont("Sans serif", TextSize::get()));
+  painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
   painter.drawText(position + QPoint(8, 13),
                    QString("%1 (%2)").arg(username).arg(uid));
 }
@@ -68,9 +68,9 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
   if (event->modifiers() & Qt::ControlModifier) {
     bool shift = event->modifiers() & Qt::ShiftModifier;
-    QPoint delta =
-        (shift != SwapZoomOrientation::get() ? event->angleDelta().transposed()
-                                             : event->angleDelta());
+    QPoint delta = (shift != Settings::SwapZoomOrientation::get()
+                        ? event->angleDelta().transposed()
+                        : event->angleDelta());
     client->changeEditState(
         [&](EditState &e) {
           e.scale.clockPerPx *= pow(2, delta.x() / 240.0);

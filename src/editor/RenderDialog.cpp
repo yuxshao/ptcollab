@@ -13,18 +13,19 @@ RenderDialog::RenderDialog(QWidget *parent)
   ui->setupUi(this);
   ui->lengthEdit->setValidator(&lengthValidator);
   ui->fadeOutEdit->setValidator(&lengthValidator);
-  ui->saveToEdit->setText(RenderFileDestination::get());
+  ui->saveToEdit->setText(Settings::RenderFileDestination::get());
 
   connect(ui->saveToBtn, &QPushButton::pressed, [this]() {
     QString filename = QFileDialog::getSaveFileName(
-        this, "Render to file", RenderFileDestination::get(),
+        this, "Render to file", Settings::RenderFileDestination::get(),
         tr("WAV file (*.wav)"));
     if (QFileInfo(filename).suffix() != "wav") filename += ".wav";
     filename = QFileInfo(filename).absoluteFilePath();
     ui->saveToEdit->setText(filename);
   });
 
-  connect(ui->saveToEdit, &QLineEdit::textChanged, &RenderFileDestination::set);
+  connect(ui->saveToEdit, &QLineEdit::textChanged,
+          &Settings::RenderFileDestination::set);
 }
 
 RenderDialog::~RenderDialog() { delete ui; }

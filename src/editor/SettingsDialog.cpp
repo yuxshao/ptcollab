@@ -8,12 +8,14 @@
 SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::SettingsDialog) {
   ui->setupUi(this);
-  ui->chordPreviewCheck->setChecked(ChordPreview::get());
-  ui->customStyleCheck->setChecked(CustomStyle::get());
-  ui->pauseReseekCheck->setChecked(SpacebarStop::get());
-  ui->velocityDragCheck->setChecked(VelocityDrag::get());
-  ui->swapScrollOrientationCheck->setChecked(SwapScrollOrientation::get());
-  ui->swapZoomOrientationCheck->setChecked(SwapZoomOrientation::get());
+  ui->chordPreviewCheck->setChecked(Settings::ChordPreview::get());
+  ui->customStyleCheck->setChecked(Settings::CustomStyle::get());
+  ui->pauseReseekCheck->setChecked(Settings::SpacebarStop::get());
+  ui->velocityDragCheck->setChecked(Settings::VelocityDrag::get());
+  ui->swapScrollOrientationCheck->setChecked(
+      Settings::SwapScrollOrientation::get());
+  ui->swapZoomOrientationCheck->setChecked(
+      Settings::SwapZoomOrientation::get());
 
   connect(ui->customStyleCheck, &QCheckBox::toggled, [this](bool) {
     QMessageBox::information(
@@ -24,12 +26,13 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 }
 
 void SettingsDialog::apply() {
-  ChordPreview::set(ui->chordPreviewCheck->isChecked());
-  CustomStyle::set(ui->customStyleCheck->isChecked());
-  SpacebarStop::set(ui->pauseReseekCheck->isChecked());
-  VelocityDrag::set(ui->velocityDragCheck->isChecked());
-  SwapScrollOrientation::set(ui->swapScrollOrientationCheck->isChecked());
-  SwapZoomOrientation::set(ui->swapZoomOrientationCheck->isChecked());
+  Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
+  Settings::CustomStyle::set(ui->customStyleCheck->isChecked());
+  Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
+  Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
+  Settings::SwapScrollOrientation::set(
+      ui->swapScrollOrientationCheck->isChecked());
+  Settings::SwapZoomOrientation::set(ui->swapZoomOrientationCheck->isChecked());
 }
 
 SettingsDialog::~SettingsDialog() { delete ui; }

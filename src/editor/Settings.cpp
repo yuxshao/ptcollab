@@ -17,6 +17,7 @@ const QString HOSTING_ENABLED_KEY("hosting_enabled");
 
 const QString CONNECT_SERVER_KEY("connect_server");
 
+namespace Settings {
 namespace Version {
 static QString v("0.3.5.1");
 const QString &string() { return v; }
@@ -85,3 +86,4 @@ const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace RenderFileDestination
+}  // namespace Settings

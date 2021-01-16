@@ -189,7 +189,7 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
   if (woice != nullptr) {
     int32_t thisX = curr.clock / clockPerPx;
     painter.setPen(QColor::fromRgb(255, 255, 255, onColor.alpha()));
-    painter.setFont(QFont("Sans serif", TextSize::get()));
+    painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
     painter.drawText(
         lastX + s, height / 2, thisX - lastX - s, 10000, Qt::AlignTop,
         shift_jis_codec->toUnicode(woice->get_name_buf_jis(nullptr)));
@@ -220,7 +220,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                        fadedWhite);
       if (current_kind == EVENTKIND_GROUPNO) {
         painter.setPen(fadedWhite);
-        painter.setFont(QFont("Sans serif", TextSize::get()));
+        painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
         painter.drawText(lastX + lineWidth + 1, lastY, arbitrarily_tall,
                          arbitrarily_tall, Qt::AlignTop,
                          QString("%1").arg(last.value));

@@ -21,6 +21,7 @@ const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
 
+namespace Settings {
 namespace TextSize {
 int get();
 void increase();
@@ -65,5 +66,6 @@ namespace RenderFileDestination {
 QString get();
 void set(QString);
 }  // namespace RenderFileDestination
+}  // namespace Settings
 
 #endif  // SETTINGS_H

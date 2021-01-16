@@ -27,7 +27,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
       m_unit(nullptr),
       m_moo_state(nullptr),
       m_moo_params(moo_params) {
-  if (!ChordPreview::get() || unit_no == -1) {
+  if (!Settings::ChordPreview::get() || unit_no == -1) {
     m_unit = std::make_unique<pxtnUnitTone>(starting_woice);
     m_this_unit = m_unit.get();
     moo_params->resetVoiceOn(m_this_unit);

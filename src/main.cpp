@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  if (CustomStyle::get()) {
+  if (Settings::CustomStyle::get()) {
     a.setStyle(QStyleFactory::create("Fusion"));
     QPalette palette = qApp->palette();
     QColor text(222, 217, 187);
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     qApp->setStyleSheet(stylesheet);
   }
 
-  a.setApplicationVersion(Version::string());
+  a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
   parser.addHelpOption();

@@ -146,7 +146,7 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
   // has a different setting then during preview it'll incorrectly look like
   // they have your setting. I think this is fine though
   if (std::holds_alternative<MouseKeyboardEdit>(state.kind) &&
-      VelocityDrag::get()) {
+      Settings::VelocityDrag::get()) {
     const auto &s = std::get<MouseKeyboardEdit>(state.kind);
     delta = (s.current_pitch - s.start_pitch) / scale.pitchPerPx;
     // Apply a sigmoid so that small changes in y hardly do anything
@@ -163,7 +163,7 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
   painter.setPen(brush.toQColor(draw_vel, true, alpha));
-  painter.setFont(QFont("Sans serif", TextSize::get()));
+  painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
   painter.drawText(clock / scale.clockPerPx,
                    scale.pitchToY(pitch) - arbitrarily_tall, arbitrarily_tall,
                    arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
