@@ -91,10 +91,10 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
   }
 
   if (m_unit != nullptr) m_unit_ids.push_back(device->addUnit(m_unit.get()));
-  if (m_moo_state != nullptr) {
-    for (auto &unit : m_moo_state->units)
-      m_unit_ids.push_back(device->addUnit(&unit));
-  }
+  if (m_moo_state != nullptr)
+    for (uint i = 0; i < m_moo_state->units.size(); ++i)
+      if (m_pxtn->Unit_Get(i)->get_played())
+        m_unit_ids.push_back(device->addUnit(&m_moo_state->units[i]));
 
   if (audio == nullptr) {
     audio = new QAudioOutput(pxtoneAudioFormat(), device);
