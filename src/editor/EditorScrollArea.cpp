@@ -5,6 +5,8 @@
 #include <QScrollBar>
 #include <QStyle>
 
+#include "Settings.h"
+
 class TransposableWheelEvent : QWheelEvent {
  public:
   void transpose() {
@@ -124,15 +126,17 @@ void EditorScrollArea::mouseMoveEvent(QMouseEvent *event) {
 }
 // TODO: Maybe a class that converts wheel event to action
 void EditorScrollArea::wheelEvent(QWheelEvent *event) {
-  // Maybe scroll the other dimension.
-  if (event->modifiers() & Qt::ShiftModifier) {
-    ((TransposableWheelEvent *)(event))->transpose();
-    // Disable modifier because QScrollArea takes it to mean scroll by a page
-    event->setModifiers(event->modifiers() & ~Qt::ShiftModifier);
-  }
+  // Maybe scroll the other dimension. != is xor
+  bool shift = event->modifiers() & Qt::ShiftModifier;
+  bool swap_horizontal =
+      (event->modifiers() & Qt::ControlModifier ? SwapZoomOrientation::get()
+                                                : SwapScrollOrientation::get());
+  if (shift != swap_horizontal) ((TransposableWheelEvent *)event)->transpose();
 
+  // Disable modifier because QScrollArea takes it to mean scroll by a page
   // QT by default has alt scroll horizontally, but pxtone uses shift.
-  event->setModifiers(event->modifiers() & ~Qt::AltModifier);
+  event->setModifiers(event->modifiers() & ~Qt::AltModifier &
+                      ~Qt::ShiftModifier);
 
   QScrollArea::wheelEvent(event);
 }
@@ -191,7 +195,7 @@ void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
 }
 
 constexpr int JUMP_MAX = 10;
-constexpr int MARGIN_MAX = 200;
+constexpr int MARGIN_MAX = 100;
 constexpr double MARGIN_FRAC = 0.25;
 void EditorScrollArea::scrollWithMouseX() {
   int logicalX = QStyle::visualPos(layoutDirection(), viewport()->rect(),

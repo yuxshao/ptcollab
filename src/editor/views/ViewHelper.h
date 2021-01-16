@@ -20,7 +20,7 @@ extern void drawLastSeek(QPainter &painter, const PxtoneClient *client,
 extern void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                                  qreal clockPerPx, int height);
 extern void handleWheelEventWithModifier(QWheelEvent *event,
-                                         PxtoneClient *client, bool scaleY);
+                                         PxtoneClient *client);
 
 extern QColor halfWhite, slightTint;
 

@@ -462,7 +462,7 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void MeasureView::wheelEvent(QWheelEvent *event) {
-  handleWheelEventWithModifier(event, m_client, true);
+  handleWheelEventWithModifier(event, m_client);
   if (event->isAccepted()) return;
 
   if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn &&

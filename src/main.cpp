@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  if (QSettings().value(CUSTOM_STYLE_KEY, true).toBool()) {
+  if (CustomStyle::get()) {
     a.setStyle(QStyleFactory::create("Fusion"));
     QPalette palette = qApp->palette();
     QColor text(222, 217, 187);

@@ -40,6 +40,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
+      m_settings_dialog(new SettingsDialog(this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -195,16 +196,8 @@ EditorWindow::EditorWindow(QWidget *parent)
            "%1")
             .arg(QApplication::applicationVersion()));
   });
-  ui->actionChordPreview->setChecked(ChordPreview::get());
-  connect(ui->actionChordPreview, &QAction::toggled, ChordPreview::set);
-  ui->actionStyle->setChecked(
-      QSettings().value(CUSTOM_STYLE_KEY, true).toBool());
-  connect(ui->actionStyle, &QAction::toggled, [this](bool checked) {
-    QMessageBox::information(
-        this, tr("Style change"),
-        tr("Style change will take effect after program restart."));
-    QSettings().setValue(CUSTOM_STYLE_KEY, checked);
-  });
+  connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
+          &QDialog::show);
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

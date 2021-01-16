@@ -65,36 +65,30 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                    halfWhite);
 }
 
-void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client,
-                                  bool scaleY) {
-  qreal delta = event->angleDelta().y();
+void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
   if (event->modifiers() & Qt::ControlModifier) {
-    if (event->modifiers() & Qt::ShiftModifier) {
-      // scale X
-      client->changeEditState(
-          [&](EditState &e) {
-            e.scale.clockPerPx *= pow(2, delta / 240.0);
-            if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
-            if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
-          },
-          false);
-    } else if (scaleY) {
-      // scale Y
-      client->changeEditState(
-          [&](EditState &e) {
-            e.scale.pitchPerPx *= pow(2, delta / 240.0);
-            if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
-            if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
-              e.scale.pitchPerPx = PITCH_PER_KEY / 4;
-          },
-          false);
-    }
+    bool shift = event->modifiers() & Qt::ShiftModifier;
+    QPoint delta =
+        (shift != SwapZoomOrientation::get() ? event->angleDelta().transposed()
+                                             : event->angleDelta());
+    client->changeEditState(
+        [&](EditState &e) {
+          e.scale.clockPerPx *= pow(2, delta.x() / 240.0);
+          if (e.scale.clockPerPx < 0.5) e.scale.clockPerPx = 0.5;
+          if (e.scale.clockPerPx > 128) e.scale.clockPerPx = 128;
+
+          e.scale.pitchPerPx *= pow(2, delta.y() / 240.0);
+          if (e.scale.pitchPerPx < 8) e.scale.pitchPerPx = 8;
+          if (e.scale.pitchPerPx > PITCH_PER_KEY / 4)
+            e.scale.pitchPerPx = PITCH_PER_KEY / 4;
+        },
+        false);
 
     event->accept();
   } else if (event->modifiers() & Qt::AltModifier) {
     // In this case, alt flips the scroll direction.
     // Maybe alt shift could handle quantize y?
-    delta = event->angleDelta().x();
+    qreal delta = event->angleDelta().x();
     int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
     client->changeEditState(
         [&](EditState &e) {

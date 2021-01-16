@@ -16,7 +16,6 @@ const QString SAVE_RECORDING_ENABLED_KEY("save_recording_enabled");
 const QString HOSTING_ENABLED_KEY("hosting_enabled");
 
 const QString CONNECT_SERVER_KEY("connect_server");
-const QString CUSTOM_STYLE_KEY("use_custom_style");
 
 namespace Version {
 static QString v("0.3.5.1");
@@ -45,14 +44,44 @@ void decrease() {
 }
 }  // namespace TextSize
 
+namespace CustomStyle {
+const char *KEY = "use_custom_style";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace CustomStyle
+
 namespace ChordPreview {
-const QString KEY("chord_preview");
+const char *KEY = "ChordPreview";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChordPreview
 
+namespace SpacebarStop {
+const char *KEY = "SpacebarStop";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace SpacebarStop
+
+namespace VelocityDrag {
+const char *KEY = "VelocityDrag";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace VelocityDrag
+
+namespace SwapScrollOrientation {
+const char *KEY = "SwapScrollOrientation";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace SwapScrollOrientation
+
+namespace SwapZoomOrientation {
+const char *KEY = "SwapZoomOrientation";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace SwapZoomOrientation
+
 namespace RenderFileDestination {
-const QString KEY("render_file_destination");
+const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace RenderFileDestination

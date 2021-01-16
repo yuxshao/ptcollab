@@ -642,7 +642,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void ParamView::wheelEvent(QWheelEvent *event) {
-  handleWheelEventWithModifier(event, m_client, true);
+  handleWheelEventWithModifier(event, m_client);
 }
 
 void ParamView::mouseMoveEvent(QMouseEvent *event) {

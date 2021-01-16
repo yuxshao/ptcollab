@@ -134,8 +134,12 @@ bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }
 // seeking. Unfortunately start / stop don't even fix this because stopping
 // still waits for the buffer to drain (instead of flushing and throwing away)
 void PxtoneClient::togglePlayState() {
-  m_pxtn_device->setPlaying(!m_pxtn_device->playing());
-  sendPlayState(true);
+  if (SpacebarStop::get() && m_pxtn_device->playing())
+    resetAndSuspendAudio();
+  else {
+    m_pxtn_device->setPlaying(!m_pxtn_device->playing());
+    sendPlayState(true);
+  }
 }
 
 void PxtoneClient::sendPlayState(bool from_action) {

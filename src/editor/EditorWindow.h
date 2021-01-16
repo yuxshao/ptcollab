@@ -13,6 +13,7 @@
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
 #include "RenderDialog.h"
+#include "SettingsDialog.h"
 #include "ShortcutsDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
@@ -67,6 +68,7 @@ class EditorWindow : public QMainWindow {
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
   RenderDialog* m_render_dialog;
+  SettingsDialog* m_settings_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

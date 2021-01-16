@@ -20,7 +20,6 @@ const extern QString SAVE_RECORDING_ENABLED_KEY;
 const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
-const extern QString CUSTOM_STYLE_KEY;
 
 namespace TextSize {
 int get();
@@ -32,10 +31,36 @@ namespace Version {
 const QString &string();
 }
 
+namespace CustomStyle {
+bool get();
+void set(bool);
+}  // namespace CustomStyle
+
 namespace ChordPreview {
 bool get();
 void set(bool);
 }  // namespace ChordPreview
+
+namespace SpacebarStop {
+bool get();
+void set(bool);
+}  // namespace SpacebarStop
+
+namespace VelocityDrag {
+bool get();
+void set(bool);
+}  // namespace VelocityDrag
+
+namespace SwapScrollOrientation {
+bool get();
+void set(bool);
+}  // namespace SwapScrollOrientation
+
+namespace SwapZoomOrientation {
+bool get();
+void set(bool);
+}  // namespace SwapZoomOrientation
+
 namespace RenderFileDestination {
 QString get();
 void set(QString);

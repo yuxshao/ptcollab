@@ -54,8 +54,7 @@
     </property>
     <addaction name="actionIncrease_font_size"/>
     <addaction name="actionDecrease_font_size"/>
-    <addaction name="actionStyle"/>
-    <addaction name="actionChordPreview"/>
+    <addaction name="actionOptions"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -127,15 +126,12 @@
     <string>Clear app settings</string>
    </property>
   </action>
-  <action name="actionStyle">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
+  <action name="actionOptions">
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
-    <string>Use custom style</string>
+    <string>Options</string>
    </property>
   </action>
   <action name="actionIncrease_font_size">
@@ -181,6 +177,11 @@
   <action name="actionRender">
    <property name="text">
     <string>Render</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>

@@ -142,7 +142,11 @@ int pixelsPerVelocity = 3;
 static double slack = 50;
 int impliedVelocity(MouseEditState state, const Scale &scale) {
   double delta = 0;
-  if (std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+  // Using VelocityDrag here instead of the mouse edit state means if someone
+  // has a different setting then during preview it'll incorrectly look like
+  // they have your setting. I think this is fine though
+  if (std::holds_alternative<MouseKeyboardEdit>(state.kind) &&
+      VelocityDrag::get()) {
     const auto &s = std::get<MouseKeyboardEdit>(state.kind);
     delta = (s.current_pitch - s.start_pitch) / scale.pitchPerPx;
     // Apply a sigmoid so that small changes in y hardly do anything
@@ -547,7 +551,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 }
 
 void KeyboardView::wheelEvent(QWheelEvent *event) {
-  handleWheelEventWithModifier(event, m_client, true);
+  handleWheelEventWithModifier(event, m_client);
   if (event->isAccepted()) return;
 
   if (m_client->editState().mouse_edit_state.type == MouseEditState::SetOn &&
