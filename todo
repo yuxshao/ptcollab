@@ -388,15 +388,18 @@ fill architecture could work well.
 11/11
 1. update guide
 
-1/16/21
+1/15/21
 1. ui options:
  - spacebar is stop instead of pause
  - no velocity adjustment with vertical
  - invert scrolling / zoom options
 
+1/16/21
+1. ui remember menu / bottom bar size
+2. rename a few menu options
+
 Todo by priority
 ----------------
- - remember size of sidebar / bottom bar
  - chord preview respects mute
 
  - midi input???

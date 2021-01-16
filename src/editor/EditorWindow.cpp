@@ -71,7 +71,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   measure_layout->setSpacing(0);
   m_splitter->addWidget(m_side_menu);
   m_splitter->addWidget(m_measure_splitter);
-  m_splitter->setSizes(QList{10, 10000});
+  m_splitter->setSizes(Settings::SideMenuWidth::get());
+  connect(m_splitter, &QSplitter::splitterMoved, [this](int, int) {
+    Settings::SideMenuWidth::set(m_splitter->sizes());
+  });
 
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
@@ -154,7 +157,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
   m_scroll_area->controlScroll(m_measure_scroll_area, Qt::Horizontal);
   m_measure_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);
-  m_key_splitter->setSizes(QList{10000, 10});
+  m_key_splitter->setSizes(Settings::BottomBarHeight::get());
+  connect(m_key_splitter, &QSplitter::splitterMoved, [this](int, int) {
+    Settings::BottomBarHeight::set(m_key_splitter->sizes());
+  });
   // m_measure_splitter->setSizes(QList{1, 10000});
 
   connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
@@ -173,12 +179,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionRender, &QAction::triggered, this, &EditorWindow::render);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
-  /*connect(ui->actionClearSettings, &QAction::triggered, [this]() {
-    if (QMessageBox::question(this, "Clear settings",
-                              "Are you sure you want to clear your app "
-                              "settings (default username, last connected
-  server)?")) QSettings().clear();
-  });*/
+  connect(ui->actionClear_Settings, &QAction::triggered, [this]() {
+    if (QMessageBox::question(this, tr("Clear settings"),
+                              tr("Are you sure you want to clear your app "
+                                 "settings?")))
+      QSettings().clear();
+  });
   connect(ui->actionDecrease_font_size, &QAction::triggered,
           &Settings::TextSize::decrease);
   connect(ui->actionIncrease_font_size, &QAction::triggered,

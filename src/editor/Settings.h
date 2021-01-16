@@ -66,6 +66,14 @@ namespace RenderFileDestination {
 QString get();
 void set(QString);
 }  // namespace RenderFileDestination
+namespace SideMenuWidth {
+QList<int> get();
+void set(const QList<int> &);
+}  // namespace SideMenuWidth
+namespace BottomBarHeight {
+QList<int> get();
+void set(const QList<int> &);
+}  // namespace BottomBarHeight
 }  // namespace Settings
 
 #endif  // SETTINGS_H

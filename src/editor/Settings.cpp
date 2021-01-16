@@ -2,7 +2,7 @@
 
 const QString WOICE_DIR_KEY("woice_dir");
 const QString BUFFER_LENGTH_KEY("buffer_length");
-const double DEFAULT_BUFFER_LENGTH = 0.5;
+const double DEFAULT_BUFFER_LENGTH = 0.3;
 const QString VOLUME_KEY("volume");
 
 const QString PTCOP_FILE_KEY("ptcop_dir");
@@ -86,4 +86,39 @@ const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace RenderFileDestination
+
+QList<int> intListOfVariant(const QVariant &v, const QList<int> &def) {
+  QList<QVariant> vl = v.toList();
+  QList<int> l;
+  bool ok = true;
+  for (const auto &a : vl) {
+    l.push_back(a.toInt(&ok));
+    if (!ok) return def;
+  }
+  return l;
+}
+QVariant intListToVariant(const QList<int> &l) {
+  QList<QVariant> vl;
+  for (const auto &a : l) vl.push_back(a);
+  return vl;
+}
+
+QList<int> getIntList(QString key, const QList<int> &def) {
+  return intListOfVariant(QSettings().value(key, intListToVariant(def)), def);
+}
+namespace SideMenuWidth {
+const char *KEY = "side_menu_width";
+QList<int> get() { return getIntList(KEY, QList{10, 10000}); }
+void set(const QList<int> &value) {
+  QSettings().setValue(KEY, intListToVariant(value));
+}
+}  // namespace SideMenuWidth
+
+namespace BottomBarHeight {
+const char *KEY = "bottom_bar_height";
+QList<int> get() { return getIntList(KEY, QList{10000, 10}); }
+void set(const QList<int> &value) {
+  QSettings().setValue(KEY, intListToVariant(value));
+}
+}  // namespace BottomBarHeight
 }  // namespace Settings

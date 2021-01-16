@@ -50,11 +50,12 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>Settings</string>
+     <string>Options</string>
     </property>
     <addaction name="actionIncrease_font_size"/>
     <addaction name="actionDecrease_font_size"/>
     <addaction name="actionOptions"/>
+    <addaction name="actionClear_Settings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -131,7 +132,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Options</string>
+    <string>Settings</string>
    </property>
   </action>
   <action name="actionIncrease_font_size">
@@ -182,6 +183,11 @@
   <action name="actionSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionClear_Settings">
+   <property name="text">
+    <string>Clear Settings</string>
    </property>
   </action>
  </widget>
