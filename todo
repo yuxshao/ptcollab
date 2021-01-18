@@ -402,6 +402,8 @@ fill architecture could work well.
 Todo by priority
 ----------------
  - midi input???
+   - get the note preview displaying live
+   - handle playhead jitter if playing real time
    - start with qwerty input
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'

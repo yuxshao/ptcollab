@@ -208,12 +208,30 @@ EditorWindow::EditorWindow(QWidget *parent)
 
 EditorWindow::~EditorWindow() { delete ui; }
 
+void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
+  if (!event->isAutoRepeat()) {
+    int key = event->key();
+    switch (key) {
+      case Qt::Key::Key_B:
+        recordInput(Input::Event::Off{EVENTDEFAULT_KEY});
+        break;
+      case Qt::Key::Key_N:
+        recordInput(Input::Event::Off{EVENTDEFAULT_KEY + 256});
+        break;
+    }
+  }
+}
+
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
   switch (key) {
     case Qt::Key_A:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->selectAll(false);
+      break;
+    case Qt::Key_B:
+      if (!event->isAutoRepeat())
+        recordInput(Input::Event::On{EVENTDEFAULT_KEY, 127});
       break;
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
@@ -279,6 +297,13 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     }
+    case Qt::Key_N:
+      if (!event->isAutoRepeat())
+        recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
+      break;
+    case Qt::Key_Return:
+      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{});
+      break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
       break;
@@ -353,6 +378,83 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->transposeSelection(dir, wide, shift);
       break;
   }
+}
+
+void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
+  std::vector<Interval> clock_ints;
+  if (end > v.start_clock)
+    clock_ints.push_back({v.start_clock, end});
+  else {
+    clock_ints.push_back(
+        {v.start_clock, client->pxtn()->master->get_this_clock(
+                            client->pxtn()->master->get_play_meas(), 0, 0)});
+    clock_ints.push_back({client->pxtn()->master->get_this_clock(
+                              client->pxtn()->master->get_repeat_meas(), 0, 0),
+                          end});
+  }
+  // TODO: Dedup
+  using namespace Action;
+  std::list<Primitive> actions;
+  for (const auto &clock_int : clock_ints) {
+    actions.push_back({EVENTKIND_ON, client->editState().m_current_unit_id,
+                       clock_int.start, Delete{clock_int.end}});
+    actions.push_back({EVENTKIND_VELOCITY,
+                       client->editState().m_current_unit_id, clock_int.start,
+                       Delete{clock_int.end}});
+    actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
+                       clock_int.start, Delete{clock_int.end}});
+    actions.push_back({EVENTKIND_ON, client->editState().m_current_unit_id,
+                       clock_int.start, Add{clock_int.length()}});
+    actions.push_back({EVENTKIND_VELOCITY,
+                       client->editState().m_current_unit_id, clock_int.start,
+                       Add{v.on.vel}});
+    actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
+                       clock_int.start, Add{v.on.key}});
+  }
+  client->applyAction(actions);
+}
+
+void EditorWindow::recordInput(const Input::Event::Event &e) {
+  std::visit(
+      overloaded{
+          [this](const Input::Event::On &e) {
+            // TODO: handle repeat
+            int start = m_moo_clock->now();
+            if (!m_client->isPlaying())
+              start = quantize(start, m_client->quantizeClock());
+            int end = start + m_client->quantizeClock();
+            if (m_record_state.has_value()) {
+              applyOn(m_record_state.value(), start, m_client);
+            }
+            m_record_state = Input::State::On{start, e};
+            auto maybe_unit_no = m_client->unitIdMap().idToNo(
+                m_client->editState().m_current_unit_id);
+            if (maybe_unit_no != std::nullopt) {
+              qint32 unit_no = maybe_unit_no.value();
+              m_record_note_preview = std::make_unique<NotePreview>(
+                  &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
+                  e.vel, m_client->audioState()->bufferSize(), this);
+              if (!m_client->isPlaying()) m_client->seekMoo(end);
+            }
+          },
+          [this](const Input::Event::Off &e) {
+            if (m_record_state.has_value()) {
+              Input::State::On &v = m_record_state.value();
+              m_record_note_preview.reset();
+              if (v.on.key == e.key)
+                applyOn(m_record_state.value(), m_moo_clock->now(), m_client);
+              m_record_state.reset();
+            }
+          },
+          [this](const Input::Event::Skip &) {
+            int end = quantize(m_moo_clock->now(), m_client->quantizeClock()) +
+                      m_client->quantizeClock();
+
+            qDebug() << end;
+            m_client->seekMoo(end);
+          },
+      },
+      e);
 }
 
 bool EditorWindow::maybeSave() {

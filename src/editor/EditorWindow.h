@@ -32,6 +32,28 @@ QT_END_NAMESPACE
 
 enum struct HostSetting { LoadFile, NewFile, SkipFile };
 
+namespace Input {
+namespace Event {
+struct On {
+  int key;
+  int vel;
+};
+struct Off {
+  int key;
+};
+struct Skip {};
+using Event = std::variant<On, Off, Skip>;
+}  // namespace Event
+
+namespace State {
+struct On {
+  int start_clock;
+  Event::On on;
+};
+using State = std::optional<On>;
+}  // namespace State
+};  // namespace Input
+
 class EditorWindow : public QMainWindow {
   Q_OBJECT
 
@@ -48,6 +70,7 @@ class EditorWindow : public QMainWindow {
  private:
   void Host(HostSetting host_setting);
   void keyPressEvent(QKeyEvent* event) override;
+  void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
@@ -78,5 +101,8 @@ class EditorWindow : public QMainWindow {
   bool maybeSave();
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;
+  std::unique_ptr<NotePreview> m_record_note_preview;
+  Input::State::State m_record_state;
+  void recordInput(const Input::Event::Event& e);
 };
 #endif  // MAINWINDOW_H
