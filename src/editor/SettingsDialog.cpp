@@ -49,9 +49,10 @@ void SettingsDialog::showEvent(QShowEvent *) {
     ports.push_front("No ports found...");
   ui->midiInputPortCombo->clear();
   ui->midiInputPortCombo->addItems(ports);
+
   {
     auto current_port = m_midi_wrapper->currentPort();
     if (current_port.has_value())
-      ui->midiInputPortCombo->setCurrentIndex(current_port.value());
+      ui->midiInputPortCombo->setCurrentIndex(current_port.value() + 1);
   }
 }
