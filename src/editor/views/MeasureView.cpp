@@ -96,53 +96,67 @@ constexpr int RIBBON_HEIGHT =
     MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
 constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
-                       int quantizeClock, int clockPerMeas,
-                       double alphaMultiplier,
+                       int quantizeClock, int clockPerMeas, int now,
+                       const pxtnMaster *master, double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
-  Interval interval(mouse_edit_state.clock_int(quantizeClock) /
-                    state.scale.clockPerPx);
-  auto drawVelAction = [&](int alpha) {
+  auto drawVelAction = [&](const Interval &interval, qint32 velocity,
+                           int alpha) {
     const Brush &brush =
         brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
-    painter.fillRect(
-        interval.start, UNIT_EDIT_Y + 2, interval.length(),
-        UNIT_EDIT_HEIGHT - 4,
-        brush.toQColor(qint32(round(mouse_edit_state.base_velocity)), false,
-                       alpha * alphaMultiplier));
+    painter.fillRect(interval.start / state.scale.clockPerPx, UNIT_EDIT_Y + 3,
+                     interval.length() / state.scale.clockPerPx,
+                     UNIT_EDIT_HEIGHT - 6,
+                     brush.toQColor(velocity, false, alpha * alphaMultiplier));
   };
-  switch (mouse_edit_state.type) {
-    case MouseEditState::Type::SetOn:
-    case MouseEditState::Type::DeleteOn:
-    case MouseEditState::Type::SetNote:
-    case MouseEditState::Type::DeleteNote:
-      if (std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
-        drawVelAction(255);
-      break;
-    case MouseEditState::Type::Nothing: {
-      if (std::holds_alternative<MouseMeasureEdit>(
-              state.mouse_edit_state.kind)) {
-        if (std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y <
-            RIBBON_HEIGHT) {
-          int half_meas = 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
-          int meas = half_meas / 2;
-          int left_half = half_meas % 2 == 1;
-          drawFlag(&painter, (left_half ? FlagType::Repeat : FlagType::Last),
-                   true, meas * clockPerMeas / state.scale.clockPerPx, FLAG_Y);
-        } else
-          drawVelAction(96);
+
+  {
+    Interval interval(mouse_edit_state.clock_int(quantizeClock));
+    qint32 velocity = qint32(round(mouse_edit_state.base_velocity));
+    switch (mouse_edit_state.type) {
+      case MouseEditState::Type::SetOn:
+      case MouseEditState::Type::DeleteOn:
+      case MouseEditState::Type::SetNote:
+      case MouseEditState::Type::DeleteNote:
+        if (std::holds_alternative<MouseMeasureEdit>(
+                state.mouse_edit_state.kind))
+          drawVelAction(interval, velocity, 255);
+        break;
+      case MouseEditState::Type::Nothing: {
+        if (std::holds_alternative<MouseMeasureEdit>(
+                state.mouse_edit_state.kind)) {
+          if (std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y <
+              RIBBON_HEIGHT) {
+            int half_meas =
+                2 * mouse_edit_state.current_clock / clockPerMeas + 1;
+            int meas = half_meas / 2;
+            int left_half = half_meas % 2 == 1;
+            drawFlag(&painter, (left_half ? FlagType::Repeat : FlagType::Last),
+                     true, meas * clockPerMeas / state.scale.clockPerPx,
+                     FLAG_Y);
+          } else
+            drawVelAction(interval, velocity, 96);
+        }
+        break;
       }
-      break;
+      case MouseEditState::Type::Seek:
+        drawPlayhead(
+            painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
+            height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier),
+            true);
+        break;
+      case MouseEditState::Type::Select: {
+        drawSelection(painter, interval, height, selectionAlphaMultiplier);
+      } break;
     }
-    case MouseEditState::Type::Seek:
-      drawPlayhead(
-          painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
-          height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier), true);
-      break;
-    case MouseEditState::Type::Select: {
-      drawSelection(painter, interval, height, selectionAlphaMultiplier);
-    } break;
+  }
+
+  if (state.m_input_state.has_value()) {
+    const Input::State::On &v = state.m_input_state.value();
+
+    for (const Interval &interval : v.clock_ints(now, master))
+      drawVelAction(interval, v.on.vel, 255);
   }
 }
 
@@ -276,13 +290,15 @@ void MeasureView::paintEvent(QPaintEvent *e) {
           adjusted_state, painter, height(),
           m_client->quantizeClock(
               quantizeXOptions[adjusted_state.m_quantize_clock_idx].second),
-          clockPerMeas, alphaMultiplier, selectionAlphaMultiplier);
+          clockPerMeas, m_moo_clock->now(), m_client->pxtn()->master,
+          alphaMultiplier, selectionAlphaMultiplier);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, height(), 1);
   drawOngoingAction(m_client->editState(), painter, height(),
-                    m_client->quantizeClock(), clockPerMeas, 1, 1);
+                    m_client->quantizeClock(), clockPerMeas, m_moo_clock->now(),
+                    m_client->pxtn()->master, 1, 1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {

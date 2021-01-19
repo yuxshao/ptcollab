@@ -401,12 +401,12 @@ fill architecture could work well.
 
 1/18/21
 1. PLayhead jitter in real time
-2. 
+2. note preview in top bar too
 
 Todo by priority
 ----------------
  - midi input???
-   - note preview in the top bar too
+   - don'tgdjj reset on reopen dialog?
    - mute the unit regularly if you're recording, also record silence
    - support windows
  - Unit view, at least for drums
