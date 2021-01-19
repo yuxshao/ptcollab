@@ -168,9 +168,26 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                    scale.pitchToY(pitch) - arbitrarily_tall, arbitrarily_tall,
                    arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
 }
+
+void drawGhostOnNote(QPainter &painter, const Interval &interval,
+                     const Scale &scale, int width, const Brush &brush,
+                     int velocity, int alpha, double alphaMultiplier,
+                     bool rowHighlight, int pitch) {
+  if (rowHighlight)
+    paintBlock(
+        pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
+        brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
+        scale);
+  paintBlock(pitch, interval, painter,
+             brush.toQColor(velocity, false, alpha * alphaMultiplier), scale);
+
+  paintHighlight(pitch, std::min(interval.start, interval.end), painter,
+                 brush.toQColor(128, true, alpha * alphaMultiplier), scale);
+}
+
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
-                       QPainter &painter, int width, int height,
-                       double alphaMultiplier,
+                       QPainter &painter, int width, int height, int now,
+                       const pxtnMaster *master, double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
@@ -195,18 +212,10 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                   localState.m_quantize_pitch;
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
-      if (mouse_edit_state.type != MouseEditState::Nothing)
-        paintBlock(
-            pitch, Interval{0, int(state.scale.clockPerPx * width)}, painter,
-            brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
-            state.scale);
-      paintBlock(pitch, interval, painter,
-                 brush.toQColor(velocity, false, alpha * alphaMultiplier),
-                 state.scale);
 
-      paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                     brush.toQColor(128, true, alpha * alphaMultiplier),
-                     state.scale);
+      bool rowHighlight = (mouse_edit_state.type != MouseEditState::Nothing);
+      drawGhostOnNote(painter, interval, state.scale, width, brush, velocity,
+                      alpha, alphaMultiplier, rowHighlight, pitch);
 
       if (mouse_edit_state.type == MouseEditState::SetOn)
         drawVelTooltip(painter, velocity, interval.start, pitch, brush,
@@ -224,6 +233,14 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
           state.scale.clockPerPx);
       drawSelection(painter, interval, height, selectionAlphaMultiplier);
     } break;
+  }
+
+  if (state.m_input_state.has_value()) {
+    const Input::State::On &v = state.m_input_state.value();
+
+    for (const Interval &interval : v.clock_ints(now, master))
+      drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
+                      255, alphaMultiplier, true, v.on.key);
   }
 }
 
@@ -493,7 +510,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                             adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
-                        painter, width(), height(), alphaMultiplier,
+                        painter, width(), height(), m_moo_clock->now(),
+                        m_pxtn->master, alphaMultiplier,
                         selectionAlphaMultiplier);
     }
   }
@@ -501,7 +519,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                         m_client->editState().scale.clockPerPx, size().height(),
                         1);
   drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
-                    height(), 1, 1);
+                    height(), m_moo_clock->now(), m_pxtn->master, 1, 1);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors

@@ -6,6 +6,22 @@
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnEvelist.h"
 
+QDataStream &operator>>(QDataStream &in, Input::Event::On &a) {
+  return (in >> a.key >> a.vel);
+}
+
+QDataStream &operator<<(QDataStream &out, const Input::Event::On &a) {
+  return (out << a.key << a.vel);
+}
+
+QDataStream &operator>>(QDataStream &in, Input::State::On &a) {
+  return (in >> a.start_clock >> a.on);
+}
+
+QDataStream &operator<<(QDataStream &out, const Input::State::On &a) {
+  return (out << a.start_clock << a.on);
+}
+
 bool operator==(const Scale &x, const Scale &y) {
   return x.clockPerPx == y.clockPerPx && x.pitchPerPx == y.pitchPerPx &&
          x.pitchOffset == y.pitchOffset && x.noteHeight == y.noteHeight;
@@ -74,12 +90,27 @@ QDataStream &operator<<(QDataStream &out, const EditState &a) {
   return (out << a.mouse_edit_state << a.scale << a.viewport
               << a.m_current_unit_id << a.m_current_woice_id
               << a.m_current_param_kind_idx << a.m_quantize_clock_idx
-              << a.m_quantize_pitch_idx << a.m_follow_playhead);
+              << a.m_quantize_pitch_idx << a.m_follow_playhead
+              << a.m_input_state);
 }
 
 QDataStream &operator>>(QDataStream &in, EditState &a) {
   return (in >> a.mouse_edit_state >> a.scale >> a.viewport >>
           a.m_current_unit_id >> a.m_current_woice_id >>
           a.m_current_param_kind_idx >> a.m_quantize_clock_idx >>
-          a.m_quantize_pitch_idx >> a.m_follow_playhead);
+          a.m_quantize_pitch_idx >> a.m_follow_playhead >> a.m_input_state);
+}
+
+std::vector<Interval> Input::State::On::clock_ints(
+    int now, const pxtnMaster *master) const {
+  std::vector<Interval> clock_ints;
+  if (now > start_clock)
+    clock_ints.push_back({start_clock, now});
+  else {
+    clock_ints.push_back(
+        {start_clock, master->get_this_clock(master->get_play_meas(), 0, 0)});
+    clock_ints.push_back(
+        {master->get_this_clock(master->get_repeat_meas(), 0, 0), now});
+  }
+  return clock_ints;
 }

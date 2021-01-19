@@ -33,6 +33,7 @@ HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
            editor/HostDialog.h \
+           editor/MidiWrapper.h \
            editor/RenderDialog.h \
            editor/Settings.h \
            editor/SettingsDialog.h \
@@ -108,6 +109,7 @@ SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
            editor/HostDialog.cpp \
+           editor/MidiWrapper.cpp \
            editor/RenderDialog.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
@@ -170,7 +172,7 @@ SOURCES += main.cpp \
            network/Client.cpp \
            network/ServerSession.cpp
 
-!win32:LIBS += -logg -lvorbisfile
+!win32:LIBS += -logg -lvorbisfile -lrtmidi
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile
 macx:LIBS += -L/usr/local/lib
 

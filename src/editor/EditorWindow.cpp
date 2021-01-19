@@ -381,17 +381,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
-  std::vector<Interval> clock_ints;
-  if (end > v.start_clock)
-    clock_ints.push_back({v.start_clock, end});
-  else {
-    clock_ints.push_back(
-        {v.start_clock, client->pxtn()->master->get_this_clock(
-                            client->pxtn()->master->get_play_meas(), 0, 0)});
-    clock_ints.push_back({client->pxtn()->master->get_this_clock(
-                              client->pxtn()->master->get_repeat_meas(), 0, 0),
-                          end});
-  }
+  std::vector<Interval> clock_ints = v.clock_ints(end, client->pxtn()->master);
   // TODO: Dedup
   using namespace Action;
   std::list<Primitive> actions;
@@ -423,10 +413,14 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             if (!m_client->isPlaying())
               start = quantize(start, m_client->quantizeClock());
             int end = start + m_client->quantizeClock();
-            if (m_record_state.has_value()) {
-              applyOn(m_record_state.value(), start, m_client);
-            }
-            m_record_state = Input::State::On{start, e};
+            m_client->changeEditState(
+                [&](EditState &state) {
+                  if (state.m_input_state.has_value()) {
+                    applyOn(state.m_input_state.value(), start, m_client);
+                  }
+                  state.m_input_state = Input::State::On{start, e};
+                },
+                false);
             auto maybe_unit_no = m_client->unitIdMap().idToNo(
                 m_client->editState().m_current_unit_id);
             if (maybe_unit_no != std::nullopt) {
@@ -438,19 +432,21 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             }
           },
           [this](const Input::Event::Off &e) {
-            if (m_record_state.has_value()) {
-              Input::State::On &v = m_record_state.value();
-              m_record_note_preview.reset();
-              if (v.on.key == e.key)
-                applyOn(m_record_state.value(), m_moo_clock->now(), m_client);
-              m_record_state.reset();
-            }
+            m_client->changeEditState(
+                [&](EditState &state) {
+                  if (state.m_input_state.has_value()) {
+                    Input::State::On &v = state.m_input_state.value();
+                    m_record_note_preview.reset();
+                    if (v.on.key == e.key)
+                      applyOn(v, m_moo_clock->now(), m_client);
+                    state.m_input_state.reset();
+                  }
+                },
+                false);
           },
           [this](const Input::Event::Skip &) {
             int end = quantize(m_moo_clock->now(), m_client->quantizeClock()) +
                       m_client->quantizeClock();
-
-            qDebug() << end;
             m_client->seekMoo(end);
           },
       },

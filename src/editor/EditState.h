@@ -8,6 +8,7 @@
 #include <variant>
 
 #include "Interval.h"
+#include "pxtone/pxtnMaster.h"
 
 struct MouseKeyboardEdit {
   qint32 start_pitch;
@@ -96,6 +97,29 @@ bool operator==(const Scale &x, const Scale &y);
 
 enum struct FollowPlayhead : qint8 { None, Jump, Follow, MAX = Follow };
 
+namespace Input {
+namespace Event {
+struct On {
+  int key;
+  int vel;
+};
+struct Off {
+  int key;
+};
+struct Skip {};
+using Event = std::variant<On, Off, Skip>;
+}  // namespace Event
+
+namespace State {
+struct On {
+  int start_clock;
+  Event::On on;
+  std::vector<Interval> clock_ints(int now, const pxtnMaster *master) const;
+};
+using State = std::optional<On>;
+}  // namespace State
+};  // namespace Input
+
 struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
@@ -106,6 +130,7 @@ struct EditState {
   int m_quantize_clock_idx;
   int m_quantize_pitch_idx;
   FollowPlayhead m_follow_playhead;
+  Input::State::State m_input_state;
   int current_param_kind_idx() const;
   EditState();
 };
