@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>292</width>
-    <height>261</height>
+    <width>351</width>
+    <height>327</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,6 +55,16 @@
       <string>Adjust velocity with vertical drag</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>MIDI input port</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="midiInputPortCombo"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

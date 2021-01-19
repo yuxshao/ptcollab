@@ -11,11 +11,13 @@ class MidiWrapper {
  private:
   std::unique_ptr<RtMidiIn> m_in;
   std::function<void(Input::Event::Event)> m_cb;
+  int m_current_port;
 
  public:
   MidiWrapper();
-  std::vector<std::string> ports();
+  QStringList ports() const;
 
+  std::optional<int> currentPort() const;
   bool usePort(int port, const std::function<void(Input::Event::Event)> &cb);
 };
 

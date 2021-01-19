@@ -10,11 +10,11 @@ MidiWrapper::MidiWrapper() {
   }
 }
 
-std::vector<std::string> MidiWrapper::ports() {
+QStringList MidiWrapper::ports() const {
   if (m_in == nullptr) return {};
   unsigned int nPorts = m_in->getPortCount();
   std::string portName;
-  std::vector<std::string> ports;
+  QStringList ports;
   for (unsigned int i = 0; i < nPorts; i++) {
     try {
       portName = m_in->getPortName(i);
@@ -22,23 +22,38 @@ std::vector<std::string> MidiWrapper::ports() {
       qWarning() << QString::fromStdString(error.getMessage());
       return {};
     }
-    ports.push_back(portName);
+    ports.push_back(QString::fromStdString(portName));
   }
   return ports;
 }
 
+std::optional<int> MidiWrapper::currentPort() const {
+  if (m_in->isPortOpen()) return m_current_port;
+  return std::nullopt;
+}
+
+int pitch(std::vector<unsigned char> *message) {
+  return int((*message)[1]) * 256 - 17664 /* middle a */ + EVENTDEFAULT_KEY;
+}
 void callback(double deltatime, std::vector<unsigned char> *message,
               void *callback) {
   auto &cb = *(std::function<void(Input::Event::Event)> *)callback;
-  qDebug() << deltatime;
-  int message_kind = (*message)[0] >> 8;
+  int message_kind = (*message)[0] >> 4;
+
   switch (message_kind) {
     case 8:
-      cb(Input::Event::Off{(*message)[1]});
+      qDebug() << deltatime << message_kind << pitch(message);
+      cb(Input::Event::Off{pitch(message)});
       break;
-    case 9:
-      cb(Input::Event::On{(*message)[1], (*message)[2]});
-      break;
+    case 9: {
+      int key = pitch(message);
+      int vel = (*message)[2];
+      qDebug() << deltatime << message_kind << (*message)[0] << key << vel;
+      if (vel > 0)
+        cb(Input::Event::On{key, vel});
+      else
+        cb(Input::Event::Off{key});
+    } break;
       // TODO: pedal for skip, pitch bend
   }
 };
@@ -48,6 +63,10 @@ bool MidiWrapper::usePort(int port,
   if (m_in == nullptr) return false;
   m_cb = cb;
   m_in->openPort(port);
+  if (m_in->isPortOpen())
+    m_current_port = port;
+  else
+    return false;
   m_in->setCallback(callback, (void *)&m_cb);
   return true;
 }

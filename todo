@@ -403,6 +403,7 @@ Todo by priority
 ----------------
  - midi input???
    - handle playhead jitter if playing real time
+   - note preview in the top bar too
    - mute the unit regularly if you're recording, also record silence
    - support windows
    - qwerty input

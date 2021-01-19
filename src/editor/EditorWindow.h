@@ -69,6 +69,7 @@ class EditorWindow : public QMainWindow {
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
   RenderDialog* m_render_dialog;
+  MidiWrapper* m_midi_wrapper;
   SettingsDialog* m_settings_dialog;
 
   Ui::EditorWindow* ui;

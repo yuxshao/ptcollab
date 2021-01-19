@@ -40,7 +40,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
-      m_settings_dialog(new SettingsDialog(this)),
+      m_midi_wrapper(new MidiWrapper()),
+      m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -204,6 +205,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
           &QDialog::show);
+  connect(m_settings_dialog, &SettingsDialog::midiPortSelected,
+          [this](int port_no) {
+            qDebug() << "using midi port" << port_no;
+            m_midi_wrapper->usePort(
+                port_no, [this](Input::Event::Event x) { recordInput(x); });
+          });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -437,9 +444,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                   if (state.m_input_state.has_value()) {
                     Input::State::On &v = state.m_input_state.value();
                     m_record_note_preview.reset();
-                    if (v.on.key == e.key)
+                    if (v.on.key == e.key) {
                       applyOn(v, m_moo_clock->now(), m_client);
-                    state.m_input_state.reset();
+                      state.m_input_state.reset();
+                    }
                   }
                 },
                 false);
