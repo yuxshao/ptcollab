@@ -17,6 +17,7 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "ComboOptions.h"
+#include "InputEvent.h"
 #include "Settings.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
@@ -208,8 +209,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_settings_dialog, &SettingsDialog::midiPortSelected,
           [this](int port_no) {
             qDebug() << "using midi port" << port_no;
-            m_midi_wrapper->usePort(
-                port_no, [this](Input::Event::Event x) { recordInput(x); });
+            m_midi_wrapper->usePort(port_no, [this](Input::Event::Event x) {
+              qDebug() << "Received event";
+              QCoreApplication::postEvent(this, new InputEvent(x),
+                                          Qt::HighEventPriority);
+            });
           });
 }
 
@@ -412,6 +416,7 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
+  qDebug() << "record INput";
   std::visit(
       overloaded{
           [this](const Input::Event::On &e) {
@@ -546,6 +551,15 @@ void EditorWindow::Host(HostSetting host_setting) {
   std::optional<QString> recording_save_file = m_host_dialog->recordingName();
 
   hostDirectly(filename, host, port, recording_save_file, username);
+}
+
+bool EditorWindow::event(QEvent *event) {
+  if (event->type() == InputEvent::registeredType()) {
+    InputEvent *myEvent = static_cast<InputEvent *>(event);
+    recordInput(myEvent->event);
+    return true;
+  }
+  return QWidget::event(event);
 }
 
 void EditorWindow::hostDirectly(std::optional<QString> filename,

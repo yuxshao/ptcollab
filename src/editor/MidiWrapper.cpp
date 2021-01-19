@@ -35,6 +35,7 @@ std::optional<int> MidiWrapper::currentPort() const {
 int pitch(std::vector<unsigned char> *message) {
   return int((*message)[1]) * 256 - 17664 /* middle a */ + EVENTDEFAULT_KEY;
 }
+
 void callback(double deltatime, std::vector<unsigned char> *message,
               void *callback) {
   auto &cb = *(std::function<void(Input::Event::Event)> *)callback;
@@ -61,6 +62,10 @@ void callback(double deltatime, std::vector<unsigned char> *message,
 bool MidiWrapper::usePort(int port,
                           const std::function<void(Input::Event::Event)> &cb) {
   if (m_in == nullptr) return false;
+  if (m_in->isPortOpen()) {
+    m_in->cancelCallback();
+    m_in->closePort();
+  }
   m_cb = cb;
   m_in->openPort(port);
   if (m_in->isPortOpen())

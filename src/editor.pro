@@ -33,6 +33,7 @@ HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
            editor/HostDialog.h \
+           editor/InputEvent.h \
            editor/MidiWrapper.h \
            editor/RenderDialog.h \
            editor/Settings.h \
@@ -109,6 +110,7 @@ SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
            editor/HostDialog.cpp \
+           editor/InputEvent.cpp \
            editor/MidiWrapper.cpp \
            editor/RenderDialog.cpp \
            editor/Settings.cpp \
