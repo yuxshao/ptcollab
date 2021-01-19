@@ -448,8 +448,8 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                 [&](EditState &state) {
                   if (state.m_input_state.has_value()) {
                     Input::State::On &v = state.m_input_state.value();
-                    m_record_note_preview.reset();
                     if (v.on.key == e.key) {
+                      m_record_note_preview.reset();
                       applyOn(v, m_moo_clock->now(), m_client);
                       state.m_input_state.reset();
                     }

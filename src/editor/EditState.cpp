@@ -109,8 +109,8 @@ std::vector<Interval> Input::State::On::clock_ints(
   else if (now < start_clock) {
     clock_ints.push_back(
         {start_clock, master->get_this_clock(master->get_play_meas(), 0, 0)});
-    clock_ints.push_back(
-        {master->get_this_clock(master->get_repeat_meas(), 0, 0), now});
+    int repeat = master->get_this_clock(master->get_repeat_meas(), 0, 0);
+    if (now > repeat) clock_ints.push_back({repeat, now});
   }
   return clock_ints;
 }
