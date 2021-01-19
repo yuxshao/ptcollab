@@ -12,7 +12,7 @@ class MooClock : public QObject {
   Q_OBJECT
 
   PxtoneClient *m_client;
-  int m_prev_clock, m_this_seek;
+  int m_prev_clock, m_prev_moo_clock, m_this_seek;
   bool m_this_seek_caught_up;
   QElapsedTimer timeSinceLastClock;
 

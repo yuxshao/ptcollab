@@ -47,6 +47,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
     ports.push_front("Select a port...");
   else
     ports.push_front("No ports found...");
+  ui->midiInputPortCombo->clear();
   ui->midiInputPortCombo->addItems(ports);
   {
     auto current_port = m_midi_wrapper->currentPort();

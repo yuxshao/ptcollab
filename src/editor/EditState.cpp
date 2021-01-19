@@ -106,7 +106,7 @@ std::vector<Interval> Input::State::On::clock_ints(
   std::vector<Interval> clock_ints;
   if (now > start_clock)
     clock_ints.push_back({start_clock, now});
-  else {
+  else if (now < start_clock) {
     clock_ints.push_back(
         {start_clock, master->get_this_clock(master->get_play_meas(), 0, 0)});
     clock_ints.push_back(

@@ -399,14 +399,16 @@ fill architecture could work well.
 2. rename a few menu options
 3. chord preview respects mute
 
+1/18/21
+1. PLayhead jitter in real time
+2. 
+
 Todo by priority
 ----------------
  - midi input???
-   - handle playhead jitter if playing real time
    - note preview in the top bar too
    - mute the unit regularly if you're recording, also record silence
    - support windows
-   - qwerty input
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

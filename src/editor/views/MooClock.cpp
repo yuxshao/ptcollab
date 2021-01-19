@@ -4,11 +4,13 @@ MooClock::MooClock(PxtoneClient *client)
     : QObject(client),
       m_client(client),
       m_prev_clock(0),
+      m_prev_moo_clock(0),
       m_this_seek(0),
       m_this_seek_caught_up(false) {
   connect(m_client->controller(), &PxtoneController::seeked, [this](int clock) {
     m_this_seek = clock;
     m_this_seek_caught_up = false;
+    m_prev_clock = 0;
   });
 }
 
@@ -41,9 +43,13 @@ int MooClock::now() {
   // 5. The tracking if we've looped or not is also necessary to tell if we've
   // actually caught up to a seek.
 
+  // Additionally, to cover midi input, we can no longer tolerate the cursor
+  // flicking around occasionally. So, now we only allow nonmonotonic movement
+  // if the moo time changed.
+
   int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
-  if (m_prev_clock != clock) {
-    m_prev_clock = clock;
+  if (m_prev_moo_clock != clock) {
+    m_prev_moo_clock = clock;
     timeSinceLastClock.restart();
   }
 
@@ -61,6 +67,11 @@ int MooClock::now() {
   const pxtnMaster *master = m_client->pxtn()->master;
   clock += std::min(estimated_buffer_offset, 0.0) * master->get_beat_tempo() *
            master->get_beat_clock() / 60;
+  // Forces monotonicity
+  if (clock < m_prev_clock)
+    clock = m_prev_clock;
+  else
+    m_prev_clock = clock;
 
   if (clock >= m_this_seek) m_this_seek_caught_up = true;
   if (!m_this_seek_caught_up) clock = m_this_seek;
@@ -68,11 +79,14 @@ int MooClock::now() {
   if (clock >= last_clock())
     clock = (clock - repeat_clock()) % (last_clock() - repeat_clock()) +
             repeat_clock();
-  // Because of offsetting it might seem like even though we've repeated the
-  // clock is before [repeat_clock]. So fix it here.
-  if (m_client->moo()->num_loop > 0 && clock < repeat_clock())
-    clock += last_clock() - repeat_clock();
 
+  // 2021-01-18: I'm not actually sure when this case will happen. So I've
+  // commented it out.
+  //
+  // // Because of offsetting it might seem like even though we've repeated the
+  // // clock is before [repeat_clock]. So fix it here.
+  // if (m_client->moo()->num_loop > 0 && clock < repeat_clock())
+  //  clock += last_clock() - repeat_clock();
   return clock;
 }
 
