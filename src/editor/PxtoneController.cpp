@@ -642,18 +642,20 @@ bool PxtoneController::render(
     std::function<bool(double progress)> should_continue) const {
   qDebug() << "Rendering" << secs << fadeout;
   WavHdr h;
-  h.fmt_size = h.bits_per_sample = 16;
+  h.fmt_size = 16;
   h.audio_format = 1;
   int num_channels, sample_rate;
   m_pxtn->get_destination_quality(&num_channels, &sample_rate);
   h.num_channels = num_channels;
   h.sample_rate = sample_rate;
+  h.bits_per_sample = 16;
   h.block_align = h.num_channels * h.bits_per_sample / 8;
   h.byte_rate = h.sample_rate * h.num_channels * h.bits_per_sample / 8;
 
   int num_samples = int(h.sample_rate * secs);
   if (fadeout > 0) num_samples += int(h.sample_rate * fadeout) + 10;
   h.data_size = num_samples * h.num_channels * h.bits_per_sample / 8;
+  h.chunk_size = h.data_size + 36;
 
   mooState moo_state;
   if (m_pxtn->tones_ready(moo_state) != pxtnOK) {
