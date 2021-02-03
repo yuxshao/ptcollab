@@ -105,14 +105,14 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                            int alpha) {
     const Brush &brush =
         brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
-    painter.fillRect(interval.start / state.scale.clockPerPx, UNIT_EDIT_Y + 3,
-                     interval.length() / state.scale.clockPerPx,
+    painter.fillRect(interval.start, UNIT_EDIT_Y + 3, interval.length(),
                      UNIT_EDIT_HEIGHT - 6,
                      brush.toQColor(velocity, false, alpha * alphaMultiplier));
   };
 
   {
-    Interval interval(mouse_edit_state.clock_int(quantizeClock));
+    Interval interval(mouse_edit_state.clock_int(quantizeClock) /
+                      state.scale.clockPerPx);
     qint32 velocity = qint32(round(mouse_edit_state.base_velocity));
     switch (mouse_edit_state.type) {
       case MouseEditState::Type::SetOn:
