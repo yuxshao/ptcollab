@@ -406,9 +406,11 @@ fill architecture could work well.
 Todo by priority
 ----------------
  - midi input???
-   - don'tgdjj reset on reopen dialog?
+   - don't buffer up all the things
+   - quantize
    - mute the unit regularly if you're recording, also record silence
    - support windows
+   - refactor the classes
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
