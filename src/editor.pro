@@ -68,6 +68,10 @@ HEADERS += \
            editor/sidemenu/SideMenu.h \
            editor/sidemenu/UnitListModel.h \
            editor/views/ViewHelper.h \
+           network/LocalServerSession.h \
+           network/NetworkClient.h \
+           network/NetworkServerSession.h \
+           network/ServerSession.h \
            protocol/Data.h \
            protocol/Hello.h \
            protocol/NoIdMap.h \
@@ -94,9 +98,7 @@ HEADERS += \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h \
-           network/BroadcastServer.h \
-           network/Client.h \
-           network/ServerSession.h
+           network/BroadcastServer.h
 FORMS += \
     editor/ConnectDialog.ui \
     editor/EditorWindow.ui \
@@ -144,6 +146,10 @@ SOURCES += main.cpp \
            editor/sidemenu/SideMenu.cpp \
            editor/sidemenu/UnitListModel.cpp \
            editor/views/ViewHelper.cpp \
+           network/LocalServerSession.cpp \
+           network/NetworkClient.cpp \
+           network/NetworkServerSession.cpp \
+           network/ServerSession.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \
            protocol/NoIdMap.cpp \
@@ -170,9 +176,7 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
-           network/BroadcastServer.cpp \
-           network/Client.cpp \
-           network/ServerSession.cpp
+           network/BroadcastServer.cpp
 
 !win32:LIBS += -logg -lvorbisfile -lrtmidi
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lrtmidi -lwinmm

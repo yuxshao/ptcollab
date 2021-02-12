@@ -3,32 +3,31 @@
 #include <QObject>
 #include <QTcpSocket>
 
+#include "BroadcastServer.h"
 #include "protocol/RemoteAction.h"
 #include "pxtone/pxtnDescriptor.h"
-struct HostAndPort {
-  QString host;
-  int port;
-  QString toString();
-};
-class Client : public QObject {
+
+class NetworkClient : public QObject {
   Q_OBJECT
  public:
-  Client(QObject *parent);
+  NetworkClient(QObject *parent);
 
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port, QString username);
+  void connectToLocalServer(BroadcastServer *server, QString username);
   void disconnectFromServerSuppressSignal();
   void sendAction(const ClientAction &m);
   qint64 uid();
  signals:
-  void connected(pxtnDescriptor &desc, QList<ServerAction> &history,
+  void connected(const QByteArray &desc, const QList<ServerAction> &history,
                  qint64 uid);
   void disconnected(bool suppress);
-  void receivedAction(ServerAction &m);
+  void receivedAction(const ServerAction &m);
   void errorOccurred(QString error);
 
  private:
   QTcpSocket *m_socket;
+  LocalServerSession *m_local;
   // We have separate streams because QTBUG-63113 prevents writing if we're
   // currently in the middle of a fragmented read.
   QDataStream m_write_stream, m_read_stream;
@@ -37,6 +36,7 @@ class Client : public QObject {
   qint64 m_uid;
   void tryToRead();
   void tryToStart();
+  void handleExternalDisconnect();
 };
 
 #endif  // ACTIONCLIENT_H

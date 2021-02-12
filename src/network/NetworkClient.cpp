@@ -1,4 +1,4 @@
-#include "Client.h"
+#include "NetworkClient.h"
 
 #include <QAbstractSocket>
 #include <QDateTime>
@@ -9,18 +9,16 @@
 
 QString HostAndPort::toString() { return QString("%1:%2").arg(host).arg(port); }
 
-Client::Client(QObject *parent)
+NetworkClient::NetworkClient(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
+      m_local(nullptr),
       m_write_stream((QIODevice *)m_socket),
       m_read_stream((QIODevice *)m_socket),
       m_received_hello(false) {
-  connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
-  connect(m_socket, &QTcpSocket::disconnected, [this]() {
-    m_received_hello = false;
-    emit disconnected(m_suppress_disconnect);
-    m_suppress_disconnect = false;
-  });
+  connect(m_socket, &QTcpSocket::readyRead, this, &NetworkClient::tryToRead);
+  connect(m_socket, &QTcpSocket::disconnected, this,
+          &NetworkClient::handleExternalDisconnect);
 
   connect(m_socket, &QTcpSocket::errorOccurred,
           [this](QAbstractSocket::SocketError) {
@@ -31,11 +29,27 @@ Client::Client(QObject *parent)
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
-HostAndPort Client::currentlyConnectedTo() {
-  return HostAndPort{m_socket->peerAddress().toString(), m_socket->peerPort()};
+void NetworkClient::handleExternalDisconnect() {
+  if (m_local != nullptr) m_local = nullptr;
+  m_received_hello = false;
+  emit disconnected(m_suppress_disconnect);
+  m_suppress_disconnect = false;
 }
 
-void Client::connectToServer(QString hostname, quint16 port, QString username) {
+HostAndPort NetworkClient::currentlyConnectedTo() {
+  if (m_local)
+    return m_local->connectedTo();
+  else
+    return HostAndPort{m_socket->peerAddress().toString(),
+                       m_socket->peerPort()};
+}
+
+void NetworkClient::connectToServer(QString hostname, quint16 port,
+                                    QString username) {
+  if (m_local != nullptr) {
+    m_local->clientDisconnect();
+    m_local = nullptr;
+  }
   m_socket->abort();
 
   // Guarded on connection in case the connection fails. In the past not having
@@ -51,39 +65,66 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->connectToHost(hostname, port);
 }
 
-void Client::disconnectFromServerSuppressSignal() {
+void NetworkClient::connectToLocalServer(BroadcastServer *server,
+                                         QString username) {
+  m_local = server->makeLocalSession(username);
+  connect(m_local, &QObject::destroyed, [this](QObject *) {
+    if (m_local != nullptr) handleExternalDisconnect();
+  });
+  connect(m_local, &LocalServerSession::clientReceivedHello,
+          [this](const QByteArray &file, const QList<ServerAction> &history,
+                 const QMap<qint64, QString> &) {
+            connected(file, history, m_local->uid());
+          });
+  connect(m_local, &LocalServerSession::clientReceivedAction, this,
+          &NetworkClient::receivedAction);
+  m_local->clientSendHello();
+}
+
+void NetworkClient::disconnectFromServerSuppressSignal() {
+  if (m_local != nullptr) {
+    m_local->clientDisconnect();
+    m_local = nullptr;
+  }
   if (m_socket->state() == QAbstractSocket::ConnectedState) {
     m_suppress_disconnect = true;
     m_socket->disconnectFromHost();
   }
 }
 
-void Client::sendAction(const ClientAction &m) {
+void NetworkClient::sendAction(const ClientAction &m) {
   if (clientActionShouldBeRecorded(m))
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
              << "Sending" << m;
-  // Sometimes if I try to write data to a socket that's not ready it
-  // invalidates the socket forever. I think these two guards should prevent it.
-  if (m_socket->isValid() && m_socket->state() == QTcpSocket::ConnectedState) {
-    m_write_stream << m;
-    if (m_socket->bytesToWrite() == 0) {
-      qWarning() << "Client::sendAction didn't seem to fill write." << m;
-      qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
-                 << m_socket->isValid() << "), state(" << m_socket->state()
-                 << "), error(" << m_socket->errorString() << ")"
-                 << "), stream_status(" << m_write_stream.status() << ")";
+  if (m_local != nullptr)
+    m_local->clientSendAction(m);
+  else {
+    // Sometimes if I try to write data to a socket that's not ready it
+    // invalidates the socket forever. I think these two guards should prevent
+    // it.
+    if (m_socket->isValid() &&
+        m_socket->state() == QTcpSocket::ConnectedState) {
+      m_write_stream << m;
+      if (m_socket->bytesToWrite() == 0) {
+        qWarning() << "Client::sendAction didn't seem to fill write." << m;
+        qWarning() << "Socket state: open(" << m_socket->isOpen()
+                   << "), valid (" << m_socket->isValid() << "), state("
+                   << m_socket->state() << "), error("
+                   << m_socket->errorString() << ")"
+                   << "), stream_status(" << m_write_stream.status() << ")";
+      }
+    } else {
+      /*qDebug() << "Not sending action while socket is not ready" << m;
+      qDebug() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
+               << m_socket->isValid() << "), state(" << m_socket->state()
+               << "), error(" << m_socket->errorString() << ")";*/
     }
-  } else {
-    /*qDebug() << "Not sending action while socket is not ready" << m;
-    qDebug() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
-             << m_socket->isValid() << "), state(" << m_socket->state()
-             << "), error(" << m_socket->errorString() << ")";*/
   }
 }
 
-qint64 Client::uid() { return m_uid; }
+qint64 NetworkClient::uid() { return m_uid; }
 
-void Client::tryToRead() {
+void NetworkClient::tryToRead() {
   // qDebug() << "Client has bytes available" << m_socket->bytesAvailable();
   // I got tripped up. tryToStart cannot be in the loop b/c that will cause it
   // to loop infinitely. The way it's coded right now at least.
@@ -114,7 +155,7 @@ void Client::tryToRead() {
     }
 }
 
-void Client::tryToStart() {
+void NetworkClient::tryToStart() {
   // Get the file + history
   qInfo() << "Getting initial data from server";
 
@@ -140,9 +181,7 @@ void Client::tryToStart() {
   qDebug() << "Received history of size" << history.size();
 
   m_received_hello = true;
-  pxtnDescriptor d;
-  d.set_memory_r(data.constData(), data.size());
-  emit connected(d, history, m_uid);
+  emit connected(data, history, m_uid);
   // for (auto it = sessions.begin(); it != sessions.end(); ++it)
   //  emit receivedNewSession(it.value(), it.key());
 }

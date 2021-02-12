@@ -8,7 +8,7 @@
 #include "Clipboard.h"
 #include "ConnectionStatusLabel.h"
 #include "PxtoneController.h"
-#include "network/Client.h"
+#include "network/NetworkClient.h"
 
 struct RemoteEditState {
   std::optional<EditState> state;
@@ -29,7 +29,7 @@ class PxtoneClient : public QObject {
   Q_OBJECT
 
   PxtoneController *m_controller;
-  Client *m_client;
+  NetworkClient *m_client;
   std::map<qint64, RemoteEditState> m_remote_edit_states;
   std::optional<qint64> m_following_user;
   mooState m_moo_state;
@@ -64,6 +64,7 @@ class PxtoneClient : public QObject {
   void removeCurrentUnit();
   void seekMoo(int64_t clock);
   void connectToServer(QString hostname, quint16 port, QString username);
+  void connectToLocalServer(BroadcastServer *server, QString username);
   void disconnectFromServerSuppressSignal();
   void changeEditState(std::function<void(EditState &)>, bool preserveFollow);
   void togglePlayState();

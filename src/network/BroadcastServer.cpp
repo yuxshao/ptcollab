@@ -110,7 +110,7 @@ BroadcastServer::~BroadcastServer() {
   // Without these disconnects, I think the sessions' destructors emit the
   // socket disconnected signal which ends up trying to call
   // [broadcastDeleteSession] even after this destructor's been called.
-  for (ServerSession *s : m_sessions) s->disconnect();
+  for (ServerSession *s : m_sessions) s->disconnect(nullptr, this);
   m_server->close();
   finalizeSaveHistory();
 }
@@ -155,8 +155,10 @@ void BroadcastServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
   qInfo() << "New connection" << conn->peerAddress();
 
-  ServerSession *session = new ServerSession(this, conn, m_next_uid++);
+  registerSession(new NetworkServerSession(this, conn, m_next_uid++));
+}
 
+void BroadcastServer::registerSession(ServerSession *session) {
   // It's a bit complicated managing responses to the session in response to
   // its state. Key things to be aware of:
   // 1. Don't send remote actions/edit state until received hello.
@@ -182,6 +184,16 @@ void BroadcastServer::newClient() {
             connect(session, &ServerSession::receivedAction, this,
                     &BroadcastServer::broadcastAction);
           });
+}
+
+LocalServerSession *BroadcastServer::makeLocalSession(QString username) {
+  qInfo() << "Local connection" << username;
+  LocalServerSession *session =
+      new LocalServerSession(this, username, m_next_uid++,
+                             HostAndPort{m_server->serverAddress().toString(),
+                                         m_server->serverPort()});
+  registerSession(session);
+  return session;
 }
 
 void BroadcastServer::broadcastServerAction(const ServerAction &a) {

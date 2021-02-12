@@ -628,7 +628,7 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
   m_modified = false;
   m_side_menu->setModified(false);
 
-  m_client->connectToServer("localhost", m_server->port(), username);
+  m_client->connectToLocalServer(m_server, username);
 }
 
 bool EditorWindow::saveToFile(QString filename) {
