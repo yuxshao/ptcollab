@@ -411,6 +411,10 @@ Todo by priority
    - mute the unit regularly if you're recording, also record silence
    - support windows
    - refactor the classes
+ - investigate file browser save last dir bug
+ - select multiple samples in file browser
+ - don't save sample but rather save directory in file dialog
+ - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
