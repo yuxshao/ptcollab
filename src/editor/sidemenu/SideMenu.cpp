@@ -34,6 +34,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       m_users(users),
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
+  m_add_woice_dialog->setFileMode(QFileDialog::ExistingFiles);
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
