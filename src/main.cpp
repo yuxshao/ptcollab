@@ -15,6 +15,39 @@ const static QString stylesheet =
     "QLineEdit:disabled { background-color: #343255; color: #9D9784; }"
     "QPushButton:disabled { color: #9D9784; }";
 
+static FILE *logDestination = stderr;
+void messageHandler(QtMsgType type, const QMessageLogContext &context,
+                    const QString &msg) {
+  QByteArray localMsg = msg.toLocal8Bit();
+  const char *file = context.file ? context.file : "";
+  const char *function = context.function ? context.function : "";
+  std::string now_str = QDateTime::currentDateTime().toString().toStdString();
+  const char *now = now_str.c_str();
+  switch (type) {
+    case QtDebugMsg:
+      fprintf(logDestination, "[%s] Debug: %s (%s:%u, %s)\n", now,
+              localMsg.constData(), file, context.line, function);
+      break;
+    case QtInfoMsg:
+      fprintf(logDestination, "[%s] Info: %s (%s:%u, %s)\n", now,
+              localMsg.constData(), file, context.line, function);
+      break;
+    case QtWarningMsg:
+      fprintf(logDestination, "[%s] Warning: %s (%s:%u, %s)\n", now,
+              localMsg.constData(), file, context.line, function);
+      break;
+    case QtCriticalMsg:
+      fprintf(logDestination, "[%s] Critical: %s (%s:%u, %s)\n", now,
+              localMsg.constData(), file, context.line, function);
+      break;
+    case QtFatalMsg:
+      fprintf(logDestination, "[%s] Fatal: %s (%s:%u, %s)\n", now,
+              localMsg.constData(), file, context.line, function);
+      break;
+  }
+  fflush(logDestination);
+}
+
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
 
@@ -93,6 +126,12 @@ int main(int argc, char *argv[]) {
       QCoreApplication::translate("main", "Join with this username."));
   parser.addOption(usernameOption);
 
+  QCommandLineOption logFileOption(
+      QStringList() << "log",
+      QCoreApplication::translate("main", "Write log messages to this file."),
+      QCoreApplication::translate("main", "file"));
+  parser.addOption(logFileOption);
+
   parser.process(a);
 
   bool startServerImmediately = false;
@@ -133,6 +172,18 @@ int main(int argc, char *argv[]) {
   if (parser.value(usernameOption) != "")
     QSettings().setValue(DISPLAY_NAME_KEY, username);
   username = QSettings().value(DISPLAY_NAME_KEY).toString();
+
+  QString logFile = parser.value(logFileOption);
+  if (logFile != "") {
+    FILE *file = fopen(logFile.toStdString().c_str(), "a");
+    if (file == nullptr) {
+      std::cerr << "Cannot open file" << logFile.toStdString()
+                << "for logging.\n";
+      return 1;
+    } else
+      logDestination = file;
+  }
+  qInstallMessageHandler(messageHandler);
 
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
