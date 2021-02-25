@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>327</height>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,6 +53,13 @@
     <widget class="QCheckBox" name="velocityDragCheck">
      <property name="text">
       <string>Adjust velocity with vertical drag</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="disableNotePreviewCheck">
+     <property name="text">
+      <string>Disable note preview in dialogs</string>
      </property>
     </widget>
    </item>

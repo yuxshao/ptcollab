@@ -81,6 +81,12 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace SwapZoomOrientation
 
+namespace DisableNotePreview {
+const char *KEY = "DisableNotePreview";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace DisableNotePreview
+
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }

@@ -62,6 +62,11 @@ bool get();
 void set(bool);
 }  // namespace SwapZoomOrientation
 
+namespace DisableNotePreview {
+bool get();
+void set(bool);
+}  // namespace DisableNotePreview
+
 namespace RenderFileDestination {
 QString get();
 void set(QString);
