@@ -98,13 +98,19 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
   connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
-    QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-    if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    /* m_add_woice_dialog->deleteLater();
+     m_add_woice_dialog = make_add_woice_dialog(this); */
+    if (Settings::ChangeDialogDirectory::get()) {
+      QString dir(QSettings().value(WOICE_DIR_KEY).toString());
+      if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
+    }
     m_add_woice_dialog->show();
   });
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
-    QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-    if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
+    if (Settings::ChangeDialogDirectory::get()) {
+      QString dir(QSettings().value(WOICE_DIR_KEY).toString());
+      if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
+    }
     if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,

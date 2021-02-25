@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
-    <height>362</height>
+    <width>355</width>
+    <height>397</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,6 +60,13 @@
     <widget class="QCheckBox" name="disableNotePreviewCheck">
      <property name="text">
       <string>Disable note preview in dialogs</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="changeDialogDirectoryCheck">
+     <property name="text">
+      <string>Save voice dialog directories</string>
      </property>
     </widget>
    </item>

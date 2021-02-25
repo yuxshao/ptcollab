@@ -66,6 +66,10 @@ namespace DisableNotePreview {
 bool get();
 void set(bool);
 }  // namespace DisableNotePreview
+namespace ChangeDialogDirectory {
+bool get();
+void set(bool);
+}  // namespace ChangeDialogDirectory
 
 namespace RenderFileDestination {
 QString get();

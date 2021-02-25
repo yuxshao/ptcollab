@@ -87,6 +87,12 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace DisableNotePreview
 
+namespace ChangeDialogDirectory {
+const char *KEY = "ChangeDialogDirectory";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace ChangeDialogDirectory
+
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
