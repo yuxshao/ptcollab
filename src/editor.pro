@@ -175,7 +175,7 @@ SOURCES += main.cpp \
            network/ServerSession.cpp
 
 !win32:LIBS += -logg -lvorbisfile -lrtmidi
-win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile
+win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lrtmidi -lwinmm
 macx:LIBS += -L/usr/local/lib
 
 # Rules for deployment.
