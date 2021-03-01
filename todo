@@ -405,19 +405,24 @@ fill architecture could work well.
 
 2/24/21
 1. multi select in add woice
+2. some debug checkboxes for ptcollab
+
+2/28/21
+1. don't save dialog dir except at start
 
 Todo by priority
 ----------------
+For next version:
+ - Add unit upon add woice setting
+ - Woice preview in unit tab for current time
+ - Woice preview in add unit window
+ 
  - midi input???
    - don't buffer up all the things
    - quantize
    - mute the unit regularly if you're recording, also record silence
    - support windows
    - refactor the classes
- - investigate file browser save last dir bug
- - add unit upon add woice
-   - woice preview in add unit dialog, or else faster way to add units
- - don't save sample but rather save directory in file dialog
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'

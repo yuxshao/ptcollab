@@ -18,9 +18,6 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
       Settings::SwapScrollOrientation::get());
   ui->swapZoomOrientationCheck->setChecked(
       Settings::SwapZoomOrientation::get());
-  ui->disableNotePreviewCheck->setChecked(Settings::DisableNotePreview::get());
-  ui->changeDialogDirectoryCheck->setChecked(
-      Settings::ChangeDialogDirectory::get());
 
   connect(ui->customStyleCheck, &QCheckBox::toggled, [this](bool) {
     QMessageBox::information(
@@ -38,9 +35,6 @@ void SettingsDialog::apply() {
   Settings::SwapScrollOrientation::set(
       ui->swapScrollOrientationCheck->isChecked());
   Settings::SwapZoomOrientation::set(ui->swapZoomOrientationCheck->isChecked());
-  Settings::DisableNotePreview::set(ui->disableNotePreviewCheck->isChecked());
-  Settings::ChangeDialogDirectory::set(
-      ui->changeDialogDirectoryCheck->isChecked());
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
 }

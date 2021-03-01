@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>304</width>
-    <height>270</height>
+    <width>351</width>
+    <height>327</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,23 +57,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="disableNotePreviewCheck">
-     <property name="text">
-      <string>Disable note preview in dialogs</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="changeDialogDirectoryCheck">
-     <property name="text">
-      <string>Save voice dialog directories</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>MIDI input port</string>
+      <string>MIDI input port (work in progress)</string>
      </property>
     </widget>
    </item>

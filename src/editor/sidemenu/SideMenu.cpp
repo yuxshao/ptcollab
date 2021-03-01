@@ -13,10 +13,14 @@
 #include "ui_SideMenu.h"
 
 static QFileDialog* make_add_woice_dialog(QWidget* parent) {
-  return new QFileDialog(
+  QFileDialog* dialog = new QFileDialog(
       parent, parent->tr("Select voice"),
       QSettings().value(WOICE_DIR_KEY).toString(),
       parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
+
+  QString dir(QSettings().value(WOICE_DIR_KEY).toString());
+  if (!dir.isEmpty()) dialog->setDirectory(dir);
+  return dialog;
 }
 
 SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
@@ -97,20 +101,9 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
-  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
-    /* m_add_woice_dialog->deleteLater();
-     m_add_woice_dialog = make_add_woice_dialog(this); */
-    if (Settings::ChangeDialogDirectory::get()) {
-      QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-      if (!dir.isEmpty()) m_add_woice_dialog->setDirectory(dir);
-    }
-    m_add_woice_dialog->show();
-  });
+  connect(ui->addWoiceBtn, &QPushButton::clicked,
+          [this]() { m_add_woice_dialog->show(); });
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
-    if (Settings::ChangeDialogDirectory::get()) {
-      QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-      if (!dir.isEmpty()) m_change_woice_dialog->setDirectory(dir);
-    }
     if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
@@ -119,6 +112,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &SideMenu::candidateWoiceSelected);
 
   connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
+    // Unfortunately, in the past when we set the directory after every click a
+    // user reported crashes after changing directories multiple times.
     for (const auto& filename : m_add_woice_dialog->selectedFiles())
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
