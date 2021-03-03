@@ -463,8 +463,6 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::On &e) {
             // TODO: handle repeat
             int start = m_moo_clock->now();
-            if (!m_client->isPlaying())
-              start = quantize(start, m_client->quantizeClock());
             m_client->changeEditState(
                 [&](EditState &state) {
                   if (state.m_input_state.has_value()) {
