@@ -200,7 +200,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
       if (!std::holds_alternative<MouseKeyboardEdit>(mouse_edit_state.kind))
-        return;
+        break;
       const auto &keyboard_edit_state =
           std::get<MouseKeyboardEdit>(mouse_edit_state.kind);
       int velocity = impliedVelocity(mouse_edit_state, state.scale);
