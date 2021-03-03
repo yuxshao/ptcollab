@@ -415,13 +415,12 @@ fill architecture could work well.
 2. woice preview in add unit window
 3. Woice preview in unit tab for current time
 4. ijkl for midi input
+5. alt Q to quantize
 
 Todo by priority
 ----------------
  - midi input???
    - mute the unit regularly if you're recording, also record silence
-   - quantize
-   - refactor the classes
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'

@@ -165,6 +165,11 @@
        <string>New Row</string>
       </property>
      </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
      <column>
       <property name="text">
        <string>Shortcut</string>
@@ -423,6 +428,16 @@
      <item row="24" column="1">
       <property name="text">
        <string>Increase / decrease step size (useful for MIDI)</string>
+      </property>
+     </item>
+     <item row="25" column="0">
+      <property name="text">
+       <string>Alt+Q</string>
+      </property>
+     </item>
+     <item row="25" column="1">
+      <property name="text">
+       <string>Quantize selection (useful for MIDI)</string>
       </property>
      </item>
     </widget>

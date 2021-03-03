@@ -915,6 +915,52 @@ void KeyboardView::cutSelection() {
   clearSelection();
 }
 
+void KeyboardView::quantizeSelection() {
+  const static std::set<EVENTKIND> kindsToQuantize(
+      {EVENTKIND_VELOCITY, EVENTKIND_KEY, EVENTKIND_ON});
+  const Interval &range =
+      m_client->editState().mouse_edit_state.selection.value();
+  const std::set<int> &unit_nos(selectedUnitNos());
+  LocalEditState localState(m_pxtn, m_client->editState());
+  int quantizeClock = localState.m_quantize_clock;
+  // Quantize with rounding, rather than flooring / ceiling is more useful for
+  // MIDI input.
+  auto quantize = [&](qint32 c) {
+    return ((2 * c + quantizeClock) / (quantizeClock * 2)) * quantizeClock;
+  };
+
+  const EVERECORD *e = nullptr;
+  for (e = m_pxtn->evels->get_Records(); e; e = e->next)
+    if (e->clock >= range.start) break;
+
+  std::list<Action::Primitive> actions;
+  for (int unit_no : unit_nos)
+    for (EVENTKIND kind : kindsToQuantize) {
+      int unit_id = m_client->unitIdMap().noToId(unit_no);
+      actions.push_back(
+          {kind, unit_id, range.start, Action::Delete{range.end}});
+    }
+  for (; e && e->clock < range.end; e = e->next) {
+    EVENTKIND kind(EVENTKIND(e->kind));
+    if (unit_nos.find(e->unit_no) != unit_nos.end() &&
+        kindsToQuantize.find(kind) != kindsToQuantize.end()) {
+      int unit_id = m_client->unitIdMap().noToId(e->unit_no);
+      qint32 start_clock = quantize(e->clock);
+      if (Evelist_Kind_IsTail(e->kind)) {
+        // We round the end time up. Even though this might cause an add overlap
+        // with the next value, this should be okay in terms of interacting with
+        // undo, since the undos of both of these is 2 clears. (It takes some
+        // effort to explain)
+        int v = std::max(quantizeClock, quantize(e->value));
+        actions.push_back({kind, unit_id, start_clock, Action::Add{v}});
+      } else
+        actions.push_back({kind, unit_id, start_clock, Action::Add{e->value}});
+    }
+  }
+  qDebug() << "apply quantize";
+  m_client->applyAction(actions);
+}
+
 void KeyboardView::paste(bool preserveFollow) {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->changeEditState(

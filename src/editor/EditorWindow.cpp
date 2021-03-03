@@ -333,6 +333,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
       break;
+    case Qt::Key_Q:
+      if (event->modifiers() & Qt::AltModifier)
+        m_keyboard_view->quantizeSelection();
+      break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
         m_keyboard_view->cycleCurrentUnit(1);

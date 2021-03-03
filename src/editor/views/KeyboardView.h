@@ -44,6 +44,7 @@ class KeyboardView : public QWidget {
   void cutSelection();
   void copySelection();
   void clearSelection();
+  void quantizeSelection();
   void paste(bool preserveFollow);
   void toggleDark();
 
