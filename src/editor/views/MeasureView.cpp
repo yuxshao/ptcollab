@@ -156,7 +156,7 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
     const Input::State::On &v = state.m_input_state.value();
 
     for (const Interval &interval : v.clock_ints(now, master))
-      drawVelAction(interval, v.on.vel, 255);
+      drawVelAction(interval / state.scale.clockPerPx, v.on.vel, 255);
   }
 }
 
