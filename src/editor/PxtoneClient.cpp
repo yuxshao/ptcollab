@@ -329,6 +329,11 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                           QMessageBox::warning(
                               nullptr, tr("Could not add voice"),
                               tr("Could not add voice %1").arg(s.name));
+                      } else if (uid == m_controller->uid() &&
+                                 Settings::AutoAddUnit::get()) {
+                        sendAction(
+                            AddUnit{m_controller->pxtn()->Woice_Num() - 1,
+                                    s.name, QString("u-%1").arg(s.name)});
                       }
                     },
                     [this, uid](const RemoveWoice &s) {

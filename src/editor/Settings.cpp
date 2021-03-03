@@ -81,11 +81,11 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace SwapZoomOrientation
 
-namespace DisableNotePreview {
-const char *KEY = "DisableNotePreview";
-bool get() { return QSettings().value(KEY, false).toBool(); }
+namespace AutoAddUnit {
+const char *KEY = "AutoAddUnit";
+bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
-}  // namespace DisableNotePreview
+}  // namespace AutoAddUnit
 
 namespace ChangeDialogDirectory {
 const char *KEY = "ChangeDialogDirectory";

@@ -91,7 +91,6 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
   });
   connect(this, &SideMenu::candidateWoiceSelected, [this](QString path) {
-    if (Settings::DisableNotePreview::get()) return;
     try {
       AddWoice a(make_addWoice_from_path(path));
       std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();

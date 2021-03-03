@@ -57,6 +57,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="autoAddUnitCheck">
+     <property name="text">
+      <string>Auto-add unit with each new voice</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label">
      <property name="text">
       <string>MIDI input port (work in progress)</string>

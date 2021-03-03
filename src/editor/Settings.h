@@ -62,10 +62,11 @@ bool get();
 void set(bool);
 }  // namespace SwapZoomOrientation
 
-namespace DisableNotePreview {
+namespace AutoAddUnit {
 bool get();
 void set(bool);
-}  // namespace DisableNotePreview
+}  // namespace AutoAddUnit
+
 namespace ChangeDialogDirectory {
 bool get();
 void set(bool);

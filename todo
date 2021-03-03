@@ -410,10 +410,12 @@ fill architecture could work well.
 2/28/21
 1. don't save dialog dir except at start
 
+3/2
+1. auto add unit with each woice
+
 Todo by priority
 ----------------
 For next version:
- - Add unit upon add woice setting
  - Woice preview in unit tab for current time
  - Woice preview in add unit window
  
