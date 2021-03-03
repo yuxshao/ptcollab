@@ -290,9 +290,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->toggleTestActivity();
       }
       break;
-    case Qt::Key_S:
-      if (!(event->modifiers() & Qt::ControlModifier))
-        m_keyboard_view->cycleCurrentUnit(1);
+    case Qt::Key_J:
+      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{-1});
+      break;
+    case Qt::Key_L:
+      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{1});
       break;
     case Qt::Key_M: {
       std::optional<int> maybe_unit_no =
@@ -312,8 +314,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
       break;
-    case Qt::Key_Return:
-      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{});
+    case Qt::Key_S:
+      if (!(event->modifiers() & Qt::ControlModifier))
+        m_keyboard_view->cycleCurrentUnit(1);
       break;
     case Qt::Key_W:
       m_keyboard_view->cycleCurrentUnit(-1);
@@ -416,7 +419,6 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
-  qDebug() << "record INput";
   std::visit(
       overloaded{
           [this](const Input::Event::On &e) {
@@ -424,7 +426,6 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             int start = m_moo_clock->now();
             if (!m_client->isPlaying())
               start = quantize(start, m_client->quantizeClock());
-            int end = start + m_client->quantizeClock();
             m_client->changeEditState(
                 [&](EditState &state) {
                   if (state.m_input_state.has_value()) {
@@ -440,7 +441,6 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
               m_record_note_preview = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
                   e.vel, m_client->audioState()->bufferSize(), this);
-              if (!m_client->isPlaying()) m_client->seekMoo(end);
             }
           },
           [this](const Input::Event::Off &e) {
@@ -457,9 +457,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                 },
                 false);
           },
-          [this](const Input::Event::Skip &) {
+          [this](const Input::Event::Skip &s) {
             int end = quantize(m_moo_clock->now(), m_client->quantizeClock()) +
-                      m_client->quantizeClock();
+                      m_client->quantizeClock() * s.offset;
+
             m_client->seekMoo(end);
           },
       },

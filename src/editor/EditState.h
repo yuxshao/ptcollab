@@ -106,7 +106,9 @@ struct On {
 struct Off {
   int key;
 };
-struct Skip {};
+struct Skip {
+  int offset;
+};
 using Event = std::variant<On, Off, Skip>;
 }  // namespace Event
 
