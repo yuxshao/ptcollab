@@ -402,6 +402,22 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (event->modifiers() & Qt::ControlModifier &&
           event->modifiers() & Qt::ShiftModifier)
         m_client->removeCurrentUnit();
+      else {
+        int now = m_moo_clock->now();
+        int end = quantize(now - 1, m_client->quantizeClock());
+        if (end < 0) end = 0;
+        Interval clock_int{end, now};
+        int unit_id = m_client->editState().m_current_unit_id;
+        std::list<Action::Primitive> actions;
+        actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                           Action::Delete{clock_int.end}});
+        actions.push_back({EVENTKIND_VELOCITY, unit_id, clock_int.start,
+                           Action::Delete{clock_int.end}});
+        actions.push_back({EVENTKIND_KEY, unit_id, clock_int.start,
+                           Action::Delete{clock_int.end}});
+        m_client->applyAction(actions);
+        m_client->seekMoo(end);
+      }
       break;
     case Qt::Key_Delete:
       m_keyboard_view->clearSelection();
