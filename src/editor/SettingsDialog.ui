@@ -64,6 +64,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="unitPreviewClickCheck">
+     <property name="text">
+      <string>Click on unit to preview voice</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label">
      <property name="text">
       <string>MIDI input port (work in progress)</string>

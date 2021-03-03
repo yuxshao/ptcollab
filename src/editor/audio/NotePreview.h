@@ -8,15 +8,22 @@
 class NotePreview : public QObject {
   Q_OBJECT
  public:
+  // To play a unit at a pitch and velocity. E.g., note input.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, int pitch, int vel, int bufferSize,
               QObject *parent = nullptr);
+
+  // To play a unit with some arbitrary additional events. E.g., param input.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, std::list<EVERECORD> additional_events, int bufferSize,
               QObject *parent = nullptr);
+
+  // Seems like the same as above but with a duration.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, int duration, std::list<EVERECORD> additional_events,
               int bufferSize, QObject *parent = nullptr);
+
+  // Play a specific woice that you provide. E.g., selecting a candidate woice.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int pitch,
               int vel, int duration, std::shared_ptr<const pxtnWoice> woice,
               int bufferSize, QObject *parent = nullptr);

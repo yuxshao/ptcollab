@@ -36,7 +36,8 @@ AddWoice make_addWoice_from_path(const QString &path) {
 
 // The model parents are the menu's parents because otherwise there's an init
 // cycle.
-PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
+PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
+                               QWidget *parent)
     : SideMenu(new UnitListModel(client, parent),
                new WoiceListModel(client, parent),
                new UserListModel(client, parent),
@@ -44,7 +45,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
                                      client, parent),
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent)),
-      m_client(client) {
+      m_client(client),
+      m_moo_clock(moo_clock) {
   setEditWidgetsEnabled(false);
   // TODO: Update this
   connect(m_client, &PxtoneClient::editStateChanged, this,
@@ -122,6 +124,16 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
           m_client->editState().mouse_edit_state.base_velocity, 48000,
           m_client->pxtn()->Woice_Get(idx),
           m_client->audioState()->bufferSize(), this);
+    else
+      m_note_preview = nullptr;
+    m_client->setCurrentWoiceNo(idx, false);
+  });
+  connect(this, &SideMenu::unitClicked, [this](int idx) {
+    if (!Settings::UnitPreviewClick::get()) return;
+    if (idx >= 0)
+      m_note_preview = std::make_unique<NotePreview>(
+          m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
+          std::list<EVERECORD>(), m_client->audioState()->bufferSize(), this);
     else
       m_note_preview = nullptr;
     m_client->setCurrentWoiceNo(idx, false);

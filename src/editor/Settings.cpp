@@ -93,6 +93,12 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChangeDialogDirectory
 
+namespace UnitPreviewClick {
+const char *KEY = "UnitPreviewClick";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace UnitPreviewClick
+
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }

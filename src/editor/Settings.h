@@ -71,6 +71,10 @@ namespace ChangeDialogDirectory {
 bool get();
 void set(bool);
 }  // namespace ChangeDialogDirectory
+namespace UnitPreviewClick {
+bool get();
+void set(bool);
+}  // namespace UnitPreviewClick
 
 namespace RenderFileDestination {
 QString get();

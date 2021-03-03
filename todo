@@ -413,11 +413,10 @@ fill architecture could work well.
 3/2
 1. auto add unit with each woice
 2. woice preview in add unit window
+3. Woice preview in unit tab for current time
 
 Todo by priority
 ----------------
-For next version:
- - Woice preview in unit tab for current time
  
  - midi input???
    - don't buffer up all the things

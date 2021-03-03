@@ -36,6 +36,7 @@ class SideMenu : public QWidget {
   void quantXIndexActivated(int);
   void quantYIndexActivated(int);
   void currentUnitChanged(int);
+  void unitClicked(int);
   void paramKindIndexActivated(int);
   void playButtonPressed();
   void stopButtonPressed();

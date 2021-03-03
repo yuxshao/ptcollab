@@ -6,12 +6,14 @@
 #include "SideMenu.h"
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
+#include "editor/views/MooClock.h"
 
 extern AddWoice make_addWoice_from_path(const QString &path);
 
 class PxtoneSideMenu : public SideMenu {
   Q_OBJECT
   PxtoneClient *m_client;
+  MooClock *m_moo_clock;
   EditState m_last_edit_state;
   std::unique_ptr<NotePreview> m_note_preview;
 
@@ -21,7 +23,8 @@ class PxtoneSideMenu : public SideMenu {
   void refreshCopyCheckbox();
 
  public:
-  explicit PxtoneSideMenu(PxtoneClient *client, QWidget *parent = nullptr);
+  explicit PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
+                          QWidget *parent = nullptr);
  signals:
 };
 

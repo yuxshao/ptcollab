@@ -78,6 +78,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             (void)previous;
             emit currentUnitChanged(current.row());
           });
+  connect(ui->unitList, &QTableView::clicked,
+          [this](const QModelIndex& index) { emit unitClicked(index.row()); });
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
   connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,

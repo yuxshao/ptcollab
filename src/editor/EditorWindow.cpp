@@ -64,7 +64,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_ping_status);
   statusBar()->addPermanentWidget(m_connection_status);
 
-  m_side_menu = new PxtoneSideMenu(m_client, this);
+  m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, this);
   m_measure_splitter = new QFrame(m_splitter);
   QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
   m_measure_splitter->setLayout(measure_layout);
