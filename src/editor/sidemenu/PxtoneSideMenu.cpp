@@ -40,9 +40,10 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, QWidget *parent)
     : SideMenu(new UnitListModel(client, parent),
                new WoiceListModel(client, parent),
                new UserListModel(client, parent),
-               new BasicWoiceListModel(client, parent),
+               new SelectWoiceDialog(new BasicWoiceListModel(client, parent),
+                                     client, parent),
                new DelayEffectModel(client, parent),
-               new OverdriveEffectModel(client, parent), parent),
+               new OverdriveEffectModel(client, parent)),
       m_client(client) {
   setEditWidgetsEnabled(false);
   // TODO: Update this

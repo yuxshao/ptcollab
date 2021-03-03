@@ -4,6 +4,9 @@
 #include <QAbstractListModel>
 #include <QDialog>
 
+#include "editor/PxtoneClient.h"
+#include "editor/audio/NotePreview.h"
+
 namespace Ui {
 class SelectWoiceDialog;
 }
@@ -15,13 +18,15 @@ class SelectWoiceDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit SelectWoiceDialog(QAbstractListModel *model,
+  explicit SelectWoiceDialog(QAbstractListModel *model, PxtoneClient *client,
                              QWidget *parent = nullptr);
   int getSelectedWoiceIndex();
   QString getUnitNameSelection();
   ~SelectWoiceDialog();
 
  private:
+  PxtoneClient *m_client;
+  std::unique_ptr<NotePreview> m_note_preview;
   Ui::SelectWoiceDialog *ui;
   QAbstractListModel *m_model;
 };

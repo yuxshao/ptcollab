@@ -24,15 +24,14 @@ static QFileDialog* make_add_woice_dialog(QWidget* parent) {
 }
 
 SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
-                   UserListModel* users,
-                   QAbstractListModel* woices_for_add_unit,
+                   UserListModel* users, SelectWoiceDialog* add_unit_dialog,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_woice_dialog(make_add_woice_dialog(this)),
       m_change_woice_dialog(make_add_woice_dialog(this)),
-      m_add_unit_dialog(new SelectWoiceDialog(woices_for_add_unit, this)),
+      m_add_unit_dialog(add_unit_dialog),
       m_units(units),
       m_woices(woices),
       m_users(users),
