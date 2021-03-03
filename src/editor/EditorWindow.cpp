@@ -285,16 +285,35 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           },
           false);
       break;
-    case Qt::Key_H:
+    /*case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
         m_keyboard_view->toggleTestActivity();
       }
+      break;*/
+    case Qt::Key_I:
+      m_client->changeEditState(
+          [&](EditState &e) {
+            auto &qx = e.m_quantize_clock_idx;
+            if (qx > 0) qx--;
+          },
+          false);
       break;
     case Qt::Key_J:
-      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{-1});
+      // if (!event->isAutoRepeat())
+      recordInput(Input::Event::Skip{-1});
+      break;
+    case Qt::Key_K:
+      m_client->changeEditState(
+          [&](EditState &e) {
+            auto &qx = e.m_quantize_clock_idx;
+            int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
+            if (qx < size - 1) qx++;
+          },
+          false);
       break;
     case Qt::Key_L:
-      if (!event->isAutoRepeat()) recordInput(Input::Event::Skip{1});
+      // ;if (!event->isAutoRepeat())
+      recordInput(Input::Event::Skip{1});
       break;
     case Qt::Key_M: {
       std::optional<int> maybe_unit_no =

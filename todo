@@ -414,13 +414,13 @@ fill architecture could work well.
 1. auto add unit with each woice
 2. woice preview in add unit window
 3. Woice preview in unit tab for current time
+4. ijkl for midi input
 
 Todo by priority
 ----------------
  - midi input???
    - mute the unit regularly if you're recording, also record silence
    - quantize
-   - j / l to move cursor back / fwd
    - refactor the classes
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - Unit view, at least for drums
