@@ -37,7 +37,6 @@ HostAndPort Client::currentlyConnectedTo() {
 
 void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_socket->abort();
-  m_socket->connectToHost(hostname, port);
 
   // Guarded on connection in case the connection fails. In the past not having
   // this has caused me problems
@@ -48,6 +47,8 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
     disconnect(*conn);
     delete conn;
   });
+
+  m_socket->connectToHost(hostname, port);
 }
 
 void Client::disconnectFromServerSuppressSignal() {
