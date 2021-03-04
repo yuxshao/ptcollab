@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ComboOptions.h"
+#include "editor/Settings.h"
 
 struct CopyState {
   std::list<Item> m_items;
@@ -80,7 +81,9 @@ QDataStream &operator>>(QDataStream &in, CopyState &a) {
 }
 
 Clipboard::Clipboard(QObject *parent) : QObject(parent) {
-  for (auto [name, kind] : paramOptions) setKindIsCopied(kind, true);
+  auto kinds = Settings::CopyKinds::get();
+  for (int kind : kinds) m_kinds_to_copy.insert(EVENTKIND(kind));
+  emit copyKindsSet();
 }
 
 static const QString CLIPBOARD_MIME = "application/ptcollab-clipboard";
@@ -204,6 +207,11 @@ void Clipboard::setKindIsCopied(EVENTKIND kind, bool set) {
       m_kinds_to_copy.insert(kind);
     else
       m_kinds_to_copy.erase(kind);
+  }
+  {
+    QList<int> kinds;
+    for (EVENTKIND kind : m_kinds_to_copy) kinds.push_back(int(kind));
+    Settings::CopyKinds::set(kinds);
   }
   emit copyKindsSet();
 }

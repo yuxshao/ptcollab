@@ -423,14 +423,14 @@ fill architecture could work well.
 3. fix seek not catching upf or a long time if you seek past end
 4. don't show other people's ongoing midi inputs, it was too hard to sync
 playback
+5. auto step forward on note input
+6. copy options and default
 
 Todo by priority
 ----------------
- - setting to auto advance after note input
- - copy options and default
-
- - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
+ - show other's midi inputs if you're either following the or they're not playing
+ - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.

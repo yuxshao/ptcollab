@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QString>
 
+#include "pxtone/pxtnEvelist.h"
+
 const extern QString WOICE_DIR_KEY;
 const extern QString BUFFER_LENGTH_KEY;
 const extern double DEFAULT_BUFFER_LENGTH;
@@ -67,10 +69,16 @@ bool get();
 void set(bool);
 }  // namespace AutoAddUnit
 
+namespace AutoAdvance {
+bool get();
+void set(bool);
+}  // namespace AutoAdvance
+
 namespace ChangeDialogDirectory {
 bool get();
 void set(bool);
 }  // namespace ChangeDialogDirectory
+
 namespace UnitPreviewClick {
 bool get();
 void set(bool);
@@ -80,14 +88,22 @@ namespace RenderFileDestination {
 QString get();
 void set(QString);
 }  // namespace RenderFileDestination
+
 namespace SideMenuWidth {
 QList<int> get();
 void set(const QList<int> &);
 }  // namespace SideMenuWidth
+
 namespace BottomBarHeight {
 QList<int> get();
 void set(const QList<int> &);
 }  // namespace BottomBarHeight
+
+namespace CopyKinds {
+QList<int> get();
+void set(const QList<int> &);
+}  // namespace CopyKinds
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

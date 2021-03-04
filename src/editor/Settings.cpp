@@ -1,5 +1,7 @@
 #include "Settings.h"
 
+#include "ComboOptions.h"
+
 const QString WOICE_DIR_KEY("woice_dir");
 const QString BUFFER_LENGTH_KEY("buffer_length");
 const double DEFAULT_BUFFER_LENGTH = 0.3;
@@ -81,6 +83,12 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace SwapZoomOrientation
 
+namespace AutoAdvance {
+const char *KEY = "AutoAdvance";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace AutoAdvance
+
 namespace AutoAddUnit {
 const char *KEY = "AutoAddUnit";
 bool get() { return QSettings().value(KEY, true).toBool(); }
@@ -139,4 +147,21 @@ void set(const QList<int> &value) {
   QSettings().setValue(KEY, intListToVariant(value));
 }
 }  // namespace BottomBarHeight
+
+namespace CopyKinds {
+const char *KEY = "copy_kinds";
+QList<int> default_value() {
+  QList<int> v;
+  for (auto [name, kind] : paramOptions)
+    if (kind != EVENTKIND_VOICENO) v.push_back(kind);
+  return v;
+}
+QList<int> get() {
+  static QList<int> v(default_value());
+  return getIntList(KEY, v);
+}
+void set(const QList<int> &value) {
+  return QSettings().setValue(KEY, intListToVariant(value));
+}
+}  // namespace CopyKinds
 }  // namespace Settings

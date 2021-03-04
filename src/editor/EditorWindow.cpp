@@ -312,8 +312,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           false);
       break;
     case Qt::Key_L:
-      // ;if (!event->isAutoRepeat())
-      recordInput(Input::Event::Skip{1});
+      if (event->modifiers() & Qt::ControlModifier)
+        Settings::AutoAdvance::set(!Settings::AutoAdvance::get());
+      else
+        recordInput(Input::Event::Skip{1});
       break;
     case Qt::Key_M: {
       std::optional<int> maybe_unit_no =
@@ -479,6 +481,8 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
                   e.vel, m_client->audioState()->bufferSize(), this);
             }
+            if (Settings::AutoAdvance::get() && !m_client->isPlaying())
+              recordInput(Input::Event::Skip{1});
           },
           [this](const Input::Event::Off &e) {
             m_client->changeEditState(
