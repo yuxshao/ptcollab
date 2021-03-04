@@ -291,11 +291,11 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
       moo_state.fade_fade = 0;
   }
 
-  if (moo_state.smp_count >=
-      moo_get_end_clock() * moo_state.params.clock_rate) {
+  while (moo_state.smp_count >= smp_end) {
     if (!moo_state.params.b_loop) return false;
     ++moo_state.num_loop;
-    moo_state.smp_count =
+    moo_state.smp_count -= smp_end;
+    moo_state.smp_count +=
         master->get_this_clock(master->get_repeat_meas(), 0, 0) *
         moo_state.params.clock_rate;
     moo_state.p_eve = nullptr;

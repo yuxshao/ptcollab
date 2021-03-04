@@ -420,12 +420,13 @@ fill architecture could work well.
 3/3
 1. finickiness with input at boundary
 2. bug with auto adding unit when woice name is too long
+3. fix seek not catching upf or a long time if you seek past end
 
 Todo by priority
 ----------------
  - setting to auto advance after note input
- - don't show phantom playhead after repeat
- - seek doesn't catch up for a long time if you seek past last meas
+ - test network
+ - copy options and default
 
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
