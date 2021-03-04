@@ -331,9 +331,12 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                               tr("Could not add voice %1").arg(s.name));
                       } else if (uid == m_controller->uid() &&
                                  Settings::AutoAddUnit::get()) {
+                        int woice_id = m_controller->pxtn()->Woice_Num() - 1;
+                        QString name = shift_jis_codec->toUnicode(
+                            pxtn()->Woice_Get(woice_id)->get_name_buf_jis(
+                                nullptr));
                         sendAction(
-                            AddUnit{m_controller->pxtn()->Woice_Num() - 1,
-                                    s.name, QString("u-%1").arg(s.name)});
+                            AddUnit{woice_id, name, QString("u-%1").arg(name)});
                       }
                     },
                     [this, uid](const RemoveWoice &s) {
