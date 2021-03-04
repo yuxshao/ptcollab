@@ -186,8 +186,9 @@ void drawGhostOnNote(QPainter &painter, const Interval &interval,
 }
 
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
-                       QPainter &painter, int width, int height, int nowNoWrap,
-                       const pxtnMaster *master, double alphaMultiplier,
+                       QPainter &painter, int width, int height,
+                       std::optional<int> nowNoWrap, const pxtnMaster *master,
+                       double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
@@ -235,10 +236,10 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
     } break;
   }
 
-  if (state.m_input_state.has_value()) {
+  if (state.m_input_state.has_value() && nowNoWrap.has_value()) {
     const Input::State::On &v = state.m_input_state.value();
 
-    for (const Interval &interval : v.clock_ints(nowNoWrap, master))
+    for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
                       255, alphaMultiplier, true, v.on.key);
   }
@@ -510,7 +511,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                             adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
-                        painter, width(), height(), m_moo_clock->nowNoWrap(),
+                        painter, width(), height(), std::nullopt,
                         m_pxtn->master, alphaMultiplier,
                         selectionAlphaMultiplier);
     }

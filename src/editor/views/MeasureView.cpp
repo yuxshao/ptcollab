@@ -96,8 +96,9 @@ constexpr int RIBBON_HEIGHT =
     MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
 constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
-                       int quantizeClock, int clockPerMeas, int nowNoWrap,
-                       const pxtnMaster *master, double alphaMultiplier,
+                       int quantizeClock, int clockPerMeas,
+                       std::optional<int> nowNoWrap, const pxtnMaster *master,
+                       double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
@@ -152,10 +153,10 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
     }
   }
 
-  if (state.m_input_state.has_value()) {
+  if (state.m_input_state.has_value() && nowNoWrap.has_value()) {
     const Input::State::On &v = state.m_input_state.value();
 
-    for (const Interval &interval : v.clock_ints(nowNoWrap, master))
+    for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawVelAction(interval / state.scale.clockPerPx, v.on.vel, 255);
   }
 }
@@ -290,8 +291,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
           adjusted_state, painter, height(),
           m_client->quantizeClock(
               quantizeXOptions[adjusted_state.m_quantize_clock_idx].second),
-          clockPerMeas, m_moo_clock->nowNoWrap(), m_client->pxtn()->master,
-          alphaMultiplier, selectionAlphaMultiplier);
+          clockPerMeas, std::nullopt, m_client->pxtn()->master, alphaMultiplier,
+          selectionAlphaMultiplier);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,

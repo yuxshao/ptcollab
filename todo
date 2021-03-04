@@ -421,11 +421,12 @@ fill architecture could work well.
 1. finickiness with input at boundary
 2. bug with auto adding unit when woice name is too long
 3. fix seek not catching upf or a long time if you seek past end
+4. don't show other people's ongoing midi inputs, it was too hard to sync
+playback
 
 Todo by priority
 ----------------
  - setting to auto advance after note input
- - test network
  - copy options and default
 
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
