@@ -252,3 +252,23 @@ int32_t pxtnMaster::io_r_x4x_EventNum(pxtnDescriptor *p_doc) {
 
   return mast.event_num;
 }
+
+namespace MasterExtended {
+
+int last_clock(const pxtnMaster *master) {
+  return master->get_beat_clock() * master->get_play_meas() *
+         master->get_beat_num();
+}
+
+int repeat_clock(const pxtnMaster *master) {
+  return master->get_repeat_meas() * master->get_beat_num() *
+         master->get_beat_clock();
+}
+int wrapClock(const pxtnMaster *master, int clock) {
+  if (clock >= last_clock(master))
+    clock = (clock - repeat_clock(master)) %
+                (last_clock(master) - repeat_clock(master)) +
+            repeat_clock(master);
+  return clock;
+}
+}  // namespace MasterExtended

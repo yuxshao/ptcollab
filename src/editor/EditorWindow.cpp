@@ -462,7 +462,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
       overloaded{
           [this](const Input::Event::On &e) {
             // TODO: handle repeat
-            int start = m_moo_clock->now();
+            int start = m_moo_clock->nowNoWrap();
             m_client->changeEditState(
                 [&](EditState &state) {
                   if (state.m_input_state.has_value()) {
@@ -487,7 +487,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                     Input::State::On &v = state.m_input_state.value();
                     if (v.on.key == e.key) {
                       m_record_note_preview.reset();
-                      applyOn(v, m_moo_clock->now(), m_client);
+                      applyOn(v, m_moo_clock->nowNoWrap(), m_client);
                       state.m_input_state.reset();
                     }
                   }
@@ -495,8 +495,9 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                 false);
           },
           [this](const Input::Event::Skip &s) {
-            int end = quantize(m_moo_clock->now(), m_client->quantizeClock()) +
-                      m_client->quantizeClock() * s.offset;
+            int end =
+                quantize(m_moo_clock->nowNoWrap(), m_client->quantizeClock()) +
+                m_client->quantizeClock() * s.offset;
 
             m_client->seekMoo(end);
           },

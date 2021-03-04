@@ -20,8 +20,10 @@ class MooClock : public QObject {
   explicit MooClock(PxtoneClient *client);
 
   int now();
+  int nowNoWrap();
   bool this_seek_caught_up() const { return m_this_seek_caught_up; }
   bool has_last() const;
+  int wrapClock(int clock) const;
   int last_clock() const;
   int repeat_clock() const;
 

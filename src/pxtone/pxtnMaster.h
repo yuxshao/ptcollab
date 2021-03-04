@@ -56,4 +56,10 @@ class pxtnMaster {
   int32_t io_r_x4x_EventNum(pxtnDescriptor *p_doc);
 };
 
+namespace MasterExtended {
+int wrapClock(const pxtnMaster *master, int clock);
+int last_clock(const pxtnMaster *master);
+int repeat_clock(const pxtnMaster *master);
+}  // namespace MasterExtended
+
 #endif

@@ -14,19 +14,7 @@ MooClock::MooClock(PxtoneClient *client)
   });
 }
 
-int MooClock::last_clock() const {
-  const pxtnMaster *master = m_client->pxtn()->master;
-  return master->get_beat_clock() * master->get_play_meas() *
-         master->get_beat_num();
-}
-
-int MooClock::repeat_clock() const {
-  const pxtnMaster *master = m_client->pxtn()->master;
-  return master->get_repeat_meas() * master->get_beat_num() *
-         master->get_beat_clock();
-}
-
-int MooClock::now() {
+int MooClock::nowNoWrap() {
   int clock = m_client->pxtn()->moo_get_now_clock(*m_client->moo());
 
   // Some really hacky magic to get the playhead smoother given that
@@ -76,9 +64,11 @@ int MooClock::now() {
   if (clock >= m_this_seek) m_this_seek_caught_up = true;
   if (!m_this_seek_caught_up) clock = m_this_seek;
 
-  if (clock >= last_clock())
-    clock = (clock - repeat_clock()) % (last_clock() - repeat_clock()) +
-            repeat_clock();
+  return clock;
+}
+
+int MooClock::now() {
+  return MasterExtended::wrapClock(m_client->pxtn()->master, nowNoWrap());
 
   // 2021-01-18: I'm not actually sure when this case will happen. So I've
   // commented it out.
@@ -87,7 +77,13 @@ int MooClock::now() {
   // // clock is before [repeat_clock]. So fix it here.
   // if (m_client->moo()->num_loop > 0 && clock < repeat_clock())
   //  clock += last_clock() - repeat_clock();
-  return clock;
+}
+
+int MooClock::last_clock() const {
+  return MasterExtended::last_clock(m_client->pxtn()->master);
+}
+int MooClock::repeat_clock() const {
+  return MasterExtended::repeat_clock(m_client->pxtn()->master);
 }
 
 bool MooClock::has_last() const {

@@ -102,15 +102,21 @@ QDataStream &operator>>(QDataStream &in, EditState &a) {
 }
 
 std::vector<Interval> Input::State::On::clock_ints(
-    int now, const pxtnMaster *master) const {
+    int end_clock, const pxtnMaster *master) const {
+  if (end_clock == start_clock) return {};
+
   std::vector<Interval> clock_ints;
-  if (now > start_clock)
-    clock_ints.push_back({start_clock, now});
-  else if (now < start_clock) {
+  int start_wrap = MasterExtended::wrapClock(master, start_clock);
+  int end_wrap = MasterExtended::wrapClock(master, end_clock);
+  if (start_clock < end_clock ==
+      start_wrap < end_wrap)  // This condition found by trial and error
     clock_ints.push_back(
-        {start_clock, master->get_this_clock(master->get_play_meas(), 0, 0)});
-    int repeat = master->get_this_clock(master->get_repeat_meas(), 0, 0);
-    if (now > repeat) clock_ints.push_back({repeat, now});
+        {std::min(start_wrap, end_wrap), std::max(start_wrap, end_wrap)});
+  else {
+    clock_ints.push_back(
+        {MasterExtended::repeat_clock(master), std::min(start_wrap, end_wrap)});
+    clock_ints.push_back(
+        {std::max(start_wrap, end_wrap), MasterExtended::last_clock(master)});
   }
   return clock_ints;
 }

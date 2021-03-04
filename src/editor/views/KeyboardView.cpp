@@ -186,7 +186,7 @@ void drawGhostOnNote(QPainter &painter, const Interval &interval,
 }
 
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
-                       QPainter &painter, int width, int height, int now,
+                       QPainter &painter, int width, int height, int nowNoWrap,
                        const pxtnMaster *master, double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const Brush &brush =
@@ -238,7 +238,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   if (state.m_input_state.has_value()) {
     const Input::State::On &v = state.m_input_state.value();
 
-    for (const Interval &interval : v.clock_ints(now, master))
+    for (const Interval &interval : v.clock_ints(nowNoWrap, master))
       drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
                       255, alphaMultiplier, true, v.on.key);
   }
@@ -510,7 +510,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                             adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
-                        painter, width(), height(), m_moo_clock->now(),
+                        painter, width(), height(), m_moo_clock->nowNoWrap(),
                         m_pxtn->master, alphaMultiplier,
                         selectionAlphaMultiplier);
     }
@@ -519,7 +519,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                         m_client->editState().scale.clockPerPx, size().height(),
                         1);
   drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
-                    height(), m_moo_clock->now(), m_pxtn->master, 1, 1);
+                    height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
