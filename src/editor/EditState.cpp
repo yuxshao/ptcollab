@@ -108,15 +108,17 @@ std::vector<Interval> Input::State::On::clock_ints(
   std::vector<Interval> clock_ints;
   int start_wrap = MasterExtended::wrapClock(master, start_clock);
   int end_wrap = MasterExtended::wrapClock(master, end_clock);
+
+  int min_wrap = std::min(start_wrap, end_wrap);
+  int max_wrap = std::max(start_wrap, end_wrap);
   if (start_clock < end_clock ==
       start_wrap < end_wrap)  // This condition found by trial and error
-    clock_ints.push_back(
-        {std::min(start_wrap, end_wrap), std::max(start_wrap, end_wrap)});
+    clock_ints.push_back({min_wrap, max_wrap});
   else {
-    clock_ints.push_back(
-        {MasterExtended::repeat_clock(master), std::min(start_wrap, end_wrap)});
-    clock_ints.push_back(
-        {std::max(start_wrap, end_wrap), MasterExtended::last_clock(master)});
+    int repeat = MasterExtended::repeat_clock(master);
+    int last = MasterExtended::last_clock(master);
+    if (repeat < min_wrap) clock_ints.push_back({repeat, min_wrap});
+    if (max_wrap < last) clock_ints.push_back({max_wrap, last});
   }
   return clock_ints;
 }
