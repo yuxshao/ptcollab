@@ -477,7 +477,8 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                 m_client->editState().m_current_unit_id);
             if (maybe_unit_no != std::nullopt) {
               qint32 unit_no = maybe_unit_no.value();
-              m_record_note_preview = std::make_unique<NotePreview>(
+              int key = Settings::PolyphonicMidiNotePreview::get() ? -1 : e.key;
+              m_record_note_preview[key] = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
                   e.vel, m_client->audioState()->bufferSize(), this);
             }
@@ -487,10 +488,12 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::Off &e) {
             m_client->changeEditState(
                 [&](EditState &state) {
-                  if (state.m_input_state.has_value()) {
+              int key = Settings::PolyphonicMidiNotePreview::get() ? -1 : e.key;
+              m_record_note_preview[key].reset();
+
+              if (state.m_input_state.has_value()) {
                     Input::State::On &v = state.m_input_state.value();
                     if (v.on.key == e.key) {
-                      m_record_note_preview.reset();
                       applyOn(v, m_moo_clock->nowNoWrap(), m_client);
                       state.m_input_state.reset();
                     }

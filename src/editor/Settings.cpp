@@ -101,6 +101,12 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChangeDialogDirectory
 
+namespace PolyphonicMidiNotePreview {
+const char *KEY = "PolyphonicMidiNotePreview";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace PolyphonicMidiNotePreview
+
 namespace UnitPreviewClick {
 const char *KEY = "UnitPreviewClick";
 bool get() { return QSettings().value(KEY, true).toBool(); }

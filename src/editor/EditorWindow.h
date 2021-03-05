@@ -81,7 +81,7 @@ class EditorWindow : public QMainWindow {
   bool maybeSave();
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;
-  std::unique_ptr<NotePreview> m_record_note_preview;
+  std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;
   void recordInput(const Input::Event::Event& e);
 };
 #endif  // MAINWINDOW_H

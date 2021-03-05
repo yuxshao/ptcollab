@@ -79,6 +79,11 @@ bool get();
 void set(bool);
 }  // namespace ChangeDialogDirectory
 
+namespace PolyphonicMidiNotePreview {
+bool get();
+void set(bool);
+}  // namespace PolyphonicMidiNotePreview
+
 namespace UnitPreviewClick {
 bool get();
 void set(bool);
