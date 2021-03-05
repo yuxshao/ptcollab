@@ -10,23 +10,23 @@ class NotePreview : public QObject {
  public:
   // To play a unit at a pitch and velocity. E.g., note input.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
-              int clock, int pitch, int vel, int bufferSize,
-              QObject *parent = nullptr);
+              int clock, int pitch, int vel, int bufferSize, bool chordPreview,
+              QObject *parent);
 
   // To play a unit with some arbitrary additional events. E.g., param input.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, std::list<EVERECORD> additional_events, int bufferSize,
-              QObject *parent = nullptr);
+              bool chordPreview, QObject *parent);
 
   // Seems like the same as above but with a duration.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, int duration, std::list<EVERECORD> additional_events,
-              int bufferSize, QObject *parent = nullptr);
+              int bufferSize, bool chordPreview, QObject *parent);
 
   // Play a specific woice that you provide. E.g., selecting a candidate woice.
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int pitch,
               int vel, int duration, std::shared_ptr<const pxtnWoice> woice,
-              int bufferSize, QObject *parent = nullptr);
+              int bufferSize, QObject *parent);
   void processEvent(EVENTKIND kind, int32_t value);
   ~NotePreview();
 
@@ -34,7 +34,7 @@ class NotePreview : public QObject {
   NotePreview(const pxtnService *pxtn, const mooParams *moo_params, int unit_no,
               int clock, std::list<EVERECORD> additional_events, int duration,
               std::shared_ptr<const pxtnWoice> starting_woice, int bufferSize,
-              QObject *parent = nullptr);
+              bool chordPreview, QObject *parent = nullptr);
   const pxtnService *m_pxtn;
   // PxtoneUnitIODevice *m_device;
   std::vector<int> m_unit_ids;

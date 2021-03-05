@@ -6,6 +6,7 @@
 
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
+#include "editor/Settings.h"
 
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
@@ -376,7 +377,7 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               m_audio_note_preview = std::make_unique<NotePreview>(
                   m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
                   clock, std::list<EVERECORD>(),
-                  m_client->audioState()->bufferSize(), this);
+                  m_client->audioState()->bufferSize(), Settings::ChordPreview::get(), this);
               s.mouse_edit_state.base_velocity =
                   m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
                                                      EVENTKIND_VELOCITY);

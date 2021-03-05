@@ -456,7 +456,7 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
     actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
                        clock_int.start, Add{v.on.key}});
   }
-  client->applyAction(actions);
+  if (actions.size() > 0) client->applyAction(actions);
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
@@ -477,10 +477,11 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                 m_client->editState().m_current_unit_id);
             if (maybe_unit_no != std::nullopt) {
               qint32 unit_no = maybe_unit_no.value();
-              int key = Settings::PolyphonicMidiNotePreview::get() ? -1 : e.key;
+              int key = Settings::PolyphonicMidiNotePreview::get() ? e.key : -1;
+              bool chordPreview = (!Settings::PolyphonicMidiNotePreview::get()) && Settings::ChordPreview::get() && !m_client->isPlaying();
               m_record_note_preview[key] = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
-                  e.vel, m_client->audioState()->bufferSize(), this);
+                  e.vel, m_client->audioState()->bufferSize(), chordPreview, this);
             }
             if (Settings::AutoAdvance::get() && !m_client->isPlaying())
               recordInput(Input::Event::Skip{1});
@@ -488,7 +489,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::Off &e) {
             m_client->changeEditState(
                 [&](EditState &state) {
-              int key = Settings::PolyphonicMidiNotePreview::get() ? -1 : e.key;
+              int key = Settings::PolyphonicMidiNotePreview::get() ? e.key : -1;
               m_record_note_preview[key].reset();
 
               if (state.m_input_state.has_value()) {

@@ -134,7 +134,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       m_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
           48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
-          this);
+          false, this);
     else
       m_note_preview = nullptr;
     m_client->setCurrentWoiceNo(idx, false);

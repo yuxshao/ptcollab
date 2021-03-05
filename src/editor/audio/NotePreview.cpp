@@ -21,13 +21,14 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
                          std::list<EVERECORD> additional_events, int duration,
                          std::shared_ptr<const pxtnWoice> starting_woice,
-                         int bufferSize, QObject *parent)
+                         int bufferSize, bool chord_preview, QObject *parent)
     : QObject(parent),
       m_pxtn(pxtn),
       m_unit(nullptr),
       m_moo_state(nullptr),
       m_moo_params(moo_params) {
-  if (!Settings::ChordPreview::get() || unit_no == -1) {
+  clock = MasterExtended::wrapClock(m_pxtn->master, clock);
+  if (!chord_preview || unit_no == -1) {
     m_unit = std::make_unique<pxtnUnitTone>(starting_woice);
     m_this_unit = m_unit.get();
     moo_params->resetVoiceOn(m_this_unit);
@@ -118,26 +119,26 @@ static EVERECORD ev(int32_t clock, EVENTKIND kind, int32_t value) {
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock, int pitch, int vel,
-                         int bufferSize, QObject *parent)
+                         int bufferSize, bool chordPreview, QObject *parent)
     : NotePreview(
           pxtn, moo_params, unit_no, clock,
           {ev(clock, EVENTKIND_KEY, pitch), ev(clock, EVENTKIND_VELOCITY, vel)},
-          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize,
+          LONG_ON_VALUE, pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, chordPreview,
           parent) {}
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock, int duration,
-                         std::list<EVERECORD> additional_events, int bufferSize,
+                         std::list<EVERECORD> additional_events, int bufferSize, bool chordPreview,
                          QObject *parent)
     : NotePreview(pxtn, moo_params, unit_no, clock, additional_events, duration,
-                  pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, parent){};
+                  pxtn->Woice_Get(EVENTDEFAULT_VOICENO), bufferSize, chordPreview, parent){};
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
                          std::list<EVERECORD> additional_events, int bufferSize,
-                         QObject *parent)
+                         bool chordPreview, QObject *parent)
     : NotePreview(pxtn, moo_params, unit_no, clock, LONG_ON_VALUE,
-                  additional_events, bufferSize, parent){};
+                  additional_events, bufferSize, chordPreview, parent){};
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int pitch, int vel, int duration,
@@ -145,7 +146,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          QObject *parent)
     : NotePreview(pxtn, moo_params, -1, 0,
                   {ev(0, EVENTKIND_KEY, pitch), ev(0, EVENTKIND_VELOCITY, vel)},
-                  duration, woice, bufferSize, parent) {}
+                  duration, woice, bufferSize, false, parent) {}
 
 NotePreview::~NotePreview() {
   for (const auto &id : m_unit_ids) device->removeUnit(id);
