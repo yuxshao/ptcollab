@@ -4,7 +4,7 @@
 
 const QString WOICE_DIR_KEY("woice_dir");
 const QString BUFFER_LENGTH_KEY("buffer_length");
-const double DEFAULT_BUFFER_LENGTH = 0.3;
+const double DEFAULT_BUFFER_LENGTH = 0.15;
 const QString VOLUME_KEY("volume");
 
 const QString PTCOP_FILE_KEY("ptcop_dir");
@@ -21,7 +21,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 
 namespace Settings {
 namespace Version {
-static QString v("0.3.5.1");
+static QString v("0.4.0");
 const QString &string() { return v; }
 }  // namespace Version
 
