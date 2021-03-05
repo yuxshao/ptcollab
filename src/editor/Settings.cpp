@@ -55,7 +55,7 @@ void set(bool value) { QSettings().setValue(KEY, value); }
 
 namespace ChordPreview {
 const char *KEY = "ChordPreview";
-bool get() { return QSettings().value(KEY, true).toBool(); }
+bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace ChordPreview
 
