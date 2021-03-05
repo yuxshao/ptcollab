@@ -428,6 +428,7 @@ playback
 
 Todo by priority
 ----------------
+ - preview with all units breaks with unit click preview
  - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk

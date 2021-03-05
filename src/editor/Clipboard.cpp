@@ -81,9 +81,12 @@ QDataStream &operator>>(QDataStream &in, CopyState &a) {
 }
 
 Clipboard::Clipboard(QObject *parent) : QObject(parent) {
-  auto kinds = Settings::CopyKinds::get();
-  for (int kind : kinds) m_kinds_to_copy.insert(EVENTKIND(kind));
-  emit copyKindsSet();
+  for (int kind : Settings::CopyKinds::get()) setKindIsCopied(EVENTKIND(kind), true);
+  connect(this, &Clipboard::copyKindsSet, [this]() {
+      QList<int> kinds;
+      for (EVENTKIND kind : m_kinds_to_copy) kinds.push_back(int(kind));
+      Settings::CopyKinds::set(kinds);
+  });
 }
 
 static const QString CLIPBOARD_MIME = "application/ptcollab-clipboard";
@@ -207,11 +210,6 @@ void Clipboard::setKindIsCopied(EVENTKIND kind, bool set) {
       m_kinds_to_copy.insert(kind);
     else
       m_kinds_to_copy.erase(kind);
-  }
-  {
-    QList<int> kinds;
-    for (EVENTKIND kind : m_kinds_to_copy) kinds.push_back(int(kind));
-    Settings::CopyKinds::set(kinds);
   }
   emit copyKindsSet();
 }
