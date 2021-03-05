@@ -21,7 +21,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
   QByteArray localMsg = msg.toLocal8Bit();
   const char *file = context.file ? context.file : "";
   const char *function = context.function ? context.function : "";
-  std::string now_str = QDateTime::currentDateTime().toString().toStdString();
+  std::string now_str = QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
   const char *now = now_str.c_str();
   switch (type) {
     case QtDebugMsg:
