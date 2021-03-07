@@ -430,9 +430,11 @@ playback
 1. fix preview with all units brekaing with unit click preview
 2. polyphonic midi note preview
 
+3/7
+1. hopefully fix the 'hosting but not connected' error by using local session
+
 Todo by priority
 ----------------
- - hosting but not connected (30s timeout in mac, probably need to use non-network or have a bit of a delay)
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
