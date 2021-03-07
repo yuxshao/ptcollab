@@ -219,15 +219,21 @@ EditorWindow::EditorWindow(QWidget *parent)
 
 EditorWindow::~EditorWindow() { delete ui; }
 
+// #define DEBUG_RECORD_INPUT
+
 void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
   if (!event->isAutoRepeat()) {
     int key = event->key();
     switch (key) {
       case Qt::Key::Key_B:
+#ifdef DEBUG_RECORD_INPUT
         recordInput(Input::Event::Off{EVENTDEFAULT_KEY});
+#endif
         break;
       case Qt::Key::Key_N:
+#ifdef DEBUG_RECORD_INPUT
         recordInput(Input::Event::Off{EVENTDEFAULT_KEY + 256});
+#endif
         break;
     }
   }
@@ -241,8 +247,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->selectAll(false);
       break;
     case Qt::Key_B:
+#ifdef DEBUG_RECORD_INPUT
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY, 127});
+#endif
       break;
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
@@ -332,8 +340,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     }
     case Qt::Key_N:
+#ifdef DEBUG_RECORD_INPUT
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
+#endif
       break;
     case Qt::Key_Q:
       if (event->modifiers() & Qt::AltModifier)
@@ -478,10 +488,13 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             if (maybe_unit_no != std::nullopt) {
               qint32 unit_no = maybe_unit_no.value();
               int key = Settings::PolyphonicMidiNotePreview::get() ? e.key : -1;
-              bool chordPreview = (!Settings::PolyphonicMidiNotePreview::get()) && Settings::ChordPreview::get() && !m_client->isPlaying();
+              bool chordPreview =
+                  (!Settings::PolyphonicMidiNotePreview::get()) &&
+                  Settings::ChordPreview::get() && !m_client->isPlaying();
               m_record_note_preview[key] = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
-                  e.vel, m_client->audioState()->bufferSize(), chordPreview, this);
+                  e.vel, m_client->audioState()->bufferSize(), chordPreview,
+                  this);
             }
             if (Settings::AutoAdvance::get() && !m_client->isPlaying())
               recordInput(Input::Event::Skip{1});
@@ -489,10 +502,11 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::Off &e) {
             m_client->changeEditState(
                 [&](EditState &state) {
-              int key = Settings::PolyphonicMidiNotePreview::get() ? e.key : -1;
-              m_record_note_preview[key].reset();
+                  int key =
+                      Settings::PolyphonicMidiNotePreview::get() ? e.key : -1;
+                  m_record_note_preview[key].reset();
 
-              if (state.m_input_state.has_value()) {
+                  if (state.m_input_state.has_value()) {
                     Input::State::On &v = state.m_input_state.value();
                     if (v.on.key == e.key) {
                       applyOn(v, m_moo_clock->nowNoWrap(), m_client);
