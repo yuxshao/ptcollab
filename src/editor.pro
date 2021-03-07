@@ -4,7 +4,7 @@
 
 TEMPLATE = app
 TARGET = ptcollab
-INCLUDEPATH += .
+INCLUDEPATH += . /usr/include/rtmidi
 win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14

@@ -1,7 +1,7 @@
 #ifndef MIDIWRAPPER_H
 #define MIDIWRAPPER_H
 
-#include <rtmidi/RtMidi.h>
+#include <RtMidi.h>
 
 #include <memory>
 
