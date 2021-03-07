@@ -4,6 +4,9 @@
 
 TEMPLATE = app
 TARGET = ptcollab
+
+# Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
+# others it's in a subdir
 INCLUDEPATH += . /usr/include/rtmidi
 win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
