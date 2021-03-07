@@ -1,5 +1,7 @@
 #include "LocalServerSession.h"
 
+#include <QTimer>
+
 LocalServerSession::LocalServerSession(QObject *parent, const QString &username,
                                        qint64 uid)
     : AbstractServerSession(uid, parent), m_username(username) {}
@@ -52,13 +54,20 @@ void LocalClientSession::disconnect() {
   }
 }
 
+// We send after an event cycle because otherwise, if sendAction is called in a
+// hook that handles a receivedAction, the inner action will be sent to other
+// clients before the outer action.
 void LocalClientSession::sendHello() {
-  if (m_server_session != nullptr) emit m_server_session->receivedHello();
+  QTimer::singleShot(0, [this]() {
+    if (m_server_session != nullptr) emit m_server_session->receivedHello();
+  });
 }
 
 void LocalClientSession::sendAction(const ClientAction &m) {
-  if (m_server_session != nullptr)
-    emit m_server_session->receivedAction(m, m_server_session->uid());
+  QTimer::singleShot(0, [=]() {
+    if (m_server_session != nullptr)
+      emit m_server_session->receivedAction(m, m_server_session->uid());
+  });
 }
 
 const HostAndPort &LocalClientSession::connectedTo() const {
