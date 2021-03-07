@@ -20,7 +20,7 @@ class UserListModel : public QAbstractTableModel {
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;
-    return m_client->remoteEditStates().size();
+    return int(m_client->remoteEditStates().size());
   };
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     (void)parent;

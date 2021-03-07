@@ -18,7 +18,7 @@ Client::Client(QObject *parent)
       m_received_hello(false) {
   connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, this,
-          &Client::handleExternalDisconnect);
+          &Client::handleDisconnect);
 
   connect(m_socket, &QTcpSocket::errorOccurred,
           [this](QAbstractSocket::SocketError) {
@@ -29,7 +29,7 @@ Client::Client(QObject *parent)
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
-void Client::handleExternalDisconnect() {
+void Client::handleDisconnect() {
   if (m_local != nullptr) m_local = nullptr;
   m_received_hello = false;
   emit disconnected(m_suppress_disconnect);
@@ -66,9 +66,16 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 
 void Client::connectToLocalServer(BroadcastServer *server, QString username) {
   m_local = server->makeLocalSession(username);
+
+  // This is a bit jank lifetime management, but this first
+  // hook is in case the server severs the connection. The second
+  // is if someone calls LocalServerSession::disconnect().
   connect(m_local, &QObject::destroyed, [this](QObject *) {
-    if (m_local != nullptr) handleExternalDisconnect();
+    if (m_local != nullptr) handleDisconnect();
   });
+  connect(m_local, &LocalServerSession::disconnected, this,
+          &Client::handleDisconnect);
+
   connect(m_local, &LocalServerSession::clientReceivedHello,
           [this](const QByteArray &file, const QList<ServerAction> &history,
                  const QMap<qint64, QString> &) {
@@ -81,6 +88,7 @@ void Client::connectToLocalServer(BroadcastServer *server, QString username) {
 
 void Client::disconnectFromServerSuppressSignal() {
   if (m_local != nullptr) {
+    m_suppress_disconnect = true;
     m_local->clientDisconnect();
     m_local = nullptr;
   }

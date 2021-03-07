@@ -36,7 +36,7 @@ class Client : public QObject {
   qint64 m_uid;
   void tryToRead();
   void tryToStart();
-  void handleExternalDisconnect();
+  void handleDisconnect();
 };
 
 #endif  // ACTIONCLIENT_H
