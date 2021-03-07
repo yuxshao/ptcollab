@@ -8,7 +8,7 @@
 #include "Clipboard.h"
 #include "ConnectionStatusLabel.h"
 #include "PxtoneController.h"
-#include "network/NetworkClient.h"
+#include "network/Client.h"
 
 struct RemoteEditState {
   std::optional<EditState> state;
@@ -29,7 +29,7 @@ class PxtoneClient : public QObject {
   Q_OBJECT
 
   PxtoneController *m_controller;
-  NetworkClient *m_client;
+  Client *m_client;
   std::map<qint64, RemoteEditState> m_remote_edit_states;
   std::optional<qint64> m_following_user;
   mooState m_moo_state;

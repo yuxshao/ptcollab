@@ -17,7 +17,7 @@
 #include "ShortcutsDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
-#include "network/NetworkClient.h"
+#include "network/Client.h"
 #include "pxtone/pxtnService.h"
 #include "sidemenu/DelayEffectModel.h"
 #include "sidemenu/PxtoneSideMenu.h"

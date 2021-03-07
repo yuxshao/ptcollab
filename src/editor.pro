@@ -68,8 +68,8 @@ HEADERS += \
            editor/sidemenu/SideMenu.h \
            editor/sidemenu/UnitListModel.h \
            editor/views/ViewHelper.h \
+           network/Client.h \
            network/LocalServerSession.h \
-           network/NetworkClient.h \
            network/NetworkServerSession.h \
            network/ServerSession.h \
            protocol/Data.h \
@@ -146,8 +146,8 @@ SOURCES += main.cpp \
            editor/sidemenu/SideMenu.cpp \
            editor/sidemenu/UnitListModel.cpp \
            editor/views/ViewHelper.cpp \
+           network/Client.cpp \
            network/LocalServerSession.cpp \
-           network/NetworkClient.cpp \
            network/NetworkServerSession.cpp \
            network/ServerSession.cpp \
            protocol/Data.cpp \

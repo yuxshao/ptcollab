@@ -1,4 +1,4 @@
-#include "NetworkClient.h"
+#include "Client.h"
 
 #include <QAbstractSocket>
 #include <QDateTime>
@@ -9,16 +9,16 @@
 
 QString HostAndPort::toString() { return QString("%1:%2").arg(host).arg(port); }
 
-NetworkClient::NetworkClient(QObject *parent)
+Client::Client(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
       m_local(nullptr),
       m_write_stream((QIODevice *)m_socket),
       m_read_stream((QIODevice *)m_socket),
       m_received_hello(false) {
-  connect(m_socket, &QTcpSocket::readyRead, this, &NetworkClient::tryToRead);
+  connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, this,
-          &NetworkClient::handleExternalDisconnect);
+          &Client::handleExternalDisconnect);
 
   connect(m_socket, &QTcpSocket::errorOccurred,
           [this](QAbstractSocket::SocketError) {
@@ -29,14 +29,14 @@ NetworkClient::NetworkClient(QObject *parent)
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
-void NetworkClient::handleExternalDisconnect() {
+void Client::handleExternalDisconnect() {
   if (m_local != nullptr) m_local = nullptr;
   m_received_hello = false;
   emit disconnected(m_suppress_disconnect);
   m_suppress_disconnect = false;
 }
 
-HostAndPort NetworkClient::currentlyConnectedTo() {
+HostAndPort Client::currentlyConnectedTo() {
   if (m_local)
     return m_local->connectedTo();
   else
@@ -44,7 +44,7 @@ HostAndPort NetworkClient::currentlyConnectedTo() {
                        m_socket->peerPort()};
 }
 
-void NetworkClient::connectToServer(QString hostname, quint16 port,
+void Client::connectToServer(QString hostname, quint16 port,
                                     QString username) {
   if (m_local != nullptr) {
     m_local->clientDisconnect();
@@ -65,7 +65,7 @@ void NetworkClient::connectToServer(QString hostname, quint16 port,
   m_socket->connectToHost(hostname, port);
 }
 
-void NetworkClient::connectToLocalServer(BroadcastServer *server,
+void Client::connectToLocalServer(BroadcastServer *server,
                                          QString username) {
   m_local = server->makeLocalSession(username);
   connect(m_local, &QObject::destroyed, [this](QObject *) {
@@ -77,11 +77,11 @@ void NetworkClient::connectToLocalServer(BroadcastServer *server,
             connected(file, history, m_local->uid());
           });
   connect(m_local, &LocalServerSession::clientReceivedAction, this,
-          &NetworkClient::receivedAction);
+          &Client::receivedAction);
   m_local->clientSendHello();
 }
 
-void NetworkClient::disconnectFromServerSuppressSignal() {
+void Client::disconnectFromServerSuppressSignal() {
   if (m_local != nullptr) {
     m_local->clientDisconnect();
     m_local = nullptr;
@@ -92,7 +92,7 @@ void NetworkClient::disconnectFromServerSuppressSignal() {
   }
 }
 
-void NetworkClient::sendAction(const ClientAction &m) {
+void Client::sendAction(const ClientAction &m) {
   if (clientActionShouldBeRecorded(m))
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
              << "Sending" << m;
@@ -122,9 +122,9 @@ void NetworkClient::sendAction(const ClientAction &m) {
   }
 }
 
-qint64 NetworkClient::uid() { return m_uid; }
+qint64 Client::uid() { return m_uid; }
 
-void NetworkClient::tryToRead() {
+void Client::tryToRead() {
   // qDebug() << "Client has bytes available" << m_socket->bytesAvailable();
   // I got tripped up. tryToStart cannot be in the loop b/c that will cause it
   // to loop infinitely. The way it's coded right now at least.
@@ -155,7 +155,7 @@ void NetworkClient::tryToRead() {
     }
 }
 
-void NetworkClient::tryToStart() {
+void Client::tryToStart() {
   // Get the file + history
   qInfo() << "Getting initial data from server";
 

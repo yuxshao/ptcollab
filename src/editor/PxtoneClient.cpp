@@ -24,7 +24,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
                            QObject *parent)
     : QObject(parent),
       m_controller(new PxtoneController(0, pxtn, &m_moo_state, this)),
-      m_client(new NetworkClient(this)),
+      m_client(new Client(this)),
       m_following_user(std::nullopt),
       m_ping_timer(new QTimer(this)),
       m_last_seek(0),
@@ -51,7 +51,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
   });
 
   connect(
-      m_client, &NetworkClient::connected,
+      m_client, &Client::connected,
       [this, connection_status](const QByteArray &data,
                                 const QList<ServerAction> &history,
                                 qint64 uid) {
@@ -68,7 +68,7 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
         sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
         m_ping_timer->start(PING_INTERVAL);
       });
-  connect(m_client, &NetworkClient::disconnected,
+  connect(m_client, &Client::disconnected,
           [this, connection_status](bool suppress_alert) {
             connection_status->setClientConnectionState(std::nullopt);
             emit beginUserListRefresh();
@@ -80,11 +80,11 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
             m_last_ping = std::nullopt;
             updatePing(m_last_ping);
           });
-  connect(m_client, &NetworkClient::errorOccurred, [](QString error) {
+  connect(m_client, &Client::errorOccurred, [](QString error) {
     QMessageBox::information(nullptr, "Connection error",
                              tr("Connection error: %1").arg(error));
   });
-  connect(m_client, &NetworkClient::receivedAction, this,
+  connect(m_client, &Client::receivedAction, this,
           &PxtoneClient::processRemoteAction);
 }
 

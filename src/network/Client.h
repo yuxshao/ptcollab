@@ -7,10 +7,10 @@
 #include "protocol/RemoteAction.h"
 #include "pxtone/pxtnDescriptor.h"
 
-class NetworkClient : public QObject {
+class Client : public QObject {
   Q_OBJECT
  public:
-  NetworkClient(QObject *parent);
+  Client(QObject *parent);
 
   HostAndPort currentlyConnectedTo();
   void connectToServer(QString hostname, quint16 port, QString username);
