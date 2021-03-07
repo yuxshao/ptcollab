@@ -111,8 +111,8 @@ std::vector<Interval> Input::State::On::clock_ints(
 
   int min_wrap = std::min(start_wrap, end_wrap);
   int max_wrap = std::max(start_wrap, end_wrap);
-  if (start_clock < end_clock ==
-      start_wrap < end_wrap)  // This condition found by trial and error
+  if ((start_clock < end_clock) ==
+      (start_wrap < end_wrap))  // This condition found by trial and error
     clock_ints.push_back({min_wrap, max_wrap});
   else {
     int repeat = MasterExtended::repeat_clock(master);

@@ -12,32 +12,39 @@ QString HostAndPort::toString() { return QString("%1:%2").arg(host).arg(port); }
 Client::Client(QObject *parent)
     : QObject(parent),
       m_socket(new QTcpSocket(this)),
-      m_local(nullptr),
+      m_local(new LocalClientSession(this)),
       m_write_stream((QIODevice *)m_socket),
       m_read_stream((QIODevice *)m_socket),
       m_received_hello(false) {
   connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
-  connect(m_socket, &QTcpSocket::disconnected, this,
-          &Client::handleDisconnect);
-
+  connect(m_socket, &QTcpSocket::disconnected, this, &Client::handleDisconnect);
   connect(m_socket, &QTcpSocket::errorOccurred,
           [this](QAbstractSocket::SocketError) {
             emit errorOccurred(m_socket->errorString());
           });
+
+  connect(m_local, &LocalClientSession::disconnected, this,
+          &Client::handleDisconnect);
+  connect(
+      m_local, &LocalClientSession::receivedHello,
+      [this](qint64 uid, const QByteArray &file,
+             const QList<ServerAction> &history,
+             const QMap<qint64, QString> &) { connected(file, history, uid); });
+  connect(m_local, &LocalClientSession::receivedAction, this,
+          &Client::receivedAction);
 
   m_write_stream.setVersion(QDataStream::Qt_5_5);
   m_read_stream.setVersion(QDataStream::Qt_5_5);
 }
 
 void Client::handleDisconnect() {
-  if (m_local != nullptr) m_local = nullptr;
   m_received_hello = false;
   emit disconnected(m_suppress_disconnect);
   m_suppress_disconnect = false;
 }
 
 HostAndPort Client::currentlyConnectedTo() {
-  if (m_local)
+  if (m_local->isConnected())
     return m_local->connectedTo();
   else
     return HostAndPort{m_socket->peerAddress().toString(),
@@ -45,10 +52,7 @@ HostAndPort Client::currentlyConnectedTo() {
 }
 
 void Client::connectToServer(QString hostname, quint16 port, QString username) {
-  if (m_local != nullptr) {
-    m_local->clientDisconnect();
-    m_local = nullptr;
-  }
+  m_local->disconnect();
   m_socket->abort();
 
   // Guarded on connection in case the connection fails. In the past not having
@@ -65,32 +69,14 @@ void Client::connectToServer(QString hostname, quint16 port, QString username) {
 }
 
 void Client::connectToLocalServer(BroadcastServer *server, QString username) {
-  m_local = server->makeLocalSession(username);
-
-  // This is a bit jank lifetime management, but this first
-  // hook is in case the server severs the connection. The second
-  // is if someone calls LocalServerSession::disconnect().
-  connect(m_local, &QObject::destroyed, [this](QObject *) {
-    if (m_local != nullptr) handleDisconnect();
-  });
-  connect(m_local, &LocalServerSession::disconnected, this,
-          &Client::handleDisconnect);
-
-  connect(m_local, &LocalServerSession::clientReceivedHello,
-          [this](const QByteArray &file, const QList<ServerAction> &history,
-                 const QMap<qint64, QString> &) {
-            connected(file, history, m_local->uid());
-          });
-  connect(m_local, &LocalServerSession::clientReceivedAction, this,
-          &Client::receivedAction);
-  m_local->clientSendHello();
+  server->connectLocalSession(m_local, username);
+  m_local->sendHello();
 }
 
 void Client::disconnectFromServerSuppressSignal() {
-  if (m_local != nullptr) {
+  if (m_local->isConnected()) {
     m_suppress_disconnect = true;
-    m_local->clientDisconnect();
-    m_local = nullptr;
+    m_local->disconnect();
   }
   if (m_socket->state() == QAbstractSocket::ConnectedState) {
     m_suppress_disconnect = true;
@@ -102,8 +88,8 @@ void Client::sendAction(const ClientAction &m) {
   if (clientActionShouldBeRecorded(m))
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
              << "Sending" << m;
-  if (m_local != nullptr)
-    m_local->clientSendAction(m);
+  if (m_local->isConnected())
+    m_local->sendAction(m);
   else {
     // Sometimes if I try to write data to a socket that's not ready it
     // invalidates the socket forever. I think these two guards should prevent

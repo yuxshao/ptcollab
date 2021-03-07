@@ -24,7 +24,8 @@ class BroadcastServer : public QObject {
   QHostAddress address();
   bool isReadingHistory();
   const std::list<AbstractServerSession *> &sessions() const;
-  LocalServerSession *makeLocalSession(QString username);
+  void connectLocalSession(LocalClientSession *client, QString username);
+
  private slots:
   void newClient();
 

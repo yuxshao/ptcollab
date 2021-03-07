@@ -187,14 +187,15 @@ void BroadcastServer::registerSession(AbstractServerSession *session) {
           });
 }
 
-LocalServerSession *BroadcastServer::makeLocalSession(QString username) {
+void BroadcastServer::connectLocalSession(LocalClientSession *client,
+                                          QString username) {
   qInfo() << "Local connection" << username << m_next_uid;
   LocalServerSession *session =
-      new LocalServerSession(this, username, m_next_uid++,
-                             HostAndPort{m_server->serverAddress().toString(),
-                                         m_server->serverPort()});
+      new LocalServerSession(this, username, m_next_uid++);
   registerSession(session);
-  return session;
+  client->connectToServer(session,
+                          HostAndPort{m_server->serverAddress().toString(),
+                                      m_server->serverPort()});
 }
 
 void BroadcastServer::broadcastServerAction(const ServerAction &a) {

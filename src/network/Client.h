@@ -27,7 +27,7 @@ class Client : public QObject {
 
  private:
   QTcpSocket *m_socket;
-  LocalServerSession *m_local;
+  LocalClientSession *m_local;
   // We have separate streams because QTBUG-63113 prevents writing if we're
   // currently in the middle of a fragmented read.
   QDataStream m_write_stream, m_read_stream;
