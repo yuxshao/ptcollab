@@ -102,7 +102,7 @@ BroadcastServer::BroadcastServer(std::optional<QString> filename,
 
 bool BroadcastServer::isReadingHistory() { return m_load_history != nullptr; }
 
-const std::list<ServerSession *> &BroadcastServer::sessions() const {
+const std::list<AbstractServerSession *> &BroadcastServer::sessions() const {
   return m_sessions;
 }
 
@@ -110,7 +110,7 @@ BroadcastServer::~BroadcastServer() {
   // Without these disconnects, I think the sessions' destructors emit the
   // socket disconnected signal which ends up trying to call
   // [broadcastDeleteSession] even after this destructor's been called.
-  for (ServerSession *s : m_sessions) s->disconnect(nullptr, this);
+  for (AbstractServerSession *s : m_sessions) s->disconnect(nullptr, this);
   m_server->close();
   finalizeSaveHistory();
 }
@@ -144,9 +144,9 @@ int BroadcastServer::port() { return m_server->serverPort(); }
 QHostAddress BroadcastServer::address() { return m_server->serverAddress(); }
 
 static QMap<qint64, QString> sessionMapping(
-    const std::list<ServerSession *> &sessions) {
+    const std::list<AbstractServerSession *> &sessions) {
   QMap<qint64, QString> mapping;
-  for (const ServerSession *const s : sessions)
+  for (const AbstractServerSession *const s : sessions)
     mapping.insert(s->uid(), s->username());
   return mapping;
 }
@@ -155,17 +155,18 @@ void BroadcastServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
   qInfo() << "New connection" << conn->peerAddress() << m_next_uid;
 
-  registerSession(new NetworkServerSession(this, conn, m_next_uid++));
+  registerSession(new ServerSession(this, conn, m_next_uid++));
 }
 
-void BroadcastServer::registerSession(ServerSession *session) {
+void BroadcastServer::registerSession(AbstractServerSession *session) {
   // It's a bit complicated managing responses to the session in response to
   // its state. Key things to be aware of:
   // 1. Don't send remote actions/edit state until received hello.
   // 2. Clean up properly on disconnect.
-  auto deleteOnDisconnect = connect(session, &ServerSession::disconnected,
-                                    session, &QObject::deleteLater);
-  connect(session, &ServerSession::receivedHello,
+  auto deleteOnDisconnect =
+      connect(session, &AbstractServerSession::disconnected, session,
+              &QObject::deleteLater);
+  connect(session, &AbstractServerSession::receivedHello,
           [session, deleteOnDisconnect, this]() {
             broadcastNewSession(session->username(), session->uid());
             m_sessions.push_back(session);
@@ -173,7 +174,7 @@ void BroadcastServer::registerSession(ServerSession *session) {
             // Track iterator so we can delete it when it goes away
             auto it = --m_sessions.end();
             disconnect(deleteOnDisconnect);
-            connect(session, &ServerSession::disconnected,
+            connect(session, &AbstractServerSession::disconnected,
                     [it, session, this]() {
                       m_sessions.erase(it);
                       broadcastDeleteSession(session->uid());
@@ -181,7 +182,7 @@ void BroadcastServer::registerSession(ServerSession *session) {
                     });
 
             session->sendHello(m_data, m_history, sessionMapping(m_sessions));
-            connect(session, &ServerSession::receivedAction, this,
+            connect(session, &AbstractServerSession::receivedAction, this,
                     &BroadcastServer::broadcastAction);
           });
 }
@@ -200,7 +201,7 @@ void BroadcastServer::broadcastServerAction(const ServerAction &a) {
   if (a.shouldBeRecorded())
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
              << "Broadcast to" << m_sessions.size() << a;
-  for (ServerSession *s : m_sessions) s->sendAction(a);
+  for (AbstractServerSession *s : m_sessions) s->sendAction(a);
   if (m_save_history) *m_save_history << m_history_elapsed.elapsed() << a;
   if (a.shouldBeRecorded()) m_history.push_back(a);
 }

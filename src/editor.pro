@@ -68,9 +68,9 @@ HEADERS += \
            editor/sidemenu/SideMenu.h \
            editor/sidemenu/UnitListModel.h \
            editor/views/ViewHelper.h \
+           network/AbstractServerSession.h \
            network/Client.h \
            network/LocalServerSession.h \
-           network/NetworkServerSession.h \
            network/ServerSession.h \
            protocol/Data.h \
            protocol/Hello.h \
@@ -146,9 +146,9 @@ SOURCES += main.cpp \
            editor/sidemenu/SideMenu.cpp \
            editor/sidemenu/UnitListModel.cpp \
            editor/views/ViewHelper.cpp \
+           network/AbstractServerSession.cpp \
            network/Client.cpp \
            network/LocalServerSession.cpp \
-           network/NetworkServerSession.cpp \
            network/ServerSession.cpp \
            protocol/Data.cpp \
            protocol/Hello.cpp \

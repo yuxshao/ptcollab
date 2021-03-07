@@ -3,7 +3,7 @@
 LocalServerSession::LocalServerSession(QObject *parent, const QString &username,
                                        qint64 uid,
                                        const HostAndPort &connected_to)
-    : ServerSession(uid, parent),
+    : AbstractServerSession(uid, parent),
       m_username(username),
       m_connected_to(connected_to) {}
 

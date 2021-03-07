@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QTcpSocket>
 
-#include "network/NetworkServerSession.h"
+#include "network/ServerSession.h"
 #include "protocol/Data.h"
 #include "protocol/RemoteAction.h"
 
@@ -16,7 +16,7 @@ struct HostAndPort {
 
 // Acts as a bit of a makeshift double-ended pipe, though the client can
 // technically send data to itself.
-class LocalServerSession : public ServerSession {
+class LocalServerSession : public AbstractServerSession {
   Q_OBJECT
  public:
   LocalServerSession(QObject *parent, const QString &username, qint64 uid,

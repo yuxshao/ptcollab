@@ -1,25 +1,31 @@
 #ifndef SERVERSESSION_H
 #define SERVERSESSION_H
 
+#include <QDataStream>
+#include <QFile>
+#include <QTcpSocket>
+
+#include "AbstractServerSession.h"
 #include "protocol/Data.h"
 #include "protocol/RemoteAction.h"
-class ServerSession : public QObject {
+class ServerSession : public AbstractServerSession {
   Q_OBJECT
  public:
-  ServerSession(qint64 uid, QObject *parent);
-  virtual void sendHello(const QByteArray &file,
-                         const QList<ServerAction> &history,
-                         const QMap<qint64, QString> &sessions) = 0;
-  virtual void sendAction(const ServerAction &action) = 0;
-  virtual QString username() const = 0;
-  qint64 uid() const;
- signals:
-  void receivedAction(const ClientAction &action, qint64 uid);
-  void receivedHello();
-  void disconnected();
+  ServerSession(QObject *parent, QTcpSocket *conn, qint64 uid);
+  void sendHello(const QByteArray &file, const QList<ServerAction> &history,
+                 const QMap<qint64, QString> &sessions);
+  void sendAction(const ServerAction &action);
+  QString username() const;
+
+ private slots:
+  void readMessage();
 
  private:
-  qint64 m_uid;
+  QTcpSocket *m_socket;
+  QDataStream m_write_stream, m_read_stream;
+  QString m_username;
+  // State m_state;
+  bool m_received_hello;
 };
 
 #endif  // SERVERSESSION_H

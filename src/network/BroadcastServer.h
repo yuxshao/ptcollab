@@ -8,7 +8,7 @@
 #include <QTimer>
 
 #include "LocalServerSession.h"
-#include "NetworkServerSession.h"
+#include "ServerSession.h"
 #include "protocol/Data.h"
 #include "protocol/RemoteAction.h"
 class BroadcastServer : public QObject {
@@ -23,7 +23,7 @@ class BroadcastServer : public QObject {
 
   QHostAddress address();
   bool isReadingHistory();
-  const std::list<ServerSession *> &sessions() const;
+  const std::list<AbstractServerSession *> &sessions() const;
   LocalServerSession *makeLocalSession(QString username);
  private slots:
   void newClient();
@@ -32,10 +32,10 @@ class BroadcastServer : public QObject {
   void broadcastAction(const ClientAction &m, qint64 uid);
   void broadcastNewSession(const QString &username, qint64 uid);
   void broadcastDeleteSession(qint64 uid);
-  void registerSession(ServerSession *);
+  void registerSession(AbstractServerSession *);
   QTcpServer *m_server;
   QList<ServerAction> m_history;
-  std::list<ServerSession *> m_sessions;
+  std::list<AbstractServerSession *> m_sessions;
   QByteArray m_data;
   int m_next_uid;
   int m_delay_msec;
