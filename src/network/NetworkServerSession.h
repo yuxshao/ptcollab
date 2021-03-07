@@ -23,7 +23,6 @@ class NetworkServerSession : public ServerSession {
  private:
   QTcpSocket *m_socket;
   QDataStream m_write_stream, m_read_stream;
-  qint64 m_uid;
   QString m_username;
   // State m_state;
   bool m_received_hello;

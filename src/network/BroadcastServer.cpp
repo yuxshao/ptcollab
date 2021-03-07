@@ -153,7 +153,7 @@ static QMap<qint64, QString> sessionMapping(
 
 void BroadcastServer::newClient() {
   QTcpSocket *conn = m_server->nextPendingConnection();
-  qInfo() << "New connection" << conn->peerAddress();
+  qInfo() << "New connection" << conn->peerAddress() << m_next_uid;
 
   registerSession(new NetworkServerSession(this, conn, m_next_uid++));
 }
@@ -187,7 +187,7 @@ void BroadcastServer::registerSession(ServerSession *session) {
 }
 
 LocalServerSession *BroadcastServer::makeLocalSession(QString username) {
-  qInfo() << "Local connection" << username;
+  qInfo() << "Local connection" << username << m_next_uid;
   LocalServerSession *session =
       new LocalServerSession(this, username, m_next_uid++,
                              HostAndPort{m_server->serverAddress().toString(),

@@ -16,7 +16,7 @@ NetworkServerSession::NetworkServerSession(QObject *parent, QTcpSocket *conn,
   connect(m_socket, &QIODevice::readyRead, this,
           &NetworkServerSession::readMessage);
   connect(m_socket, &QAbstractSocket::disconnected, [this]() {
-    qDebug() << "Disconnected" << m_uid;
+    qDebug() << "Disconnected" << ServerSession::uid();
     m_socket->deleteLater();
     // m_state = ServerSession::DISCONNECTED;
     m_socket = nullptr;
@@ -32,7 +32,7 @@ void NetworkServerSession::sendHello(const QByteArray &data,
                                      const QMap<qint64, QString> &sessions) {
   qInfo() << "Sending hello to " << m_socket->peerAddress();
 
-  m_write_stream << ServerHello(m_uid) << data << history << sessions;
+  m_write_stream << ServerHello(uid()) << data << history << sessions;
 }
 
 void NetworkServerSession::sendAction(const ServerAction &a) {
@@ -61,7 +61,7 @@ void NetworkServerSession::sendAction(const ServerAction &a) {
   m_write_stream << a;
   qint32 beforeFlush = m_socket->bytesToWrite();
   if (beforeFlush == 0) {
-    qWarning() << "ServerSession::sendAction for u" << m_uid
+    qWarning() << "ServerSession::sendAction for u" << uid()
                << "didn't seem to fill write buffer.";
     qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
                << m_socket->isValid() << "), state(" << m_socket->state()
@@ -91,7 +91,7 @@ void NetworkServerSession::readMessage() {
         qWarning(
             "Could not read client action from %lld (%s). Error: %s. "
             "Discarding",
-            m_uid, m_username.toStdString().c_str(), e.what());
+            uid(), m_username.toStdString().c_str(), e.what());
         m_read_stream.rollbackTransaction();
         return;
       }
@@ -102,7 +102,7 @@ void NetworkServerSession::readMessage() {
       ts << action;
       qDebug() << "Read from" << m_uid << "action" << s;*/
 
-      emit receivedAction(action, m_uid);
+      emit receivedAction(action, uid());
     }
   }
 }

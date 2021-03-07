@@ -44,8 +44,7 @@ HostAndPort Client::currentlyConnectedTo() {
                        m_socket->peerPort()};
 }
 
-void Client::connectToServer(QString hostname, quint16 port,
-                                    QString username) {
+void Client::connectToServer(QString hostname, quint16 port, QString username) {
   if (m_local != nullptr) {
     m_local->clientDisconnect();
     m_local = nullptr;
@@ -65,8 +64,7 @@ void Client::connectToServer(QString hostname, quint16 port,
   m_socket->connectToHost(hostname, port);
 }
 
-void Client::connectToLocalServer(BroadcastServer *server,
-                                         QString username) {
+void Client::connectToLocalServer(BroadcastServer *server, QString username) {
   m_local = server->makeLocalSession(username);
   connect(m_local, &QObject::destroyed, [this](QObject *) {
     if (m_local != nullptr) handleExternalDisconnect();
@@ -178,7 +176,8 @@ void Client::tryToStart() {
   }
   m_uid = hello.uid();
 
-  qDebug() << "Received history of size" << history.size();
+  qDebug() << "Received uid" << m_uid << "and history of size"
+           << history.size();
 
   m_received_hello = true;
   emit connected(data, history, m_uid);
