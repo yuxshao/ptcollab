@@ -11,6 +11,7 @@ pxtone collab is based off pxtone collage, a music editor developed by Pixel, th
 In addition, ptcollab supports:
  * Collaborative editing: host a server and have others connect and work with you!
  * Session recording: save a frame-by-frame recording of a session and play it back later!
+ * MIDI input: Record notes either while the song is playing, or use keyboard step controls to navigate.
 
 ## Information
 Check out the <a href="https://yuxshao.github.io/ptcollab/">landing page</a>
