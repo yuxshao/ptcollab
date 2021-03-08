@@ -164,7 +164,7 @@ void Client::tryToStart() {
   if (!hello.isValid()) {
     qWarning("Invalid hello response. Disconnecting.");
     emit errorOccurred(
-        tr("Invalid hello response from server. Disconnecting."));
+        tr("Invalid hello response from server. Are you running the same version of ptcollab as the server?"));
     m_socket->disconnectFromHost();
     return;
   }

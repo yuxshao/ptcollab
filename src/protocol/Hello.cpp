@@ -4,15 +4,15 @@
 
 // Constants so different versions of the software can hopefully try to
 // communicate with each other
-constexpr char CLIENT_HELLO[] = "CLIENT_HELLO";
-constexpr char SERVER_HELLO[] = "SERVER_HELLO";
-const qint64 PROTOCOL_VERSION = 1;
+constexpr char CLIENT_HELLO[] = "PTCOLLAB_CLIENT_HELLO";
+constexpr char SERVER_HELLO[] = "PTCOLLAB_SERVER_HELLO";
+const qint64 PROTOCOL_VERSION = 2;
 
 ClientHello::ClientHello(const QString &username)
     : hello(CLIENT_HELLO), version(PROTOCOL_VERSION), m_username(username) {}
 
 bool ClientHello::isValid() {
-  return (hello == CLIENT_HELLO) && (version == PROTOCOL_VERSION);
+  return (hello == CLIENT_HELLO) && (version == PROTOCOL_VERSION) && false;
 }
 
 QString ClientHello::username() { return m_username; }
@@ -29,7 +29,7 @@ ServerHello::ServerHello(qint64 uid)
     : hello(SERVER_HELLO), version(PROTOCOL_VERSION), m_uid(uid) {}
 
 bool ServerHello::isValid() {
-  return (hello == SERVER_HELLO && version == PROTOCOL_VERSION && m_uid != -1);
+  return (hello == SERVER_HELLO && version == PROTOCOL_VERSION && m_uid != -1) && false;
 }
 
 qint64 ServerHello::uid() { return m_uid; }
