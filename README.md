@@ -23,7 +23,7 @@ The <a href="https://github.com/yuxshao/ptcollab/releases">releases page</a>
 has executables you can download and just run!
 
 If you're building from source, it should work with a Qt5.15 install, but does
-require ogg/vorbis and C++17.
+require ogg/vorbis, rtmidi, and C++17.
 
 On Mac, you may need to install a later version of clang (e.g., through `brew
 install llvm`).
