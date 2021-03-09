@@ -520,7 +520,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             int end =
                 quantize(m_moo_clock->nowNoWrap(), m_client->quantizeClock()) +
                 m_client->quantizeClock() * s.offset;
-
+            m_keyboard_view->ensurePlayheadFollowed();
             m_client->seekMoo(end);
           },
       },

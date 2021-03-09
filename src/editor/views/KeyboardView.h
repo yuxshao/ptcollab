@@ -33,6 +33,7 @@ class KeyboardView : public QWidget {
   void cycleCurrentUnit(int offset);
   void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
+  void ensurePlayheadFollowed();
  signals:
   void ensureVisibleX(int x, bool strict);
   void fpsUpdated(qreal fps);

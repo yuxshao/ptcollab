@@ -57,9 +57,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
         break;
       case FollowPlayhead::Jump:
       case FollowPlayhead::Follow:
-        emit ensureVisibleX(
-            m_moo_clock->now() / m_client->editState().scale.clockPerPx,
-            m_client->editState().m_follow_playhead == FollowPlayhead::Follow);
+        ensurePlayheadFollowed();
         break;
     }
   });
@@ -71,6 +69,12 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
           });
   connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
           &QWidget::updateGeometry);
+}
+
+void KeyboardView::ensurePlayheadFollowed() {
+  emit ensureVisibleX(
+      m_moo_clock->now() / m_client->editState().scale.clockPerPx,
+      m_client->editState().m_follow_playhead == FollowPlayhead::Follow);
 }
 
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
