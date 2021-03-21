@@ -1,6 +1,8 @@
 #include "MidiWrapper.h"
 
 #include <QDebug>
+#include <QMessageBox>
+#include <QString>
 
 MidiWrapper::MidiWrapper() {
   try {
@@ -67,7 +69,14 @@ bool MidiWrapper::usePort(int port,
     m_in->closePort();
   }
   m_cb = cb;
-  m_in->openPort(port);
+  try {
+    m_in->openPort(port);
+  } catch (RtMidiError &error) {
+    QMessageBox::warning(nullptr, QString("Could not open MIDI port"),
+                         QString("Error opening MIDI port: %1")
+                             .arg(QString::fromStdString(error.getMessage())));
+  }
+
   if (m_in->isPortOpen())
     m_current_port = port;
   else
