@@ -433,6 +433,9 @@ playback
 3/7
 1. hopefully fix the 'hosting but not connected' error by using local session
 
+3/21
+1. don't crash if selecting port that is already in use (thanks ewan for the report!)
+
 Todo by priority
 ----------------
  - show other's midi inputs if you're either following the or they're not playing
