@@ -3,6 +3,8 @@
 
 #include <QSettings>
 #include <QString>
+#include <QFile>
+#include <QCoreApplication>
 
 #include "pxtone/pxtnEvelist.h"
 
@@ -22,6 +24,10 @@ const extern QString SAVE_RECORDING_ENABLED_KEY;
 const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
+
+static QFile styleFile(QCoreApplication::applicationDirPath() + QString(".style"));
+
+
 
 namespace Settings {
 namespace TextSize {

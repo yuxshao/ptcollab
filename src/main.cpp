@@ -79,6 +79,12 @@ int main(int argc, char *argv[]) {
     qApp->setPalette(palette);
     qApp->setStyleSheet(stylesheet);
   }
+  if (!Settings::CustomStyle::get())
+  {
+      styleFile.open(QFile::ReadOnly);
+      a.setStyle(QStyleFactory::create(styleFile.readAll()));
+      styleFile.close();
+ }
 
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;

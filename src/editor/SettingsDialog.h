@@ -23,6 +23,10 @@ class SettingsDialog : public QDialog {
   void showEvent(QShowEvent *event) override;
   const MidiWrapper *m_midi_wrapper;
   Ui::SettingsDialog *ui;
+
+ private slots:
+  void styleTickBox();
+
 };
 
 #endif  // SETTINGSDIALOG_H

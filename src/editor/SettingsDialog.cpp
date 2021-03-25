@@ -1,6 +1,10 @@
 #include "SettingsDialog.h"
 
 #include <QMessageBox>
+#include <QStyleFactory>
+#include <QCoreApplication>
+#include <QFile>
+#include <QDebug>
 
 #include "Settings.h"
 #include "ui_SettingsDialog.h"
@@ -11,7 +15,31 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
       ui(new Ui::SettingsDialog) {
   ui->setupUi(this);
 
+  const QStringList styles = QStyleFactory::keys();
+
+  int styleIterator = 0;
+  int styleIndex = 0;
+  styleFile.open(QFile::ReadOnly);
+  QString currentStyle = styleFile.readAll();
+  while(!(styles.count() == styleIterator))
+  {
+      ui->styleCombo->addItem(styles.at(styleIterator));
+      if(styles.at(styleIterator) == currentStyle)
+      {
+          styleIndex = styleIterator;
+      }
+      styleIterator++;
+  }
+  styleFile.close();
+  ui->styleCombo->setCurrentIndex(styleIndex);
+
+  if(Settings::CustomStyle::get())
+  {
+      ui->styleCombo->setEnabled(false);
+  }
+
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
+  QObject::connect(ui->customStyleCheck, SIGNAL(released()), SLOT(styleTickBox()));
 }
 
 void SettingsDialog::apply() {
@@ -26,6 +54,11 @@ void SettingsDialog::apply() {
   Settings::UnitPreviewClick::set(ui->unitPreviewClickCheck->isChecked());
   Settings::AutoAdvance::set(ui->autoAdvanceCheck->isChecked());
   Settings::PolyphonicMidiNotePreview::set(ui->polyphonicMidiNotePreviewCheck->isChecked());
+
+  styleFile.remove();
+  styleFile.open(QFile::ReadWrite);
+  styleFile.write(ui->styleCombo->currentText().toUtf8());
+  styleFile.close();
 
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
@@ -60,4 +93,16 @@ void SettingsDialog::showEvent(QShowEvent *) {
     if (current_port.has_value())
       ui->midiInputPortCombo->setCurrentIndex(current_port.value() + 1);
   }
+}
+
+void SettingsDialog::styleTickBox()
+{
+    if(ui->customStyleCheck->isChecked())
+    {
+        ui->styleCombo->setEnabled(false);
+    }
+    else
+    {
+        ui->styleCombo->setEnabled(true);
+    }
 }
