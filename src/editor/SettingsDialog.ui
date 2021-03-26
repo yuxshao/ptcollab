@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -140,7 +140,7 @@
        <item>
         <widget class="QCheckBox" name="customStyleCheck">
          <property name="text">
-          <string>Use custom style (must restart)</string>
+          <string>Use custom style</string>
          </property>
         </widget>
        </item>
@@ -182,6 +182,16 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Changes to style will take effect after restarting.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

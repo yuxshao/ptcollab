@@ -13,11 +13,16 @@ class SettingsDialog : public QDialog {
 
  public:
   explicit SettingsDialog(const MidiWrapper *, QWidget *parent = nullptr);
-  void apply();
   ~SettingsDialog();
+
+  void apply();
+
+  bool openingCustomTheme;
+  int openingSelectedThemeIndex;
 
  signals:
   void midiPortSelected(int port_no);
+  void restartRequest();
 
  private:
   void showEvent(QShowEvent *event) override;

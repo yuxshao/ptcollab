@@ -6,40 +6,43 @@
 #include <QFile>
 #include <QDebug>
 
+#include "EditorWindow.h"
 #include "Settings.h"
 #include "ui_SettingsDialog.h"
+
+
 
 SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
     : QDialog(parent),
       m_midi_wrapper(midi_wrapper),
       ui(new Ui::SettingsDialog) {
+
   ui->setupUi(this);
 
   const QStringList styles = QStyleFactory::keys();
 
   int styleIterator = 0;
   int styleIndex = 0;
+
   styleFile.open(QFile::ReadOnly);
   QString currentStyle = styleFile.readAll();
   while(!(styles.count() == styleIterator))
   {
       ui->styleCombo->addItem(styles.at(styleIterator));
       if(styles.at(styleIterator) == currentStyle)
-      {
           styleIndex = styleIterator;
-      }
       styleIterator++;
   }
   styleFile.close();
   ui->styleCombo->setCurrentIndex(styleIndex);
 
   if(Settings::CustomStyle::get())
-  {
       ui->styleCombo->setEnabled(false);
-  }
 
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
+
   QObject::connect(ui->customStyleCheck, SIGNAL(released()), SLOT(styleTickBox()));
+
 }
 
 void SettingsDialog::apply() {
@@ -62,6 +65,8 @@ void SettingsDialog::apply() {
 
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
+  if(openingCustomTheme != ui->customStyleCheck->isChecked() || openingSelectedThemeIndex != ui->styleCombo->currentIndex())
+    emit restartRequest();
 }
 
 SettingsDialog::~SettingsDialog() { delete ui; }
@@ -93,16 +98,13 @@ void SettingsDialog::showEvent(QShowEvent *) {
     if (current_port.has_value())
       ui->midiInputPortCombo->setCurrentIndex(current_port.value() + 1);
   }
+  openingCustomTheme = ui->customStyleCheck->isChecked();
+  openingSelectedThemeIndex = ui->styleCombo->currentIndex();
 }
 
-void SettingsDialog::styleTickBox()
-{
+void SettingsDialog::styleTickBox() {
     if(ui->customStyleCheck->isChecked())
-    {
         ui->styleCombo->setEnabled(false);
-    }
     else
-    {
         ui->styleCombo->setEnabled(true);
-    }
 }

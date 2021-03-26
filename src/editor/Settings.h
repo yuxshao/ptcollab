@@ -8,6 +8,8 @@
 
 #include "pxtone/pxtnEvelist.h"
 
+static QFile styleFile(QCoreApplication::applicationDirPath() + QString(".style")); // not a QSetting
+
 const extern QString WOICE_DIR_KEY;
 const extern QString BUFFER_LENGTH_KEY;
 const extern double DEFAULT_BUFFER_LENGTH;
@@ -24,9 +26,6 @@ const extern QString SAVE_RECORDING_ENABLED_KEY;
 const extern QString HOSTING_ENABLED_KEY;
 
 const extern QString CONNECT_SERVER_KEY;
-
-static QFile styleFile(QCoreApplication::applicationDirPath() + QString(".style"));
-
 
 
 namespace Settings {

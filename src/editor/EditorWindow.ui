@@ -24,7 +24,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>27</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -188,6 +188,11 @@
   <action name="actionClear_Settings">
    <property name="text">
     <string>Clear Settings</string>
+   </property>
+  </action>
+  <action name="actionRestart">
+   <property name="text">
+    <string>Restart</string>
    </property>
   </action>
  </widget>

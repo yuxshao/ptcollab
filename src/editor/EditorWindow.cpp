@@ -6,6 +6,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QProcess>
 #include <QProgressDialog>
 #include <QSaveFile>
 #include <QScrollBar>
@@ -184,8 +185,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionClear_Settings, &QAction::triggered, [this]() {
     if (QMessageBox::question(this, tr("Clear settings"),
                               tr("Are you sure you want to clear your app "
-                                 "settings?")))
+                                 "settings?"))) {
       QSettings().clear();
+      if(styleFile.exists())
+          styleFile.remove();
+      styleFile.close();
+    }
   });
   connect(ui->actionDecrease_font_size, &QAction::triggered,
           &Settings::TextSize::decrease);
@@ -215,6 +220,8 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
+
+  QObject::connect(m_settings_dialog, SIGNAL(restartRequest()), SLOT(restart()));
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -669,6 +676,7 @@ bool EditorWindow::saveToFile(QString filename) {
   m_side_menu->setModified(false);
   return true;
 }
+
 bool EditorWindow::saveAs() {
   QSettings settings;
   QString filename = QFileDialog::getSaveFileName(
@@ -810,4 +818,14 @@ void EditorWindow::dropEvent(QDropEvent *event) {
     return;
   }
   for (const AddWoice &w : add_woices) m_client->sendAction(w);
+}
+
+void EditorWindow::restart() {
+    QMessageBox restart;
+    if(restart.question(nullptr, "Restart Required", "A restart is required for style changes to take effect.\nWould you like to restart?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) return;
+    if(!maybeSave()) return;
+    if(m_server && QMessageBox::question(this, "Server running", "Stop the server first?") != QMessageBox::Yes) return;
+
+    QProcess::startDetached(qApp->arguments()[0]);
+    qApp->quit();
 }

@@ -42,8 +42,10 @@ class EditorWindow : public QMainWindow {
   void hostDirectly(std::optional<QString> filename, QHostAddress host,
                     int port, std::optional<QString> recording_save_file,
                     QString username);
+
  private slots:
   void connectToHost();
+  void restart();
 
  private:
   void Host(HostSetting host_setting);
