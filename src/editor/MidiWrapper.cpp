@@ -30,7 +30,7 @@ QStringList MidiWrapper::ports() const {
 }
 
 std::optional<int> MidiWrapper::currentPort() const {
-  if (m_in->isPortOpen()) return m_current_port;
+  if (m_in && m_in->isPortOpen()) return m_current_port;
   return std::nullopt;
 }
 
