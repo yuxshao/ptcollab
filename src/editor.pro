@@ -12,6 +12,13 @@ win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 
+!win32:LIBS += -logg -lvorbisfile
+win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lwinmm
+macx:LIBS += -L/usr/local/lib
+
+CONFIG += link_pkgconfig
+PKGCONFIG += rtmidi
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
@@ -180,10 +187,6 @@ SOURCES += main.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
            network/BroadcastServer.cpp
-
-!win32:LIBS += -logg -lvorbisfile -lrtmidi
-win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lrtmidi -lwinmm
-macx:LIBS += -L/usr/local/lib
 
 # Rules for deployment.
 isEmpty(PREFIX) {
