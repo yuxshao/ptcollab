@@ -76,7 +76,7 @@ class SideMenu : public QWidget {
  private:
   Ui::SideMenu *ui;
   QFileDialog *m_add_woice_dialog;
-  QFileDialog *m_change_woice_dialog;
+  bool m_change_woice;
   SelectWoiceDialog *m_add_unit_dialog;
   UnitListModel *m_units;
   WoiceListModel *m_woices;

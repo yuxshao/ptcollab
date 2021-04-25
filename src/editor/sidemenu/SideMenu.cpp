@@ -30,7 +30,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_woice_dialog(make_add_woice_dialog(this)),
-      m_change_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(add_unit_dialog),
       m_units(units),
       m_woices(woices),
@@ -102,23 +101,40 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
-  connect(ui->addWoiceBtn, &QPushButton::clicked,
-          [this]() { m_add_woice_dialog->show(); });
+  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
+    m_change_woice = false;
+    m_add_woice_dialog->show();
+  });
   connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
-    if (ui->woiceList->currentIndex().row() >= 0) m_change_woice_dialog->show();
+    if (ui->woiceList->currentIndex().row() >= 0) {
+      m_change_woice = true;
+      m_add_woice_dialog->show();
+    }
   });
   connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
-          &SideMenu::candidateWoiceSelected);
-  connect(m_change_woice_dialog, &QFileDialog::currentChanged, this,
           &SideMenu::candidateWoiceSelected);
 
   connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
     // Unfortunately, in the past when we set the directory after every click a
     // user reported crashes after changing directories multiple times.
+    std::optional<int> change_woice_idx = std::nullopt;
+    QString name;
+    if (m_change_woice) {
+      int idx = ui->woiceList->currentIndex().row();
+      name = ui->woiceList->currentIndex()
+                 .siblingAtColumn(int(WoiceListColumn::Name))
+                 .data()
+                 .toString();
+      if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
+      change_woice_idx = idx;
+    }
     for (const auto& filename : m_add_woice_dialog->selectedFiles())
       if (filename != "") {
         QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
-        emit addWoice(filename);
+        if (change_woice_idx == std::nullopt)
+          emit addWoice(filename);
+        else
+          emit changeWoice(change_woice_idx.value(), name, filename);
       }
   });
 
@@ -144,20 +160,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       setBeats(beats);
       emit beatsChanged(beats);
     }
-  });
-
-  connect(m_change_woice_dialog, &QDialog::accepted, this, [this]() {
-    int idx = ui->woiceList->currentIndex().row();
-    QString name = ui->woiceList->currentIndex()
-                       .siblingAtColumn(int(WoiceListColumn::Name))
-                       .data()
-                       .toString();
-    if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
-    for (const auto& filename : m_change_woice_dialog->selectedFiles())
-      if (filename != "") {
-        QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
-        emit changeWoice(idx, name, filename);
-      }
   });
 
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
