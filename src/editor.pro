@@ -10,15 +10,18 @@ TARGET = ptcollab
 INCLUDEPATH += . /usr/include/rtmidi
 win32:INCLUDEPATH += ../deps/include
 macx:INCLUDEPATH += ../deps/include
-macx:QT_CONFIG -= no-pkg-config
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 
 !win32:LIBS += -logg -lvorbisfile
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lwinmm
 macx:LIBS += -L/usr/local/lib
 
-CONFIG += link_pkgconfig
-PKGCONFIG += rtmidi
+unix {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtmidi
+} else {
+    LIBS += -lrtmidi
+}
 
 QT       += core gui
 
