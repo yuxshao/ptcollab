@@ -16,7 +16,7 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lwinmm
 macx:LIBS += -L/usr/local/lib
 
-unix {
+unix:!macx {
     CONFIG += link_pkgconfig
     PKGCONFIG += rtmidi
 } else {
