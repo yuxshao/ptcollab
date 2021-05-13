@@ -436,6 +436,9 @@ playback
 3/21
 1. don't crash if selecting port that is already in use (thanks ewan for the report!)
 
+5/12
+1. Draw the current instrument above everything else
+
 Todo by priority
 ----------------
  - show other's midi inputs if you're either following the or they're not playing
