@@ -438,6 +438,7 @@ playback
 
 5/12
 1. Draw the current instrument above everything else
+2. Don't preview notes when clicking in the sidebar if the song is playing
 
 Todo by priority
 ----------------

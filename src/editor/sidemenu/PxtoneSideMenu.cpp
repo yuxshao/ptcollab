@@ -117,26 +117,30 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   connect(this, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
     // not. Also this is variable on tempo rn - fix that.
-    if (idx >= 0)
-      m_note_preview = std::make_unique<NotePreview>(
-          m_client->pxtn(), &m_client->moo()->params,
-          m_client->editState().mouse_edit_state.last_pitch,
-          m_client->editState().mouse_edit_state.base_velocity, 48000,
-          m_client->pxtn()->Woice_Get(idx),
-          m_client->audioState()->bufferSize(), this);
-    else
-      m_note_preview = nullptr;
+    if (!m_client->isPlaying()) {
+      if (idx >= 0)
+        m_note_preview = std::make_unique<NotePreview>(
+            m_client->pxtn(), &m_client->moo()->params,
+            m_client->editState().mouse_edit_state.last_pitch,
+            m_client->editState().mouse_edit_state.base_velocity, 48000,
+            m_client->pxtn()->Woice_Get(idx),
+            m_client->audioState()->bufferSize(), this);
+      else
+        m_note_preview = nullptr;
+    }
     m_client->setCurrentWoiceNo(idx, false);
   });
   connect(this, &SideMenu::unitClicked, [this](int idx) {
     if (!Settings::UnitPreviewClick::get()) return;
-    if (idx >= 0)
-      m_note_preview = std::make_unique<NotePreview>(
-          m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
-          48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
-          false, this);
-    else
-      m_note_preview = nullptr;
+    if (!m_client->isPlaying()) {
+      if (idx >= 0)
+        m_note_preview = std::make_unique<NotePreview>(
+            m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
+            48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
+            false, this);
+      else
+        m_note_preview = nullptr;
+    }
     m_client->setCurrentWoiceNo(idx, false);
   });
   connect(this, &SideMenu::removeUnit, m_client,
