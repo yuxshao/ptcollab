@@ -22,6 +22,7 @@ pxtnUnitTone::pxtnUnitTone(std::shared_ptr<const pxtnWoice> p_woice) {
   _v_TUNING = EVENTDEFAULT_TUNING;
   _portament_sample_num = 0;
   _portament_sample_pos = 0;
+  Tone_Clear();
 
   for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++) {
     _pan_vols[i] = 64;

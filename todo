@@ -440,8 +440,13 @@ playback
 1. Draw the current instrument above everything else
 2. Don't preview notes when clicking in the sidebar if the song is playing
 
+5/28
+1. fix clicking on certain projects with echo
+
 Todo by priority
 ----------------
+ - menu item to 'remove unused units' and 'remove unused voices'
+ - modal dialog for copy options
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
