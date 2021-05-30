@@ -445,6 +445,7 @@ playback
 
 Todo by priority
 ----------------
+ - make remove/changevoice take id instead of no + name. omg
  - menu item to 'remove unused units' and 'remove unused voices'
  - modal dialog for copy options
  - show other's midi inputs if you're either following the or they're not playing
