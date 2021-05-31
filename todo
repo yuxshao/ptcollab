@@ -449,9 +449,11 @@ playback
 3. render volume option
 4. dialog for copy options
 
+5/31
+1. fix silent cxn fail if you connect after a connection failure
+
 Todo by priority
 ----------------
- - connecting after getting connection refused causes desync via invalid variant index
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums

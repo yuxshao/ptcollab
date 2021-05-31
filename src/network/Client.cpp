@@ -15,7 +15,8 @@ Client::Client(QObject *parent)
       m_local(new LocalClientSession(this)),
       m_write_stream((QIODevice *)m_socket),
       m_read_stream((QIODevice *)m_socket),
-      m_received_hello(false) {
+      m_received_hello(false),
+      m_hello_username("") {
   connect(m_socket, &QTcpSocket::readyRead, this, &Client::tryToRead);
   connect(m_socket, &QTcpSocket::disconnected, this, &Client::handleDisconnect);
   connect(m_socket, &QTcpSocket::errorOccurred,
@@ -32,6 +33,11 @@ Client::Client(QObject *parent)
              const QMap<qint64, QString> &) { connected(file, history, uid); });
   connect(m_local, &LocalClientSession::receivedAction, this,
           &Client::receivedAction);
+
+  connect(m_socket, &QTcpSocket::connected, [this]() {
+    qDebug() << "Sending hello to server";
+    m_write_stream << ClientHello(m_hello_username);
+  });
 
   m_write_stream.setVersion(QDataStream::Qt_5_5);
   m_read_stream.setVersion(QDataStream::Qt_5_5);
@@ -54,17 +60,7 @@ HostAndPort Client::currentlyConnectedTo() {
 void Client::connectToServer(QString hostname, quint16 port, QString username) {
   m_local->disconnect();
   m_socket->abort();
-
-  // Guarded on connection in case the connection fails. In the past not having
-  // this has caused me problems
-  QMetaObject::Connection *const conn = new QMetaObject::Connection;
-  *conn = connect(m_socket, &QTcpSocket::connected, [this, conn, username]() {
-    qDebug() << "Sending hello to server";
-    m_write_stream << ClientHello(username);
-    disconnect(*conn);
-    delete conn;
-  });
-
+  m_hello_username = username;
   m_socket->connectToHost(hostname, port);
 }
 
@@ -164,7 +160,8 @@ void Client::tryToStart() {
   if (!hello.isValid()) {
     qWarning("Invalid hello response. Disconnecting.");
     emit errorOccurred(
-        tr("Invalid hello response from server. Are you running the same version of ptcollab as the server?"));
+        tr("Invalid hello response from server. Are you running the same "
+           "version of ptcollab as the server?"));
     m_socket->disconnectFromHost();
     return;
   }
