@@ -46,6 +46,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
+           editor/CopyOptionsDialog.h \
            editor/HostDialog.h \
            editor/InputEvent.h \
            editor/MidiWrapper.h \
@@ -115,6 +116,7 @@ HEADERS += \
            network/BroadcastServer.h
 FORMS += \
     editor/ConnectDialog.ui \
+    editor/CopyOptionsDialog.ui \
     editor/EditorWindow.ui \
     editor/HostDialog.ui \
     editor/RenderDialog.ui \
@@ -125,6 +127,7 @@ FORMS += \
 SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
+           editor/CopyOptionsDialog.cpp \
            editor/HostDialog.cpp \
            editor/InputEvent.cpp \
            editor/MidiWrapper.cpp \

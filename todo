@@ -444,14 +444,13 @@ playback
 1. fix clicking on certain projects with echo
 
 5/30
-1. make remove/changevoice take id instead of no + name
+1. (internal) make remove/changevoice take id instead of no + name
 2. menu item to 'remove unused units' and 'remove unused voices'
 3. render volume option
+4. dialog for copy options
 
 Todo by priority
 ----------------
- - save dialog state instead of just last dir
- - modal dialog for copy options
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
@@ -460,6 +459,7 @@ Todo by priority
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
 - when following and someone does midi it can mess you up
+- save dialog state instead of just last dir <- not that easy since you gotta save the state at diff places and the ptrec key is useful for the host dialog prefill
 
 Misc todo by categories
 -----------------------

@@ -54,7 +54,11 @@
     </property>
     <addaction name="actionIncrease_font_size"/>
     <addaction name="actionDecrease_font_size"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopyOptions"/>
     <addaction name="actionClean"/>
+    <addaction name="separator"/>
     <addaction name="actionOptions"/>
     <addaction name="actionClear_Settings"/>
    </widget>
@@ -194,6 +198,30 @@
   <action name="actionClean">
    <property name="text">
     <string>Clean units / voices</string>
+   </property>
+  </action>
+  <action name="actionVelocity">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Velocity</string>
+   </property>
+  </action>
+  <action name="actionVoice">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Voice</string>
+   </property>
+  </action>
+  <action name="actionCopyOptions">
+   <property name="text">
+    <string>Copy options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
  </widget>

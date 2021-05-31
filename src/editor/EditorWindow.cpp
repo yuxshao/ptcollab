@@ -43,6 +43,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_render_dialog(new RenderDialog(this)),
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
+      m_copy_options_dialog(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -57,6 +58,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_client = new PxtoneClient(&m_pxtn, m_connection_status, this);
   m_moo_clock = new MooClock(m_client);
+
+  m_copy_options_dialog = new CopyOptionsDialog(m_client->clipboard(), this);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
@@ -222,6 +225,9 @@ EditorWindow::EditorWindow(QWidget *parent)
                                  "voices and units? This cannot be undone."));
     if (result != QMessageBox::Yes) return;
     m_client->removeUnusedUnitsAndWoices();
+  });
+  connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
+    m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
 }
 

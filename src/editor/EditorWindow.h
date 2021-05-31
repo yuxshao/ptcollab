@@ -9,6 +9,7 @@
 
 #include "ConnectDialog.h"
 #include "ConnectionStatusLabel.h"
+#include "CopyOptionsDialog.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
@@ -71,6 +72,7 @@ class EditorWindow : public QMainWindow {
   RenderDialog* m_render_dialog;
   MidiWrapper* m_midi_wrapper;
   SettingsDialog* m_settings_dialog;
+  CopyOptionsDialog* m_copy_options_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

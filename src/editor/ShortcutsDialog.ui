@@ -175,6 +175,11 @@
        <string>New Row</string>
       </property>
      </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
      <column>
       <property name="text">
        <string>Shortcut</string>
@@ -453,6 +458,16 @@
      <item row="26" column="1">
       <property name="text">
        <string>Quantize selection (useful for MIDI)</string>
+      </property>
+     </item>
+     <item row="27" column="0">
+      <property name="text">
+       <string>Ctrl+Shift+C</string>
+      </property>
+     </item>
+     <item row="27" column="1">
+      <property name="text">
+       <string>Toggle copy options dialog</string>
       </property>
      </item>
     </widget>
