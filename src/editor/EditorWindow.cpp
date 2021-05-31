@@ -215,6 +215,14 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
+  connect(ui->actionClean, &QAction::triggered, [&]() {
+    auto result =
+        QMessageBox::question(this, tr("Clean units / voices"),
+                              tr("Are you sure you want to remove all unused "
+                                 "voices and units? This cannot be undone."));
+    if (result != QMessageBox::Yes) return;
+    m_client->removeUnusedUnitsAndWoices();
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

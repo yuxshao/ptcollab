@@ -102,6 +102,7 @@ class PxtoneClient : public QObject {
   void setUnitVisible(int unit_no, bool visible);
   void setUnitOperated(int unit_no, bool operated);
   void toggleSolo(int unit_no);
+  void removeUnusedUnitsAndWoices();
 
  private:
   void processRemoteAction(const ServerAction &a);

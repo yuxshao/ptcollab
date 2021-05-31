@@ -442,11 +442,13 @@ playback
 
 5/28
 1. fix clicking on certain projects with echo
-2. make remove/changevoice take id instead of no + name
+
+5/30
+1. make remove/changevoice take id instead of no + name
+2. menu item to 'remove unused units' and 'remove unused voices'
 
 Todo by priority
 ----------------
- - menu item to 'remove unused units' and 'remove unused voices'
  - modal dialog for copy options
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk

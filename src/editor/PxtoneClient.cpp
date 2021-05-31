@@ -485,3 +485,33 @@ void PxtoneClient::setUnitOperated(int unit_no, bool operated) {
 void PxtoneClient::toggleSolo(int unit_no) {
   m_controller->toggleSolo(unit_no);
 }
+
+void PxtoneClient::removeUnusedUnitsAndWoices() {
+  std::set<int> unitNosInUse;
+  std::set<int> woiceNosInUse;
+
+  // Walk through the project to see which units have ON events, and what woices
+  // are active during those on events
+  std::vector<int> currentWoiceNos(pxtn()->Unit_Num(), 0);
+  for (const EVERECORD *e = pxtn()->evels->get_Records(); e != nullptr;
+       e = e->next)
+    if (e->kind == EVENTKIND_ON) {
+      unitNosInUse.insert(e->unit_no);
+      woiceNosInUse.insert(currentWoiceNos[e->unit_no]);
+    } else if (e->kind == EVENTKIND_VOICENO)
+      currentWoiceNos[e->unit_no] = e->value;
+
+  // Remove unused things
+  for (int i = 0; i < pxtn()->Unit_Num(); ++i) {
+    if (unitNosInUse.find(i) == unitNosInUse.end()) {
+      int id = unitIdMap().noToId(i);
+      sendAction(RemoveUnit{id});
+    }
+  }
+  for (int i = 0; i < pxtn()->Woice_Num(); ++i) {
+    if (woiceNosInUse.find(i) == woiceNosInUse.end()) {
+      int id = m_controller->woiceIdMap().noToId(i);
+      sendAction(RemoveWoice{id});
+    }
+  }
+}
