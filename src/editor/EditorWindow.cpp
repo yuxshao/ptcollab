@@ -713,6 +713,12 @@ bool EditorWindow::render() {
     return false;
   }
 
+  if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
+    QMessageBox::warning(this, tr("Could not render"),
+                         tr("Filename must end with .wav"));
+    return false;
+  }
+
   QSaveFile file(m_render_dialog->renderDestination());
   if (!file.open(QIODevice::WriteOnly)) {
     QMessageBox::warning(this, tr("Could not render"),
