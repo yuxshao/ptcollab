@@ -442,10 +442,11 @@ playback
 
 5/28
 1. fix clicking on certain projects with echo
+2. make remove/changevoice take id instead of no + name
 
 Todo by priority
 ----------------
- - make remove/changevoice take id instead of no + name. omg
+ - are saved dirs shared between project and instr?
  - menu item to 'remove unused units' and 'remove unused voices'
  - modal dialog for copy options
  - show other's midi inputs if you're either following the or they're not playing

@@ -134,7 +134,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
         if (change_woice_idx == std::nullopt)
           emit addWoice(filename);
         else
-          emit changeWoice(change_woice_idx.value(), name, filename);
+          emit changeWoice(change_woice_idx.value(), filename);
       }
   });
 
@@ -173,7 +173,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                                 tr("Are you sure you want to delete the voice "
                                    "(%1)? This cannot be undone.")
                                     .arg(name)) == QMessageBox::Yes)
-        emit removeWoice(idx, name);
+        emit removeWoice(idx);
     } else
       QMessageBox::warning(this, tr("Cannot remove voice"),
                            tr("Please select a valid voice to remove."));

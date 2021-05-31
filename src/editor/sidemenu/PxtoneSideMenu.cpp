@@ -76,22 +76,25 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       QMessageBox::critical(this, tr("Unable to add voice"), e);
     }
   });
-  connect(this, &SideMenu::changeWoice,
-          [this](int idx, QString name, QString path) {
-            try {
-              m_client->sendAction(ChangeWoice{RemoveWoice{idx, name},
-                                               make_addWoice_from_path(path)});
-            } catch (const QString &e) {
-              QMessageBox::critical(this, tr("Unable to change voice"), e);
-            }
-          });
+  connect(this, &SideMenu::changeWoice, [this](int idx, QString path) {
+    try {
+      int woice_id = m_client->controller()->woiceIdMap().noToId(idx);
+      m_client->sendAction(
+          ChangeWoice{RemoveWoice{woice_id}, make_addWoice_from_path(path)});
+    } catch (const QString &e) {
+      QMessageBox::critical(this, tr("Unable to change voice"), e);
+    }
+  });
 
-  connect(this, &SideMenu::removeWoice, [this](int idx, QString name) {
+  connect(this, &SideMenu::removeWoice, [this](int idx) {
     if (m_client->pxtn()->Woice_Num() == 1) {
       QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));
       return;
     }
-    if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
+    if (idx >= 0) {
+      int woice_id = m_client->controller()->woiceIdMap().noToId(idx);
+      m_client->sendAction(RemoveWoice{woice_id});
+    }
   });
   connect(this, &SideMenu::candidateWoiceSelected, [this](QString path) {
     try {

@@ -46,8 +46,8 @@ class SideMenu : public QWidget {
   void addOverdrive();
   void removeOverdrive(int no);
   void addWoice(QString filename);
-  void removeWoice(int idx, QString name);
-  void changeWoice(int idx, QString name, QString filename);
+  void removeWoice(int idx);
+  void changeWoice(int idx, QString filename);
   void selectWoice(int idx);
   void candidateWoiceSelected(QString filename);
   void beatsChanged(int tempo);

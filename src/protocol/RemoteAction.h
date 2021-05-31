@@ -169,19 +169,18 @@ inline QTextStream &operator<<(QTextStream &out, const AddWoice &a) {
 }
 
 struct RemoveWoice {
-  qint32 id;
-  QString name;
+  qint32 woice_id;
 };
 inline QDataStream &operator<<(QDataStream &out, const RemoveWoice &a) {
-  out << a.id << a.name;
+  out << a.woice_id;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, RemoveWoice &a) {
-  in >> a.id >> a.name;
+  in >> a.woice_id;
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const RemoveWoice &a) {
-  out << "RemoveWoice(id=" << a.id << ", name=" << a.name << ")";
+  out << "RemoveWoice(id=" << a.woice_id << ")";
   return out;
 }
 
