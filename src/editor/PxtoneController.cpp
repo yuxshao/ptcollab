@@ -626,7 +626,7 @@ bool write(QIODevice *dev, const WavHdr &h) {
 
 // TODO: This kind of file-writing is duplicated a bunch.
 bool PxtoneController::render(
-    QIODevice *dev, double secs, double fadeout,
+    QIODevice *dev, double secs, double fadeout, double volume,
     std::function<bool(double progress)> should_continue) const {
   qDebug() << "Rendering" << secs << fadeout;
   WavHdr h;
@@ -653,7 +653,7 @@ bool PxtoneController::render(
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
   prep.start_pos_sample = 0;
-  prep.master_volume = moo_state.params.master_vol;
+  prep.master_volume = volume;
   bool success = m_pxtn->moo_preparation(&prep, moo_state);
   if (!success) {
     qWarning() << "Moo preparation error";

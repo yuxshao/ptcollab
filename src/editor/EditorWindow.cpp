@@ -694,18 +694,20 @@ bool EditorWindow::saveAs() {
 }
 
 bool EditorWindow::render() {
-  double length, fadeout;
+  double length, fadeout, volume;
   double secs_per_meas =
       m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
   const pxtnMaster *m = m_pxtn.master;
   m_render_dialog->setSongLength(m->get_play_meas() * secs_per_meas);
   m_render_dialog->setSongLoopLength(
       (m->get_play_meas() - m->get_repeat_meas()) * secs_per_meas);
+  m_render_dialog->setVolume(m_client->moo()->params.master_vol);
 
   try {
     if (!m_render_dialog->exec()) return false;
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
+    volume = m_render_dialog->renderVolume();
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Render settings invalid"), e);
     return false;
@@ -721,8 +723,8 @@ bool EditorWindow::render() {
   constexpr int GRANULARITY = 1000;
   QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
   progress.setWindowModality(Qt::WindowModal);
-  bool result =
-      m_client->controller()->render(&file, length, fadeout, [&](double p) {
+  bool result = m_client->controller()->render(
+      &file, length, fadeout, volume, [&](double p) {
         progress.setValue(p * GRANULARITY);
         return !progress.wasCanceled();
       });

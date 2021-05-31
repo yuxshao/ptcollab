@@ -53,7 +53,6 @@ class EditorWindow : public QMainWindow {
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
-  mooState m_moo_state;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
   QSplitter* m_key_splitter;

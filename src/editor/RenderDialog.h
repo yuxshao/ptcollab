@@ -16,8 +16,10 @@ class RenderDialog : public QDialog {
 
   void setSongLength(double l);
   void setSongLoopLength(double l);
+  void setVolume(double v);
   double renderLength();
   double renderFadeout();
+  double renderVolume();
   QString renderDestination();
 
  private:
