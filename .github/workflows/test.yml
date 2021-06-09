@@ -1,0 +1,75 @@
+name: Build-Test
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  QT_VERSION: 5.15.2
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        config:
+          - { name: "Windows", os: windows-latest, make: nmake }
+          - { name: "macOS", os: macos-latest, make: "make -j2" }
+          - { name: "Ubuntu", os: ubuntu-latest, make: "make -j2" }
+      fail-fast: false
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Qt5
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qttools qtmultimedia'
+
+      - name: Setup MSVC Toolchain [Windows]
+        if: ${{ runner.os == 'Windows' }}
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+
+      - name: Install Dependencies [macOS]
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew update
+          brew install libvorbis rtmidi
+          brew upgrade libogg
+
+      - name: Install Dependencies [Linux]
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt update
+          sudo apt install libogg-dev libvorbis-dev librtmidi-dev
+
+      - name: Configure
+        run: |
+          qmake ptcollab.pro \
+            PREFIX=$PWD/target \
+            CONFIG+=release CONFIG-=debug
+          ${{ matrix.config.make }} qmake_all
+
+          # /usr/bin/link interferes with MSVC link binary
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            rm -f /usr/bin/link
+          fi
+
+      - name: Build
+        run: |
+          ${{ matrix.config.make }}
+
+      - name: Install
+        run: |
+          ${{ matrix.config.make }} install
