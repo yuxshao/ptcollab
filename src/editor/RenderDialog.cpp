@@ -40,6 +40,10 @@ void RenderDialog::setSongLength(double l) {
   ui->fadeOutEdit->setText("0");
 }
 
+void RenderDialog::setVolume(double v) {
+  ui->volumeEdit->setText(format_length(v));
+}
+
 void RenderDialog::setSongLoopLength(double l) {
   ui->loopField->setText(format_length(l) + "s");
 }
@@ -54,6 +58,13 @@ double RenderDialog::renderFadeout() {
   bool ok;
   double v = ui->fadeOutEdit->text().toDouble(&ok);
   if (!ok) throw QString("Invalid render fadeout length");
+  return v;
+}
+
+double RenderDialog::renderVolume() {
+  bool ok;
+  double v = ui->volumeEdit->text().toDouble(&ok);
+  if (!ok) throw QString("Invalid volume");
   return v;
 }
 

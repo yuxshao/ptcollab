@@ -36,7 +36,7 @@ class Clipboard : public QObject {
                                          const Interval &range,
                                          const NoIdMap &map);
   void setKindIsCopied(EVENTKIND kind, bool set);
-  bool kindIsCopied(EVENTKIND kind);
+  bool kindIsCopied(EVENTKIND kind) const;
  signals:
   void copyKindsSet();
 };

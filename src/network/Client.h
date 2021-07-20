@@ -33,6 +33,7 @@ class Client : public QObject {
   QDataStream m_write_stream, m_read_stream;
   bool m_received_hello;
   bool m_suppress_disconnect;
+  QString m_hello_username;
   qint64 m_uid;
   void tryToRead();
   void tryToStart();

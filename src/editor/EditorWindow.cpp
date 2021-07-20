@@ -6,7 +6,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QProcess>
 #include <QProgressDialog>
 #include <QSaveFile>
 #include <QScrollBar>
@@ -44,6 +43,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_render_dialog(new RenderDialog(this)),
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
+      m_copy_options_dialog(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -58,6 +58,8 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_client = new PxtoneClient(&m_pxtn, m_connection_status, this);
   m_moo_clock = new MooClock(m_client);
+
+  m_copy_options_dialog = new CopyOptionsDialog(m_client->clipboard(), this);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
@@ -185,12 +187,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionClear_Settings, &QAction::triggered, [this]() {
     if (QMessageBox::question(this, tr("Clear settings"),
                               tr("Are you sure you want to clear your app "
-                                 "settings?"))) {
+                                 "settings?")))
       QSettings().clear();
-      if(styleFile.exists())
-          styleFile.remove();
-      styleFile.close();
-    }
   });
   connect(ui->actionDecrease_font_size, &QAction::triggered,
           &Settings::TextSize::decrease);
@@ -220,8 +218,17 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
-
-  QObject::connect(m_settings_dialog, SIGNAL(restartRequest()), SLOT(restart()));
+  connect(ui->actionClean, &QAction::triggered, [&]() {
+    auto result =
+        QMessageBox::question(this, tr("Clean units / voices"),
+                              tr("Are you sure you want to remove all unused "
+                                 "voices and units? This cannot be undone."));
+    if (result != QMessageBox::Yes) return;
+    m_client->removeUnusedUnitsAndWoices();
+  });
+  connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
+    m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -676,7 +683,6 @@ bool EditorWindow::saveToFile(QString filename) {
   m_side_menu->setModified(false);
   return true;
 }
-
 bool EditorWindow::saveAs() {
   QSettings settings;
   QString filename = QFileDialog::getSaveFileName(
@@ -694,20 +700,28 @@ bool EditorWindow::saveAs() {
 }
 
 bool EditorWindow::render() {
-  double length, fadeout;
+  double length, fadeout, volume;
   double secs_per_meas =
       m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
   const pxtnMaster *m = m_pxtn.master;
   m_render_dialog->setSongLength(m->get_play_meas() * secs_per_meas);
   m_render_dialog->setSongLoopLength(
       (m->get_play_meas() - m->get_repeat_meas()) * secs_per_meas);
+  m_render_dialog->setVolume(m_client->moo()->params.master_vol);
 
   try {
     if (!m_render_dialog->exec()) return false;
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
+    volume = m_render_dialog->renderVolume();
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Render settings invalid"), e);
+    return false;
+  }
+
+  if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
+    QMessageBox::warning(this, tr("Could not render"),
+                         tr("Filename must end with .wav"));
     return false;
   }
 
@@ -721,8 +735,8 @@ bool EditorWindow::render() {
   constexpr int GRANULARITY = 1000;
   QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
   progress.setWindowModality(Qt::WindowModal);
-  bool result =
-      m_client->controller()->render(&file, length, fadeout, [&](double p) {
+  bool result = m_client->controller()->render(
+      &file, length, fadeout, volume, [&](double p) {
         progress.setValue(p * GRANULARITY);
         return !progress.wasCanceled();
       });
@@ -818,14 +832,4 @@ void EditorWindow::dropEvent(QDropEvent *event) {
     return;
   }
   for (const AddWoice &w : add_woices) m_client->sendAction(w);
-}
-
-void EditorWindow::restart() {
-    QMessageBox restart;
-    if(restart.question(nullptr, "Restart Required", "A restart is required for style changes to take effect.\nWould you like to restart?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) return;
-    if(!maybeSave()) return;
-    if(m_server && QMessageBox::question(this, "Server running", "Stop the server first?") != QMessageBox::Yes) return;
-
-    QProcess::startDetached(qApp->arguments()[0]);
-    qApp->quit();
 }

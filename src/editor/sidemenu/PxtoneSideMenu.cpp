@@ -76,22 +76,25 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       QMessageBox::critical(this, tr("Unable to add voice"), e);
     }
   });
-  connect(this, &SideMenu::changeWoice,
-          [this](int idx, QString name, QString path) {
-            try {
-              m_client->sendAction(ChangeWoice{RemoveWoice{idx, name},
-                                               make_addWoice_from_path(path)});
-            } catch (const QString &e) {
-              QMessageBox::critical(this, tr("Unable to change voice"), e);
-            }
-          });
+  connect(this, &SideMenu::changeWoice, [this](int idx, QString path) {
+    try {
+      int woice_id = m_client->controller()->woiceIdMap().noToId(idx);
+      m_client->sendAction(
+          ChangeWoice{RemoveWoice{woice_id}, make_addWoice_from_path(path)});
+    } catch (const QString &e) {
+      QMessageBox::critical(this, tr("Unable to change voice"), e);
+    }
+  });
 
-  connect(this, &SideMenu::removeWoice, [this](int idx, QString name) {
+  connect(this, &SideMenu::removeWoice, [this](int idx) {
     if (m_client->pxtn()->Woice_Num() == 1) {
       QMessageBox::critical(this, tr("Error"), tr("Cannot remove last voice."));
       return;
     }
-    if (idx >= 0) m_client->sendAction(RemoveWoice{idx, name});
+    if (idx >= 0) {
+      int woice_id = m_client->controller()->woiceIdMap().noToId(idx);
+      m_client->sendAction(RemoveWoice{woice_id});
+    }
   });
   connect(this, &SideMenu::candidateWoiceSelected, [this](QString path) {
     try {
@@ -117,26 +120,30 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   connect(this, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
     // not. Also this is variable on tempo rn - fix that.
-    if (idx >= 0)
-      m_note_preview = std::make_unique<NotePreview>(
-          m_client->pxtn(), &m_client->moo()->params,
-          m_client->editState().mouse_edit_state.last_pitch,
-          m_client->editState().mouse_edit_state.base_velocity, 48000,
-          m_client->pxtn()->Woice_Get(idx),
-          m_client->audioState()->bufferSize(), this);
-    else
-      m_note_preview = nullptr;
+    if (!m_client->isPlaying()) {
+      if (idx >= 0)
+        m_note_preview = std::make_unique<NotePreview>(
+            m_client->pxtn(), &m_client->moo()->params,
+            m_client->editState().mouse_edit_state.last_pitch,
+            m_client->editState().mouse_edit_state.base_velocity, 48000,
+            m_client->pxtn()->Woice_Get(idx),
+            m_client->audioState()->bufferSize(), this);
+      else
+        m_note_preview = nullptr;
+    }
     m_client->setCurrentWoiceNo(idx, false);
   });
   connect(this, &SideMenu::unitClicked, [this](int idx) {
     if (!Settings::UnitPreviewClick::get()) return;
-    if (idx >= 0)
-      m_note_preview = std::make_unique<NotePreview>(
-          m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
-          48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
-          false, this);
-    else
-      m_note_preview = nullptr;
+    if (!m_client->isPlaying()) {
+      if (idx >= 0)
+        m_note_preview = std::make_unique<NotePreview>(
+            m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
+            48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
+            false, this);
+      else
+        m_note_preview = nullptr;
+    }
     m_client->setCurrentWoiceNo(idx, false);
   });
   connect(this, &SideMenu::removeUnit, m_client,

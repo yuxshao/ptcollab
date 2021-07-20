@@ -9,6 +9,7 @@
 
 #include "ConnectDialog.h"
 #include "ConnectionStatusLabel.h"
+#include "CopyOptionsDialog.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
 #include "HostDialog.h"
@@ -42,10 +43,8 @@ class EditorWindow : public QMainWindow {
   void hostDirectly(std::optional<QString> filename, QHostAddress host,
                     int port, std::optional<QString> recording_save_file,
                     QString username);
-
  private slots:
   void connectToHost();
-  void restart();
 
  private:
   void Host(HostSetting host_setting);
@@ -55,7 +54,6 @@ class EditorWindow : public QMainWindow {
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
-  mooState m_moo_state;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
   QSplitter* m_key_splitter;
@@ -74,6 +72,7 @@ class EditorWindow : public QMainWindow {
   RenderDialog* m_render_dialog;
   MidiWrapper* m_midi_wrapper;
   SettingsDialog* m_settings_dialog;
+  CopyOptionsDialog* m_copy_options_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);

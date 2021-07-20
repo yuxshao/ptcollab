@@ -413,6 +413,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     painter.setCompositionMode(QPainter::CompositionMode_Plus);
   else
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+  // This is used to draw the current instrument above everything else.
+  QPixmap activeLayer(event->rect().size());
+  activeLayer.fill(Qt::transparent);
+  QPainter activePainter(&activeLayer);
+  activePainter.translate(-event->rect().topLeft());
+
   if (m_client->editState().mouse_edit_state.selection.has_value())
     selection = m_client->editState().mouse_edit_state.selection.value();
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
@@ -423,6 +430,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
+    QPainter &thisPainter = matchingUnit ? activePainter : painter;
     std::optional<Interval> thisSelection = std::nullopt;
     if (selection.has_value() &&
         selected_unit_nos.find(unit_no) != selected_unit_nos.end())
@@ -440,7 +448,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         // Draw the last block of the previous on event if there's one to
         // draw.
         if (state.ongoingOnEvent.has_value())
-          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+          drawStateSegment(thisPainter, state, {state.pitch.clock, e->clock},
                            thisSelection, clockBounds, brush, alpha,
                            m_client->editState().scale, clock,
                            m_client->editState().mouse_edit_state, matchingUnit,
@@ -454,7 +462,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       case EVENTKIND_KEY:
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
-          drawStateSegment(painter, state, {state.pitch.clock, e->clock},
+          drawStateSegment(thisPainter, state, {state.pitch.clock, e->clock},
                            thisSelection, clockBounds, brush, alpha,
                            m_client->editState().scale, clock,
                            m_client->editState().mouse_edit_state, matchingUnit,
@@ -476,6 +484,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       DrawState &state = drawStates[unit_no];
       const Brush &brush = brushes[unit_id % NUM_BRUSHES];
       bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
+      QPainter &thisPainter = matchingUnit ? activePainter : painter;
       int alpha;
       if (matchingUnit)
         alpha = 255;
@@ -489,14 +498,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           selected_unit_nos.find(unit_no) != selected_unit_nos.end())
         thisSelection = selection;
       drawStateSegment(
-          painter, state, {state.pitch.clock, state.ongoingOnEvent.value().end},
-          thisSelection, clockBounds, brush, alpha, m_client->editState().scale,
-          clock, m_client->editState().mouse_edit_state, matchingUnit, muted,
-          width());
+          thisPainter, state,
+          {state.pitch.clock, state.ongoingOnEvent.value().end}, thisSelection,
+          clockBounds, brush, alpha, m_client->editState().scale, clock,
+          m_client->editState().mouse_edit_state, matchingUnit, muted, width());
 
       state.ongoingOnEvent.reset();
     }
   }
+  painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -680,7 +690,8 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
-                m_client->audioState()->bufferSize(), Settings::ChordPreview::get(), this);
+                m_client->audioState()->bufferSize(),
+                Settings::ChordPreview::get(), this);
           }
         }
       },

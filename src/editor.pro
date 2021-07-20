@@ -8,9 +8,19 @@ TARGET = ptcollab
 # Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
 # others it's in a subdir
 INCLUDEPATH += . /usr/include/rtmidi
-win32:INCLUDEPATH += ../deps/include
-macx:INCLUDEPATH += ../deps/include
+win32|macx:INCLUDEPATH += ../deps/include
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
+
+!win32:LIBS += -logg -lvorbisfile
+win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lwinmm
+macx:LIBS += -L/usr/local/lib
+
+unix:!macx {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += rtmidi
+} else {
+    LIBS += -lrtmidi
+}
 
 QT       += core gui
 
@@ -35,6 +45,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 HEADERS += \
            editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
+           editor/CopyOptionsDialog.h \
            editor/HostDialog.h \
            editor/InputEvent.h \
            editor/MidiWrapper.h \
@@ -104,6 +115,7 @@ HEADERS += \
            network/BroadcastServer.h
 FORMS += \
     editor/ConnectDialog.ui \
+    editor/CopyOptionsDialog.ui \
     editor/EditorWindow.ui \
     editor/HostDialog.ui \
     editor/RenderDialog.ui \
@@ -114,6 +126,7 @@ FORMS += \
 SOURCES += main.cpp \
            editor/ConnectDialog.cpp \
            editor/ConnectionStatusLabel.cpp \
+           editor/CopyOptionsDialog.cpp \
            editor/HostDialog.cpp \
            editor/InputEvent.cpp \
            editor/MidiWrapper.cpp \
@@ -180,10 +193,6 @@ SOURCES += main.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
            network/BroadcastServer.cpp
-
-!win32:LIBS += -logg -lvorbisfile -lrtmidi
-win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lrtmidi -lwinmm
-macx:LIBS += -L/usr/local/lib
 
 # Rules for deployment.
 isEmpty(PREFIX) {

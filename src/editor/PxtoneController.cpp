@@ -450,61 +450,49 @@ bool PxtoneController::applyAddWoice(const AddWoice &a, qint64 uid) {
   return true;
 }
 
-bool validateRemoveName(const RemoveWoice &a, const pxtnService *pxtn) {
-  QString expected_name(a.name);
-  expected_name.truncate(pxtnMAX_TUNEWOICENAME);
-
-  std::shared_ptr<const pxtnWoice> woice = pxtn->Woice_Get(a.id);
-  if (woice == nullptr) {
-    qWarning() << "Received command to remove woice" << a.id
-               << "that doesn't exist.";
-    return false;
-  }
-
-  QString actual_name(
-      shift_jis_codec->toUnicode(woice->get_name_buf_jis(nullptr)));
-  if (actual_name != expected_name) {
-    qWarning() << "Received command to remove woice" << a.id
-               << "with mismatched name" << expected_name << actual_name;
-    return false;
-  }
-  return true;
-}
-// TODO: Once you add the ability for units to change instruments,
-// you'll need a map for voices.
 bool PxtoneController::applyRemoveWoice(const RemoveWoice &a, qint64 uid) {
   (void)uid;
+  auto woice_no_maybe = m_woice_id_map.idToNo(a.woice_id);
+  if (woice_no_maybe == std::nullopt) {
+    qWarning("Voice ID (%d) doesn't exist.", a.woice_id);
+    return false;
+  }
+  int woice_no = woice_no_maybe.value();
+
   if (m_pxtn->Woice_Num() == 1) {
     qWarning() << "Cannot remove last woice.";
     return false;
   }
-  if (!validateRemoveName(a, m_pxtn)) return false;
 
-  emit beginRemoveWoice(a.id);
-  if (!m_pxtn->Woice_Remove(a.id)) {
+  emit beginRemoveWoice(woice_no);
+  if (!m_pxtn->Woice_Remove(woice_no)) {
     emit endRemoveWoice();
-    qWarning() << "Could not remove woice" << a.id << a.name;
+    qWarning() << "Could not remove woice" << a.woice_id;
     return false;
   }
   emit endRemoveWoice();
-  m_woice_id_map.remove(a.id);
-  m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, a.id);
+  m_woice_id_map.remove(woice_no);
+  m_pxtn->evels->Record_Value_Omit(EVENTKIND_VOICENO, woice_no);
   emit edited();
   return true;
 }
 
 bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
   (void)uid;
-
-  if (!validateRemoveName(a.remove, m_pxtn)) return false;
+  auto woice_no_maybe = m_woice_id_map.idToNo(a.remove.woice_id);
+  if (woice_no_maybe == std::nullopt) {
+    qWarning("Voice ID (%d) doesn't exist.", a.remove.woice_id);
+    return false;
+  }
+  int woice_no = woice_no_maybe.value();
 
   // TODO: Remove duplication with add woice
   pxtnDescriptor d;
   d.set_memory_r(a.add.data.constData(), a.add.data.size());
-  std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(a.remove.id);
+  std::shared_ptr<pxtnWoice> woice = m_pxtn->Woice_Get_variable(woice_no);
   pxtnERR result = woice->read(&d, a.add.type);
   if (result != pxtnOK) {
-    qDebug() << "Woice_read error" << result << a.remove.name;
+    qDebug() << "Woice_read error" << result;
     return false;
   }
 
@@ -513,7 +501,7 @@ bool PxtoneController::applyChangeWoice(const ChangeWoice &a, qint64 uid) {
       name_str.data(),
       std::min(pxtnMAX_TUNEWOICENAME, int32_t(name_str.length())));
   m_pxtn->Woice_ReadyTone(woice);
-  emit woiceEdited(a.remove.id);
+  emit woiceEdited(woice_no);
   emit edited();
   return true;
 }
@@ -638,7 +626,7 @@ bool write(QIODevice *dev, const WavHdr &h) {
 
 // TODO: This kind of file-writing is duplicated a bunch.
 bool PxtoneController::render(
-    QIODevice *dev, double secs, double fadeout,
+    QIODevice *dev, double secs, double fadeout, double volume,
     std::function<bool(double progress)> should_continue) const {
   qDebug() << "Rendering" << secs << fadeout;
   WavHdr h;
@@ -665,7 +653,7 @@ bool PxtoneController::render(
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
   prep.start_pos_sample = 0;
-  prep.master_volume = moo_state.params.master_vol;
+  prep.master_volume = volume;
   bool success = m_pxtn->moo_preparation(&prep, moo_state);
   if (!success) {
     qWarning() << "Moo preparation error";
