@@ -25,21 +25,10 @@ signals:
 
 protected slots:
   void closeEvent(QCloseEvent *) override;
-  void buttonNewPressed()
-  {
-    this->close();
-    emit(newSelected());
-  }
-  void buttonOpenPressed()
-  {
-    this->close();
-    emit(openSelected());
-  }
-  void buttonConnectPressed()
-  {
-    this->close();
-    emit(connectSelected());
-  }
+  void buttonNewPressed();
+  void buttonOpenPressed();
+  void buttonConnectPressed();
+
 
 private:
   Ui::WelcomeDialog *ui;

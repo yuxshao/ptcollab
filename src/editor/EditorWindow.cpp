@@ -238,7 +238,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
       connect(m_welcome_dialog, &WelcomeDialog::newSelected, [this]() { Host(HostSetting::NewFile); });
       connect(m_welcome_dialog, &WelcomeDialog::openSelected, [this]() { Host(HostSetting::LoadFile); });
-      connect(m_welcome_dialog, SIGNAL(connectSelected()), this, SLOT(connectToHost()));
+      connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this, &EditorWindow::connectToHost);
     }
   QTimer::singleShot(0, this, SLOT(showWelcomeDialog()));
 }

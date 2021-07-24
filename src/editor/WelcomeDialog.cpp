@@ -18,15 +18,31 @@ WelcomeDialog::WelcomeDialog(QWidget *parent) :
   ui->buttonNew->setToolTip(newToolTip);
   ui->buttonOpen->setToolTip(openToolTip);
 
-  connect(ui->buttonNew, SIGNAL(released()), this, SLOT(buttonNewPressed()));
-  connect(ui->buttonOpen, SIGNAL(released()), this, SLOT(buttonOpenPressed()));
-  connect(ui->buttonConnect, SIGNAL(released()), this, SLOT(buttonConnectPressed()));
-  this->setFixedSize(QSize());
+  connect(ui->buttonNew, &QPushButton::released, this, &WelcomeDialog::buttonNewPressed);
+  connect(ui->buttonOpen, &QPushButton::released, this, &WelcomeDialog::buttonOpenPressed);
+  connect(ui->buttonConnect, &QPushButton::released, this, &WelcomeDialog::buttonConnectPressed);
+  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 }
 
 void WelcomeDialog::closeEvent(QCloseEvent *)
 {
   Settings::ShowLandingPage::set(ui->showAgainCheck->isChecked());
+}
+
+void WelcomeDialog::buttonNewPressed()
+{
+  this->close();
+  emit(newSelected());
+}
+void WelcomeDialog::buttonOpenPressed()
+{
+  this->close();
+  emit(openSelected());
+}
+void WelcomeDialog::buttonConnectPressed()
+{
+  this->close();
+  emit(connectSelected());
 }
 
 WelcomeDialog::~WelcomeDialog()
