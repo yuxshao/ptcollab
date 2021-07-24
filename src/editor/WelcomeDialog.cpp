@@ -6,18 +6,6 @@
 #include <QPainter>
 #include <QToolTip>
 
-QPixmap processToColor(QPixmap input, QColor color)
-{
-  QPixmap output = input;
-  QPainter p(&output);
-  p.setCompositionMode(QPainter::CompositionMode_SourceIn);
-  p.setRenderHint(QPainter::Antialiasing);
-  p.fillRect(output.rect(), color);
-  p.end();
-
-  return output;
-}
-
 WelcomeDialog::WelcomeDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::WelcomeDialog)
