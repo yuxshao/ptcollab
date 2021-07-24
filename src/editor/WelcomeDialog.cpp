@@ -1,10 +1,6 @@
 #include "WelcomeDialog.h"
 #include "ui_WelcomeDialog.h"
 #include "Settings.h"
-#include <QStyle>
-#include <QIcon>
-#include <QPainter>
-#include <QToolTip>
 
 WelcomeDialog::WelcomeDialog(QWidget *parent) :
   QDialog(parent),
