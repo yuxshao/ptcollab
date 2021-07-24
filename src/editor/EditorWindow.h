@@ -16,6 +16,7 @@
 #include "RenderDialog.h"
 #include "SettingsDialog.h"
 #include "ShortcutsDialog.h"
+#include "WelcomeDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
@@ -45,14 +46,16 @@ class EditorWindow : public QMainWindow {
                     QString username);
  private slots:
   void connectToHost();
+  void showWelcomeDialog();
 
- private:
+private:
   void Host(HostSetting host_setting);
   bool event(QEvent* event) override;
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
+  WelcomeDialog *m_welcome_dialog;
   pxtnService m_pxtn;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;

@@ -113,6 +113,12 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace UnitPreviewClick
 
+namespace ShowLandingPage {
+const char *KEY = "ShowLandingPage";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace ShowLandingPage
+
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
@@ -169,5 +175,9 @@ QList<int> get() {
 void set(const QList<int> &value) {
   return QSettings().setValue(KEY, intListToVariant(value));
 }
-}  // namespace CopyKinds
+}
+
+
+
+// namespace CopyKinds
 }  // namespace Settings

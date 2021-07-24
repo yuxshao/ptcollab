@@ -89,6 +89,11 @@ bool get();
 void set(bool);
 }  // namespace UnitPreviewClick
 
+namespace ShowLandingPage {
+bool get();
+void set(bool);
+} // namespace ShowLandingPage
+
 namespace RenderFileDestination {
 QString get();
 void set(QString);

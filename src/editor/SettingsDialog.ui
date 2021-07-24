@@ -81,6 +81,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="showLandingPageCheck">
+         <property name="text">
+          <string>Show landing page on startup</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

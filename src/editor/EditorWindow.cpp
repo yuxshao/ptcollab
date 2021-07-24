@@ -1,4 +1,5 @@
 #include "EditorWindow.h"
+#include "WelcomeDialog.h"
 
 #include <QDebug>
 #include <QDesktopWidget>
@@ -229,6 +230,17 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
     m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
+
+  if(Settings::ShowLandingPage::get())
+    {
+      m_welcome_dialog = new WelcomeDialog;
+      m_welcome_dialog->setWindowTitle(this->windowTitle());
+
+      connect(m_welcome_dialog, &WelcomeDialog::newSelected, [this]() { Host(HostSetting::NewFile); });
+      connect(m_welcome_dialog, &WelcomeDialog::openSelected, [this]() { Host(HostSetting::LoadFile); });
+      connect(m_welcome_dialog, SIGNAL(connectSelected()), this, SLOT(connectToHost()));
+    }
+  QTimer::singleShot(0, this, SLOT(showWelcomeDialog()));
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -790,6 +802,12 @@ void EditorWindow::connectToHost() {
     m_server = nullptr;
   }
   m_client->connectToServer(host, port, m_connect_dialog->username());
+}
+
+void EditorWindow::showWelcomeDialog() {
+  if(Settings::ShowLandingPage::get()) {
+      m_welcome_dialog->exec();
+    }
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent *event) {
