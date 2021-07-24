@@ -39,6 +39,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_ping_status(new QLabel("", this)),
       m_modified(false),
       m_host_dialog(new HostDialog(this)),
+      m_welcome_dialog(new WelcomeDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
@@ -86,15 +87,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
 
-  if(Settings::ShowLandingPage::get())
-    {
-      m_welcome_dialog = new WelcomeDialog;
-      m_welcome_dialog->setWindowTitle(this->windowTitle());
+  m_welcome_dialog->setWindowTitle(this->windowTitle());
 
-      connect(m_welcome_dialog, &WelcomeDialog::newSelected, [this]() { Host(HostSetting::NewFile); });
-      connect(m_welcome_dialog, &WelcomeDialog::openSelected, [this]() { Host(HostSetting::LoadFile); });
-      connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this, &EditorWindow::connectToHost);
-    }
   // TODO: find a better place for this.
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
           [this](int x, bool strict) {
@@ -240,6 +234,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
     m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
+  connect(m_welcome_dialog, &WelcomeDialog::newSelected, [this]() {
+      Host(HostSetting::NewFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::openSelected, [this]() {
+      Host(HostSetting::LoadFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this, &EditorWindow::connectToHost);
 
   QTimer::singleShot(0, this, SLOT(showWelcomeDialog()));
 }
@@ -265,6 +264,7 @@ void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
     }
   }
 }
+
 
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
