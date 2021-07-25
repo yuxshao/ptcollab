@@ -113,11 +113,11 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace UnitPreviewClick
 
-namespace ShowLandingPage {
-const char *KEY = "ShowLandingPage";
+namespace ShowWelcomeDialog {
+const char *KEY = "ShowWelcomeDialog";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
-}  // namespace ShowLandingPage
+}  // namespace ShowWelcomeDialog
 
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";

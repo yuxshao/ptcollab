@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>332</width>
-    <height>394</height>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,9 +81,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="showLandingPageCheck">
+        <widget class="QCheckBox" name="showWelcomeDialogCheck">
          <property name="text">
-          <string>Show landing page on startup</string>
+          <string>Show welcome dialog on startup</string>
          </property>
         </widget>
        </item>

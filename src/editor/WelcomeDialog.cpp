@@ -8,7 +8,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
   ui->setupUi(this);
   ui->labelVersion->setText(qApp->applicationName() + " " +
                             qApp->applicationVersion());
-  ui->showAgainCheck->setChecked(Settings::ShowLandingPage::get());
+  ui->showAgainCheck->setChecked(Settings::ShowWelcomeDialog::get());
   QString connectToolTip = tr("Connect to an existing server.");
   QString newToolTip = tr("Create a new project without hosting.");
   QString openToolTip = tr("Open an existing project for offline use.");
@@ -26,7 +26,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
 }
 
 void WelcomeDialog::closeEvent(QCloseEvent *) {
-  Settings::ShowLandingPage::set(ui->showAgainCheck->isChecked());
+  Settings::ShowWelcomeDialog::set(ui->showAgainCheck->isChecked());
 }
 
 void WelcomeDialog::buttonNewPressed() {

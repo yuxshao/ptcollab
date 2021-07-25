@@ -239,7 +239,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
           &EditorWindow::connectToHost);
 
-  if (Settings::ShowLandingPage::get()) {
+  if (Settings::ShowWelcomeDialog::get()) {
     // In a timer so that the main window has time to show up
     QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
   }
