@@ -87,8 +87,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
 
-  m_welcome_dialog->setWindowTitle(this->windowTitle());
-
   // TODO: find a better place for this.
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
           [this](int x, bool strict) {

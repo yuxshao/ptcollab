@@ -55,7 +55,6 @@ class EditorWindow : public QMainWindow {
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
-  WelcomeDialog* m_welcome_dialog;
   pxtnService m_pxtn;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
@@ -70,6 +69,7 @@ class EditorWindow : public QMainWindow {
   QLabel *m_fps_status, *m_ping_status;
   bool m_modified;
   HostDialog* m_host_dialog;
+  WelcomeDialog* m_welcome_dialog;
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
   RenderDialog* m_render_dialog;
