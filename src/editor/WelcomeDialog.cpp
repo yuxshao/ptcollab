@@ -23,7 +23,6 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
           &WelcomeDialog::buttonOpenPressed);
   connect(ui->buttonConnect, &QPushButton::released, this,
           &WelcomeDialog::buttonConnectPressed);
-  this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 }
 
 void WelcomeDialog::closeEvent(QCloseEvent *) {
