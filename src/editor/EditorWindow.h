@@ -16,6 +16,7 @@
 #include "RenderDialog.h"
 #include "SettingsDialog.h"
 #include "ShortcutsDialog.h"
+#include "WelcomeDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
@@ -67,6 +68,7 @@ class EditorWindow : public QMainWindow {
   QLabel *m_fps_status, *m_ping_status;
   bool m_modified;
   HostDialog* m_host_dialog;
+  WelcomeDialog* m_welcome_dialog;
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
   RenderDialog* m_render_dialog;

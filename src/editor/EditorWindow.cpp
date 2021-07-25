@@ -19,6 +19,7 @@
 #include "ComboOptions.h"
 #include "InputEvent.h"
 #include "Settings.h"
+#include "WelcomeDialog.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
@@ -38,6 +39,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_ping_status(new QLabel("", this)),
       m_modified(false),
       m_host_dialog(new HostDialog(this)),
+      m_welcome_dialog(new WelcomeDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
@@ -84,6 +86,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
+
   // TODO: find a better place for this.
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
           [this](int x, bool strict) {
@@ -229,6 +232,17 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
     m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
+  connect(m_welcome_dialog, &WelcomeDialog::newSelected,
+          [this]() { Host(HostSetting::NewFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::openSelected,
+          [this]() { Host(HostSetting::LoadFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
+          &EditorWindow::connectToHost);
+
+  if (Settings::ShowWelcomeDialog::get()) {
+    // In a timer so that the main window has time to show up
+    QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
+  }
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
