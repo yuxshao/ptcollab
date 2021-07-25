@@ -175,9 +175,5 @@ QList<int> get() {
 void set(const QList<int> &value) {
   return QSettings().setValue(KEY, intListToVariant(value));
 }
-}
-
-
-
-// namespace CopyKinds
+}  // namespace CopyKinds
 }  // namespace Settings

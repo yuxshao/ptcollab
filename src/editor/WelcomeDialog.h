@@ -3,35 +3,33 @@
 
 #include <QDialog>
 #include <QLabel>
-#include <QToolTip>
 #include <QProxyStyle>
+#include <QToolTip>
 
 namespace Ui {
-  class WelcomeDialog;
+class WelcomeDialog;
 }
 
-class WelcomeDialog : public QDialog
-{
+class WelcomeDialog : public QDialog {
   Q_OBJECT
 
-public:
+ public:
   explicit WelcomeDialog(QWidget *parent = nullptr);
   ~WelcomeDialog();
 
-signals:
+ signals:
   void newSelected();
   void openSelected();
   void connectSelected();
 
-protected slots:
+ protected slots:
   void closeEvent(QCloseEvent *) override;
   void buttonNewPressed();
   void buttonOpenPressed();
   void buttonConnectPressed();
 
-
-private:
+ private:
   Ui::WelcomeDialog *ui;
 };
 
-#endif // WELCOMEDIALOG_H
+#endif  // WELCOMEDIALOG_H

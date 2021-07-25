@@ -92,7 +92,7 @@ void set(bool);
 namespace ShowLandingPage {
 bool get();
 void set(bool);
-} // namespace ShowLandingPage
+}  // namespace ShowLandingPage
 
 namespace RenderFileDestination {
 QString get();

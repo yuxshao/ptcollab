@@ -1,5 +1,4 @@
 #include "EditorWindow.h"
-#include "WelcomeDialog.h"
 
 #include <QDebug>
 #include <QDesktopWidget>
@@ -20,6 +19,7 @@
 #include "ComboOptions.h"
 #include "InputEvent.h"
 #include "Settings.h"
+#include "WelcomeDialog.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
@@ -234,11 +234,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
     m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
-  connect(m_welcome_dialog, &WelcomeDialog::newSelected, [this]() {
-      Host(HostSetting::NewFile); });
-  connect(m_welcome_dialog, &WelcomeDialog::openSelected, [this]() {
-      Host(HostSetting::LoadFile); });
-  connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this, &EditorWindow::connectToHost);
+  connect(m_welcome_dialog, &WelcomeDialog::newSelected,
+          [this]() { Host(HostSetting::NewFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::openSelected,
+          [this]() { Host(HostSetting::LoadFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
+          &EditorWindow::connectToHost);
 
   QTimer::singleShot(0, this, SLOT(showWelcomeDialog()));
 }
@@ -264,7 +265,6 @@ void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
     }
   }
 }
-
 
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
@@ -806,9 +806,9 @@ void EditorWindow::connectToHost() {
 }
 
 void EditorWindow::showWelcomeDialog() {
-  if(Settings::ShowLandingPage::get()) {
-      m_welcome_dialog->exec();
-    }
+  if (Settings::ShowLandingPage::get()) {
+    m_welcome_dialog->exec();
+  }
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent *event) {
