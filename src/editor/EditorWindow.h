@@ -46,7 +46,6 @@ class EditorWindow : public QMainWindow {
                     QString username);
  private slots:
   void connectToHost();
-  void showWelcomeDialog();
 
  private:
   void Host(HostSetting host_setting);

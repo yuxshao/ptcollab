@@ -239,7 +239,10 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
           &EditorWindow::connectToHost);
 
-  QTimer::singleShot(0, this, SLOT(showWelcomeDialog()));
+  if (Settings::ShowLandingPage::get()) {
+    // In a timer so that the main window has time to show up
+    QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
+  }
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -801,12 +804,6 @@ void EditorWindow::connectToHost() {
     m_server = nullptr;
   }
   m_client->connectToServer(host, port, m_connect_dialog->username());
-}
-
-void EditorWindow::showWelcomeDialog() {
-  if (Settings::ShowLandingPage::get()) {
-    m_welcome_dialog->exec();
-  }
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent *event) {
