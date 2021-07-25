@@ -10,8 +10,8 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
                             qApp->applicationVersion());
   ui->showAgainCheck->setChecked(
       Settings::ShowLandingPage::get());  // Shouldn't be necessary but if it is
-                                          // somehow false i want the checkbox to
-                                          // be right
+                                          // somehow false i want the checkbox
+                                          // to be right
 
   QString connectToolTip = tr("Connect to an existing server.");
   QString newToolTip = tr("Create a new project without hosting.");
@@ -36,15 +36,15 @@ void WelcomeDialog::closeEvent(QCloseEvent *) {
 
 void WelcomeDialog::buttonNewPressed() {
   this->close();
-  emit(newSelected());
+  emit newSelected();
 }
 void WelcomeDialog::buttonOpenPressed() {
   this->close();
-  emit(openSelected());
+  emit openSelected();
 }
 void WelcomeDialog::buttonConnectPressed() {
   this->close();
-  emit(connectSelected());
+  emit connectSelected();
 }
 
 WelcomeDialog::~WelcomeDialog() { delete ui; }

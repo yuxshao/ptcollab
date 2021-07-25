@@ -2,9 +2,6 @@
 #define WELCOMEDIALOG_H
 
 #include <QDialog>
-#include <QLabel>
-#include <QProxyStyle>
-#include <QToolTip>
 
 namespace Ui {
 class WelcomeDialog;
