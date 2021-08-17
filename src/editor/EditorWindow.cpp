@@ -658,6 +658,12 @@ bool EditorWindow::event(QEvent *event) {
   return QWidget::event(event);
 }
 
+void EditorWindow::setCurrentFilename(std::optional<QString> filename) {
+  m_filename = filename;
+  setWindowTitle("pxtone collab - " +
+                 QFileInfo(m_filename.value_or("New")).fileName());
+}
+
 void EditorWindow::hostDirectly(std::optional<QString> filename,
                                 QHostAddress host, int port,
                                 std::optional<QString> recording_save_file,
@@ -669,11 +675,12 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
     QMessageBox::critical(this, "Server startup error", e);
     return;
   }
+  QString window_title_filename;
   m_connection_status->setServerConnectionState(
       QString("%1:%2")
           .arg(m_server->address().toString())
           .arg(m_server->port()));
-  m_filename = (m_server->isReadingHistory() ? std::nullopt : filename);
+  setCurrentFilename(m_server->isReadingHistory() ? std::nullopt : filename);
   m_modified = false;
   m_side_menu->setModified(false);
 
@@ -716,7 +723,7 @@ bool EditorWindow::saveAs() {
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   bool saved = saveToFile(filename);
-  if (saved) m_filename = filename;
+  if (saved) setCurrentFilename(filename);
   return saved;
 }
 

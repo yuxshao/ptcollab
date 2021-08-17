@@ -86,5 +86,6 @@ class EditorWindow : public QMainWindow {
   void dropEvent(QDropEvent* event) override;
   std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;
   void recordInput(const Input::Event::Event& e);
+  void setCurrentFilename(std::optional<QString> filename);
 };
 #endif  // MAINWINDOW_H
