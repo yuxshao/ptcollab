@@ -474,14 +474,41 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->clearSelection();
       break;
     case Qt::Key_Up:
-    case Qt::Key_Down:
+    case Qt::Key_Down: {
       Direction dir =
           (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
       bool wide = (event->modifiers() & Qt::ControlModifier);
       bool shift = (event->modifiers() & Qt::ShiftModifier);
       m_keyboard_view->transposeSelection(dir, wide, shift);
+    } break;
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+      if (event->modifiers() & Qt::ShiftModifier) {
+        bool shift_right = event->key() == Qt::Key_Right;
+        bool grow = (event->modifiers() & Qt::ControlModifier);
+        tweakSelectionRange(shift_right, grow);
+      }
       break;
   }
+}
+
+void EditorWindow::tweakSelectionRange(bool shift_right, bool grow) {
+  if (m_client->editState().mouse_edit_state.selection == std::nullopt) return;
+  qint32 q = m_client->quantizeClock();
+  m_client->changeEditState(
+      [&](EditState &e) {
+        Interval &selection = e.mouse_edit_state.selection.value();
+        if (shift_right && grow)
+          selection.end = quantize(selection.end + q, q);
+        else if (shift_right && !grow)
+          selection.start = quantize(selection.start + q, q);
+        else if (!shift_right && grow)
+          selection.start = std::max(0, quantize(selection.start - q, q));
+        else if (!shift_right && !grow)
+          selection.end =
+              std::max(selection.start, quantize(selection.end - q, q));
+      },
+      false);
 }
 
 void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {

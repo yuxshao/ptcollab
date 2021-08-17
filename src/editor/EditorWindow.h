@@ -87,5 +87,6 @@ class EditorWindow : public QMainWindow {
   std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;
   void recordInput(const Input::Event::Event& e);
   void setCurrentFilename(std::optional<QString> filename);
+  void tweakSelectionRange(bool shift_right, bool grow);
 };
 #endif  // MAINWINDOW_H
