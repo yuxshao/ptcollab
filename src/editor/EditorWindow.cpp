@@ -271,8 +271,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
   switch (key) {
     case Qt::Key_A:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->selectAll(false);
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+          m_client->selectAllUnits(true);
+        } else
+          m_keyboard_view->selectAll(false);
+      }
       break;
     case Qt::Key_B:
 #ifdef DEBUG_RECORD_INPUT
@@ -291,9 +295,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     case Qt::Key_D:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_client->deselect(false);
-      else if (event->modifiers() & Qt::ShiftModifier)
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+          m_client->selectAllUnits(false);
+        } else
+          m_client->deselect(false);
+      } else if (event->modifiers() & Qt::ShiftModifier)
         m_keyboard_view->toggleDark();
       else {
         m_client->changeEditState(

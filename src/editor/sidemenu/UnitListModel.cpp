@@ -46,6 +46,11 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
     QModelIndex i = index(unit_no, int(UnitListColumn::Played));
     emit dataChanged(i, i);
   });
+  connect(controller, &PxtoneController::operatedToggled, [this](int unit_no) {
+    QModelIndex i = index(unit_no, int(UnitListColumn::Select));
+    emit dataChanged(i.siblingAtColumn(0),
+                     i.siblingAtColumn(columnCount() - 1));
+  });
   connect(controller, &PxtoneController::soloToggled, [this]() {
     int col = int(UnitListColumn::Played);
     emit dataChanged(index(0, col), index(rowCount() - 1, col));
@@ -95,8 +100,6 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
     case UnitListColumn::Select:
       if (role == Qt::CheckStateRole) {
         m_client->setUnitOperated(index.row(), value.toInt() == Qt::Checked);
-        dataChanged(index.siblingAtColumn(0),
-                    index.siblingAtColumn(columnCount() - 1));
         return true;
       }
       return false;

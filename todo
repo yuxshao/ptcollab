@@ -452,6 +452,9 @@ playback
 5/31
 1. fix silent cxn fail if you connect after a connection failure
 
+8/17
+1. ctrl+shift+(a/d) select and deselect all units
+
 Todo by priority
 ----------------
  - put project name in top bar
