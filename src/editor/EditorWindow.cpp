@@ -380,6 +380,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
 #endif
       break;
+    case Qt::Key_P:
+      if (event->modifiers() & Qt::ControlModifier)
+        Settings::ChordPreview::set(!Settings::ChordPreview::get());
+      break;
     case Qt::Key_Q:
       if (event->modifiers() & Qt::AltModifier)
         m_keyboard_view->quantizeSelection();

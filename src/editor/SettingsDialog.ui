@@ -34,7 +34,7 @@
        <item>
         <widget class="QCheckBox" name="chordPreviewCheck">
          <property name="text">
-          <string>Preview with all units</string>
+          <string>Preview with all units (Ctrl+P)</string>
          </property>
         </widget>
        </item>

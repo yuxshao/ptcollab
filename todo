@@ -455,6 +455,7 @@ playback
 8/17
 1. ctrl+shift+(a/d) select and deselect all units
 2. title bar shows current project filename
+3. ctrl+p to toggle preview with all units
 
 Todo by priority
 ----------------
