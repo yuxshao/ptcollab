@@ -204,7 +204,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
-        tr("Experimental multiplayer pxtone music editor. Special "
+        tr("Multiplayer pxtone music editor. Special "
            "thanks to all testers and everyone in the pxtone "
            "discord!\n\nVersion: "
            "%1")
