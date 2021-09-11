@@ -31,6 +31,7 @@
     </qresource>
     <qresource prefix="/images">
         <file alias="images">images.png</file>
+        <file alias="icon">big-icon.png</file>
     </qresource>
     <qresource prefix="/icons/color">
         <file alias="play">icons/color/play-icon.svg</file>

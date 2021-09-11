@@ -4,6 +4,9 @@
 
 TEMPLATE = app
 TARGET = ptcollab
+OBJECTS_DIR = ../build/cache
+MOC_DIR=../build/cache
+DESTDIR=../build
 
 # Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
 # others it's in a subdir
@@ -53,6 +56,7 @@ HEADERS += \
            editor/Settings.h \
            editor/SettingsDialog.h \
            editor/ShortcutsDialog.h \
+           editor/WelcomeDialog.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
@@ -121,6 +125,7 @@ FORMS += \
     editor/RenderDialog.ui \
     editor/SettingsDialog.ui \
     editor/ShortcutsDialog.ui \
+    editor/WelcomeDialog.ui \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
 SOURCES += main.cpp \
@@ -134,6 +139,7 @@ SOURCES += main.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
            editor/ShortcutsDialog.cpp \
+           editor/WelcomeDialog.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \

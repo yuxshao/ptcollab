@@ -274,7 +274,11 @@ void pxtnUnitTone::Tone_Supple(int32_t *group_smps, int32_t ch,
 int pxtnUnitTone::Tone_Increment_Key() {
   // prtament..
   if (_portament_sample_num && _key_margin) {
-    if (_portament_sample_pos < _portament_sample_num) {
+    // 2021-08-06: comparing to sample_num - 1 instead of sample_num because in
+    // some cases (after m20 on a 135bpm song) two portamentos right next to
+    // each other cause a note jump b/c key_now ends up one sample away from
+    // being set at the end of the first portamento
+    if (_portament_sample_pos < _portament_sample_num - 1) {
       _portament_sample_pos++;
       _key_now =
           (int32_t)(_key_start + (double)_key_margin * _portament_sample_pos /

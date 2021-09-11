@@ -89,6 +89,11 @@ bool get();
 void set(bool);
 }  // namespace UnitPreviewClick
 
+namespace ShowWelcomeDialog {
+bool get();
+void set(bool);
+}  // namespace ShowWelcomeDialog
+
 namespace RenderFileDestination {
 QString get();
 void set(QString);

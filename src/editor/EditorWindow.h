@@ -16,6 +16,7 @@
 #include "RenderDialog.h"
 #include "SettingsDialog.h"
 #include "ShortcutsDialog.h"
+#include "WelcomeDialog.h"
 #include "audio/PxtoneIODevice.h"
 #include "network/BroadcastServer.h"
 #include "network/Client.h"
@@ -67,6 +68,7 @@ class EditorWindow : public QMainWindow {
   QLabel *m_fps_status, *m_ping_status;
   bool m_modified;
   HostDialog* m_host_dialog;
+  WelcomeDialog* m_welcome_dialog;
   ConnectDialog* m_connect_dialog;
   ShortcutsDialog* m_shortcuts_dialog;
   RenderDialog* m_render_dialog;
@@ -84,5 +86,7 @@ class EditorWindow : public QMainWindow {
   void dropEvent(QDropEvent* event) override;
   std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;
   void recordInput(const Input::Event::Event& e);
+  void setCurrentFilename(std::optional<QString> filename);
+  void tweakSelectionRange(bool shift_right, bool grow);
 };
 #endif  // MAINWINDOW_H

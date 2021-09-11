@@ -472,6 +472,10 @@ void PxtoneClient::deselect(bool preserveFollow) {
   changeEditState([&](auto &s) { s.mouse_edit_state.selection.reset(); },
                   preserveFollow);
 }
+void PxtoneClient::selectAllUnits(bool select) {
+  for (int unit_no = 0; unit_no < m_controller->pxtn()->Unit_Num(); ++unit_no)
+    m_controller->setUnitOperated(unit_no, select);
+}
 
 void PxtoneClient::setUnitPlayed(int unit_no, bool played) {
   m_controller->setUnitPlayed(unit_no, played);

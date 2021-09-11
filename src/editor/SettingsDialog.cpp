@@ -25,7 +25,9 @@ void SettingsDialog::apply() {
   Settings::AutoAddUnit::set(ui->autoAddUnitCheck->isChecked());
   Settings::UnitPreviewClick::set(ui->unitPreviewClickCheck->isChecked());
   Settings::AutoAdvance::set(ui->autoAdvanceCheck->isChecked());
-  Settings::PolyphonicMidiNotePreview::set(ui->polyphonicMidiNotePreviewCheck->isChecked());
+  Settings::PolyphonicMidiNotePreview::set(
+      ui->polyphonicMidiNotePreviewCheck->isChecked());
+  Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
 
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
@@ -45,7 +47,9 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->autoAddUnitCheck->setChecked(Settings::AutoAddUnit::get());
   ui->unitPreviewClickCheck->setChecked(Settings::UnitPreviewClick::get());
   ui->autoAdvanceCheck->setChecked(Settings::AutoAdvance::get());
-  ui->polyphonicMidiNotePreviewCheck->setChecked(Settings::PolyphonicMidiNotePreview::get());
+  ui->polyphonicMidiNotePreviewCheck->setChecked(
+      Settings::PolyphonicMidiNotePreview::get());
+  ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
 
   QStringList ports = m_midi_wrapper->ports();
   if (ports.length() > 0)

@@ -452,8 +452,14 @@ playback
 5/31
 1. fix silent cxn fail if you connect after a connection failure
 
+8/17
+1. ctrl+shift+(a/d) select and deselect all units
+2. title bar shows current project filename
+3. ctrl+p to toggle preview with all units
+
 Todo by priority
 ----------------
+ - put project name in top bar
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums

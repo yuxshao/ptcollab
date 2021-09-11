@@ -77,6 +77,7 @@ class PxtoneController : public QObject {
   void measureNumChanged();
   void tempoBeatChanged();
   void playedToggled(int unit_no);
+  void operatedToggled(int unit_no);
   void soloToggled();
   void newSong();
   void edited();

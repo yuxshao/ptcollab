@@ -21,7 +21,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 
 namespace Settings {
 namespace Version {
-static QString v("0.4.1");
+static QString v("0.4.2");
 const QString &string() { return v; }
 }  // namespace Version
 
@@ -112,6 +112,12 @@ const char *KEY = "UnitPreviewClick";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { QSettings().setValue(KEY, value); }
 }  // namespace UnitPreviewClick
+
+namespace ShowWelcomeDialog {
+const char *KEY = "ShowWelcomeDialog";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { QSettings().setValue(KEY, value); }
+}  // namespace ShowWelcomeDialog
 
 namespace RenderFileDestination {
 const char *KEY = "render_file_destination";

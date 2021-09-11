@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>332</width>
-    <height>394</height>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
        <item>
         <widget class="QCheckBox" name="chordPreviewCheck">
          <property name="text">
-          <string>Preview with all units</string>
+          <string>Preview with all units (Ctrl+P)</string>
          </property>
         </widget>
        </item>
@@ -77,6 +77,13 @@
         <widget class="QCheckBox" name="unitPreviewClickCheck">
          <property name="text">
           <string>Click on unit to preview voice</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="showWelcomeDialogCheck">
+         <property name="text">
+          <string>Show welcome dialog on startup</string>
          </property>
         </widget>
        </item>

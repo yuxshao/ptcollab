@@ -19,6 +19,7 @@
 #include "ComboOptions.h"
 #include "InputEvent.h"
 #include "Settings.h"
+#include "WelcomeDialog.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
@@ -38,6 +39,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_ping_status(new QLabel("", this)),
       m_modified(false),
       m_host_dialog(new HostDialog(this)),
+      m_welcome_dialog(new WelcomeDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
@@ -84,6 +86,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_scroll_area->setWidget(m_keyboard_view);
+
   // TODO: find a better place for this.
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
           [this](int x, bool strict) {
@@ -201,7 +204,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(
         this, "About",
-        tr("Experimental multiplayer pxtone music editor. Special "
+        tr("Multiplayer pxtone music editor. Special "
            "thanks to all testers and everyone in the pxtone "
            "discord!\n\nVersion: "
            "%1")
@@ -229,6 +232,17 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
     m_copy_options_dialog->setVisible(!m_copy_options_dialog->isVisible());
   });
+  connect(m_welcome_dialog, &WelcomeDialog::newSelected,
+          [this]() { Host(HostSetting::NewFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::openSelected,
+          [this]() { Host(HostSetting::LoadFile); });
+  connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
+          &EditorWindow::connectToHost);
+
+  if (Settings::ShowWelcomeDialog::get()) {
+    // In a timer so that the main window has time to show up
+    QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
+  }
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
@@ -257,8 +271,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
   switch (key) {
     case Qt::Key_A:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->selectAll(false);
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+          m_client->selectAllUnits(true);
+        } else
+          m_keyboard_view->selectAll(false);
+      }
       break;
     case Qt::Key_B:
 #ifdef DEBUG_RECORD_INPUT
@@ -277,9 +295,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     case Qt::Key_D:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_client->deselect(false);
-      else if (event->modifiers() & Qt::ShiftModifier)
+      if (event->modifiers() & Qt::ControlModifier) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+          m_client->selectAllUnits(false);
+        } else
+          m_client->deselect(false);
+      } else if (event->modifiers() & Qt::ShiftModifier)
         m_keyboard_view->toggleDark();
       else {
         m_client->changeEditState(
@@ -358,6 +379,10 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
 #endif
+      break;
+    case Qt::Key_P:
+      if (event->modifiers() & Qt::ControlModifier)
+        Settings::ChordPreview::set(!Settings::ChordPreview::get());
       break;
     case Qt::Key_Q:
       if (event->modifiers() & Qt::AltModifier)
@@ -449,14 +474,41 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->clearSelection();
       break;
     case Qt::Key_Up:
-    case Qt::Key_Down:
+    case Qt::Key_Down: {
       Direction dir =
           (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
       bool wide = (event->modifiers() & Qt::ControlModifier);
       bool shift = (event->modifiers() & Qt::ShiftModifier);
       m_keyboard_view->transposeSelection(dir, wide, shift);
+    } break;
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+      if (event->modifiers() & Qt::ShiftModifier) {
+        bool shift_right = event->key() == Qt::Key_Right;
+        bool grow = (event->modifiers() & Qt::ControlModifier);
+        tweakSelectionRange(shift_right, grow);
+      }
       break;
   }
+}
+
+void EditorWindow::tweakSelectionRange(bool shift_right, bool grow) {
+  if (m_client->editState().mouse_edit_state.selection == std::nullopt) return;
+  qint32 q = m_client->quantizeClock();
+  m_client->changeEditState(
+      [&](EditState &e) {
+        Interval &selection = e.mouse_edit_state.selection.value();
+        if (shift_right && grow)
+          selection.end = quantize(selection.end + q, q);
+        else if (shift_right && !grow)
+          selection.start = quantize(selection.start + q, q);
+        else if (!shift_right && grow)
+          selection.start = std::max(0, quantize(selection.start - q, q));
+        else if (!shift_right && !grow)
+          selection.end =
+              std::max(selection.start, quantize(selection.end - q, q));
+      },
+      false);
 }
 
 void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
@@ -637,6 +689,12 @@ bool EditorWindow::event(QEvent *event) {
   return QWidget::event(event);
 }
 
+void EditorWindow::setCurrentFilename(std::optional<QString> filename) {
+  m_filename = filename;
+  setWindowTitle("pxtone collab - " +
+                 QFileInfo(m_filename.value_or("New")).fileName());
+}
+
 void EditorWindow::hostDirectly(std::optional<QString> filename,
                                 QHostAddress host, int port,
                                 std::optional<QString> recording_save_file,
@@ -648,11 +706,12 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
     QMessageBox::critical(this, "Server startup error", e);
     return;
   }
+  QString window_title_filename;
   m_connection_status->setServerConnectionState(
       QString("%1:%2")
           .arg(m_server->address().toString())
           .arg(m_server->port()));
-  m_filename = (m_server->isReadingHistory() ? std::nullopt : filename);
+  setCurrentFilename(m_server->isReadingHistory() ? std::nullopt : filename);
   m_modified = false;
   m_side_menu->setModified(false);
 
@@ -695,7 +754,7 @@ bool EditorWindow::saveAs() {
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   bool saved = saveToFile(filename);
-  if (saved) m_filename = filename;
+  if (saved) setCurrentFilename(filename);
   return saved;
 }
 

@@ -565,6 +565,7 @@ void PxtoneController::setUnitOperated(int unit_no, bool operated) {
   pxtnUnit *u = m_pxtn->Unit_Get_variable(unit_no);
   if (!u) return;
   u->set_operated(operated);
+  emit operatedToggled(unit_no);
 }
 
 // If currently this unit is soloing, unmute everything. Else mute everything
