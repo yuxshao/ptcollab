@@ -53,6 +53,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
 
   // Parse Styles
   QStringList styles;
+  styles.clear();
   styles.append("Default");
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
@@ -66,6 +67,9 @@ void SettingsDialog::showEvent(QShowEvent *) {
     }
     dir.next();
   }  // Search for directories that have QSS files of the same name in them
+  for (int i = ui->styleCombo->count(); i >= 0; i--) {
+    ui->styleCombo->removeItem(i);
+  }  // is there really not a better way to do this
   ui->styleCombo->addItems(styles);
   ui->styleCombo->setCurrentText(Settings::StyleName::get());
 
