@@ -28,4 +28,4 @@ The variables technically support spaces, but I wouldn't recommend using them th
 You won't have much luck, as the stylesheet engine will just think it's 2  different keywords.
 
 You can create more styles by putting them in the directory above this one (ptcollab/styles/)
-and using this format.
+and using this format (/style/StyleName/StyleName.qssv).

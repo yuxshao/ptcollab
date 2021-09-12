@@ -35,6 +35,7 @@ QString StyleSheet::processStyleSheet(QString string) {
   }
   if (outputProcessed) {
     QFile outputFile(qApp->applicationDirPath() + "/parsed-stylesheet.qss");
+    outputFile.remove();
     outputFile.open(QFile::ReadWrite);
     outputFile.write(output.toUtf8());
   }
