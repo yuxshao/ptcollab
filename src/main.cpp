@@ -1,12 +1,15 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFile>
+#include <QRawFont>
 #include <QSettings>
 #include <QStyleFactory>
 
+#include "editor/CollageStyle.h"
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
 #include "network/BroadcastServer.h"
+#include "stylesheet/stylesheet.h"
 
 const static QString stylesheet =
     "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
@@ -21,7 +24,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
   QByteArray localMsg = msg.toLocal8Bit();
   const char *file = context.file ? context.file : "";
   const char *function = context.function ? context.function : "";
-  std::string now_str = QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
+  std::string now_str =
+      QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
   const char *now = now_str.c_str();
   switch (type) {
     case QtDebugMsg:
@@ -57,27 +61,44 @@ int main(int argc, char *argv[]) {
   a.setApplicationName("pxtone collab");
 
   if (Settings::CustomStyle::get()) {
-    a.setStyle(QStyleFactory::create("Fusion"));
+    StyleSheet style;
+    style.styleSheetBreakPhrase = "---";
+    style.styleSheetEqualsPhrase = " = ";
+    style.styleSheetDirectory =
+        qApp->applicationDirPath() + "/style/ptCollage/pxtone.qssv";
+    style.outputProcessed = true;
+
     QPalette palette = qApp->palette();
-    QColor text(222, 217, 187);
-    QColor base(78, 75, 97);
-    QColor button = base;
-    QColor highlight(157, 151, 132);
-    palette.setBrush(QPalette::Window, base);
-    palette.setColor(QPalette::WindowText, text);
-    palette.setBrush(QPalette::Base, base);
-    palette.setColor(QPalette::ToolTipBase, base);
-    palette.setColor(QPalette::ToolTipText, text);
-    palette.setColor(QPalette::Text, text);
-    palette.setBrush(QPalette::Button, base);
-    palette.setColor(QPalette::ButtonText, text);
-    palette.setColor(QPalette::BrightText, Qt::red);
-    palette.setColor(QPalette::Link, highlight);
-    palette.setColor(QPalette::Highlight, highlight);
-    palette.setColor(QPalette::Light, button.lighter(120));
-    palette.setColor(QPalette::Dark, button.darker(120));
+    palette.setColor(QPalette::Text, QColor("#D2CA9C"));
+    palette.setColor(QPalette::Base, QColor("#4E4B61"));
+    palette.setColor(QPalette::ButtonText, QColor(222, 217, 187));
+
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyleSheet(style.fromFile());
     qApp->setPalette(palette);
-    qApp->setStyleSheet(stylesheet);
+    //    Original custom stylesheet below -- do not remove!
+
+    //    a.setStyle(QStyleFactory::create("Fusion"));
+    //    QPalette palette = qApp->palette();
+    //    QColor text(222, 217, 187);
+    //    QColor base(78, 75, 97);
+    //    QColor button = base;
+    //    QColor highlight(157, 151, 132);
+    //    palette.setBrush(QPalette::Window, base);
+    //    palette.setColor(QPalette::WindowText, text);
+    //    palette.setBrush(QPalette::Base, base);
+    //    palette.setColor(QPalette::ToolTipBase, base);
+    //    palette.setColor(QPalette::ToolTipText, text);
+    //    palette.setColor(QPalette::Text, text);
+    //    palette.setBrush(QPalette::Button, base);
+    //    palette.setColor(QPalette::ButtonText, text);
+    //    palette.setColor(QPalette::BrightText, Qt::red);
+    //    palette.setColor(QPalette::Link, highlight);
+    //    palette.setColor(QPalette::Highlight, highlight);
+    //    palette.setColor(QPalette::Light, button.lighter(120));
+    //    palette.setColor(QPalette::Dark, button.darker(120));
+    //    qApp->setPalette(palette);
+    //    qApp->setStyleSheet(stylesheet);
   }
 
   a.setApplicationVersion(Settings::Version::string());

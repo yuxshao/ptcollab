@@ -46,7 +46,7 @@ DEFINES += pxINCLUDE_OGGVORBIS
 
 # Input
 HEADERS += \
-           editor/ConnectDialog.h \
+	   editor/ConnectDialog.h \
            editor/ConnectionStatusLabel.h \
            editor/CopyOptionsDialog.h \
            editor/HostDialog.h \
@@ -116,7 +116,8 @@ HEADERS += \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h \
-           network/BroadcastServer.h
+           network/BroadcastServer.h \
+           stylesheet/stylesheet.h
 FORMS += \
     editor/ConnectDialog.ui \
     editor/CopyOptionsDialog.ui \
@@ -198,7 +199,8 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
-           network/BroadcastServer.cpp
+           network/BroadcastServer.cpp \
+           stylesheet/stylesheet.cpp
 
 # Rules for deployment.
 isEmpty(PREFIX) {

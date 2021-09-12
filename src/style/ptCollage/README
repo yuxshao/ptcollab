@@ -1,0 +1,31 @@
+This file is a modified Qt StyleSheet file, and it will not work with other Qt apps.
+The difference is, this file has a variable system, and it is parsed at runtime.
+
+Example 1:
+
+	Var1 = #00FF00
+	Var2 = red
+	---
+	QWidget {
+		background-color: Var1;
+		border: 1px solid Var2;
+	}
+
+This will cause the background color of every widget to be green, and have a red border.
+
+Variables are simple plaintext drop-ins. They can be used for lots of things, for example:
+
+	ImageDir = style/demoStyle/image
+	---
+	QMainWindow {
+		background-image: url("ImageDir/image.png");
+	}
+
+This will cause the main window to have an awful, gawdy strecthed & artifacted version of
+"(path of ptcollab executable)/style/demoStyle/image/image.png" as its background.
+
+The variables technically support spaces, but I wouldn't recommend using them that way.
+You won't have much luck, as the stylesheet engine will just think it's 2  different keywords.
+
+You can create more styles by putting them in the directory above this one (ptcollab/styles/)
+and using this format.
