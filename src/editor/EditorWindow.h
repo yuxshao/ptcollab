@@ -50,9 +50,12 @@ class EditorWindow : public QMainWindow {
  private:
   void Host(HostSetting host_setting);
   bool event(QEvent* event) override;
+  void applyStyle();
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
+  QPalette defaultPalette;
+  QString defaultStyle;
   KeyboardView* m_keyboard_view;
   pxtnService m_pxtn;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;

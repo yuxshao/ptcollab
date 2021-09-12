@@ -19,6 +19,7 @@ class SettingsDialog : public QDialog {
 
  signals:
   void midiPortSelected(int port_no);
+  void styleChanged();
 
  private:
   void showEvent(QShowEvent *event) override;

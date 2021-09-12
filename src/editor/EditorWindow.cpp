@@ -11,6 +11,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
+#include <QStyleFactory>
 #include <QVBoxLayout>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
@@ -47,6 +48,9 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       m_copy_options_dialog(nullptr),
       ui(new Ui::EditorWindow) {
+  defaultPalette = QPalette(qApp->palette());  // important copy constructor
+  defaultStyle = qApp->style()->objectName();
+  applyStyle();
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
   int sample_rate = 44100;
@@ -137,6 +141,8 @@ EditorWindow::EditorWindow(QWidget *parent)
             } else
               m_ping_status->setText("");
           });
+  connect(m_settings_dialog, &SettingsDialog::styleChanged, this,
+          &EditorWindow::applyStyle);
   m_scroll_area->setBackgroundRole(QPalette::Dark);
   m_scroll_area->setVisible(true);
   m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -202,13 +208,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
-    QMessageBox::about(
-        this, "About",
-        tr("Multiplayer pxtone music editor. Special "
-           "thanks to all testers and everyone in the pxtone "
-           "discord!\n\nVersion: "
-           "%1")
-            .arg(QApplication::applicationVersion()));
+    QMessageBox::about(this, "About",
+                       tr("Multiplayer pxtone music editor. Special "
+                          "thanks to all testers and everyone in the pxtone "
+                          "discord!\n\nVersion: "
+                          "%1")
+                           .arg(QApplication::applicationVersion()));
   });
   connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
           &QDialog::show);
@@ -687,6 +692,59 @@ bool EditorWindow::event(QEvent *event) {
     return true;
   }
   return QWidget::event(event);
+}
+
+void EditorWindow::applyStyle() {
+  QString styleSheetName = Settings::StyleName::get();
+  QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
+                     "/" + styleSheetName + ".qss";
+  styleSheet.open(QFile::ReadOnly);
+  if (Settings::StyleName::get() != "Default" && styleSheet.exists() &&
+      styleSheet.isReadable()) {
+    if (QFile::exists(qApp->applicationDirPath() + "/style/" +
+                      styleSheetName)) {
+      QSettings stylePalette(qApp->applicationDirPath() + "/style/" +
+                                 styleSheetName + "/palette.ini",
+                             QSettings::IniFormat);
+
+      QPalette palette = qApp->palette();
+
+      stylePalette.beginGroup("palette");
+      palette.setColor(QPalette::Window,
+                       stylePalette.value("Window").toString());
+      palette.setColor(QPalette::WindowText,
+                       stylePalette.value("WindowText").toString());
+      palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
+      palette.setColor(QPalette::ToolTipBase,
+                       stylePalette.value("ToolTipBase").toString());
+      palette.setColor(QPalette::ToolTipText,
+                       stylePalette.value("ToolTipText").toString());
+      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+      palette.setColor(QPalette::Button,
+                       stylePalette.value("Button").toString());
+      palette.setColor(QPalette::ButtonText,
+                       stylePalette.value("ButtonText").toString());
+      palette.setColor(QPalette::BrightText,
+                       stylePalette.value("BrightText").toString());
+      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+      palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
+      palette.setColor(QPalette::Highlight,
+                       stylePalette.value("Highlight").toString());
+      qApp->setPalette(palette);
+    } /* Only apply custom palette if palette.ini is present
+QPalette::Light and QPalette::Dark have been discarded
+because they are unlikely to be used in conjunction with
+stylesheets & they cannot be represented properly in an .INI */
+
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setStyleSheet(styleSheet.readAll());
+  }  // Use Fusion as a base for aspects stylesheet does not cover
+  else {
+    qApp->setPalette(defaultPalette);
+    qApp->setStyleSheet("");
+    qApp->setStyle(QStyleFactory::create(defaultStyle));
+  }
+  styleSheet.close();
 }
 
 void EditorWindow::setCurrentFilename(std::optional<QString> filename) {

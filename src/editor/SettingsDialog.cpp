@@ -16,7 +16,6 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
 }
 
 void SettingsDialog::apply() {
-  Settings::StyleName::set(ui->styleCombo->currentText());
   Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
   Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
   Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
@@ -32,6 +31,13 @@ void SettingsDialog::apply() {
 
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
+
+  qDebug() << Settings::StyleName::get() << " "
+           << ui->styleCombo->currentText();
+  if (Settings::StyleName::get() != ui->styleCombo->currentText()) {
+    Settings::StyleName::set(ui->styleCombo->currentText());
+    emit styleChanged();
+  }
 }
 
 SettingsDialog::~SettingsDialog() { delete ui; }
@@ -53,6 +59,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
 
   // Parse Styles
   QStringList styles;
+  styles.clear();
   styles.append("Default");
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
@@ -66,6 +73,9 @@ void SettingsDialog::showEvent(QShowEvent *) {
     }
     dir.next();
   }  // Search for directories that have QSS files of the same name in them
+  for (int i = ui->styleCombo->count(); i >= 0; i--) {
+    ui->styleCombo->removeItem(i);
+  }  // is there really not a better way to do this
   ui->styleCombo->addItems(styles);
   ui->styleCombo->setCurrentText(Settings::StyleName::get());
 

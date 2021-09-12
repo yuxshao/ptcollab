@@ -59,52 +59,6 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  QString styleSheetName = Settings::StyleName::get();
-  QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
-                     "/" + styleSheetName + ".qss";
-  styleSheet.open(QFile::ReadOnly);
-  if (Settings::StyleName::get() != "Default" && styleSheet.exists() &&
-      styleSheet.isReadable()) {
-    if (QFile::exists(qApp->applicationDirPath() + "/style/" +
-                      styleSheetName)) {
-      QSettings stylePalette(qApp->applicationDirPath() + "/style/" +
-                                 styleSheetName + "/palette.ini",
-                             QSettings::IniFormat);
-
-      QPalette palette = qApp->palette();
-
-      stylePalette.beginGroup("palette");
-      palette.setColor(QPalette::Window,
-                       stylePalette.value("Window").toString());
-      palette.setColor(QPalette::WindowText,
-                       stylePalette.value("WindowText").toString());
-      palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
-      palette.setColor(QPalette::ToolTipBase,
-                       stylePalette.value("ToolTipBase").toString());
-      palette.setColor(QPalette::ToolTipText,
-                       stylePalette.value("ToolTipText").toString());
-      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-      palette.setColor(QPalette::Button,
-                       stylePalette.value("Button").toString());
-      palette.setColor(QPalette::ButtonText,
-                       stylePalette.value("ButtonText").toString());
-      palette.setColor(QPalette::BrightText,
-                       stylePalette.value("BrightText").toString());
-      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-      palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
-      palette.setColor(QPalette::Highlight,
-                       stylePalette.value("Highlight").toString());
-      qApp->setPalette(palette);
-    } /* Only apply custom palette if palette.ini is present
- QPalette::Light and QPalette::Dark have been discarded
- because they are unlikely to be used in conjunction with
- stylesheets & they cannot be represented properly in an .INI */
-
-    qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(styleSheet.readAll());
-  }  // Use Fusion as a base for aspects stylesheet does not cover
-  styleSheet.close();
-
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
