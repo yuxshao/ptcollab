@@ -95,11 +95,15 @@ int main(int argc, char *argv[]) {
       palette.setColor(QPalette::Highlight,
                        stylePalette.value("Highlight").toString());
       qApp->setPalette(palette);
-    }
+    } /* Only apply custom palette if palette.ini is present
+ QPalette::Light and QPalette::Dark have been discarded
+ because they are unlikely to be used in conjunction with
+ stylesheets & they cannot be represented properly in an .INI */
 
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setStyleSheet(styleSheet.readAll());
-  }
+  }  // Use Fusion as a base for aspects stylesheet does not cover
+  styleSheet.close();
 
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;

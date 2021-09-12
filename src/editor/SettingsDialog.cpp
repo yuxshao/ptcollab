@@ -65,7 +65,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
       }
     }
     dir.next();
-  }
+  }  // Search for directories that have QSS files of the same name in them
   ui->styleCombo->addItems(styles);
   ui->styleCombo->setCurrentText(Settings::StyleName::get());
 
