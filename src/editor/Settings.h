@@ -34,11 +34,6 @@ namespace Version {
 const QString &string();
 }
 
-namespace CustomStyle {
-bool get();
-void set(bool);
-}  // namespace CustomStyle
-
 namespace ChordPreview {
 bool get();
 void set(bool);
@@ -98,6 +93,11 @@ namespace RenderFileDestination {
 QString get();
 void set(QString);
 }  // namespace RenderFileDestination
+
+namespace StyleName {
+QString get();
+void set(QString);
+}  // namespace StyleName
 
 namespace SideMenuWidth {
 QList<int> get();

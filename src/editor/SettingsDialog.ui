@@ -25,11 +25,14 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QCheckBox" name="customStyleCheck">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Use custom style (must restart)</string>
+          <string>Style (Must restart)</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="styleCombo"/>
        </item>
        <item>
         <widget class="QCheckBox" name="chordPreviewCheck">

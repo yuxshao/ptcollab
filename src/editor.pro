@@ -116,8 +116,7 @@ HEADERS += \
            pxtone/pxtnUnit.h \
            pxtone/pxtnWoice.h \
            pxtone/pxtoneNoise.h \
-           network/BroadcastServer.h \
-           stylesheet/stylesheet.h
+	   network/BroadcastServer.h
 FORMS += \
     editor/ConnectDialog.ui \
     editor/CopyOptionsDialog.ui \
@@ -199,8 +198,7 @@ SOURCES += main.cpp \
            pxtone/pxtnWoice_io.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
-           network/BroadcastServer.cpp \
-           stylesheet/stylesheet.cpp
+	   network/BroadcastServer.cpp
 
 # Rules for deployment.
 isEmpty(PREFIX) {

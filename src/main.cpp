@@ -9,7 +9,6 @@
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
 #include "network/BroadcastServer.h"
-#include "stylesheet/stylesheet.h"
 
 const static QString stylesheet =
     "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
@@ -60,45 +59,46 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  if (Settings::CustomStyle::get()) {
-    StyleSheet style;
-    style.styleSheetBreakPhrase = "---";
-    style.styleSheetEqualsPhrase = " = ";
-    style.styleSheetDirectory =
-        qApp->applicationDirPath() + "/style/ptCollage/pxtone.qssv";
-    style.outputProcessed = true;
+  QString styleSheetName = Settings::StyleName::get();
+  QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
+                     "/" + styleSheetName + ".qss";
+  styleSheet.open(QFile::ReadOnly);
+  if (Settings::StyleName::get() != "Default" && styleSheet.exists() &&
+      styleSheet.isReadable()) {
+    if (QFile::exists(qApp->applicationDirPath() + "/style/" +
+                      styleSheetName)) {
+      QSettings stylePalette(qApp->applicationDirPath() + "/style/" +
+                                 styleSheetName + "/palette.ini",
+                             QSettings::IniFormat);
 
-    QPalette palette = qApp->palette();
-    palette.setColor(QPalette::Text, QColor("#D2CA9C"));
-    palette.setColor(QPalette::Base, QColor("#4E4B61"));
-    palette.setColor(QPalette::ButtonText, QColor(222, 217, 187));
+      QPalette palette = qApp->palette();
+
+      stylePalette.beginGroup("palette");
+      palette.setColor(QPalette::Window,
+                       stylePalette.value("Window").toString());
+      palette.setColor(QPalette::WindowText,
+                       stylePalette.value("WindowText").toString());
+      palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
+      palette.setColor(QPalette::ToolTipBase,
+                       stylePalette.value("ToolTipBase").toString());
+      palette.setColor(QPalette::ToolTipText,
+                       stylePalette.value("ToolTipText").toString());
+      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+      palette.setColor(QPalette::Button,
+                       stylePalette.value("Button").toString());
+      palette.setColor(QPalette::ButtonText,
+                       stylePalette.value("ButtonText").toString());
+      palette.setColor(QPalette::BrightText,
+                       stylePalette.value("BrightText").toString());
+      palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+      palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
+      palette.setColor(QPalette::Highlight,
+                       stylePalette.value("Highlight").toString());
+      qApp->setPalette(palette);
+    }
 
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(style.fromFile());
-    qApp->setPalette(palette);
-    //    Original custom stylesheet below -- do not remove!
-
-    //    a.setStyle(QStyleFactory::create("Fusion"));
-    //    QPalette palette = qApp->palette();
-    //    QColor text(222, 217, 187);
-    //    QColor base(78, 75, 97);
-    //    QColor button = base;
-    //    QColor highlight(157, 151, 132);
-    //    palette.setBrush(QPalette::Window, base);
-    //    palette.setColor(QPalette::WindowText, text);
-    //    palette.setBrush(QPalette::Base, base);
-    //    palette.setColor(QPalette::ToolTipBase, base);
-    //    palette.setColor(QPalette::ToolTipText, text);
-    //    palette.setColor(QPalette::Text, text);
-    //    palette.setBrush(QPalette::Button, base);
-    //    palette.setColor(QPalette::ButtonText, text);
-    //    palette.setColor(QPalette::BrightText, Qt::red);
-    //    palette.setColor(QPalette::Link, highlight);
-    //    palette.setColor(QPalette::Highlight, highlight);
-    //    palette.setColor(QPalette::Light, button.lighter(120));
-    //    palette.setColor(QPalette::Dark, button.darker(120));
-    //    qApp->setPalette(palette);
-    //    qApp->setStyleSheet(stylesheet);
+    qApp->setStyleSheet(styleSheet.readAll());
   }
 
   a.setApplicationVersion(Settings::Version::string());

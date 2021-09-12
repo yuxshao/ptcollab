@@ -2,6 +2,7 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QDirIterator>
 
 #include "MidiWrapper.h"
 namespace Ui {
