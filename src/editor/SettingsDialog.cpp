@@ -51,29 +51,28 @@ void SettingsDialog::showEvent(QShowEvent *) {
       Settings::PolyphonicMidiNotePreview::get());
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
 
-  // Parse Styles
+  // Identify Styles
   QStringList styles;
-  styles.clear();
+  QString targetFilename;
+  ui->styleCombo->clear();
   styles.push_front("Default");
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
   while (dir.hasNext()) {
     if (!dir.fileName().isEmpty() && dir.fileName() != "." &&
         dir.fileName() != "..") {
-      QString targetFilename = dir.filePath() + "/" + dir.fileName() + ".qss";
+      targetFilename = dir.filePath() + "/" + dir.fileName() + ".qss";
       if (QFile(targetFilename).exists()) {
         styles.push_front(dir.fileName());
       }
     }
     dir.next();
-  }  // Search for directories that have QSS files of the same name in them
-  for (int i = ui->styleCombo->count(); i >= 0; i--) {
-    ui->styleCombo->removeItem(i);
-  }  // is there really not a better way to do this
+  }  // Search for directories that have QSS files of the same name in them,
+  // then add those names to a list for usage in the Combo Box
   ui->styleCombo->addItems(styles);
   ui->styleCombo->setCurrentText(Settings::StyleName::get());
 
-  // Parse Midi
+  // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();
   if (ports.length() > 0)
     ports.push_front("Select a port...");

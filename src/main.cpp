@@ -10,13 +10,6 @@
 #include "editor/Settings.h"
 #include "network/BroadcastServer.h"
 
-const static QString stylesheet =
-    "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
-    "QLineEdit { background-color: #00003e; color: #00F080; font-weight: bold; "
-    "}"
-    "QLineEdit:disabled { background-color: #343255; color: #9D9784; }"
-    "QPushButton:disabled { color: #9D9784; }";
-
 static FILE *logDestination = stderr;
 void messageHandler(QtMsgType type, const QMessageLogContext &context,
                     const QString &msg) {
@@ -95,14 +88,17 @@ int main(int argc, char *argv[]) {
       palette.setColor(QPalette::Highlight,
                        stylePalette.value("Highlight").toString());
       qApp->setPalette(palette);
-    } /* Only apply custom palette if palette.ini is present
- QPalette::Light and QPalette::Dark have been discarded
- because they are unlikely to be used in conjunction with
- stylesheets & they cannot be represented properly in an .INI */
+    }
+    // Only apply custom palette if palette.ini is present QPalette::Light
+    // and QPalette::Dark have been discarded because they are unlikely to be
+    // used in conjunction with stylesheets & they cannot be represented
+    // properly in an .INI
 
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setStyleSheet(styleSheet.readAll());
-  }  // Use Fusion as a base for aspects stylesheet does not cover
+  }
+  // Use Fusion as a base for aspects stylesheet does not cover, it should
+  // look consistent across all platforms
   styleSheet.close();
 
   a.setApplicationVersion(Settings::Version::string());
