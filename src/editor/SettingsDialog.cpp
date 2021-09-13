@@ -54,7 +54,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   // Parse Styles
   QStringList styles;
   styles.clear();
-  styles.append("Default");
+  styles.push_front("Default");
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
   while (dir.hasNext()) {
@@ -62,7 +62,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
         dir.fileName() != "..") {
       QString targetFilename = dir.filePath() + "/" + dir.fileName() + ".qss";
       if (QFile(targetFilename).exists()) {
-        styles.append(dir.fileName());
+        styles.push_front(dir.fileName());
       }
     }
     dir.next();
