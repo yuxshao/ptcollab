@@ -1,11 +1,9 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFile>
-#include <QRawFont>
 #include <QSettings>
 #include <QStyleFactory>
 
-#include "editor/CollageStyle.h"
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
 #include "network/BroadcastServer.h"
@@ -96,6 +94,8 @@ int main(int argc, char *argv[]) {
 
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setStyleSheet(styleSheet.readAll());
+  } else if (QString(Settings::StyleName::get()).isEmpty()) {
+    Settings::StyleName::set("Default");
   }
   // Use Fusion as a base for aspects stylesheet does not cover, it should
   // look consistent across all platforms
