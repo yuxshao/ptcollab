@@ -48,7 +48,7 @@ if(findLibrary("libvorbisfile", tests_vorbisfile, true)) {
 }
 
 tests_rtmidi = rtmidi_pkgconfig rtmidi_lib
-if(findLibrary("RtMidi", tests_rtmidi, true)) {
+if(findLibrary("RtMidi", tests_rtmidi, false)) {
     config_rtmidi_pkgconfig {
         pkgconfig_required = true
         PKGCONFIG += rtmidi
