@@ -457,6 +457,11 @@ playback
 2. title bar shows current project filename
 3. ctrl+p to toggle preview with all units
 
+9/18
+1. merge opna2608's pr for detecting if various libraries are available (and if
+   so, via pkgconfig or sth else)
+2. add some preprocessor checks to disable midi component if rtmidi not found
+
 Todo by priority
 ----------------
  - put project name in top bar
