@@ -9,6 +9,8 @@
 
 #include "Settings.h"
 
+namespace StyleEditor {
+
 const QString requestedDefaultStyleName =
     "ptCollage";  // This is the desired default style. In the event this style
                   // is problematic, which is entirely possible, it will not be
@@ -21,7 +23,7 @@ const QString requestedDefaultStyleName =
                   // fresh instance (installation or compilation). And if not,
                   // there won't be any errors.
 
-void StyleEditor::determineStyle() {
+void determineStyle() {
   QString styleName = Settings::StyleName::get();
   if (styleName == "System") return;
   if (styleName.isEmpty() ||
@@ -44,7 +46,7 @@ void StyleEditor::determineStyle() {
   // it's "System").
 }
 
-void StyleEditor::interpretStyle() {
+void interpretStyle() {
   determineStyle();
 
   if (Settings::StyleName::get() != "System") {
@@ -110,7 +112,7 @@ void StyleEditor::interpretStyle() {
   }
 }
 
-QStringList StyleEditor::getStyles() {
+QStringList getStyles() {
   QStringList styles;
   QString targetFilename;
   styles.push_front("System");
@@ -129,4 +131,5 @@ QStringList StyleEditor::getStyles() {
   return styles;
 }
 
-QString StyleEditor::getStyle() { return Settings::StyleName::get(); }
+QString getStyle() { return Settings::StyleName::get(); }
+}  // namespace StyleEditor
