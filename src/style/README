@@ -6,3 +6,20 @@ You can create more styles by putting them in the directory above this one (ptco
 using this format (/style/StyleName/StyleName.qss). You also need a palette.ini - see the default
 style for reference. A style can be selected from within the settings menu, given your .qss file's
 name is the same as its containing folder.
+
+
+If your stylesheet contains errors, ptcollab will not be able to detect them until the stylesheet
+is already applied (it is an issue with Qt). Depending on the scope of the errors, a few things 
+will happen making it apparent what the issue is.
+
+No style applied:
+	This means that the stylesheet has a top-level error (usually an error in a selector list or
+	a stray character in the topmost level of the stylesheet -- outside of all brackets).
+
+Incomplete styling of a particular object(s):
+	This means that the stylesheet for those objects could not be parsed properly, and it is an
+	error in the code within any brackets for those selectors. Check that you didn't miss
+	parentheses or a semicolon.
+
+Everything that hasn't been explicitly styled is black:
+	The required palette.ini file is absent or unreadable.
