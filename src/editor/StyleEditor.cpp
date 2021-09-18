@@ -132,4 +132,5 @@ QStringList getStyles() {
 }
 
 QString getStyle() { return Settings::StyleName::get(); }
+void setStyle(const QString style) { Settings::StyleName::set(style); }
 }  // namespace StyleEditor
