@@ -1,7 +1,6 @@
 #include "SettingsDialog.h"
 
 #include <QMessageBox>
-#include <QtDebug>
 
 #include "Settings.h"
 #include "ui_SettingsDialog.h"
