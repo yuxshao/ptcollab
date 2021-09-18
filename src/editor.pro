@@ -14,16 +14,48 @@ INCLUDEPATH += . /usr/include/rtmidi
 win32|macx:INCLUDEPATH += ../deps/include
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 
-!win32:LIBS += -logg -lvorbisfile
-win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib" -llibogg_static -llibvorbisfile -lwinmm
+win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib"
 macx:LIBS += -L/usr/local/lib
 
-unix:!macx {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += rtmidi
-} else {
-    LIBS += -lrtmidi
+pkgconfig_required = false
+
+include("../qmake/findLibrary.pri")
+
+win32 {
+    message("[default] Adding Windows Multimedia")
+    LIBS += -lwinmm
 }
+
+tests_ogg = ogg_pkgconfig ogg_lib libogg_static
+if(findLibrary("libogg(_static)", tests_ogg, true)) {
+    config_ogg_pkgconfig {
+        pkgconfig_required = true
+        PKGCONFIG += ogg
+    }
+    config_ogg_lib: LIBS += -logg
+    config_libogg_static: LIBS += -llibogg_static
+}
+
+tests_vorbisfile = vorbisfile_pkgconfig vorbisfile_lib libvorbisfile
+if(findLibrary("libvorbisfile", tests_vorbisfile, true)) {
+    config_vorbisfile_pkgconfig {
+        pkgconfig_required = true
+        PKGCONFIG += vorbisfile
+    }
+    config_vorbisfile_lib: LIBS += -lvorbisfile
+    config_libvorbisfile: LIBS += -llibvorbisfile
+}
+
+tests_rtmidi = rtmidi_pkgconfig rtmidi_lib
+if(findLibrary("RtMidi", tests_rtmidi, true)) {
+    config_rtmidi_pkgconfig {
+        pkgconfig_required = true
+        PKGCONFIG += rtmidi
+    }
+    config_rtmidi_lib: LIBS += -lrtmidi
+}
+
+equals(pkgconfig_required, "true"): CONFIG += link_pkgconfig
 
 QT       += core gui
 

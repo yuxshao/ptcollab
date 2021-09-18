@@ -59,12 +59,13 @@ jobs:
           qmake ptcollab.pro \
             PREFIX=$PWD/target \
             CONFIG+=release CONFIG-=debug
-          ${{ matrix.config.make }} qmake_all
 
           # /usr/bin/link interferes with MSVC link binary
           if [ "${{ runner.os }}" == "Windows" ]; then
             rm -f /usr/bin/link
           fi
+
+          ${{ matrix.config.make }} qmake_all
 
       - name: Build
         run: |
