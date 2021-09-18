@@ -55,7 +55,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   QStringList styles;
   QString targetFilename;
   ui->styleCombo->clear();
-  styles.push_front("Default");
+  styles.push_front("System");
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
   while (dir.hasNext()) {
