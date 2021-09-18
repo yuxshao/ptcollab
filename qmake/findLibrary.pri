@@ -22,7 +22,7 @@ defineTest(findLibrary) {
   for(TEST, testNames) {
     qtCompileTest($$TEST)
     if(config_$$TEST) {
-      message("[$$dependency] $$prettyName found & enabled")
+      message("[$$dependency] $$prettyName found & enabled through $$TEST")
       return(true)
     }
   }

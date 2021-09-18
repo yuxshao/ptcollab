@@ -21,6 +21,7 @@ pkgconfig_required = false
 
 include("../qmake/findLibrary.pri")
 
+message("Building editor")
 win32 {
     message("[default] Adding Windows Multimedia")
     LIBS += -lwinmm
@@ -55,7 +56,10 @@ if(findLibrary("RtMidi", tests_rtmidi, true)) {
     config_rtmidi_lib: LIBS += -lrtmidi
 }
 
-equals(pkgconfig_required, "true"): CONFIG += link_pkgconfig
+if (equals(pkgconfig_required, "true")) {
+    message("Using PKGCONFIG: $$PKGCONFIG")
+    CONFIG += link_pkgconfig
+}
 
 QT       += core gui
 
