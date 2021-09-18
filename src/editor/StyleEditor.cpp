@@ -22,37 +22,32 @@ const QString requestedDefaultStyleName =
                   // style should be consistent, reliable, and guaranteed on a
                   // fresh instance (installation or compilation). And if not,
                   // there won't be any errors.
+QString styleSheetPath(const QString styleName) {
+  return qApp->applicationDirPath() + "/style/" + styleName + "/" + styleName +
+         ".qss";
+}
 
-void determineStyle() {
+void interpretStyle() {
   QString styleName = Settings::StyleName::get();
-  if (styleName == "System") return;
-  if (styleName.isEmpty() ||
-      !QFile::exists(qApp->applicationDirPath() + "/style/" + styleName + "/" +
-                     styleName + ".qss")) {
-    QFile requestedDefaultStyle = qApp->applicationDirPath() + "/style/" +
-                                  requestedDefaultStyleName + "/" +
-                                  requestedDefaultStyleName + ".qss";
-    if (requestedDefaultStyle.exists()) {
-      Settings::StyleName::set(requestedDefaultStyleName);
-    } else {
-      Settings::StyleName::set("System");
+  if (styleName != "System") {
+    if (styleName.isEmpty() || !QFile::exists(styleSheetPath(styleName))) {
+      QFile requestedDefaultStyle = styleSheetPath(requestedDefaultStyleName);
+      if (requestedDefaultStyle.exists()) {
+        Settings::StyleName::set(requestedDefaultStyleName);
+      } else {
+        Settings::StyleName::set("System");
+      }
     }
-    return;
   }
   // Set default style if current style is not
   // present or unset (meaning files were moved between now and the last start
   // or settings are unset/previously cleared). In that case set default style
   // to ptCollage in every instance possible unless erreneous or absent (then
   // it's "System").
-}
-
-void interpretStyle() {
-  determineStyle();
 
   if (Settings::StyleName::get() != "System") {
     QString styleSheetName = Settings::StyleName::get();
-    QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
-                       "/" + styleSheetName + ".qss";
+    QFile styleSheet = styleSheetPath(styleSheetName);
     styleSheet.open(QFile::ReadOnly);
     if (styleSheet.isReadable()) {
       if (QFile::exists(qApp->applicationDirPath() + "/style/" +
@@ -119,14 +114,14 @@ QStringList getStyles() {
   QDirIterator dir(qApp->applicationDirPath() + "/style",
                    QDirIterator::NoIteratorFlags);
   while (dir.hasNext()) {
+    dir.next();
     if (!dir.fileName().isEmpty() && dir.fileName() != "." &&
         dir.fileName() != "..") {
-      targetFilename = dir.filePath() + "/" + dir.fileName() + ".qss";
+      targetFilename = styleSheetPath(dir.fileName());
       if (QFile(targetFilename).exists()) {
         styles.push_front(dir.fileName());
       }
     }
-    dir.next();
   }  // Search for directories that have QSS files of the same name in them,
   return styles;
 }

@@ -4,7 +4,7 @@
 #include <QStringList>
 
 namespace StyleEditor {
-void determineStyle();
+QString styleSheetPath(const QString styleName);
 void interpretStyle();
 QStringList getStyles();
 QString getStyle();

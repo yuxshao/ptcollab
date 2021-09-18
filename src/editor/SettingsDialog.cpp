@@ -14,7 +14,7 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
 }
 
 void SettingsDialog::apply() {
-  Settings::StyleName::set(ui->styleCombo->currentText());
+  StyleEditor::setStyle(ui->styleCombo->currentText());
   Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
   Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
   Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
