@@ -57,6 +57,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
 
 void determineStyle() {
   QString styleName = Settings::StyleName::get();
+  if (styleName == "System") return;
   if (styleName.isEmpty() ||
       !QFile::exists(qApp->applicationDirPath() + "/style/" + styleName + "/" +
                      styleName + ".qss")) {
@@ -87,14 +88,11 @@ int main(int argc, char *argv[]) {
 
   determineStyle();
 
-  QString styleSheetName = Settings::StyleName::get();
-  QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
-                     "/" + styleSheetName + ".qss";
-  styleSheet.open(QFile::ReadOnly);
-
-  if (Settings::StyleName::get() == "System") {
-    Settings::StyleName::set(requestedDefaultStyleName);
-  } else {
+  if (Settings::StyleName::get() != "System") {
+    QString styleSheetName = Settings::StyleName::get();
+    QFile styleSheet = qApp->applicationDirPath() + "/style/" + styleSheetName +
+                       "/" + styleSheetName + ".qss";
+    styleSheet.open(QFile::ReadOnly);
     if (styleSheet.isReadable()) {
       if (QFile::exists(qApp->applicationDirPath() + "/style/" +
                         styleSheetName + "/palette.ini")) {
@@ -149,9 +147,8 @@ int main(int argc, char *argv[]) {
     // first-hand by the stylesheet author. For minimal sheets, though, the
     // availability of a palette helps their changes blend in with unchanged
     // aspects.
+    styleSheet.close();
   }
-
-  styleSheet.close();
 
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
