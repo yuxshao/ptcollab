@@ -33,9 +33,10 @@ qrc_*.cpp
 Thumbs.db
 *.res
 *.rc
-/.qmake.cache
-/.qmake.stash
+.qmake.cache
+.qmake.stash
 src/ptcollab
+src/config.log
 
 # qtcreator generated files
 *.pro.user*
