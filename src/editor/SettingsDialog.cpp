@@ -1,8 +1,7 @@
 #include "SettingsDialog.h"
 
-#include <QMessageBox>
-
 #include "Settings.h"
+#include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
 
 SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
@@ -51,25 +50,10 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
 
   // Identify Styles
-  QStringList styles;
-  QString targetFilename;
-  ui->styleCombo->clear();
-  styles.push_front("System");
-  QDirIterator dir(qApp->applicationDirPath() + "/style",
-                   QDirIterator::NoIteratorFlags);
-  while (dir.hasNext()) {
-    if (!dir.fileName().isEmpty() && dir.fileName() != "." &&
-        dir.fileName() != "..") {
-      targetFilename = dir.filePath() + "/" + dir.fileName() + ".qss";
-      if (QFile(targetFilename).exists()) {
-        styles.push_front(dir.fileName());
-      }
-    }
-    dir.next();
-  }  // Search for directories that have QSS files of the same name in them,
   // then add those names to a list for usage in the Combo Box
-  ui->styleCombo->addItems(styles);
-  ui->styleCombo->setCurrentText(Settings::StyleName::get());
+  ui->styleCombo->clear();
+  ui->styleCombo->addItems(StyleEditor::getStyles());
+  ui->styleCombo->setCurrentText(StyleEditor::getStyle());
 
   // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();
