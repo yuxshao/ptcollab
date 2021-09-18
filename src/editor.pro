@@ -54,6 +54,7 @@ if(findLibrary("RtMidi", tests_rtmidi, true)) {
         PKGCONFIG += rtmidi
     }
     config_rtmidi_lib: LIBS += -lrtmidi
+    DEFINES += RTMIDI_SUPPORTED
 }
 
 if (equals(pkgconfig_required, "true")) {

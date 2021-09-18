@@ -52,10 +52,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
 
   QStringList ports = m_midi_wrapper->ports();
-  if (ports.length() > 0)
-    ports.push_front("Select a port...");
-  else
-    ports.push_front("No ports found...");
+  ports.push_front(m_midi_wrapper->portDropdownMessage());
   ui->midiInputPortCombo->clear();
   ui->midiInputPortCombo->addItems(ports);
 

@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QString>
-
+#ifdef RTMIDI_SUPPORTED
 MidiWrapper::MidiWrapper() {
   try {
     m_in = std::make_unique<RtMidiIn>();
@@ -84,3 +84,26 @@ bool MidiWrapper::usePort(int port,
   m_in->setCallback(callback, (void *)&m_cb);
   return true;
 }
+
+QString MidiWrapper::portDropdownMessage() const {
+  if (m_in && m_in->getPortCount() > 0)
+    return "Select a port...";
+  else
+    return "No ports found...";
+}
+#else
+
+MidiWrapper::MidiWrapper() {}
+
+QStringList MidiWrapper::ports() const { return {}; }
+
+std::optional<int> MidiWrapper::currentPort() const { return std::nullopt; }
+
+bool MidiWrapper::usePort(int,
+                          const std::function<void(Input::Event::Event)> &) {
+  return false;
+}
+QString MidiWrapper::portDropdownMessage() const {
+  return "Binary not built with MIDI support...";
+}
+#endif
