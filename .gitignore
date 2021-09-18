@@ -37,6 +37,7 @@ Thumbs.db
 .qmake.stash
 src/ptcollab
 src/config.log
+qmake/config.tests/*/test
 
 # qtcreator generated files
 *.pro.user*
