@@ -23,9 +23,14 @@ const QString requestedDefaultStyleName =
                   // style should be consistent, reliable, and guaranteed on a
                   // fresh instance (installation or compilation). And if not,
                   // there won't be any errors.
-QString styleSheetPath(const QString styleName) {
-  return qApp->applicationDirPath() + "/style/" + styleName + "/" + styleName +
-         ".qss";
+QString styleSheetDir(const QString &styleName) {
+  return qApp->applicationDirPath() + "/style/" + styleName;
+}
+QString styleSheetPath(const QString &styleName) {
+  return styleSheetDir(styleName) + "/" + styleName + ".qss";
+}
+QString palettePath(const QString &styleName) {
+  return styleSheetDir(styleName) + "/palette.ini";
 }
 
 void interpretStyle() {
@@ -51,11 +56,9 @@ void interpretStyle() {
     QFile styleSheet = styleSheetPath(styleSheetName);
     styleSheet.open(QFile::ReadOnly);
     if (styleSheet.isReadable()) {
-      if (QFile::exists(qApp->applicationDirPath() + "/style/" +
-                        styleSheetName + "/palette.ini")) {
+      if (QFile::exists(palettePath(styleSheetName))) {
         QPalette palette = qApp->palette();
-        QSettings stylePalette(qApp->applicationDirPath() + "/style/" +
-                                   styleSheetName + "/palette.ini",
+        QSettings stylePalette(palettePath(styleSheetName),
                                QSettings::IniFormat);
 
         stylePalette.beginGroup("palette");
