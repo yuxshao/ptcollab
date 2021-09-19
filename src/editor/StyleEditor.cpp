@@ -13,17 +13,6 @@
 
 namespace StyleEditor {
 
-const QString requestedDefaultStyleName =
-    "ptCollage";  // This is the desired default style. In the event this style
-                  // is problematic, which is entirely possible, it will not be
-                  // re-set as the style; the System theme then will be used.
-                  // I don't see the need to have this change after
-                  // compile-time. The purpose of these styles is to be
-                  // configurable, and the user's preference is respected given
-                  // their respected style is not problematic. The name of this
-                  // style should be consistent, reliable, and guaranteed on a
-                  // fresh instance (installation or compilation). And if not,
-                  // there won't be any errors.
 QString styleSheetDir(const QString &styleName) {
   return qApp->applicationDirPath() + "/style/" + styleName;
 }
@@ -80,46 +69,35 @@ void tryLoadPalette(const QString &styleName) {
   }
 }
 
-void interpretStyle() {
-  QString styleName = Settings::StyleName::get();
-  if (styleName != "System") {
-    if (styleName.isEmpty() || !QFile::exists(styleSheetPath(styleName))) {
-      QFile requestedDefaultStyle = styleSheetPath(requestedDefaultStyleName);
-      if (requestedDefaultStyle.exists()) {
-        Settings::StyleName::set(requestedDefaultStyleName);
-      } else {
-        Settings::StyleName::set("System");
-      }
-    }
-  }
-  // Set default style if current style is not
-  // present or unset (meaning files were moved between now and the last start
-  // or settings are unset/previously cleared). In that case set default style
-  // to ptCollage in every instance possible unless erreneous or absent (then
-  // it's "System").
+bool tryLoadStyle(const QString &styleName) {
+  if (styleName == "System") return true;
 
-  if (Settings::StyleName::get() != "System") {
-    QString styleName = Settings::StyleName::get();
-    QFile styleSheet = styleSheetPath(styleName);
-    if (styleSheet.open(QFile::ReadOnly)) {
-      tryLoadPalette(styleName);
-      // Only apply custom palette if palette.ini is present. For minimal
-      // sheets, the availability of a palette helps their changes blend
-      // in with unchanged aspects.
-      qApp->setStyle(QStyleFactory::create("Fusion"));
-      // Use Fusion as a base for aspects stylesheet does not cover, it should
-      // look consistent across all platforms
-      qApp->setStyleSheet(styleSheet.readAll());
-      styleSheet.close();
-    } else {
-      qWarning() << "The selected style is not available:"
-                 << Settings::StyleName::get();
-      if (Settings::StyleName::get() == requestedDefaultStyleName)
-        Settings::StyleName::set("System");
-    }
+  QFile styleSheet = styleSheetPath(styleName);
+  if (!styleSheet.open(QFile::ReadOnly)) {
+    qWarning() << "The selected style is not available:"
+               << Settings::StyleName::get();
+    return false;
   }
+
+  tryLoadPalette(styleName);
+  // Only apply custom palette if palette.ini is present. For minimal
+  // sheets, the availability of a palette helps their changes blend
+  // in with unchanged aspects.
+  qApp->setStyle(QStyleFactory::create("Fusion"));
+  // Use Fusion as a base for aspects stylesheet does not cover, it should
+  // look consistent across all platforms
+  qApp->setStyleSheet(styleSheet.readAll());
+  styleSheet.close();
+  return true;
 }
 
+void loadStyleFromSettings() {
+  if (tryLoadStyle(Settings::StyleName::get())) return;
+  // ptCollage is distributed with the program so it should be available
+  // everywhere.
+  if (tryLoadStyle("ptCollage")) return;
+  qWarning() << "No styles were loaded. Falling back on system style.";
+}
 QStringList getStyles() {
   QStringList styles;
   QString targetFilename;

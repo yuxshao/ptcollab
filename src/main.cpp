@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  StyleEditor::interpretStyle();
+  StyleEditor::loadStyleFromSettings();
 
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
