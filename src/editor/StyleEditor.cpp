@@ -7,17 +7,20 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QPalette>
+#include <QStandardPaths>
 #include <QStyleFactory>
+#include <set>
 
 #include "Settings.h"
 
 namespace StyleEditor {
+const char *SYSTEM_STYLE = "<System>";
 
-QString styleSheetDir(const QString &styleName) {
-  return qApp->applicationDirPath() + "/style/" + styleName;
+QString styleSheetDir(const QString &basedir, const QString &styleName) {
+  return basedir + "/" + styleName;
 }
-QString styleSheetPath(const QString &styleName) {
-  return styleSheetDir(styleName) + "/" + styleName + ".qss";
+QString styleSheetPath(const QString &basedir, const QString &styleName) {
+  return styleSheetDir(basedir, styleName) + "/" + styleName + ".qss";
 }
 
 struct InvalidColorError {
@@ -33,8 +36,8 @@ void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
     throw InvalidColorError{key, str};
 };
 
-void tryLoadPalette(const QString &styleName) {
-  QString path = styleSheetDir(styleName) + "/palette.ini";
+void tryLoadPalette(const QString &basedir, const QString &styleName) {
+  QString path = styleSheetDir(basedir, styleName) + "/palette.ini";
   if (QFile::exists(path)) {
     QPalette palette = qApp->palette();
     QSettings stylePalette(path, QSettings::IniFormat);
@@ -71,17 +74,15 @@ void tryLoadPalette(const QString &styleName) {
   }
 }
 
-bool tryLoadStyle(const QString &styleName) {
-  if (styleName == "System") return true;
-
-  QFile styleSheet = styleSheetPath(styleName);
+bool tryLoadStyle(const QString &basedir, const QString &styleName) {
+  QFile styleSheet = styleSheetPath(basedir, styleName);
   if (!styleSheet.open(QFile::ReadOnly)) {
-    qWarning() << "The selected style is not available:"
-               << Settings::StyleName::get();
+    qWarning() << "The selected style is not available: " << styleName << " ("
+               << styleSheet.fileName() << ")";
     return false;
   }
 
-  tryLoadPalette(styleName);
+  tryLoadPalette(basedir, styleName);
   // Only apply custom palette if palette.ini is present. For minimal
   // sheets, the availability of a palette helps their changes blend
   // in with unchanged aspects.
@@ -93,22 +94,55 @@ bool tryLoadStyle(const QString &styleName) {
   return true;
 }
 
+std::map<QString, QString> getStyleMap() {
+  std::map<QString, QString> styles;
+  styles[SYSTEM_STYLE] = "";
+
+  QString exe_path = qApp->applicationDirPath();
+  QStringList dirsToCheck =
+      // Prioritize things in user config dir over application dir
+      QStandardPaths::locateAll(QStandardPaths::AppLocalDataLocation, "style",
+                                QStandardPaths::LocateDirectory) +
+      QStringList{exe_path + "/style", exe_path + "/../share/style"};
+
+  for (const QString &basedir : dirsToCheck) {
+    QDirIterator dir(basedir, QDirIterator::NoIteratorFlags);
+    while (dir.hasNext()) {
+      dir.next();
+
+      if (dir.fileName().isEmpty() || dir.fileName() == "." ||
+          dir.fileName() == "..")
+        continue;
+
+      QString styleName = dir.fileName();
+      if (styles.count(styleName) > 0) continue;
+
+      QString stylePath = styleSheetPath(basedir, styleName);
+      if (!QFile(stylePath).exists()) continue;
+      styles[styleName] = basedir;
+    }
+  }
+  return styles;
+}
+
+bool tryLoadStyle(const QString &styleName) {
+  if (styleName == SYSTEM_STYLE) return true;
+
+  auto styles = getStyleMap();
+  auto it = styles.find(styleName);
+
+  if (it == styles.end()) {
+    qWarning() << "No such available style: " << styleName;
+    return false;
+  }
+
+  QString basedir = it->second;
+  return tryLoadStyle(basedir, styleName);
+}
+
 QStringList getStyles() {
   QStringList styles;
-  QString targetFilename;
-  styles.push_front("System");
-  QDirIterator dir(qApp->applicationDirPath() + "/style",
-                   QDirIterator::NoIteratorFlags);
-  while (dir.hasNext()) {
-    dir.next();
-    if (!dir.fileName().isEmpty() && dir.fileName() != "." &&
-        dir.fileName() != "..") {
-      targetFilename = styleSheetPath(dir.fileName());
-      if (QFile(targetFilename).exists()) {
-        styles.push_front(dir.fileName());
-      }
-    }
-  }  // Search for directories that have QSS files of the same name in them,
+  for (const auto &[style, dir] : getStyleMap()) styles.push_back(style);
   return styles;
 }
 }  // namespace StyleEditor
