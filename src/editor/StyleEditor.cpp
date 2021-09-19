@@ -59,6 +59,8 @@ void tryLoadPalette(const QString &styleName) {
       setColorFromSetting(palette, QPalette::Link, stylePalette, "Link");
       setColorFromSetting(palette, QPalette::Highlight, stylePalette,
                           "Highlight");
+      setColorFromSetting(palette, QPalette::Light, stylePalette, "Light");
+      setColorFromSetting(palette, QPalette::Dark, stylePalette, "Dark");
       qApp->setPalette(palette);
     } catch (InvalidColorError e) {
       qWarning()
