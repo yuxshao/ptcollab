@@ -98,6 +98,7 @@ QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTableView::indi
 QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTableView::indicator:checked { border-image: url("style/ptCollage/checkbox-border-on.png"), 2px 2px 2px 2px fill, stretch stretch; }
 QFrame { background-color: #4E4B61; }
 QLineEdit {
+	font-weight:bold;
 	border: 1px transparent;
 	border-image: url("style/ptCollage/lineedit-border.png"), 1px 1px 1px 1px fill, stretch stretch;
 }
