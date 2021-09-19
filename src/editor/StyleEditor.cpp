@@ -39,7 +39,7 @@ void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
                          QSettings &settings, const QString &key) {
   QString str = settings.value(key).toString();
   if (QColor::isValidColor(str))
-    palette.setColor(QPalette::Window, str);
+    palette.setColor(role, str);
   else
     throw InvalidColorError{key, str};
 };
@@ -102,29 +102,20 @@ void interpretStyle() {
     QString styleName = Settings::StyleName::get();
     QFile styleSheet = styleSheetPath(styleName);
     if (styleSheet.open(QFile::ReadOnly)) {
-      loadPaletteIfExists(styleName);
-      // Only apply custom palette if palette.ini is present. QPalette::Light
-      // and QPalette::Dark have been discarded because they are unlikely to be
-      // used in conjunction with stylesheets & they cannot be represented
-      // properly in an .INI. There are situations where the palette would not
-      // be a necessary addition to the stylesheet & all the coloring is done
-      // first-hand by the stylesheet author. For minimal sheets, though, the
-      // availability of a palette helps their changes blend in with unchanged
-      // aspects.
+      tryLoadPalette(styleName);
+      // Only apply custom palette if palette.ini is present. For minimal
+      // sheets, the availability of a palette helps their changes blend
+      // in with unchanged aspects.
       qApp->setStyle(QStyleFactory::create("Fusion"));
       // Use Fusion as a base for aspects stylesheet does not cover, it should
       // look consistent across all platforms
       qApp->setStyleSheet(styleSheet.readAll());
       styleSheet.close();
     } else {
-      QMessageBox::critical(
-          nullptr, QObject::tr("Style Loading Error"),
-          QObject::tr("The selected style (%1) has errors. The "
-                      "default style will be used.")
-              .arg(Settings::StyleName::get()));
+      qWarning() << "The selected style is not available:"
+                 << Settings::StyleName::get();
       if (Settings::StyleName::get() == requestedDefaultStyleName)
         Settings::StyleName::set("System");
-      // This should only happen if the stylesheet is unreadable
     }
   }
 }
