@@ -4,10 +4,8 @@
 #include <QStringList>
 
 namespace StyleEditor {
-void loadStyleFromSettings();
+bool tryLoadStyle(const QString &styleName);
 QStringList getStyles();
-QString getStyle();
-void setStyle(const QString style);
 }  // namespace StyleEditor
 
 #endif  // STYLEEDITOR_H

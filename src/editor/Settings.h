@@ -95,6 +95,7 @@ void set(QString);
 }  // namespace RenderFileDestination
 
 namespace StyleName {
+extern const char *default_included_with_distribution;
 QString get();
 void set(QString);
 }  // namespace StyleName

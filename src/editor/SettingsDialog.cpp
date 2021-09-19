@@ -14,7 +14,7 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
 }
 
 void SettingsDialog::apply() {
-  StyleEditor::setStyle(ui->styleCombo->currentText());
+  Settings::StyleName::set(ui->styleCombo->currentText());
   Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
   Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
   Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
@@ -53,7 +53,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   // then add those names to a list for usage in the Combo Box
   ui->styleCombo->clear();
   ui->styleCombo->addItems(StyleEditor::getStyles());
-  ui->styleCombo->setCurrentText(StyleEditor::getStyle());
+  ui->styleCombo->setCurrentText(Settings::StyleName::get());
 
   // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();

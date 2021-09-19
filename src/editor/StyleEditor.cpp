@@ -91,13 +91,6 @@ bool tryLoadStyle(const QString &styleName) {
   return true;
 }
 
-void loadStyleFromSettings() {
-  if (tryLoadStyle(Settings::StyleName::get())) return;
-  // ptCollage is distributed with the program so it should be available
-  // everywhere.
-  if (tryLoadStyle("ptCollage")) return;
-  qWarning() << "No styles were loaded. Falling back on system style.";
-}
 QStringList getStyles() {
   QStringList styles;
   QString targetFilename;
@@ -116,7 +109,4 @@ QStringList getStyles() {
   }  // Search for directories that have QSS files of the same name in them,
   return styles;
 }
-
-QString getStyle() { return Settings::StyleName::get(); }
-void setStyle(const QString style) { Settings::StyleName::set(style); }
 }  // namespace StyleEditor

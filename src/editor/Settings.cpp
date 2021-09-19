@@ -121,7 +121,10 @@ void set(QString value) { QSettings().setValue(KEY, value); }
 
 namespace StyleName {
 const char *KEY = "style_name";
-QString get() { return QSettings().value(KEY, "").toString(); }
+const char *default_included_with_distribution = "ptCollage";
+QString get() {
+  return QSettings().value(KEY, default_included_with_distribution).toString();
+}
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace StyleName
 

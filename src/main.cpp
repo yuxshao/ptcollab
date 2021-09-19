@@ -49,7 +49,11 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  StyleEditor::loadStyleFromSettings();
+  if (!StyleEditor::tryLoadStyle(Settings::StyleName::get())) {
+    if (!StyleEditor::tryLoadStyle(
+            Settings::StyleName::default_included_with_distribution))
+      qWarning() << "No styles were loaded. Falling back on system style.";
+  }
 
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
