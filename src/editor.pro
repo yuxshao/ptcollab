@@ -93,6 +93,7 @@ HEADERS += \
            editor/Settings.h \
            editor/SettingsDialog.h \
            editor/ShortcutsDialog.h \
+           editor/StyleEditor.h \
            editor/WelcomeDialog.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
@@ -100,7 +101,6 @@ HEADERS += \
            editor/sidemenu/OverdriveEffectModel.h \
            editor/sidemenu/UserListModel.h \
            editor/sidemenu/WoiceListModel.h \
-	   editor/StyleEditor.h \
            editor/views/Animation.h \
            editor/audio/AudioFormat.h \
            editor/Clipboard.h \
@@ -177,6 +177,7 @@ SOURCES += main.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
            editor/ShortcutsDialog.cpp \
+           editor/StyleEditor.cpp \
            editor/WelcomeDialog.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
@@ -184,7 +185,6 @@ SOURCES += main.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
            editor/sidemenu/UserListModel.cpp \
            editor/sidemenu/WoiceListModel.cpp \
-	   editor/StyleEditor.cpp \
            editor/views/Animation.cpp \
            editor/audio/AudioFormat.cpp \
            editor/Clipboard.cpp \
@@ -287,7 +287,7 @@ unix {
   pxtone_license.path = $$PREFIX/share/doc/pxtone
   INSTALLS += pxtone_license
 
-  styles.files = $$PWD/stylesgg/sty/LICENSE
+  styles.files = $$PWD/../res/styles
   styles.path = $$PREFIX/share/styles/pxtone
-  INSTALLS += pxtone_license
+  INSTALLS += styles
 }
