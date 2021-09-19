@@ -4,6 +4,7 @@
 #include <QDirIterator>
 #include <QFile>
 #include <QMessageBox>
+#include <QObject>
 #include <QPalette>
 #include <QStyleFactory>
 
@@ -85,11 +86,11 @@ void interpretStyle() {
       // Use Fusion as a base for aspects stylesheet does not cover, it should
       // look consistent across all platforms
     } else {
-      QMessageBox::critical(nullptr, "Style Error",
-                            "The selected style (" +
-                                Settings::StyleName::get() +
-                                ") has errors. The "
-                                "default style will be used.");
+      QMessageBox::critical(
+          nullptr, QObject::tr("Style Loading Error"),
+          QObject::tr("The selected style (%1) has errors. The "
+                      "default style will be used.")
+              .arg(Settings::StyleName::get()));
       if (Settings::StyleName::get() == requestedDefaultStyleName)
         Settings::StyleName::set("System");
       // This should only happen if there are unforseen platform/filesystem/Qt
