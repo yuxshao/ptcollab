@@ -207,6 +207,7 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
     case UnitListColumn::Select:
       switch (event->type()) {
         case QEvent::MouseButtonPress: {
+          qDebug() << "PRESS";
           Qt::CheckState state =
               qvariant_cast<Qt::CheckState>(index.data(Qt::CheckStateRole));
           m_last_index = index;
@@ -218,11 +219,17 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
         case QEvent::MouseMove: {
           const QModelIndex indexAtColumn =
               index.siblingAtColumn(m_last_index.column());
-          if (indexAtColumn.row() != m_last_index.row()) {
+          // 2021-09-19: We check again that LeftButton is down because this
+          // move event tends to trigger in ptCollage style even when we aren't
+          // currently pressing anything (we never receive a release event
+          // either).
+          if (indexAtColumn.row() != m_last_index.row() &&
+              QApplication::mouseButtons() & Qt::LeftButton) {
             m_last_index = indexAtColumn;
             model->setData(indexAtColumn, m_last_set_checked,
                            Qt::CheckStateRole);
           }
+          break;
         }
 
         default:
