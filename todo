@@ -467,6 +467,11 @@ playback
 
 Todo by priority
 ----------------
+ - slightly more extensible stylesheet, install workflow
+   - urls relative to qss file
+   - read multiple style dirs (executable dir, ../share, standard local path)
+ - solo toggle for selected units only.
+ - shift + W/S for navigating up selected units only
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
