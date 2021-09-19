@@ -29,8 +29,34 @@ QString styleSheetDir(const QString &styleName) {
 QString styleSheetPath(const QString &styleName) {
   return styleSheetDir(styleName) + "/" + styleName + ".qss";
 }
-QString palettePath(const QString &styleName) {
-  return styleSheetDir(styleName) + "/palette.ini";
+
+void loadPalette(const QString &styleName) {
+  QString path = styleSheetDir(styleName) + "/palette.ini";
+  if (QFile::exists(path)) {
+    QPalette palette = qApp->palette();
+    QSettings stylePalette(path, QSettings::IniFormat);
+
+    stylePalette.beginGroup("palette");
+    palette.setColor(QPalette::Window, stylePalette.value("Window").toString());
+    palette.setColor(QPalette::WindowText,
+                     stylePalette.value("WindowText").toString());
+    palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
+    palette.setColor(QPalette::ToolTipBase,
+                     stylePalette.value("ToolTipBase").toString());
+    palette.setColor(QPalette::ToolTipText,
+                     stylePalette.value("ToolTipText").toString());
+    palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+    palette.setColor(QPalette::Button, stylePalette.value("Button").toString());
+    palette.setColor(QPalette::ButtonText,
+                     stylePalette.value("ButtonText").toString());
+    palette.setColor(QPalette::BrightText,
+                     stylePalette.value("BrightText").toString());
+    palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
+    palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
+    palette.setColor(QPalette::Highlight,
+                     stylePalette.value("Highlight").toString());
+    qApp->setPalette(palette);
+  }
 }
 
 void interpretStyle() {
@@ -56,34 +82,7 @@ void interpretStyle() {
     QFile styleSheet = styleSheetPath(styleSheetName);
     styleSheet.open(QFile::ReadOnly);
     if (styleSheet.isReadable()) {
-      if (QFile::exists(palettePath(styleSheetName))) {
-        QPalette palette = qApp->palette();
-        QSettings stylePalette(palettePath(styleSheetName),
-                               QSettings::IniFormat);
-
-        stylePalette.beginGroup("palette");
-        palette.setColor(QPalette::Window,
-                         stylePalette.value("Window").toString());
-        palette.setColor(QPalette::WindowText,
-                         stylePalette.value("WindowText").toString());
-        palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
-        palette.setColor(QPalette::ToolTipBase,
-                         stylePalette.value("ToolTipBase").toString());
-        palette.setColor(QPalette::ToolTipText,
-                         stylePalette.value("ToolTipText").toString());
-        palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-        palette.setColor(QPalette::Button,
-                         stylePalette.value("Button").toString());
-        palette.setColor(QPalette::ButtonText,
-                         stylePalette.value("ButtonText").toString());
-        palette.setColor(QPalette::BrightText,
-                         stylePalette.value("BrightText").toString());
-        palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-        palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
-        palette.setColor(QPalette::Highlight,
-                         stylePalette.value("Highlight").toString());
-        qApp->setPalette(palette);
-      }
+      loadPalette(styleSheetName);
       qApp->setStyle(QStyleFactory::create("Fusion"));
       qApp->setStyleSheet(styleSheet.readAll());
       // Use Fusion as a base for aspects stylesheet does not cover, it should
