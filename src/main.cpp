@@ -1,19 +1,11 @@
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QFile>
 #include <QSettings>
-#include <QStyleFactory>
 
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 #include "network/BroadcastServer.h"
-
-const static QString stylesheet =
-    "SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }"
-    "QLineEdit { background-color: #00003e; color: #00F080; font-weight: bold; "
-    "}"
-    "QLineEdit:disabled { background-color: #343255; color: #9D9784; }"
-    "QPushButton:disabled { color: #9D9784; }";
 
 static FILE *logDestination = stderr;
 void messageHandler(QtMsgType type, const QMessageLogContext &context,
@@ -21,7 +13,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
   QByteArray localMsg = msg.toLocal8Bit();
   const char *file = context.file ? context.file : "";
   const char *function = context.function ? context.function : "";
-  std::string now_str = QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
+  std::string now_str =
+      QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
   const char *now = now_str.c_str();
   switch (type) {
     case QtDebugMsg:
@@ -56,28 +49,12 @@ int main(int argc, char *argv[]) {
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("pxtone collab");
 
-  if (Settings::CustomStyle::get()) {
-    a.setStyle(QStyleFactory::create("Fusion"));
-    QPalette palette = qApp->palette();
-    QColor text(222, 217, 187);
-    QColor base(78, 75, 97);
-    QColor button = base;
-    QColor highlight(157, 151, 132);
-    palette.setBrush(QPalette::Window, base);
-    palette.setColor(QPalette::WindowText, text);
-    palette.setBrush(QPalette::Base, base);
-    palette.setColor(QPalette::ToolTipBase, base);
-    palette.setColor(QPalette::ToolTipText, text);
-    palette.setColor(QPalette::Text, text);
-    palette.setBrush(QPalette::Button, base);
-    palette.setColor(QPalette::ButtonText, text);
-    palette.setColor(QPalette::BrightText, Qt::red);
-    palette.setColor(QPalette::Link, highlight);
-    palette.setColor(QPalette::Highlight, highlight);
-    palette.setColor(QPalette::Light, button.lighter(120));
-    palette.setColor(QPalette::Dark, button.darker(120));
-    qApp->setPalette(palette);
-    qApp->setStyleSheet(stylesheet);
+  QString style = Settings::StyleName::get();
+  if (!StyleEditor::tryLoadStyle(style)) {
+    QString defaultStyle =
+        Settings::StyleName::default_included_with_distribution;
+    if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
+      qWarning() << "No styles were loaded. Falling back on system style.";
   }
 
   a.setApplicationVersion(Settings::Version::string());

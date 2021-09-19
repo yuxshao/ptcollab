@@ -1,8 +1,7 @@
 #include "SettingsDialog.h"
 
-#include <QMessageBox>
-
 #include "Settings.h"
+#include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
 
 SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
@@ -15,8 +14,8 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
 }
 
 void SettingsDialog::apply() {
+  Settings::StyleName::set(ui->styleCombo->currentText());
   Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
-  Settings::CustomStyle::set(ui->customStyleCheck->isChecked());
   Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
   Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
   Settings::SwapScrollOrientation::set(
@@ -37,7 +36,6 @@ SettingsDialog::~SettingsDialog() { delete ui; }
 
 void SettingsDialog::showEvent(QShowEvent *) {
   ui->chordPreviewCheck->setChecked(Settings::ChordPreview::get());
-  ui->customStyleCheck->setChecked(Settings::CustomStyle::get());
   ui->pauseReseekCheck->setChecked(Settings::SpacebarStop::get());
   ui->velocityDragCheck->setChecked(Settings::VelocityDrag::get());
   ui->swapScrollOrientationCheck->setChecked(
@@ -51,6 +49,13 @@ void SettingsDialog::showEvent(QShowEvent *) {
       Settings::PolyphonicMidiNotePreview::get());
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
 
+  // Identify Styles
+  // then add those names to a list for usage in the Combo Box
+  ui->styleCombo->clear();
+  ui->styleCombo->addItems(StyleEditor::getStyles());
+  ui->styleCombo->setCurrentText(Settings::StyleName::get());
+
+  // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();
   ports.push_front(m_midi_wrapper->portDropdownMessage());
   ui->midiInputPortCombo->clear();

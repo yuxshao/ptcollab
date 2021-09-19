@@ -1,0 +1,170 @@
+SideMenu QLabel, QTabWidget > QWidget { font-weight:bold; }
+QMessageBox::about { background: url("style/ptCollage/awesome.png"); }
+QPushButton, QLineEdit, QComboBox { padding: 2px 6px; }
+QLabel, QPushButton, QCheckBox { color: #D2CA9C; }
+QWindow, QDialog, QMainWindow { background: #4E4B61; }
+QMenu {
+	border: 1px transparent;
+	background-color: #837E78;
+	color: #00003E;
+	border-image: url("style/ptCollage/menu-border.png") 1px fill;
+}
+QCheckBox { spacing: 5px; }
+QMenu::item:selected { background-color: #D2CA9C; }
+QComboBox, QMenuBar::item { color: #00003E; }
+QLineEdit, QListView { color: #00F080; }
+QLabel:disabled, QPushButton:disabled, QCheckBox:disabled { color: #837E78; }
+QComboBox:disabled, QMenuBar::item:disabled { color: #1A1949; }
+QLineEdit:disabled, QListView:disabled { color: #4E4B61; }
+QHeaderView::section {
+	background-color: #69656D;
+	border: none;
+	color: #D2CA9C; 
+}
+QHeaderView::section:hover { background-color: #9D9784; }
+QHeaderView::section:pressed { font-weight: bold; }
+QTableWidget, QTableView {
+	gridline-color: #4E4B61;
+	selection-background-color: #69656D;
+	selection-color: #00F080;
+	border: 1px transparent;
+	border-image: url("style/ptCollage/generic-frame.png"), 1px 1px 1px 1px, stretch stretch;
+}
+QTableView::item {
+	background-color: none;
+	border: none;
+}
+QTableView::item:hover { background-color: #69656D; }
+QTableView QTableCornerButton::section {
+	background-color: #69656D;
+	border: 3px inset transparent;
+}
+QHeaderView { color: #4E4B61; }
+QMenuBar {
+	border-image: url("style/ptCollage/menubar-border.png") / 0px 0px 1px 0px fill / stretch stretch;
+	border-bottom: 2px transparent;
+}
+QMenuBar::item { padding: 4px 6px; }
+QMenuBar::item:pressed, QMenuBar::item:selected {
+	border-image: url("style/ptCollage/menubar-item-border-active.png"), 0px 0px 2px 0px fill, stretch stretch;
+	border-bottom: 2px transparent;
+}
+QTabBar::tab {
+	padding: 3px 8px 2px 8px;
+	color: #837E78;
+	background-color: #4E4B61;
+	border-image: url("style/ptCollage/tab-border-inactive.png"), 3px 4px 2px 4px fill, stretch stretch;
+	border-top: 3px transparent;
+	border-left: 4px transparent;
+	border-right: 4px transparent;
+	border-bottom: 2px transparent;
+	margin-bottom: 1px;
+}
+QTabBar::tab:selected {
+	margin: 0;
+	padding-bottom: 3px;
+	color: #D2CA9C;
+	border-image: url("style/ptCollage/tab-border-active.png"), 3px 4px 2px 4px fill, stretch stretch;
+}
+QTabWidget::pane, QGroupBox {
+	border: 4px transparent;
+	border-image: url("style/ptCollage/frame-border.png"), 4px 4px 4px 4px fill, stretch stretch;
+}
+QGroupBox { margin-top: 1.25em; }
+QTabWidget::pane { margin-top: -1px; }
+QComboBox {
+	border-top: 2px transparent;
+	border-left: 2px transparent;
+	border-bottom: 2px transparent;
+	border-right: 1px transparent;
+	border-image: url("style/ptCollage/combobox-border.png"), 2px 1px 2px 2px fill, stretch stretch;
+}
+QComboBox::down-arrow { image: url("style/ptCollage/combobox-button-image.png"); }
+QComboBox::drop-down {
+	border-top: 2px transparent;
+	border-left: 3px transparent;
+	border-bottom: 2px transparent;
+	border-right: 2px transparent;
+	border-image: url("style/ptCollage/combobox-button-border-idle.png"), 2px 2px 2px 3px, stretch stretch;
+}
+QComboBox QAbstractItemView {
+	background-color: #9D9784;
+	border: 1px transparent;
+	border-image: url("style/ptCollage/menu-border.png") 1px fill;
+	selection-background-color: #D2CA9C;
+}
+QCheckBox::indicator, QGroupBox::indicator, QTableView::indicator { border: 2px transparent; }
+QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QTableView::indicator:unchecked { border-image: url("style/ptCollage/checkbox-border-off.png"), 2px 2px 2px 2px fill, stretch stretch; }
+QCheckBox::indicator:checked, QGroupBox::indicator:checked, QTableView::indicator:checked { border-image: url("style/ptCollage/checkbox-border-on.png"), 2px 2px 2px 2px fill, stretch stretch; }
+QFrame { background-color: #4E4B61; }
+QLineEdit {
+	font-weight:bold;
+	border: 1px transparent;
+	border-image: url("style/ptCollage/lineedit-border.png"), 1px 1px 1px 1px fill, stretch stretch;
+}
+QPushButton {
+	padding: 2px 16px;
+	border: 2px transparent;
+	border-image: url("style/ptCollage/button-border-idle.png"), 2px 2px 2px 2px fill, stretch stretch;
+}
+QPushButton:pressed { border-image: url("style/ptCollage/button-border-pressed.png"), 2px 2px 2px 2px fill, stretch stretch; }
+QSlider::groove:horizontal {
+	height: 8px;
+	background-color: #00003E;
+}
+QSlider::sub-page {
+	border: 1px transparent;
+	border-image: url("style/ptCollage/slider-border.png"), 1px 1px 1px 1px fill, stretch stretch;
+}
+QSlider::handle:horizontal {
+	border: 1px transparent;
+	width: 1px;
+	margin-top: -1px;
+	margin-bottom: -1px;
+	border-image: url("style/ptCollage/slider-handle.png"), 1px 1px 1px 1px fill, stretch stretch;
+}
+QAbstractScrollArea::corner {
+	width: 16px;
+	height: 16px;
+   background-image: url("style/ptCollage/scrollbar-median.png");
+}
+QScrollBar, QScrollBar::add-line, QScrollBar::sub-line { background-color: #4E4B61; }
+QScrollBar::vertical {
+	width: 16px;
+	background-image: url("style/ptCollage/scrollbar-rail-vertical.png");
+}
+QScrollBar::horizontal {
+	height: 16px;
+	background-image: url("style/ptCollage/scrollbar-rail-horizontal.png");
+}
+QScrollBar::add-line, QScrollBar::sub-line {
+	width: 16px;
+	height: 16px;
+}
+QScrollBar:horizontal {
+	padding-left: 16px;
+	padding-right: 16px;
+}
+QScrollBar:vertical {
+	padding-top: 16px;
+	padding-bottom: 16px;
+}
+QScrollBar::handle {
+	background-color: #69656D;
+	margin: 1px;
+}
+QScrollBar::add-line:horizontal { subcontrol-position: right; }
+QScrollBar::sub-line:horizontal { subcontrol-position: left; }
+QScrollBar::add-line:vertical { subcontrol-position: bottom; }
+QScrollBar::sub-line:vertical { subcontrol-position: top; }
+QScrollBar::handle:hover, QScrollBar::handle:pressed { background-color: #837E78; }
+QScrollBar::handle:vertical { min-height: 10px; }
+QScrollBar::handle:horizontal { min-width: 10px; }
+QScrollBar::left-arrow { image: url("style/ptCollage/scrollbar-left-idle.png"); }
+QScrollBar::right-arrow { image: url("style/ptCollage/scrollbar-right-idle.png"); }
+QScrollBar::up-arrow { image: url("style/ptCollage/scrollbar-up-idle.png"); }
+QScrollBar::down-arrow { image: url("style/ptCollage/scrollbar-down-idle.png"); }
+QScrollBar::left-arrow:hover, QScrollBar::left-arrow:pressed { image: url("style/ptCollage/scrollbar-left-down.png"); }
+QScrollBar::right-arrow:hover, QScrollBar::right-arrow:pressed{ image: url("style/ptCollage/scrollbar-right-down.png"); }
+QScrollBar::up-arrow:hover, QScrollBar::up-arrow:pressed { image: url("style/ptCollage/scrollbar-up-down.png"); }
+QScrollBar::down-arrow:hover, QScrollBar::down-arrow:pressed { image: url("style/ptCollage/scrollbar-down-down.png"); }

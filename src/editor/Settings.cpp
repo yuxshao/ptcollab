@@ -47,12 +47,6 @@ void decrease() {
 }
 }  // namespace TextSize
 
-namespace CustomStyle {
-const char *KEY = "use_custom_style";
-bool get() { return QSettings().value(KEY, true).toBool(); }
-void set(bool value) { QSettings().setValue(KEY, value); }
-}  // namespace CustomStyle
-
 namespace ChordPreview {
 const char *KEY = "ChordPreview";
 bool get() { return QSettings().value(KEY, false).toBool(); }
@@ -124,6 +118,15 @@ const char *KEY = "render_file_destination";
 QString get() { return QSettings().value(KEY, "").toString(); }
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace RenderFileDestination
+
+namespace StyleName {
+const char *KEY = "style_name";
+const char *default_included_with_distribution = "ptCollage";
+QString get() {
+  return QSettings().value(KEY, default_included_with_distribution).toString();
+}
+void set(QString value) { QSettings().setValue(KEY, value); }
+}  // namespace StyleName
 
 QList<int> intListOfVariant(const QVariant &v, const QList<int> &def) {
   QList<QVariant> vl = v.toList();
