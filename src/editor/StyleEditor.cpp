@@ -80,13 +80,13 @@ void interpretStyle() {
   if (Settings::StyleName::get() != "System") {
     QString styleSheetName = Settings::StyleName::get();
     QFile styleSheet = styleSheetPath(styleSheetName);
-    styleSheet.open(QFile::ReadOnly);
-    if (styleSheet.isReadable()) {
+    if (styleSheet.open(QFile::ReadOnly)) {
       loadPalette(styleSheetName);
       qApp->setStyle(QStyleFactory::create("Fusion"));
-      qApp->setStyleSheet(styleSheet.readAll());
       // Use Fusion as a base for aspects stylesheet does not cover, it should
       // look consistent across all platforms
+      qApp->setStyleSheet(styleSheet.readAll());
+      styleSheet.close();
     } else {
       QMessageBox::critical(
           nullptr, QObject::tr("Style Loading Error"),
@@ -106,7 +106,6 @@ void interpretStyle() {
     // first-hand by the stylesheet author. For minimal sheets, though, the
     // availability of a palette helps their changes blend in with unchanged
     // aspects.
-    styleSheet.close();
   }
 }
 
