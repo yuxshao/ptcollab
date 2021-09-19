@@ -30,7 +30,7 @@ QString styleSheetPath(const QString &styleName) {
   return styleSheetDir(styleName) + "/" + styleName + ".qss";
 }
 
-void loadPalette(const QString &styleName) {
+void loadPaletteIfExists(const QString &styleName) {
   QString path = styleSheetDir(styleName) + "/palette.ini";
   if (QFile::exists(path)) {
     QPalette palette = qApp->palette();
@@ -81,7 +81,15 @@ void interpretStyle() {
     QString styleSheetName = Settings::StyleName::get();
     QFile styleSheet = styleSheetPath(styleSheetName);
     if (styleSheet.open(QFile::ReadOnly)) {
-      loadPalette(styleSheetName);
+      loadPaletteIfExists(styleSheetName);
+      // Only apply custom palette if palette.ini is present. QPalette::Light
+      // and QPalette::Dark have been discarded because they are unlikely to be
+      // used in conjunction with stylesheets & they cannot be represented
+      // properly in an .INI. There are situations where the palette would not
+      // be a necessary addition to the stylesheet & all the coloring is done
+      // first-hand by the stylesheet author. For minimal sheets, though, the
+      // availability of a palette helps their changes blend in with unchanged
+      // aspects.
       qApp->setStyle(QStyleFactory::create("Fusion"));
       // Use Fusion as a base for aspects stylesheet does not cover, it should
       // look consistent across all platforms
@@ -95,17 +103,8 @@ void interpretStyle() {
               .arg(Settings::StyleName::get()));
       if (Settings::StyleName::get() == requestedDefaultStyleName)
         Settings::StyleName::set("System");
-      // This should only happen if there are unforseen platform/filesystem/Qt
-      // errors or tinkering was done with the ptCollage style
+      // This should only happen if the stylesheet is unreadable
     }
-    // Only apply custom palette if palette.ini is present. QPalette::Light
-    // and QPalette::Dark have been discarded because they are unlikely to be
-    // used in conjunction with stylesheets & they cannot be represented
-    // properly in an .INI. There are situations where the palette would not be
-    // a necessary addition to the stylesheet & all the coloring is done
-    // first-hand by the stylesheet author. For minimal sheets, though, the
-    // availability of a palette helps their changes blend in with unchanged
-    // aspects.
   }
 }
 
