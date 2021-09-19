@@ -1,6 +1,7 @@
 #include "StyleEditor.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QDirIterator>
 #include <QFile>
 #include <QMessageBox>
@@ -30,32 +31,52 @@ QString styleSheetPath(const QString &styleName) {
   return styleSheetDir(styleName) + "/" + styleName + ".qss";
 }
 
-void loadPaletteIfExists(const QString &styleName) {
+struct InvalidColorError {
+  QString settingsKey;
+  QString setting;
+};
+void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
+                         QSettings &settings, const QString &key) {
+  QString str = settings.value(key).toString();
+  if (QColor::isValidColor(str))
+    palette.setColor(QPalette::Window, str);
+  else
+    throw InvalidColorError{key, str};
+};
+
+void tryLoadPalette(const QString &styleName) {
   QString path = styleSheetDir(styleName) + "/palette.ini";
   if (QFile::exists(path)) {
     QPalette palette = qApp->palette();
     QSettings stylePalette(path, QSettings::IniFormat);
 
     stylePalette.beginGroup("palette");
-    palette.setColor(QPalette::Window, stylePalette.value("Window").toString());
-    palette.setColor(QPalette::WindowText,
-                     stylePalette.value("WindowText").toString());
-    palette.setColor(QPalette::Base, stylePalette.value("Base").toString());
-    palette.setColor(QPalette::ToolTipBase,
-                     stylePalette.value("ToolTipBase").toString());
-    palette.setColor(QPalette::ToolTipText,
-                     stylePalette.value("ToolTipText").toString());
-    palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-    palette.setColor(QPalette::Button, stylePalette.value("Button").toString());
-    palette.setColor(QPalette::ButtonText,
-                     stylePalette.value("ButtonText").toString());
-    palette.setColor(QPalette::BrightText,
-                     stylePalette.value("BrightText").toString());
-    palette.setColor(QPalette::Text, stylePalette.value("Text").toString());
-    palette.setColor(QPalette::Link, stylePalette.value("Link").toString());
-    palette.setColor(QPalette::Highlight,
-                     stylePalette.value("Highlight").toString());
-    qApp->setPalette(palette);
+    try {
+      setColorFromSetting(palette, QPalette::Window, stylePalette, "Window");
+      setColorFromSetting(palette, QPalette::WindowText, stylePalette,
+                          "WindowText");
+      setColorFromSetting(palette, QPalette::Base, stylePalette, "Base");
+      setColorFromSetting(palette, QPalette::ToolTipBase, stylePalette,
+                          "ToolTipBase");
+      setColorFromSetting(palette, QPalette::ToolTipText, stylePalette,
+                          "ToolTipText");
+      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
+      setColorFromSetting(palette, QPalette::Button, stylePalette, "Button");
+      setColorFromSetting(palette, QPalette::ButtonText, stylePalette,
+                          "ButtonText");
+      setColorFromSetting(palette, QPalette::BrightText, stylePalette,
+                          "BrightText");
+      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
+      setColorFromSetting(palette, QPalette::Link, stylePalette, "Link");
+      setColorFromSetting(palette, QPalette::Highlight, stylePalette,
+                          "Highlight");
+      qApp->setPalette(palette);
+    } catch (InvalidColorError e) {
+      qWarning()
+          << QString(
+                 "Could not load palette. Invalid color (%1) for setting (%2)")
+                 .arg(e.setting, e.settingsKey);
+    }
   }
 }
 
