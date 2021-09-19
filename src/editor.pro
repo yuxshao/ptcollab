@@ -244,22 +244,6 @@ isEmpty(PREFIX) {
     win32:PREFIX = C:/$${TARGET}
     else:PREFIX = /opt/$${TARGET}
 }
-defineTest(copyToDestDir) {
-    files = $$1
-    dir = $$2
-    # replace slashes in destination path for Windows
-    win32:dir ~= s,/,\\,g
-
-    for(file, files) {
-        # replace slashes in source path for Windows
-        win32:file ~= s,/,\\,g
-
-        QMAKE_POST_LINK += $$QMAKE_COPY_DIR $$shell_quote($$file) $$shell_quote($$dir) $$escape_expand(\\n\\t)
-    }
-
-    export(QMAKE_POST_LINK)
-}
-copyToDestDir(./style, $$DESTDIR/style/)
 
 win32:target.path = $$PREFIX
 else:target.path = $$PREFIX/bin
@@ -301,5 +285,9 @@ unix {
 
   pxtone_license.files = $$PWD/pxtone/LICENSE
   pxtone_license.path = $$PREFIX/share/doc/pxtone
+  INSTALLS += pxtone_license
+
+  styles.files = $$PWD/stylesgg/sty/LICENSE
+  styles.path = $$PREFIX/share/styles/pxtone
   INSTALLS += pxtone_license
 }
