@@ -78,10 +78,10 @@ void interpretStyle() {
   // it's "System").
 
   if (Settings::StyleName::get() != "System") {
-    QString styleSheetName = Settings::StyleName::get();
-    QFile styleSheet = styleSheetPath(styleSheetName);
+    QString styleName = Settings::StyleName::get();
+    QFile styleSheet = styleSheetPath(styleName);
     if (styleSheet.open(QFile::ReadOnly)) {
-      loadPaletteIfExists(styleSheetName);
+      loadPaletteIfExists(styleName);
       // Only apply custom palette if palette.ini is present. QPalette::Light
       // and QPalette::Dark have been discarded because they are unlikely to be
       // used in conjunction with stylesheets & they cannot be represented
