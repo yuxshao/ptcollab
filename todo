@@ -462,6 +462,9 @@ playback
    so, via pkgconfig or sth else)
 2. add some preprocessor checks to disable midi component if rtmidi not found
 
+9/19
+1. merge ewan's PR for style switching + ptcollage style
+
 Todo by priority
 ----------------
  - show other's midi inputs if you're either following the or they're not playing
