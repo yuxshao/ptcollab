@@ -102,7 +102,7 @@ class PxtoneClient : public QObject {
   void setUnitPlayed(int unit_no, bool played);
   void setUnitVisible(int unit_no, bool visible);
   void setUnitOperated(int unit_no, bool operated);
-  void toggleSolo(int unit_no);
+  void cycleSolo(int unit_no);
   void removeUnusedUnitsAndWoices();
 
  private:

@@ -486,9 +486,7 @@ void PxtoneClient::setUnitVisible(int unit_no, bool visible) {
 void PxtoneClient::setUnitOperated(int unit_no, bool operated) {
   m_controller->setUnitOperated(unit_no, operated);
 }
-void PxtoneClient::toggleSolo(int unit_no) {
-  m_controller->toggleSolo(unit_no);
-}
+void PxtoneClient::cycleSolo(int unit_no) { m_controller->cycleSolo(unit_no); }
 
 void PxtoneClient::removeUnusedUnitsAndWoices() {
   std::set<int> unitNosInUse;

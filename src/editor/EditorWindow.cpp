@@ -365,7 +365,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (maybe_unit_no.has_value()) {
         int unit_no = maybe_unit_no.value();
         if (event->modifiers() & Qt::ShiftModifier)
-          m_client->toggleSolo(unit_no);
+          m_client->cycleSolo(unit_no);
         else {
           const pxtnUnit *u = m_pxtn.Unit_Get(unit_no);
           if (u) m_client->setUnitPlayed(unit_no, !u->get_played());

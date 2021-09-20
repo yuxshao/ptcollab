@@ -568,25 +568,36 @@ void PxtoneController::setUnitOperated(int unit_no, bool operated) {
   emit operatedToggled(unit_no);
 }
 
-// If currently this unit is soloing, unmute everything. Else mute everything
-// but this unit.
-void PxtoneController::toggleSolo(int solo_unit_no) {
+// If currently this unit is soloing, unmute other selected units. If exactly
+// selected units are playing, unmute everything. Else mute everything but
+// this unit.
+void PxtoneController::cycleSolo(int solo_unit_no) {
   pxtnUnit *solo_u = m_pxtn->Unit_Get_variable(solo_unit_no);
   if (!solo_u) return;
 
   bool is_currently_soloing = true;
+  bool is_currently_selected_soloing = true;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
     pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
-    if (u->get_played() != (u == solo_u)) {
-      is_currently_soloing = false;
-      break;
-    }
+    if (u->get_played() != (u == solo_u)) is_currently_soloing = false;
+    if (u->get_played() != (u->get_operated() || u == solo_u))
+      is_currently_selected_soloing = false;
   }
 
-  for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
-    m_pxtn->Unit_Get_variable(i)->set_played(is_currently_soloing);
-
-  solo_u->set_played(true);
+  if (is_currently_soloing && !is_currently_selected_soloing) {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
+      pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
+      u->set_played(u->get_operated() || u == solo_u);
+    }
+  } else if (is_currently_selected_soloing) {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
+      m_pxtn->Unit_Get_variable(i)->set_played(true);
+  } else {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
+      pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
+      m_pxtn->Unit_Get_variable(i)->set_played(u == solo_u);
+    }
+  }
   emit soloToggled();
 }
 

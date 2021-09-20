@@ -467,10 +467,10 @@ playback
 2. urls relative to qss file. real multiple style dirs (executable dir, ../share, standard local path)
 3. fix bug where pasted woice changes were wrong if certain woices were deleted since program load
 4. put stylesheets in qrc so that bundles aren't annoying
+5. cycle solo for selected units only
 
 Todo by priority
 ----------------
- - solo toggle for selected units only.
  - shift + W/S for navigating up selected units only
  - disallow out-of-range values in the effects tab (e.g. negative group #s)
 
