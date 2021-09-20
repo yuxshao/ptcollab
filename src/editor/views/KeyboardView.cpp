@@ -914,7 +914,8 @@ void KeyboardView::copySelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->clipboard()->copy(
       selectedUnitNos(),
-      m_client->editState().mouse_edit_state.selection.value(), m_pxtn);
+      m_client->editState().mouse_edit_state.selection.value(), m_pxtn,
+      m_client->controller()->woiceIdMap());
 }
 
 void KeyboardView::clearSelection() {

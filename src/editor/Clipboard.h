@@ -29,7 +29,7 @@ class Clipboard : public QObject {
  public:
   Clipboard(QObject *parent = nullptr);
   void copy(const std::set<int> &unit_nos, const Interval &range,
-            const pxtnService *pxtn);
+            const pxtnService *pxtn, const NoIdMap &woiceIdMap);
   PasteResult makePaste(const std::set<int> &unit_nos, qint32 start_clock,
                         const NoIdMap &map);
   std::list<Action::Primitive> makeClear(const std::set<int> &unit_nos,

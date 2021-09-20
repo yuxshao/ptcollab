@@ -16,8 +16,9 @@ struct CopyState {
   std::set<int> m_unit_nos;
 
   CopyState(){};
-  CopyState(const std::set<int> &copy_unit_nos, const Interval &range,
-            const pxtnService *pxtn, const std::set<EVENTKIND> &kinds_to_copy);
+  CopyState(const std::set<int> &unit_nos, const Interval &range,
+            const pxtnService *pxtn, const NoIdMap &woiceIdMap,
+            const std::set<EVENTKIND> &kinds_to_copy);
   std::list<Action::Primitive> makePaste(
       const std::set<int> &paste_unit_nos,
       const std::set<EVENTKIND> &kinds_to_paste, qint32 start_clock,
@@ -93,7 +94,7 @@ Clipboard::Clipboard(QObject *parent) : QObject(parent) {
 static const QString CLIPBOARD_MIME = "application/ptcollab-clipboard";
 
 CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
-                     const pxtnService *pxtn,
+                     const pxtnService *pxtn, const NoIdMap &woiceIdMap,
                      const std::set<EVENTKIND> &kinds_to_copy) {
   m_copy_length = range.length();
 
@@ -110,7 +111,11 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kinds_to_copy.find(kind) != kinds_to_copy.end()) {
       int32_t v = e->value;
-      if (Evelist_Kind_IsTail(e->kind)) v = std::min(v, range.end - e->clock);
+      if (kind == EVENTKIND_VOICENO)
+        v = woiceIdMap.noToId(v);
+      else if (Evelist_Kind_IsTail(e->kind))
+        v = std::min(v, range.end - e->clock);
+
       uint8_t unit_no = e->unit_no - first_unit_no;
       m_items.emplace_back(Item{e->clock - range.start, unit_no, kind, v});
     }
@@ -120,10 +125,10 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
 // TODO: Maybe also be able to copy the tails of ONs, the existing state for
 // state kinds, and unset them at the end of the interval.
 void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range,
-                     const pxtnService *pxtn) {
+                     const pxtnService *pxtn, const NoIdMap &woiceIdMap) {
   QByteArray data;
   QDataStream s(&data, QIODevice::ReadWrite);
-  s << CopyState(unit_nos, range, pxtn, m_kinds_to_copy);
+  s << CopyState(unit_nos, range, pxtn, woiceIdMap, m_kinds_to_copy);
   QMimeData *mime = new QMimeData();
   mime->setData(CLIPBOARD_MIME, data);
   QGuiApplication::clipboard()->setMimeData(mime);
