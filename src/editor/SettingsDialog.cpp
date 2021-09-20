@@ -13,20 +13,8 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
   ui->setupUi(this);
 
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
-  connect(ui->styleButton, &QPushButton::released, []() {
-    QString optimalLocation =
-        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) +
-        "/styles/";
-
-    QFile readme(":/styles/README.md");
-    QDir outputDir(optimalLocation);
-    if (!outputDir.exists(optimalLocation)) {
-      outputDir.mkpath(optimalLocation);
-    }
-    readme.remove();
-    readme.copy(optimalLocation + "README.md");
-    QDesktopServices::openUrl(optimalLocation);
-  });
+  connect(ui->styleButton, &QPushButton::released,
+          []() { StyleEditor::initializeStyleDir(); });
 }
 
 void SettingsDialog::apply() {

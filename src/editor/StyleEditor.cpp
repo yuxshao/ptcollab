@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDirIterator>
 #include <QFile>
 #include <QMessageBox>
@@ -9,6 +10,7 @@
 #include <QPalette>
 #include <QStandardPaths>
 #include <QStyleFactory>
+#include <QUrl>
 #include <set>
 
 #include "Settings.h"
@@ -74,6 +76,20 @@ void tryLoadPalette(const QString &basedir, const QString &styleName) {
   }
 }
 
+void initializeStyleDir() {
+  QString optimalLocation =
+      QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) +
+      "/styles/";
+
+  QFile readme(":/styles/README.md");
+  QDir outputDir(optimalLocation);
+  if (!outputDir.exists(optimalLocation)) {
+    outputDir.mkpath(optimalLocation);
+  }
+  readme.remove();
+  readme.copy(optimalLocation + "README.md");
+  QDesktopServices::openUrl(optimalLocation);
+}
 QString relativizeUrls(QString stylesheet, const QString &basedir,
                        const QString &styleName) {
   stylesheet.replace("url(\"",
@@ -123,10 +139,12 @@ std::map<QString, QString> getStyleMap() {
         continue;
 
       QString styleName = dir.fileName();
-      if (styles.count(styleName) > 0) continue;
+      if (styles.count(styleName) > 0)
+        continue;
 
       QString stylePath = styleSheetPath(basedir, styleName);
-      if (!QFile(stylePath).exists()) continue;
+      if (!QFile(stylePath).exists())
+        continue;
       qDebug() << "Found style" << styleName << "at path" << stylePath;
       styles[styleName] = basedir;
     }
@@ -135,7 +153,8 @@ std::map<QString, QString> getStyleMap() {
 }
 
 bool tryLoadStyle(const QString &styleName) {
-  if (styleName == SYSTEM_STYLE) return true;
+  if (styleName == SYSTEM_STYLE)
+    return true;
 
   auto styles = getStyleMap();
   auto it = styles.find(styleName);
@@ -151,7 +170,8 @@ bool tryLoadStyle(const QString &styleName) {
 
 QStringList getStyles() {
   QStringList styles;
-  for (const auto &[style, dir] : getStyleMap()) styles.push_back(style);
+  for (const auto &[style, dir] : getStyleMap())
+    styles.push_back(style);
   return styles;
 }
-}  // namespace StyleEditor
+} // namespace StyleEditor
