@@ -1,0 +1,38 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/ptcollab/palette.ini</file>
+        <file>styles/ptcollab/ptcollab.qss</file>
+        <file>styles/ptCollage/button-border-idle.png</file>
+        <file>styles/ptCollage/button-border-pressed.png</file>
+        <file>styles/ptCollage/checkbox-border-off.png</file>
+        <file>styles/ptCollage/checkbox-border-on.png</file>
+        <file>styles/ptCollage/combobox-border.png</file>
+        <file>styles/ptCollage/combobox-button-border-idle.png</file>
+        <file>styles/ptCollage/combobox-button-border-pressed.png</file>
+        <file>styles/ptCollage/combobox-button-image.png</file>
+        <file>styles/ptCollage/frame-border.png</file>
+        <file>styles/ptCollage/generic-frame.png</file>
+        <file>styles/ptCollage/lineedit-border.png</file>
+        <file>styles/ptCollage/menu-border.png</file>
+        <file>styles/ptCollage/menubar-border.png</file>
+        <file>styles/ptCollage/menubar-item-border-active.png</file>
+        <file>styles/ptCollage/palette.ini</file>
+        <file>styles/ptCollage/ptCollage.qss</file>
+        <file>styles/ptCollage/scrollbar-down-down.png</file>
+        <file>styles/ptCollage/scrollbar-down-idle.png</file>
+        <file>styles/ptCollage/scrollbar-left-down.png</file>
+        <file>styles/ptCollage/scrollbar-left-idle.png</file>
+        <file>styles/ptCollage/scrollbar-median.png</file>
+        <file>styles/ptCollage/scrollbar-rail-horizontal.png</file>
+        <file>styles/ptCollage/scrollbar-rail-vertical.png</file>
+        <file>styles/ptCollage/scrollbar-right-down.png</file>
+        <file>styles/ptCollage/scrollbar-right-idle.png</file>
+        <file>styles/ptCollage/scrollbar-up-down.png</file>
+        <file>styles/ptCollage/scrollbar-up-idle.png</file>
+        <file>styles/ptCollage/slider-border.png</file>
+        <file>styles/ptCollage/slider-handle.png</file>
+        <file>styles/ptCollage/tab-border-active.png</file>
+        <file>styles/ptCollage/tab-border-inactive.png</file>
+        <file>styles/README</file>
+    </qresource>
+</RCC>

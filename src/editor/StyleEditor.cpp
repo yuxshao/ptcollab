@@ -109,7 +109,7 @@ std::map<QString, QString> getStyleMap() {
   QStringList dirsToCheck =
       // Prioritize things in user config dir over application dir
       QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation) +
-      QStringList{exe_path, exe_path + "/../share"};
+      QStringList{exe_path, exe_path + "/../share", ":"};
 
   for (QString basedir : dirsToCheck) {
     basedir += "/styles";

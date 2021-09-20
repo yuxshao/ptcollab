@@ -255,7 +255,8 @@ macx:ICON = icon.icns
 
 DISTFILES +=
 
-RESOURCES += icons.qrc
+RESOURCES += icons.qrc \
+    styles.qrc
 
 unix {
   desktopfile.files = $$PWD/../res/ptcollab.desktop
@@ -286,8 +287,4 @@ unix {
   pxtone_license.files = $$PWD/pxtone/LICENSE
   pxtone_license.path = $$PREFIX/share/doc/pxtone
   INSTALLS += pxtone_license
-
-  styles.files = $$PWD/../res/styles
-  styles.path = $$PREFIX/share/
-  INSTALLS += styles
 }
