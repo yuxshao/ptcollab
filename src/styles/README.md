@@ -25,8 +25,7 @@ Styles can be dropped directly into this folder.
 
 ## Creating Styles
 
-ptcollab styles are created using Qt Stylesheets. Any custom objects you would want to style can
-be found in the [source code](https://github.com/yuxshao/ptcollab). Everything else (the majority) that can be styled should be referred to by the [Qt Style Sheets Reference](https://doc.qt.io/qt-5/stylesheet-reference.html).
+ptcollab styles are created using Qt Stylesheets. Any custom objects you would want to style can be found in the [source code](https://github.com/yuxshao/ptcollab). Everything else (the majority) that can be styled should be referred to by the [Qt Style Sheets Reference](https://doc.qt.io/qt-5/stylesheet-reference.html).
 
 This is the bare minimum you need for a functioning style:
 - `StyleName/StyleName.qss`
