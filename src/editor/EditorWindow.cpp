@@ -389,10 +389,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
-        m_keyboard_view->cycleCurrentUnit(1);
+        m_keyboard_view->cycleCurrentUnit(
+            1, event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_W:
-      m_keyboard_view->cycleCurrentUnit(-1);
+      m_keyboard_view->cycleCurrentUnit(-1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_V:
       if (event->modifiers() & Qt::ControlModifier)
@@ -436,10 +438,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->setCurrentUnitNo(9, false);
       break;
     case Qt::Key_PageDown:
-      m_keyboard_view->cycleCurrentUnit(1);
+      m_keyboard_view->cycleCurrentUnit(1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_PageUp:
-      m_keyboard_view->cycleCurrentUnit(-1);
+      m_keyboard_view->cycleCurrentUnit(-1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_Space:
       m_client->togglePlayState();

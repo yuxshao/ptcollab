@@ -469,10 +469,10 @@ playback
 4. put stylesheets in qrc so that bundles aren't annoying
 5. cycle solo for selected units only
 6. disallow out-of-range values in the effects tab (e.g. negative group #s)
+7. shift + W/S for navigating up selected units only
 
 Todo by priority
 ----------------
- - shift + W/S for navigating up selected units only
 
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
