@@ -464,12 +464,11 @@ playback
 
 9/19
 1. merge ewan's PR for style switching + ptcollage style
+2. urls relative to qss file. real multiple style dirs (executable dir, ../share, standard local path)
 
 Todo by priority
 ----------------
- - slightly more extensible stylesheet, install workflow
-   - urls relative to qss file
-   - read multiple style dirs (executable dir, ../share, standard local path)
+ - put stylesheets in qrc so that bundles aren't annoying
  - solo toggle for selected units only.
  - shift + W/S for navigating up selected units only
  - disallow out-of-range values in the effects tab (e.g. negative group #s)
