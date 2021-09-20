@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   // For QSettings
   a.setOrganizationName("ptcollab");
   a.setOrganizationDomain("ptweb.me");
-  a.setApplicationName("pxtone collab");
+  a.setApplicationName("ptcollab");
 
   QString style = Settings::StyleName::get();
   if (!StyleEditor::tryLoadStyle(style)) {

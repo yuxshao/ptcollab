@@ -101,9 +101,9 @@ std::map<QString, QString> getStyleMap() {
   QString exe_path = qApp->applicationDirPath();
   QStringList dirsToCheck =
       // Prioritize things in user config dir over application dir
-      QStandardPaths::locateAll(QStandardPaths::AppLocalDataLocation, "style",
+      QStandardPaths::locateAll(QStandardPaths::AppLocalDataLocation, "styles",
                                 QStandardPaths::LocateDirectory) +
-      QStringList{exe_path + "/style", exe_path + "/../share/style"};
+      QStringList{exe_path + "/styles", exe_path + "/../share/styles"};
 
   for (const QString &basedir : dirsToCheck) {
     QDirIterator dir(basedir, QDirIterator::NoIteratorFlags);
