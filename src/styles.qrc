@@ -33,6 +33,6 @@
         <file>styles/ptCollage/slider-handle.png</file>
         <file>styles/ptCollage/tab-border-active.png</file>
         <file>styles/ptCollage/tab-border-inactive.png</file>
-        <file>styles/README</file>
+        <file>styles/README.md</file>
     </qresource>
 </RCC>
