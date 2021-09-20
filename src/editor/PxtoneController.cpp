@@ -346,6 +346,11 @@ void PxtoneController::applyAddOverdrive(const Overdrive::Add &, qint64 uid) {
 
 void PxtoneController::applySetOverdrive(const Overdrive::Set &a, qint64 uid) {
   (void)uid;
+
+  // cut and amp are checked in OverDrive_Set so not checked here
+  if (a.ovdrv_no > m_pxtn->OverDrive_Max() || a.ovdrv_no < 0 ||
+      a.group >= m_pxtn->Group_Num() || a.group < 0)
+    return;
   if (!m_pxtn->OverDrive_Set(a.ovdrv_no, a.cut, a.amp, a.group)) return;
   emit overdriveChanged(a.ovdrv_no);
   emit edited();
@@ -362,6 +367,10 @@ void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
 
 void PxtoneController::applySetDelay(const Delay::Set &a, qint64 uid) {
   (void)uid;
+  if (a.freq > 1000 || a.freq <= 0.001 || a.rate > 100 || a.rate < 0 ||
+      a.group >= m_pxtn->Group_Num() || a.group < 0 || a.unit > DELAYUNIT_max ||
+      a.unit < 0 || a.delay_no > m_pxtn->Delay_Max() || a.delay_no < 0)
+    return;
   if (!m_pxtn->Delay_Set(a.delay_no, a.unit, a.freq, a.rate, a.group)) return;
   m_pxtn->Delay_ReadyTone(a.delay_no, *m_moo_state);
   emit delayChanged(a.delay_no);
@@ -568,25 +577,36 @@ void PxtoneController::setUnitOperated(int unit_no, bool operated) {
   emit operatedToggled(unit_no);
 }
 
-// If currently this unit is soloing, unmute everything. Else mute everything
-// but this unit.
-void PxtoneController::toggleSolo(int solo_unit_no) {
+// If currently this unit is soloing, unmute other selected units. If exactly
+// selected units are playing, unmute everything. Else mute everything but
+// this unit.
+void PxtoneController::cycleSolo(int solo_unit_no) {
   pxtnUnit *solo_u = m_pxtn->Unit_Get_variable(solo_unit_no);
   if (!solo_u) return;
 
   bool is_currently_soloing = true;
+  bool is_currently_selected_soloing = true;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
     pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
-    if (u->get_played() != (u == solo_u)) {
-      is_currently_soloing = false;
-      break;
-    }
+    if (u->get_played() != (u == solo_u)) is_currently_soloing = false;
+    if (u->get_played() != (u->get_operated() || u == solo_u))
+      is_currently_selected_soloing = false;
   }
 
-  for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
-    m_pxtn->Unit_Get_variable(i)->set_played(is_currently_soloing);
-
-  solo_u->set_played(true);
+  if (is_currently_soloing && !is_currently_selected_soloing) {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
+      pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
+      u->set_played(u->get_operated() || u == solo_u);
+    }
+  } else if (is_currently_selected_soloing) {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
+      m_pxtn->Unit_Get_variable(i)->set_played(true);
+  } else {
+    for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
+      pxtnUnit *u = m_pxtn->Unit_Get_variable(i);
+      m_pxtn->Unit_Get_variable(i)->set_played(u == solo_u);
+    }
+  }
   emit soloToggled();
 }
 

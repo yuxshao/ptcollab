@@ -20,7 +20,6 @@ class WelcomeDialog : public QDialog {
   void connectSelected();
 
  protected slots:
-  void closeEvent(QCloseEvent *) override;
   void buttonNewPressed();
   void buttonOpenPressed();
   void buttonConnectPressed();

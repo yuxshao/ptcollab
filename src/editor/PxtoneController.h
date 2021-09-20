@@ -52,7 +52,7 @@ class PxtoneController : public QObject {
   void setUnitPlayed(int unit_no, bool played);
   void setUnitVisible(int unit_no, bool visible);
   void setUnitOperated(int unit_no, bool operated);
-  void toggleSolo(int unit_no);
+  void cycleSolo(int unit_no);
   bool render(
       QIODevice *file, double secs, double fadeout, double volume,
       std::function<bool(double progress)> should_continue = [](double) {
