@@ -726,14 +726,25 @@ static bool canChangeUnit(PxtoneClient *client) {
   return false;
 }
 
-void KeyboardView::cycleCurrentUnit(int offset) {
+void KeyboardView::cycleCurrentUnit(int offset, bool selectedOnly) {
   if (!canChangeUnit(m_client)) return;
 
   auto maybe_unit_no =
       m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
   if (maybe_unit_no == std::nullopt) return;
+
+  qint32 starting_unit_no = maybe_unit_no.value();
   qint32 unit_no =
-      nonnegative_modulo(maybe_unit_no.value() + offset, m_pxtn->Unit_Num());
+      nonnegative_modulo(starting_unit_no + offset, m_pxtn->Unit_Num());
+  int sign = (offset >= 0 ? 1 : -1);
+
+  for (int i = 0; i < m_pxtn->Unit_Num(); ++i) {
+    if (!selectedOnly || m_client->pxtn()->Unit_Get(unit_no)->get_operated() ||
+        unit_no == starting_unit_no)
+      break;
+    unit_no = nonnegative_modulo(unit_no + sign, m_pxtn->Unit_Num());
+  }
+
   qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
   m_client->changeEditState([&](auto &s) { s.m_current_unit_id = unit_id; },
                             false);
@@ -964,10 +975,10 @@ void KeyboardView::quantizeSelection() {
       int unit_id = m_client->unitIdMap().noToId(e->unit_no);
       qint32 start_clock = quantize(e->clock);
       if (Evelist_Kind_IsTail(e->kind)) {
-        // We round the end time up. Even though this might cause an add overlap
-        // with the next value, this should be okay in terms of interacting with
-        // undo, since the undos of both of these is 2 clears. (It takes some
-        // effort to explain)
+        // We round the end time up. Even though this might cause an add
+        // overlap with the next value, this should be okay in terms of
+        // interacting with undo, since the undos of both of these is 2
+        // clears. (It takes some effort to explain)
         int v = std::max(quantizeClock, quantize(e->value));
         actions.push_back({kind, unit_id, start_clock, Action::Add{v}});
       } else

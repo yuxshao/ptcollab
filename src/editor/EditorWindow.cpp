@@ -365,7 +365,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       if (maybe_unit_no.has_value()) {
         int unit_no = maybe_unit_no.value();
         if (event->modifiers() & Qt::ShiftModifier)
-          m_client->toggleSolo(unit_no);
+          m_client->cycleSolo(unit_no);
         else {
           const pxtnUnit *u = m_pxtn.Unit_Get(unit_no);
           if (u) m_client->setUnitPlayed(unit_no, !u->get_played());
@@ -389,10 +389,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
-        m_keyboard_view->cycleCurrentUnit(1);
+        m_keyboard_view->cycleCurrentUnit(
+            1, event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_W:
-      m_keyboard_view->cycleCurrentUnit(-1);
+      m_keyboard_view->cycleCurrentUnit(-1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_V:
       if (event->modifiers() & Qt::ControlModifier)
@@ -436,10 +438,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->setCurrentUnitNo(9, false);
       break;
     case Qt::Key_PageDown:
-      m_keyboard_view->cycleCurrentUnit(1);
+      m_keyboard_view->cycleCurrentUnit(1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_PageUp:
-      m_keyboard_view->cycleCurrentUnit(-1);
+      m_keyboard_view->cycleCurrentUnit(-1,
+                                        event->modifiers() & Qt::ShiftModifier);
       break;
     case Qt::Key_Space:
       m_client->togglePlayState();

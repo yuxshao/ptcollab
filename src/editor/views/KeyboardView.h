@@ -30,7 +30,7 @@ class KeyboardView : public QWidget {
  public:
   explicit KeyboardView(PxtoneClient *client, MooClock *moo_clock,
                         QScrollArea *parent = nullptr);
-  void cycleCurrentUnit(int offset);
+  void cycleCurrentUnit(int offset, bool selectedOnly);
   void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
   void ensurePlayheadFollowed();

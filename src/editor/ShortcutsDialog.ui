@@ -117,6 +117,11 @@
      </row>
      <row>
       <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
        <string/>
       </property>
      </row>
@@ -357,160 +362,170 @@
      </item>
      <item row="15" column="0">
       <property name="text">
-       <string>1..9</string>
+       <string>Shift+W/S/PgUp/PgDn</string>
       </property>
      </item>
      <item row="15" column="1">
       <property name="text">
-       <string>Jump to unit directly</string>
+       <string>Cycle unit among selected units</string>
       </property>
      </item>
      <item row="16" column="0">
       <property name="text">
-       <string>E/D</string>
+       <string>1..9</string>
       </property>
      </item>
      <item row="16" column="1">
       <property name="text">
-       <string>Cycle parameter</string>
+       <string>Jump to unit directly</string>
       </property>
      </item>
      <item row="17" column="0">
       <property name="text">
-       <string>F</string>
+       <string>E/D</string>
       </property>
      </item>
      <item row="17" column="1">
       <property name="text">
-       <string>Follow playhead</string>
+       <string>Cycle parameter</string>
       </property>
      </item>
      <item row="18" column="0">
       <property name="text">
-       <string>F1..F4</string>
+       <string>F</string>
       </property>
      </item>
      <item row="18" column="1">
       <property name="text">
-       <string>Switch tabs</string>
+       <string>Follow playhead</string>
       </property>
      </item>
      <item row="19" column="0">
       <property name="text">
-       <string>C</string>
+       <string>F1..F4</string>
       </property>
      </item>
      <item row="19" column="1">
       <property name="text">
-       <string>Toggle if a parameter is copied</string>
+       <string>Switch tabs</string>
       </property>
      </item>
      <item row="20" column="0">
       <property name="text">
-       <string>Shift+D</string>
+       <string>C</string>
       </property>
      </item>
      <item row="20" column="1">
       <property name="text">
-       <string>Toggle dark piano roll</string>
+       <string>Toggle if a parameter is copied</string>
       </property>
      </item>
      <item row="21" column="0">
       <property name="text">
-       <string>M</string>
+       <string>Shift+D</string>
       </property>
      </item>
      <item row="21" column="1">
       <property name="text">
-       <string>Toggle mute</string>
+       <string>Toggle dark piano roll</string>
       </property>
      </item>
      <item row="22" column="0">
       <property name="text">
-       <string>Shift+M</string>
+       <string>M</string>
       </property>
      </item>
      <item row="22" column="1">
       <property name="text">
-       <string>Toggle solo</string>
+       <string>Toggle mute</string>
       </property>
      </item>
      <item row="23" column="0">
       <property name="text">
-       <string>J,L</string>
+       <string>Shift+M</string>
       </property>
      </item>
      <item row="23" column="1">
       <property name="text">
-       <string>Step forward / back (useful for MIDI input)</string>
+       <string>Cycle solo (between current unit, selected units, all)</string>
       </property>
      </item>
      <item row="24" column="0">
       <property name="text">
-       <string>Ctrl+L</string>
+       <string>J,L</string>
       </property>
      </item>
      <item row="24" column="1">
       <property name="text">
-       <string>Toggle auto-step forward on note input</string>
+       <string>Step forward / back (useful for MIDI input)</string>
       </property>
      </item>
      <item row="25" column="0">
       <property name="text">
-       <string>I,K</string>
+       <string>Ctrl+L</string>
       </property>
      </item>
      <item row="25" column="1">
       <property name="text">
-       <string>Increase / decrease step size (useful for MIDI)</string>
+       <string>Toggle auto-step forward on note input</string>
       </property>
      </item>
      <item row="26" column="0">
       <property name="text">
-       <string>Alt+Q</string>
+       <string>I,K</string>
       </property>
      </item>
      <item row="26" column="1">
       <property name="text">
-       <string>Quantize selection (useful for MIDI)</string>
+       <string>Increase / decrease step size (useful for MIDI)</string>
       </property>
      </item>
      <item row="27" column="0">
       <property name="text">
-       <string>Ctrl+Shift+C</string>
+       <string>Alt+Q</string>
       </property>
      </item>
      <item row="27" column="1">
       <property name="text">
-       <string>Toggle copy options dialog</string>
+       <string>Quantize selection (useful for MIDI)</string>
       </property>
      </item>
      <item row="28" column="0">
       <property name="text">
-       <string>Ctrl+Shift+(A/D)</string>
+       <string>Ctrl+Shift+C</string>
       </property>
      </item>
      <item row="28" column="1">
       <property name="text">
-       <string>(De)select all units</string>
+       <string>Toggle copy options dialog</string>
       </property>
      </item>
      <item row="29" column="0">
       <property name="text">
-       <string>Ctrl+P</string>
+       <string>Ctrl+Shift+(A/D)</string>
       </property>
      </item>
      <item row="29" column="1">
       <property name="text">
-       <string>Toggle preview with all units</string>
+       <string>(De)select all units</string>
       </property>
      </item>
      <item row="30" column="0">
       <property name="text">
-       <string>Ctrl+(Shift)+(Left/Right)</string>
+       <string>Ctrl+P</string>
       </property>
      </item>
      <item row="30" column="1">
+      <property name="text">
+       <string>Toggle preview with all units</string>
+      </property>
+     </item>
+     <item row="31" column="0">
+      <property name="text">
+       <string>Ctrl+(Shift)+(Left/Right)</string>
+      </property>
+     </item>
+     <item row="31" column="1">
       <property name="text">
        <string>Tweak selection</string>
       </property>

@@ -23,10 +23,9 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
           &WelcomeDialog::buttonOpenPressed);
   connect(ui->buttonConnect, &QPushButton::released, this,
           &WelcomeDialog::buttonConnectPressed);
-}
-
-void WelcomeDialog::closeEvent(QCloseEvent *) {
-  Settings::ShowWelcomeDialog::set(ui->showAgainCheck->isChecked());
+  connect(ui->showAgainCheck, &QCheckBox::stateChanged, [](int state) {
+    Settings::ShowWelcomeDialog::set(state == Qt::Checked);
+  });
 }
 
 void WelcomeDialog::buttonNewPressed() {
