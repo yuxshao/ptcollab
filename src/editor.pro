@@ -288,6 +288,6 @@ unix {
   INSTALLS += pxtone_license
 
   styles.files = $$PWD/../res/styles
-  styles.path = $$PREFIX/share/styles/pxtone
+  styles.path = $$PREFIX/share/
   INSTALLS += styles
 }

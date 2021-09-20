@@ -74,6 +74,13 @@ void tryLoadPalette(const QString &basedir, const QString &styleName) {
   }
 }
 
+QString relativizeUrls(QString stylesheet, const QString &basedir,
+                       const QString &styleName) {
+  stylesheet.replace("url(\"",
+                     "url(\"" + styleSheetDir(basedir, styleName) + "/");
+  return stylesheet;
+}
+
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   QFile styleSheet = styleSheetPath(basedir, styleName);
   if (!styleSheet.open(QFile::ReadOnly)) {
@@ -89,7 +96,7 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   qApp->setStyle(QStyleFactory::create("Fusion"));
   // Use Fusion as a base for aspects stylesheet does not cover, it should
   // look consistent across all platforms
-  qApp->setStyleSheet(styleSheet.readAll());
+  qApp->setStyleSheet(relativizeUrls(styleSheet.readAll(), basedir, styleName));
   styleSheet.close();
   return true;
 }
@@ -101,11 +108,12 @@ std::map<QString, QString> getStyleMap() {
   QString exe_path = qApp->applicationDirPath();
   QStringList dirsToCheck =
       // Prioritize things in user config dir over application dir
-      QStandardPaths::locateAll(QStandardPaths::AppLocalDataLocation, "styles",
-                                QStandardPaths::LocateDirectory) +
-      QStringList{exe_path + "/styles", exe_path + "/../share/styles"};
+      QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation) +
+      QStringList{exe_path, exe_path + "/../share"};
 
-  for (const QString &basedir : dirsToCheck) {
+  for (QString basedir : dirsToCheck) {
+    basedir += "/styles";
+    qDebug() << "Searching for styles in: " << basedir;
     QDirIterator dir(basedir, QDirIterator::NoIteratorFlags);
     while (dir.hasNext()) {
       dir.next();
@@ -119,6 +127,7 @@ std::map<QString, QString> getStyleMap() {
 
       QString stylePath = styleSheetPath(basedir, styleName);
       if (!QFile(stylePath).exists()) continue;
+      qDebug() << "Found style" << styleName << "at path" << stylePath;
       styles[styleName] = basedir;
     }
   }
