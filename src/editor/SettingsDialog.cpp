@@ -3,14 +3,18 @@
 #include "Settings.h"
 #include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
+#include <QDesktopServices>
+#include <QUrl>
+#include <QtDebug>
 
 SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
-    : QDialog(parent),
-      m_midi_wrapper(midi_wrapper),
+    : QDialog(parent), m_midi_wrapper(midi_wrapper),
       ui(new Ui::SettingsDialog) {
   ui->setupUi(this);
 
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
+  connect(ui->styleButton, &QPushButton::released,
+          []() { StyleEditor::initializeStyleDir(); });
 }
 
 void SettingsDialog::apply() {
