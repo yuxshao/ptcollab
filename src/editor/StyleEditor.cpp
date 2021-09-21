@@ -85,9 +85,8 @@ void initializeStyleDir() {
   QDir outputDir(optimalLocation);
   if (!outputDir.exists(optimalLocation)) {
     outputDir.mkpath(optimalLocation);
+    readme.copy(optimalLocation + "README.md");
   }
-  readme.remove();
-  readme.copy(optimalLocation + "README.md");
   QDesktopServices::openUrl(optimalLocation);
 }
 QString relativizeUrls(QString stylesheet, const QString &basedir,
