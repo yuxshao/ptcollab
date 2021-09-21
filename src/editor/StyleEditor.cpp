@@ -129,21 +129,17 @@ std::map<QString, QString> getStyleMap() {
   for (QString basedir : dirsToCheck) {
     basedir += "/styles";
     qDebug() << "Searching for styles in: " << basedir;
-    QDirIterator dir(basedir, QDirIterator::NoIteratorFlags);
+    QDirIterator dir(basedir,
+                     QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable,
+                     QDirIterator::NoIteratorFlags);
     while (dir.hasNext()) {
       dir.next();
 
-      if (dir.fileName().isEmpty() || dir.fileName() == "." ||
-          dir.fileName() == "..")
-        continue;
-
       QString styleName = dir.fileName();
-      if (styles.count(styleName) > 0)
-        continue;
+      if (styles.count(styleName) > 0) continue;
 
       QString stylePath = styleSheetPath(basedir, styleName);
-      if (!QFile(stylePath).exists())
-        continue;
+      if (!QFile(stylePath).exists()) continue;
       qDebug() << "Found style" << styleName << "at path" << stylePath;
       styles[styleName] = basedir;
     }
@@ -152,8 +148,7 @@ std::map<QString, QString> getStyleMap() {
 }
 
 bool tryLoadStyle(const QString &styleName) {
-  if (styleName == SYSTEM_STYLE)
-    return true;
+  if (styleName == SYSTEM_STYLE) return true;
 
   auto styles = getStyleMap();
   auto it = styles.find(styleName);
@@ -169,8 +164,7 @@ bool tryLoadStyle(const QString &styleName) {
 
 QStringList getStyles() {
   QStringList styles;
-  for (const auto &[style, dir] : getStyleMap())
-    styles.push_back(style);
+  for (const auto &[style, dir] : getStyleMap()) styles.push_back(style);
   return styles;
 }
-} // namespace StyleEditor
+}  // namespace StyleEditor
