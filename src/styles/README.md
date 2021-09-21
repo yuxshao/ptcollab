@@ -34,7 +34,7 @@ This is the bare minimum you need for a functioning style:
 The name of the containing directory & the name of the stylesheet file (`.qss`) have to match.
 
 For the stylesheet:
-- Qt Stylesheets have severe limitations compared to those of the W3C CSS specification (what you're probably used to using CSS with). They do not support variables, animations, or anything else particularly fancy. Below are some helpful QSS resources.
+- Qt Stylesheets have limitations compared to those of the W3C CSS specification (what you're probably used to using CSS with). They do not support variables or animations for example. Below are some helpful QSS resources.
 	- [The Style Sheet Syntax](https://doc.qt.io/qt-5/stylesheet-syntax.html)
 	- [Qt Style Sheets Reference](https://doc.qt.io/qt-5/stylesheet-reference.html)
 - You can use image resources via. `url()`, but files must be referred to relative to the root of the style folder, not the location of the executable.
@@ -89,4 +89,4 @@ QWidget {
 
 ## Other
 
-Thanks to Ewan Green for providing the style-switching mechanism as well as creating a style that mimics ptCollage's.
+Thanks to Ewan Green for providing the style-switching mechanism, this README, as well as creating a style that mimics ptCollage's.
