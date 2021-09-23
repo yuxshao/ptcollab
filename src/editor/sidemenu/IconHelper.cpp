@@ -91,14 +91,11 @@ void recolor(QPainter *painter, const QPixmap &src, QColor color,
 // https://code.woboq.org/qt5/qtbase/src/widgets/effects/qpixmapfilter.cpp.html#1089
 
 QIcon getIcon(QString name) {
-  QIcon dest;
   QPixmap px = QIcon(":/icons/neutral/" + name).pixmap(32, 32);
   QPainter p(&px);
 
   qDebug() << qApp->palette().color(QPalette::ButtonText).name();
-  recolor(&p, QIcon(":/icons/neutral/" + name).pixmap(32, 32),
-          qApp->palette().color(QPalette::ButtonText), 1);
-  dest.addPixmap(px);
+  recolor(&p, px, qApp->palette().color(QPalette::ButtonText), 1);
 
-  return dest;
+  return QIcon(px);
 }
