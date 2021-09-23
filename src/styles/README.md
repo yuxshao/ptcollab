@@ -65,7 +65,7 @@ Palette colors can be addressed in the stylesheet by using [`palette()`](https:/
 
 The colors on icons are influenced by `ButtonText`.
 
-Custom fonts can be used with `font-family`. The files must be located in the style's directory and be a TrueType or OpenType font (.ttf or .otf).
+[Custom fonts](https://doc.qt.io/archives/qt-4.8/stylesheet-reference.html#font) must be located in the style's directory and be a TrueType or OpenType font (.ttf or .otf).
 
 ### Basic Debugging
 
