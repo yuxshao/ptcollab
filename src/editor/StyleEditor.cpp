@@ -11,6 +11,7 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 #include <QUrl>
+#include <QFontDatabase>
 #include <set>
 
 #include "Settings.h"
@@ -24,7 +25,6 @@ QString styleSheetDir(const QString &basedir, const QString &styleName) {
 QString styleSheetPath(const QString &basedir, const QString &styleName) {
   return styleSheetDir(basedir, styleName) + "/" + styleName + ".qss";
 }
-
 struct InvalidColorError {
   QString settingsKey;
   QString setting;
@@ -96,6 +96,19 @@ QString relativizeUrls(QString stylesheet, const QString &basedir,
   return stylesheet;
 }
 
+void loadFonts(const QString path) {
+    QDirIterator it(path, QDir::NoDotAndDotDot | QDir::Files);
+    while(it.hasNext()) {
+        it.next();
+        QString t = it.filePath();
+        qDebug() << "Found font at" << it.filePath();
+        QFileInfo e(it.filePath());
+        if(e.suffix() == ".otf" || ".ttf") {
+            QFontDatabase::addApplicationFont(it.filePath()); //test
+        }
+    }
+}
+
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   QFile styleSheet = styleSheetPath(basedir, styleName);
   if (!styleSheet.open(QFile::ReadOnly)) {
@@ -105,6 +118,7 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   }
 
   tryLoadPalette(basedir, styleName);
+  loadFonts(styleSheetDir(basedir, styleName));
   // Only apply custom palette if palette.ini is present. For minimal
   // sheets, the availability of a palette helps their changes blend
   // in with unchanged aspects.

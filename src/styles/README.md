@@ -65,6 +65,8 @@ Palette colors can be addressed in the stylesheet by using [`palette()`](https:/
 
 The colors on icons are influenced by `ButtonText`.
 
+Custom fonts can be used with `font-family`. The files must be located in the style's directory and be a TrueType or OpenType font (.ttf or .otf).
+
 ### Basic Debugging
 
 If your stylesheet contains errors, ptcollab will not be able to detect them (it is an issue with Qt -- the topic is brought up in more detail [here](https://forum.qt.io/topic/130386/qcss-parser-how-to-reproduce-behavior)). Depending on the scope of the errors, a few things will happen making it apparent what the issue is.
