@@ -1,11 +1,8 @@
 #include "IconHelper.h"
 
 #include <QApplication>
-#include <QGraphicsColorizeEffect>
 #include <QPainter>
 #include <QPalette>
-
-#include <QtDebug>
 
 static void grayscale(const QImage &image, QImage &dest,
                       const QRect &rect = QRect()) {
@@ -93,9 +90,6 @@ void recolor(QPainter *painter, const QPixmap &src, QColor color,
 QIcon getIcon(QString name) {
   QPixmap px = QIcon(":/icons/neutral/" + name).pixmap(32, 32);
   QPainter p(&px);
-
-  qDebug() << qApp->palette().color(QPalette::ButtonText).name();
   recolor(&p, px, qApp->palette().color(QPalette::ButtonText), 1);
-
   return QIcon(px);
 }
