@@ -1,33 +1,13 @@
 <RCC>
-    <qresource prefix="/icons/dark">
-        <file alias="audio-on">icons/dark/audio-on.svg</file>
-        <file alias="visible">icons/dark/view-visible.svg</file>
-        <file alias="select">icons/dark/edit-select.svg</file>
-        <file alias="loop">icons/dark/media-playlist-repeat.svg</file>
-        <file alias="measure">icons/dark/measure.svg</file>
-        <file alias="save">icons/dark/document-save.svg</file>
-        <file alias="up">icons/dark/go-up.svg</file>
-        <file alias="down">icons/dark/go-down.svg</file>
-    </qresource>
-    <qresource prefix="/icons/tan">
-        <file alias="audio-on">icons/tan/audio-on.svg</file>
-        <file alias="visible">icons/tan/view-visible.svg</file>
-        <file alias="select">icons/tan/edit-select.svg</file>
-        <file alias="loop">icons/tan/media-playlist-repeat.svg</file>
-        <file alias="measure">icons/tan/measure.svg</file>
-        <file alias="save">icons/tan/document-save.svg</file>
-        <file alias="up">icons/tan/go-up.svg</file>
-        <file alias="down">icons/tan/go-down.svg</file>
-    </qresource>
-    <qresource prefix="/icons/light">
-        <file alias="audio-on">icons/light/audio-on.svg</file>
-        <file alias="visible">icons/light/view-visible.svg</file>
-        <file alias="select">icons/light/edit-select.svg</file>
-        <file alias="loop">icons/light/media-playlist-repeat.svg</file>
-        <file alias="measure">icons/light/measure.svg</file>
-        <file alias="save">icons/light/document-save.svg</file>
-        <file alias="up">icons/light/go-up.svg</file>
-        <file alias="down">icons/light/go-down.svg</file>
+    <qresource prefix="/icons/neutral">
+        <file alias="audio-on">icons/neutral/audio-on.svg</file>
+        <file alias="visible">icons/neutral/view-visible.svg</file>
+        <file alias="select">icons/neutral/edit-select.svg</file>
+        <file alias="loop">icons/neutral/media-playlist-repeat.svg</file>
+        <file alias="measure">icons/neutral/measure.svg</file>
+        <file alias="save">icons/neutral/document-save.svg</file>
+        <file alias="up">icons/neutral/go-up.svg</file>
+        <file alias="down">icons/neutral/go-down.svg</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="images">images.png</file>

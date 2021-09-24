@@ -61,6 +61,12 @@ Dark=COLOR
 
 Wherever you see `COLOR` must be occupied by a valid [QColor](https://doc.qt.io/qt-5/qcolor.html#name) value, converted from a string. In practice, this is best represented in the RGB hex color code you're probably familiar with (`#FFFFFF` is white). The values to be set are those of a [QPalette](https://doc.qt.io/qt-5/qpalette.html#details).
 
+Palette colors can be addressed in the stylesheet by using [`palette()`](https://doc.qt.io/qt-5/stylesheet-reference.html#paletterole).
+
+The colors on icons are influenced by `ButtonText`.
+
+[Custom fonts](https://doc.qt.io/archives/qt-4.8/stylesheet-reference.html#font) must be located in the style's directory and be a TrueType or OpenType font (.ttf or .otf).
+
 ### Basic Debugging
 
 If your stylesheet contains errors, ptcollab will not be able to detect them (it is an issue with Qt -- the topic is brought up in more detail [here](https://forum.qt.io/topic/130386/qcss-parser-how-to-reproduce-behavior)). Depending on the scope of the errors, a few things will happen making it apparent what the issue is.
