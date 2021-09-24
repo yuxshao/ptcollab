@@ -100,11 +100,10 @@ void loadFonts(const QString path) {
   QDirIterator it(path, QDir::NoDotAndDotDot | QDir::Files);
   while (it.hasNext()) {
     it.next();
-    QString t = it.filePath();
-    qDebug() << "Found font at" << it.filePath();
     QFileInfo e(it.filePath());
     if (e.suffix() == ".otf" || e.suffix() == ".ttf") {
-      QFontDatabase::addApplicationFont(it.filePath()); // test
+      qDebug() << "Found font at" << it.filePath();
+      QFontDatabase::addApplicationFont(it.filePath());
     }
   }
 }
@@ -150,12 +149,10 @@ std::map<QString, QString> getStyleMap() {
       dir.next();
 
       QString styleName = dir.fileName();
-      if (styles.count(styleName) > 0)
-        continue;
+      if (styles.count(styleName) > 0) continue;
 
       QString stylePath = styleSheetPath(basedir, styleName);
-      if (!QFile(stylePath).exists())
-        continue;
+      if (!QFile(stylePath).exists()) continue;
       qDebug() << "Found style" << styleName << "at path" << stylePath;
       styles[styleName] = basedir;
     }
@@ -164,8 +161,7 @@ std::map<QString, QString> getStyleMap() {
 }
 
 bool tryLoadStyle(const QString &styleName) {
-  if (styleName == SYSTEM_STYLE)
-    return true;
+  if (styleName == SYSTEM_STYLE) return true;
 
   auto styles = getStyleMap();
   auto it = styles.find(styleName);
@@ -181,8 +177,7 @@ bool tryLoadStyle(const QString &styleName) {
 
 QStringList getStyles() {
   QStringList styles;
-  for (const auto &[style, dir] : getStyleMap())
-    styles.push_back(style);
+  for (const auto &[style, dir] : getStyleMap()) styles.push_back(style);
   return styles;
 }
-} // namespace StyleEditor
+}  // namespace StyleEditor
