@@ -101,7 +101,7 @@ void loadFonts(const QString path) {
   while (it.hasNext()) {
     it.next();
     QFileInfo e(it.filePath());
-    if (e.suffix() == ".otf" || e.suffix() == ".ttf") {
+    if (e.suffix() == "otf" || e.suffix() == "ttf") {
       qDebug() << "Found font at" << it.filePath();
       QFontDatabase::addApplicationFont(it.filePath());
     }
