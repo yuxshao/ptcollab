@@ -476,6 +476,8 @@ playback
 
 Todo by priority
 ----------------
+ - fix crashes when installed from aur for whatever reason??? more oob things?
+ - autosave
 
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
