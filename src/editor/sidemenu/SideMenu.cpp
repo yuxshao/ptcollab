@@ -75,7 +75,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex& current, const QModelIndex& previous) {
             (void)previous;
-            emit currentUnitChanged(current.row());
+            if (current.isValid()) emit currentUnitChanged(current.row());
           });
   connect(ui->unitList, &QTableView::clicked,
           [this](const QModelIndex& index) { emit unitClicked(index.row()); });
