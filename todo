@@ -471,6 +471,9 @@ playback
 6. disallow out-of-range values in the effects tab (e.g. negative group #s)
 7. shift + W/S for navigating up selected units only
 
+9/25
+1. fix oob access when removing last unit causing crash in certain builds. thanks ewan for report + help!
+
 Todo by priority
 ----------------
 
