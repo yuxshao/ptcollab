@@ -78,8 +78,7 @@ class EditorWindow : public QMainWindow {
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename);
-  bool save();
-  bool saveAs();
+  bool save(bool forceSelectFilename);
   bool render();
   bool maybeSave();
   void dragEnterEvent(QDragEnterEvent* event) override;

@@ -171,8 +171,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   // m_measure_splitter->setSizes(QList{1, 10000});
 
-  connect(m_side_menu, &SideMenu::saveButtonPressed, this, &EditorWindow::save);
-  connect(ui->actionSave, &QAction::triggered, this, &EditorWindow::save);
+  connect(m_side_menu, &SideMenu::saveButtonPressed, [this]() { save(false); });
+  connect(ui->actionSave, &QAction::triggered, [this]() { save(false); });
 
   connect(m_client->controller(), &PxtoneController::edited, [this]() {
     m_modified = true;
@@ -183,7 +183,7 @@ EditorWindow::EditorWindow(QWidget *parent)
           [this]() { Host(HostSetting::NewFile); });
   connect(ui->actionOpenHost, &QAction::triggered,
           [this]() { Host(HostSetting::LoadFile); });
-  connect(ui->actionSaveAs, &QAction::triggered, this, &EditorWindow::saveAs);
+  connect(ui->actionSaveAs, &QAction::triggered, [this]() { save(true); });
   connect(ui->actionRender, &QAction::triggered, this, &EditorWindow::render);
   connect(ui->actionConnect, &QAction::triggered, this,
           &EditorWindow::connectToHost);
@@ -606,7 +606,7 @@ bool EditorWindow::maybeSave() {
       QMessageBox::Save);
   switch (ret) {
     case QMessageBox::Save:
-      return save();
+      return save(false);
     case QMessageBox::Discard:
       return true;
     case QMessageBox::Cancel:
@@ -741,23 +741,29 @@ bool EditorWindow::saveToFile(QString filename) {
   int version_from_pxtn_service = 5;
   if (m_pxtn.write(&desc, false, version_from_pxtn_service) != pxtnOK)
     return false;
-  m_modified = false;
-  m_side_menu->setModified(false);
   return true;
 }
-bool EditorWindow::saveAs() {
-  QSettings settings;
-  QString filename = QFileDialog::getSaveFileName(
-      this, "Save file",
-      QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
-      "pxtone projects (*.ptcop)");
-  if (filename.isEmpty()) return false;
 
-  settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
+bool EditorWindow::save(bool forceSelectFilename) {
+  QSettings settings;
+  QString filename;
+  if (m_filename.has_value() && !forceSelectFilename)
+    filename = m_filename.value();
+  else
+    filename = QFileDialog::getSaveFileName(
+        this, "Save file",
+        QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
+        "pxtone projects (*.ptcop)");
+  if (filename.isEmpty()) return false;
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   bool saved = saveToFile(filename);
-  if (saved) setCurrentFilename(filename);
+  if (saved) {
+    settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
+    setCurrentFilename(filename);
+    m_modified = false;
+    m_side_menu->setModified(false);
+  }
   return saved;
 }
 
@@ -809,13 +815,6 @@ bool EditorWindow::render() {
   return true;
 }
 
-bool EditorWindow::save() {
-  if (!m_filename.has_value())
-    return saveAs();
-  else
-    return saveToFile(m_filename.value());
-}
-
 void EditorWindow::connectToHost() {
   if (!maybeSave()) return;
   if (m_server &&
@@ -851,6 +850,8 @@ void EditorWindow::connectToHost() {
     delete m_server;
     m_server = nullptr;
   }
+
+  setCurrentFilename(std::nullopt);
   m_client->connectToServer(host, port, m_connect_dialog->username());
 }
 
