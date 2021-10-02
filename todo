@@ -478,6 +478,9 @@ Todo by priority
 ----------------
  - fix crashes when installed from aur for whatever reason??? more oob things?
  - autosave
+ - find instruments dialog
+ - tooltip about copy box
+ - vibrato tool
 
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
