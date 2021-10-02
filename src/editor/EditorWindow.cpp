@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QDesktopWidget>
+#include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -11,6 +12,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QSplitter>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 #include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
@@ -38,6 +40,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_fps_status(new QLabel("FPS", this)),
       m_ping_status(new QLabel("", this)),
       m_modified(false),
+      m_modified_autosave(false),
+      m_autosave_timer(new QTimer(this)),
       m_host_dialog(new HostDialog(this)),
       m_welcome_dialog(new WelcomeDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
@@ -176,6 +180,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   connect(m_client->controller(), &PxtoneController::edited, [this]() {
     m_modified = true;
+    m_modified_autosave = true;
     m_side_menu->setModified(true);
   });
 
@@ -237,6 +242,12 @@ EditorWindow::EditorWindow(QWidget *parent)
           [this]() { Host(HostSetting::LoadFile); });
   connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
           &EditorWindow::connectToHost);
+
+  m_autosave_timer->start(30 * 1000);
+  m_autosave_filename =
+      "session-" +
+      QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm-ss") + ".ptcop";
+  connect(m_autosave_timer, &QTimer::timeout, this, &EditorWindow::autoSave);
 
   if (Settings::ShowWelcomeDialog::get()) {
     // In a timer so that the main window has time to show up
@@ -617,11 +628,37 @@ bool EditorWindow::maybeSave() {
       return false;
   }
 }
+QString autoSaveDir() {
+  return QStandardPaths::writableLocation(
+             QStandardPaths::AppLocalDataLocation) +
+         "/autosave/";
+}
+
+QString autoSavePath(const QString &filename) {
+  return QDir(autoSaveDir()).filePath(filename);
+}
+
+void EditorWindow::autoSave() {
+  if (!m_modified_autosave) return;
+
+  QDir(autoSaveDir()).mkpath(autoSaveDir());
+  if (!saveToFile(autoSavePath(m_autosave_filename), false))
+    qWarning() << "Unable to save file to autosave location"
+               << autoSavePath(m_autosave_filename);
+  else {
+    m_modified_autosave = false;
+    qDebug() << "Autosaved to " << autoSavePath(m_autosave_filename);
+  }
+}
 
 void EditorWindow::closeEvent(QCloseEvent *event) {
-  if (maybeSave())
+  if (maybeSave()) {
+    qDebug() << "Deleting autosave file due to regular shutdown"
+             << autoSavePath(m_autosave_filename);
+    QFile::remove(autoSavePath(m_autosave_filename));
+
     event->accept();
-  else
+  } else
     event->ignore();
 }
 
@@ -721,7 +758,7 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
   m_client->connectToLocalServer(m_server, username);
 }
 
-bool EditorWindow::saveToFile(QString filename) {
+bool EditorWindow::saveToFile(QString filename, bool warnOnError) {
 #ifdef _WIN32
   FILE *f_raw;
   _wfopen_s(&f_raw, filename.toStdWString().c_str(), L"wb");
@@ -731,9 +768,10 @@ bool EditorWindow::saveToFile(QString filename) {
   std::unique_ptr<std::FILE, decltype(&fclose)> f(f_raw, &fclose);
   if (!f) {
     qWarning() << "Could not open file" << filename;
-    QMessageBox::warning(
-        this, tr("Could not save file"),
-        tr("Could not open file %1 for writing").arg(filename));
+    if (warnOnError)
+      QMessageBox::warning(
+          this, tr("Could not save file"),
+          tr("Could not open file %1 for writing").arg(filename));
     return false;
   }
   pxtnDescriptor desc;
