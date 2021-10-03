@@ -474,10 +474,13 @@ playback
 9/25
 1. fix oob access when removing last unit causing crash in certain builds. thanks ewan for report + help!
 
+10/3
+1. autosave
+
 Todo by priority
 ----------------
  - fix crashes when installed from aur for whatever reason??? more oob things?
- - autosave
+   - turns out it's GLIBCXX_ASSERTIONS
  - find instruments dialog
  - tooltip about copy box
  - vibrato tool
