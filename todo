@@ -476,14 +476,14 @@ playback
 
 10/3
 1. autosave
+2. tooltip about copy box
 
 Todo by priority
 ----------------
+ - find instruments dialog
+ - vibrato tool
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
- - find instruments dialog
- - tooltip about copy box
- - vibrato tool
 
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk

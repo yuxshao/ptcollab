@@ -563,6 +563,9 @@
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>Include this parameter when copying and pasting</string>
+       </property>
        <property name="text">
         <string>Copy</string>
        </property>
@@ -611,6 +614,9 @@
       <widget class="QCheckBox" name="followCheckbox">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Follow the playhead when playing</string>
        </property>
        <property name="text">
         <string>Follow</string>
