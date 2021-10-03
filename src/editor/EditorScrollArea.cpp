@@ -156,6 +156,7 @@ void EditorScrollArea::controlScroll(QScrollArea *scrollToControl,
       barToControl = scrollToControl->horizontalScrollBar();
       break;
     case Qt::Vertical:
+    default:
       bar = verticalScrollBar();
       barToControl = scrollToControl->verticalScrollBar();
       break;

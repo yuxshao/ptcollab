@@ -775,6 +775,7 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
         offset = 1;
         break;
       case Direction::DOWN:
+      default:
         offset = -1;
         break;
     }
