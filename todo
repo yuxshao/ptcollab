@@ -477,11 +477,11 @@ playback
 10/3
 1. autosave
 2. tooltip about copy box
+3. vibrato on key drag
 
 Todo by priority
 ----------------
  - find instruments dialog
- - vibrato on key drag -- do a cheeky video 
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
 

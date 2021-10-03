@@ -189,6 +189,30 @@ void drawGhostOnNote(QPainter &painter, const Interval &interval,
                  brush.toQColor(128, true, alpha * alphaMultiplier), scale);
 }
 
+struct SetNoteInterval {
+  Interval interval;
+  int pitch;
+};
+
+std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
+                                            int quantizeClock, int startPitch,
+                                            int currentPitch) {
+  // We could only make one note on event if the intervals are the same as in
+  // the line below but it seems a bit inconsistent.
+  // if (startPitch == currentPitch) return {{interval, startPitch}};
+  std::list<SetNoteInterval> intervals;
+  int pitch = startPitch;
+  for (int t = interval.start; t < interval.end; t += quantizeClock) {
+    intervals.push_back(
+        {Interval{t, std::min(t + quantizeClock, interval.end)}, pitch});
+    if (pitch == startPitch)
+      pitch = currentPitch;
+    else
+      pitch = startPitch;
+  }
+  return intervals;
+}
+
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        QPainter &painter, int width, int height,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -208,6 +232,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
         break;
       const auto &keyboard_edit_state =
           std::get<MouseKeyboardEdit>(mouse_edit_state.kind);
+
       int velocity = impliedVelocity(mouse_edit_state, state.scale);
       // TODO: maybe factor out this quantization logic
       Interval interval(
@@ -218,9 +243,21 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
 
-      bool rowHighlight = (mouse_edit_state.type != MouseEditState::Nothing);
-      drawGhostOnNote(painter, interval, state.scale, width, brush, velocity,
-                      alpha, alphaMultiplier, rowHighlight, pitch);
+      if (mouse_edit_state.type == MouseEditState::Type::SetNote) {
+        int end_pitch = quantize(keyboard_edit_state.current_pitch,
+                                 localState.m_quantize_pitch) +
+                        localState.m_quantize_pitch;
+        std::list<SetNoteInterval> intervals = vibratoIntervals(
+            interval, localState.m_quantize_clock, pitch, end_pitch);
+        for (const auto &[interval, pitch] : intervals) {
+          drawGhostOnNote(painter, interval, state.scale, width, brush,
+                          velocity, alpha, alphaMultiplier, false, pitch);
+        }
+      } else {
+        bool rowHighlight = (mouse_edit_state.type != MouseEditState::Nothing);
+        drawGhostOnNote(painter, interval, state.scale, width, brush, velocity,
+                        alpha, alphaMultiplier, rowHighlight, pitch);
+      }
 
       if (mouse_edit_state.type == MouseEditState::SetOn)
         drawVelTooltip(painter, velocity, interval.start, pitch, brush,
@@ -885,10 +922,19 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
                                  clock_int.start, Delete{clock_int.end}});
 
               if (m_client->editState().mouse_edit_state.type ==
-                  MouseEditState::SetNote)
-                actions.push_back({EVENTKIND_KEY,
-                                   m_client->editState().m_current_unit_id,
-                                   clock_int.start, Add{start_pitch}});
+                  MouseEditState::SetNote) {
+                int current_pitch = quantize(keyboard_edit_state.current_pitch,
+                                             m_edit_state.m_quantize_pitch) +
+                                    m_edit_state.m_quantize_pitch;
+                const auto intervals =
+                    vibratoIntervals(clock_int, m_client->quantizeClock(),
+                                     start_pitch, current_pitch);
+                for (const auto &[interval, pitch] : intervals) {
+                  actions.push_back({EVENTKIND_KEY,
+                                     m_client->editState().m_current_unit_id,
+                                     interval.start, Add{pitch}});
+                }
+              }
               break;
             case MouseEditState::Seek:
               if (event->button() & Qt::LeftButton)
