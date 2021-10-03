@@ -1,6 +1,7 @@
 #include "EditorWindow.h"
 
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDesktopWidget>
 #include <QDir>
 #include <QFileDialog>
@@ -31,6 +32,16 @@
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
 static constexpr int EVENT_MAX = 1000000;
+
+QString autoSaveDir() {
+  return QStandardPaths::writableLocation(
+             QStandardPaths::AppLocalDataLocation) +
+         "/autosave/";
+}
+
+QString autoSavePath(const QString &filename) {
+  return QDir(autoSaveDir()).filePath(filename);
+}
 
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -248,6 +259,14 @@ EditorWindow::EditorWindow(QWidget *parent)
       "session-" +
       QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm-ss") + ".ptcop";
   connect(m_autosave_timer, &QTimer::timeout, this, &EditorWindow::autoSave);
+  if (!QDir(autoSaveDir()).isEmpty()) {
+    if (QMessageBox::question(this, tr("Found backup files from previous run"),
+                              tr("Backup files found from a previous ptcollab "
+                                 "session. This usually happens if ptcollab "
+                                 "quit unexpxectedly. Would you "
+                                 "like to open the backup directory?")))
+      QDesktopServices::openUrl(autoSaveDir());
+  }
 
   if (Settings::ShowWelcomeDialog::get()) {
     // In a timer so that the main window has time to show up
@@ -627,15 +646,6 @@ bool EditorWindow::maybeSave() {
       qWarning() << "Unexpected maybeSave answer" << ret;
       return false;
   }
-}
-QString autoSaveDir() {
-  return QStandardPaths::writableLocation(
-             QStandardPaths::AppLocalDataLocation) +
-         "/autosave/";
-}
-
-QString autoSavePath(const QString &filename) {
-  return QDir(autoSaveDir()).filePath(filename);
 }
 
 void EditorWindow::autoSave() {
