@@ -481,7 +481,7 @@ playback
 Todo by priority
 ----------------
  - find instruments dialog
- - vibrato tool
+ - vibrato on key drag -- do a cheeky video 
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
 

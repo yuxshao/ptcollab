@@ -67,6 +67,7 @@ class EditorWindow : public QMainWindow {
   ConnectionStatusLabel* m_connection_status;
   QLabel *m_fps_status, *m_ping_status;
   bool m_modified, m_modified_autosave;
+  int m_autosave_counter;
   QTimer* m_autosave_timer;
   QString m_autosave_filename;
   HostDialog* m_host_dialog;
@@ -84,6 +85,7 @@ class EditorWindow : public QMainWindow {
   bool render();
   bool maybeSave();
   void autoSave();
+  void checkForOldAutoSaves();
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;
   std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;

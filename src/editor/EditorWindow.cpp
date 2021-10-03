@@ -33,6 +33,9 @@
 // w/ smart pointers.
 static constexpr int EVENT_MAX = 1000000;
 
+static constexpr int AUTOSAVE_CHECK_INTERVAL_MS = 1 * 1000;
+static constexpr int AUTOSAVE_WRITE_PERIOD = 30;
+
 QString autoSaveDir() {
   return QStandardPaths::writableLocation(
              QStandardPaths::AppLocalDataLocation) +
@@ -52,6 +55,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_ping_status(new QLabel("", this)),
       m_modified(false),
       m_modified_autosave(false),
+      m_autosave_counter(0),
       m_autosave_timer(new QTimer(this)),
       m_host_dialog(new HostDialog(this)),
       m_welcome_dialog(new WelcomeDialog(this)),
@@ -254,19 +258,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_welcome_dialog, &WelcomeDialog::connectSelected, this,
           &EditorWindow::connectToHost);
 
-  m_autosave_timer->start(30 * 1000);
+  m_autosave_timer->start(AUTOSAVE_CHECK_INTERVAL_MS);
   m_autosave_filename =
       "session-" +
       QDateTime::currentDateTime().toString("yyyy-MM-dd-hh-mm-ss") + ".ptcop";
   connect(m_autosave_timer, &QTimer::timeout, this, &EditorWindow::autoSave);
-  if (!QDir(autoSaveDir()).isEmpty()) {
-    if (QMessageBox::question(this, tr("Found backup files from previous run"),
-                              tr("Backup files found from a previous ptcollab "
-                                 "session. This usually happens if ptcollab "
-                                 "quit unexpxectedly. Would you "
-                                 "like to open the backup directory?")))
-      QDesktopServices::openUrl(autoSaveDir());
-  }
+  checkForOldAutoSaves();
 
   if (Settings::ShowWelcomeDialog::get()) {
     // In a timer so that the main window has time to show up
@@ -649,15 +646,51 @@ bool EditorWindow::maybeSave() {
 }
 
 void EditorWindow::autoSave() {
-  if (!m_modified_autosave) return;
+  QString path = autoSavePath(m_autosave_filename);
+  QDir dir(autoSaveDir());
+  ++m_autosave_counter;
 
-  QDir(autoSaveDir()).mkpath(autoSaveDir());
-  if (!saveToFile(autoSavePath(m_autosave_filename), false))
-    qWarning() << "Unable to save file to autosave location"
-               << autoSavePath(m_autosave_filename);
+  if (!m_modified_autosave ||
+      (m_autosave_counter % AUTOSAVE_WRITE_PERIOD) > 0) {
+    // update file modification time to signal it's still active
+    QFile file(path);
+    if (file.exists()) {
+      if (file.open(QIODevice::ReadWrite)) {
+        file.setFileTime(QDateTime::currentDateTime(),
+                         QFileDevice::FileModificationTime);
+      } else
+        qWarning() << "Unable to update autosave file modification time"
+                   << path;
+    }
+
+    return;
+  }
+
+  m_autosave_counter = 0;
+  dir.mkpath(dir.path());
+
+  if (!saveToFile(path, false))
+    qWarning() << "Unable to save file to autosave location" << path;
   else {
     m_modified_autosave = false;
-    qDebug() << "Autosaved to " << autoSavePath(m_autosave_filename);
+    qDebug() << "Autosaved to " << path;
+  }
+}
+
+void EditorWindow::checkForOldAutoSaves() {
+  QDirIterator it(autoSaveDir(), {"*.ptcop"});
+  while (it.hasNext()) {
+    QFileInfo f(it.next());
+    if (QDateTime::currentDateTime() >=
+        f.lastModified().addMSecs(3 * AUTOSAVE_CHECK_INTERVAL_MS)) {
+      if (QMessageBox::question(
+              this, tr("Found backup files from previous run"),
+              tr("Old backup save files found. This usually happens if a "
+                 "previous ptcollab session quit unexpxectedly. Would you like "
+                 "to open the backup directory?")))
+        QDesktopServices::openUrl(autoSaveDir());
+      break;
+    }
   }
 }
 
