@@ -65,6 +65,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       m_copy_options_dialog(nullptr),
+      m_new_woice_dialog(new NewWoiceDialog(this)),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -413,6 +414,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Q:
       if (event->modifiers() & Qt::AltModifier)
         m_keyboard_view->quantizeSelection();
+      break;
+    case Qt::Key_R:
+      m_new_woice_dialog->show();
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))

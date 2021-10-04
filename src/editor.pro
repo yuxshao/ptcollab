@@ -89,6 +89,7 @@ HEADERS += \
            editor/HostDialog.h \
            editor/InputEvent.h \
            editor/MidiWrapper.h \
+           editor/NewWoiceDialog.h \
            editor/RenderDialog.h \
            editor/Settings.h \
            editor/SettingsDialog.h \
@@ -160,6 +161,7 @@ FORMS += \
     editor/CopyOptionsDialog.ui \
     editor/EditorWindow.ui \
     editor/HostDialog.ui \
+    editor/NewWoiceDialog.ui \
     editor/RenderDialog.ui \
     editor/SettingsDialog.ui \
     editor/ShortcutsDialog.ui \
@@ -173,6 +175,7 @@ SOURCES += main.cpp \
            editor/HostDialog.cpp \
            editor/InputEvent.cpp \
            editor/MidiWrapper.cpp \
+           editor/NewWoiceDialog.cpp \
            editor/RenderDialog.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
