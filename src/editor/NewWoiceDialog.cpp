@@ -17,56 +17,59 @@ struct SearchEntry {
   QString displayString;
 };
 
-void NewWoiceDialog::buildFileListAsync() {
+bool NewWoiceDialog::searchPart() {
   QString dir = QFileInfo(ui->searchFolderLine->text()).absoluteFilePath();
-  if (dir == "") return;
+  if (dir == "") return true;
+
   if (dir != m_last_search_dir) {
+    m_queries = nullptr;
     m_last_search_dir = dir;
     m_last_search_files.clear();
     m_last_search_dir_it = std::make_unique<QDirIterator>(
         dir, QDir::Files, QDirIterator::Subdirectories);
     m_last_search_num_files = 0;
-  }
-  if (!m_last_search_dir_it) return;
-  const QStringList &filters = woiceFilter();
-  for (int i = 0; i < 1000 && m_last_search_dir_it->hasNext(); ++i) {
-    ++m_last_search_num_files;
-    QFileInfo entry(m_last_search_dir_it->next());
-    if (filters.contains(entry.suffix()))
-      m_last_search_files.push_back(entry.absoluteFilePath());
+    ui->searchResultsList->clear();
+    return false;
   }
 
-  ui->searchResultsList->clear();
-  ui->searchResultsList->addItem(
-      QString("Building list of ... found %1 out of %2 files so far")
-          .arg(m_last_search_files.length())
-          .arg(m_last_search_num_files));
-  if (m_last_search_dir_it->hasNext())
-    QTimer::singleShot(0, this, &NewWoiceDialog::buildFileListAsync);
-  else {
-    m_last_search_dir_it = nullptr;
-    search();
+  if (m_last_search_dir_it) {
+    const QStringList &filters = woiceFilter();
+    for (int i = 0; i < 1000 && m_last_search_dir_it->hasNext(); ++i) {
+      ++m_last_search_num_files;
+      QFileInfo entry(m_last_search_dir_it->next());
+      if (filters.contains(entry.suffix()))
+        m_last_search_files.push_back(entry.absoluteFilePath());
+    }
+
+    ui->searchStatusLabel->setText(
+        QString("Scanning...\n(%1 voices / %2 files)")
+            .arg(m_last_search_files.length())
+            .arg(m_last_search_num_files));
+    if (!m_last_search_dir_it->hasNext()) {
+      m_last_search_dir_it = nullptr;
+
+      ui->searchResultsList->clear();
+      m_search_file_it = m_last_search_files.begin();
+    }
+    return false;
   }
-}
 
-void NewWoiceDialog::search() {
-  QString dir = QFileInfo(ui->searchFolderLine->text()).absoluteFilePath();
-  if (dir != m_last_search_dir) {
-    buildFileListAsync();
-    return;
+  if (m_queries == nullptr) {
+    m_queries = std::make_unique<std::list<QStringMatcher>>();
+    for (const QString &query : ui->searchQueryLine->text().split(" "))
+      m_queries->push_back(QStringMatcher(query, Qt::CaseInsensitive));
+
+    ui->searchResultsList->clear();
+    m_search_file_it = m_last_search_files.begin();
   }
 
-  std::list<QStringMatcher> queries;
-  for (const QString &query : ui->searchQueryLine->text().split(" "))
-    queries.push_back(QStringMatcher(query, Qt::CaseInsensitive));
-
-  ui->searchResultsList->clear();
-  for (const QString &fullpath : m_last_search_files) {
-    QFileInfo entry(fullpath);
-    QString path = fullpath;
+  for (int i = 0; i < 100 && m_search_file_it != m_last_search_files.end();
+       ++i, ++m_search_file_it) {
+    QFileInfo entry(*m_search_file_it);
+    QString path = *m_search_file_it;
     path.remove(0, dir.length());
     bool matches = true;
-    for (const QStringMatcher &query : queries)
+    for (const QStringMatcher &query : *m_queries)
       if (query.indexIn(path) == -1) {
         matches = false;
         break;
@@ -75,9 +78,27 @@ void NewWoiceDialog::search() {
       QListWidgetItem *item = new QListWidgetItem(
           entry.fileName() + " (" + QFileInfo(path).filePath() + ")",
           ui->searchResultsList);
-      item->setData(Qt::UserRole, fullpath);
+      item->setData(Qt::UserRole, *m_search_file_it);
     }
   }
+
+  if (m_search_file_it != m_last_search_files.end()) {
+    ui->searchStatusLabel->setText(
+        QString("Filtering...\n(%1 matches / %2 voices)")
+            .arg(ui->searchResultsList->count())
+            .arg(m_last_search_files.size()));
+    return false;
+  }
+
+  ui->searchStatusLabel->setText(QString("%1 matches / %2 voices")
+                                     .arg(ui->searchResultsList->count())
+                                     .arg(m_last_search_files.size()));
+  return true;
+}
+
+void NewWoiceDialog::searchAsync() {
+  if (!searchPart() && isVisible())
+    QTimer::singleShot(0, this, &NewWoiceDialog::searchAsync);
 }
 
 NewWoiceDialog::NewWoiceDialog(QWidget *parent)
@@ -97,9 +118,11 @@ NewWoiceDialog::NewWoiceDialog(QWidget *parent)
             if (files.length() > 0) ui->searchFolderLine->setText(files[0]);
           });
 
-  connect(ui->searchBtn, &QPushButton::clicked, this, &NewWoiceDialog::search);
+  connect(ui->searchBtn, &QPushButton::clicked, this,
+          &NewWoiceDialog::searchAsync);
   connect(ui->searchQueryLine, &QLineEdit::textEdited, this, [this]() {
-    if (ui->searchOnTypeCheck->isChecked()) search();
+    m_queries = nullptr;
+    if (ui->searchOnTypeCheck->isChecked()) searchAsync();
   });
 }
 

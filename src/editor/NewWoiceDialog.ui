@@ -117,6 +117,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="searchStatusLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -139,7 +146,18 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="searchResultsList"/>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Search results</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="searchResultsList"/>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

@@ -17,12 +17,14 @@ class NewWoiceDialog : public QDialog {
   ~NewWoiceDialog();
 
  private:
-  void buildFileListAsync();
-  void search();
+  bool searchPart();
+  void searchAsync();
   QString m_last_search_dir;
   QStringList m_last_search_files;
   QFileDialog *m_browse_search_folder_dialog;
   std::unique_ptr<QDirIterator> m_last_search_dir_it;
+  std::unique_ptr<std::list<QStringMatcher>> m_queries;
+  QStringList::iterator m_search_file_it;
   int m_last_search_num_files;
   Ui::NewWoiceDialog *ui;
 };
