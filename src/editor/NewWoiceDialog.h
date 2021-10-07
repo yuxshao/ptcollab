@@ -13,7 +13,7 @@ class NewWoiceDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit NewWoiceDialog(QWidget *parent = nullptr);
+  explicit NewWoiceDialog(bool multi, QWidget *parent = nullptr);
   ~NewWoiceDialog();
 
  private:
@@ -21,7 +21,7 @@ class NewWoiceDialog : public QDialog {
   void searchAsync();
   QString m_last_search_dir;
   QStringList m_last_search_files;
-  QFileDialog *m_browse_search_folder_dialog;
+  QFileDialog *m_browse_search_folder_dialog, *m_browse_woice_dialog;
   std::unique_ptr<QDirIterator> m_last_search_dir_it;
   std::unique_ptr<std::list<QStringMatcher>> m_queries;
   QStringList::iterator m_search_file_it;

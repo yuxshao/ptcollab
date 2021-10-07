@@ -107,27 +107,52 @@ void NewWoiceDialog::searchAsync() {
     QTimer::singleShot(0, this, &NewWoiceDialog::searchAsync);
 }
 
-NewWoiceDialog::NewWoiceDialog(QWidget *parent)
+NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
     : QDialog(parent),
       m_browse_search_folder_dialog(
           new QFileDialog(this, "Select search base folder", "")),
+      m_browse_woice_dialog(new QFileDialog(this, "Select voice", "")),
       m_last_search_dir_it(nullptr),
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
 
-  m_browse_search_folder_dialog->setDirectory(
-      QString());  // need this for last dir to work
+  m_browse_woice_dialog->setDirectory(QString());
+  if (!m_browse_woice_dialog->restoreState(Settings::BrowseWoiceState::get()))
+    qDebug() << "Could not restore browse woice dialog state";
+  m_browse_woice_dialog->setFileMode(multi ? QFileDialog::ExistingFiles
+                                           : QFileDialog::ExistingFile);
+  m_browse_woice_dialog->setNameFilter(
+      tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
+
+  connect(ui->voicePathBrowseBtn, &QPushButton::clicked, this,
+          [this]() { m_browse_woice_dialog->show(); });
+  connect(m_browse_woice_dialog, &QFileDialog::accepted, this, [this]() {
+    Settings::BrowseWoiceState::set(m_browse_woice_dialog->saveState());
+    QStringList files = m_browse_woice_dialog->selectedFiles();
+    QStringList names;
+    for (const auto &file : files) names.push_back(QFileInfo(file).baseName());
+
+    ui->voiceNameLine->setText(names.join(";"));
+    ui->voicePathLine->setText(files.join(";"));
+  });
+
+  m_browse_search_folder_dialog->setDirectory(QString());
   if (!m_browse_search_folder_dialog->restoreState(
           Settings::SearchWoiceState::get()))
     qDebug() << "Could not restore woice search dialog state";
+  m_browse_search_folder_dialog->setFileMode(QFileDialog::Directory);
+  m_browse_search_folder_dialog->setOption(QFileDialog::ShowDirsOnly);
+  QStringList files = m_browse_search_folder_dialog->selectedFiles();
+  if (files.length() > 0) ui->searchFolderLine->setText(files[0]);
+
+  ui->searchResultsList->setSelectionMode(
+      multi ? QAbstractItemView::ExtendedSelection
+            : QAbstractItemView::SingleSelection);
 
   ui->searchOnTypeCheck->setChecked(Settings::SearchOnType::get());
   connect(ui->searchOnTypeCheck, &QCheckBox::stateChanged, this, [this](int) {
     Settings::SearchOnType::set(ui->searchOnTypeCheck->isChecked());
   });
-
-  m_browse_search_folder_dialog->setFileMode(QFileDialog::Directory);
-  m_browse_search_folder_dialog->setOption(QFileDialog::ShowDirsOnly);
 
   connect(ui->searchFolderBrowseBtn, &QPushButton::clicked, this,
           [this]() { m_browse_search_folder_dialog->show(); });
