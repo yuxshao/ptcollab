@@ -482,6 +482,10 @@ playback
 Todo by priority
 ----------------
  - find instruments dialog
+   - save dir / file state
+   - actually load the instr
+   - midi key preview
+
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
 

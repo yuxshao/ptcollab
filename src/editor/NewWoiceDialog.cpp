@@ -4,6 +4,7 @@
 #include <QDirIterator>
 #include <QTimer>
 
+#include "Settings.h"
 #include "ui_NewWoiceDialog.h"
 
 const QStringList &woiceFilter() {
@@ -22,6 +23,11 @@ bool NewWoiceDialog::searchPart() {
   if (dir == "") return true;
 
   if (dir != m_last_search_dir) {
+    if (QDir(dir).exists()) {
+      m_browse_search_folder_dialog->setDirectory(dir);
+      Settings::SearchWoiceState::set(
+          m_browse_search_folder_dialog->saveState());
+    }
     m_queries = nullptr;
     m_last_search_dir = dir;
     m_last_search_files.clear();
@@ -108,18 +114,33 @@ NewWoiceDialog::NewWoiceDialog(QWidget *parent)
       m_last_search_dir_it(nullptr),
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
+
+  m_browse_search_folder_dialog->setDirectory(
+      QString());  // need this for last dir to work
+  if (!m_browse_search_folder_dialog->restoreState(
+          Settings::SearchWoiceState::get()))
+    qDebug() << "Could not restore woice search dialog state";
+
+  ui->searchOnTypeCheck->setChecked(Settings::SearchOnType::get());
+  connect(ui->searchOnTypeCheck, &QCheckBox::stateChanged, this, [this](int) {
+    Settings::SearchOnType::set(ui->searchOnTypeCheck->isChecked());
+  });
+
   m_browse_search_folder_dialog->setFileMode(QFileDialog::Directory);
   m_browse_search_folder_dialog->setOption(QFileDialog::ShowDirsOnly);
+
   connect(ui->searchFolderBrowseBtn, &QPushButton::clicked, this,
           [this]() { m_browse_search_folder_dialog->show(); });
   connect(m_browse_search_folder_dialog, &QFileDialog::accepted, this,
           [this]() {
+            Settings::SearchWoiceState::set(
+                m_browse_search_folder_dialog->saveState());
             QStringList files = m_browse_search_folder_dialog->selectedFiles();
             if (files.length() > 0) ui->searchFolderLine->setText(files[0]);
           });
 
   connect(ui->searchBtn, &QPushButton::clicked, this,
-          &NewWoiceDialog::searchAsync);
+          [this]() { searchAsync(); });
   connect(ui->searchQueryLine, &QLineEdit::textEdited, this, [this]() {
     m_queries = nullptr;
     if (ui->searchOnTypeCheck->isChecked()) searchAsync();
