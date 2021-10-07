@@ -107,6 +107,14 @@ void NewWoiceDialog::searchAsync() {
     QTimer::singleShot(0, this, &NewWoiceDialog::searchAsync);
 }
 
+void NewWoiceDialog::selectWoices(const QStringList &files) {
+  QStringList names;
+  for (const auto &file : files) names.push_back(QFileInfo(file).baseName());
+
+  ui->voiceNameLine->setText(names.join(";"));
+  ui->voicePathLine->setText(files.join(";"));
+}
+
 NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
     : QDialog(parent),
       m_browse_search_folder_dialog(
@@ -128,12 +136,7 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
           [this]() { m_browse_woice_dialog->show(); });
   connect(m_browse_woice_dialog, &QFileDialog::accepted, this, [this]() {
     Settings::BrowseWoiceState::set(m_browse_woice_dialog->saveState());
-    QStringList files = m_browse_woice_dialog->selectedFiles();
-    QStringList names;
-    for (const auto &file : files) names.push_back(QFileInfo(file).baseName());
-
-    ui->voiceNameLine->setText(names.join(";"));
-    ui->voicePathLine->setText(files.join(";"));
+    selectWoices(m_browse_woice_dialog->selectedFiles());
   });
 
   m_browse_search_folder_dialog->setDirectory(QString());
@@ -148,6 +151,15 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
   ui->searchResultsList->setSelectionMode(
       multi ? QAbstractItemView::ExtendedSelection
             : QAbstractItemView::SingleSelection);
+  connect(
+      ui->searchResultsList, &QListWidget::itemSelectionChanged, this,
+      [this]() {
+        QStringList paths;
+        for (QListWidgetItem *item : ui->searchResultsList->selectedItems()) {
+          paths.push_back(item->data(Qt::UserRole).toString());
+        }
+        selectWoices(paths);
+      });
 
   ui->searchOnTypeCheck->setChecked(Settings::SearchOnType::get());
   connect(ui->searchOnTypeCheck, &QCheckBox::stateChanged, this, [this](int) {
@@ -170,6 +182,21 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
     m_queries = nullptr;
     if (ui->searchOnTypeCheck->isChecked()) searchAsync();
   });
+}
+
+std::vector<std::pair<QString, QString>> NewWoiceDialog::selectedWoices() {
+  std::vector<std::pair<QString, QString>> woices;
+  QStringList names = ui->voiceNameLine->text().split(";");
+  QStringList paths = ui->voicePathLine->text().split(";");
+  for (int i = 0; i < paths.length(); ++i) {
+    QString name;
+    if (i >= names.length())
+      name = QFileInfo(paths[i]).baseName();
+    else
+      name = names[i];
+    woices.push_back({paths[i], name});
+  }
+  return woices;
 }
 
 NewWoiceDialog::~NewWoiceDialog() { delete ui; }

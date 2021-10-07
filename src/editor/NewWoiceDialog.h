@@ -15,10 +15,13 @@ class NewWoiceDialog : public QDialog {
  public:
   explicit NewWoiceDialog(bool multi, QWidget *parent = nullptr);
   ~NewWoiceDialog();
+  std::vector<std::pair<QString, QString>> selectedWoices();
 
  private:
   bool searchPart();
   void searchAsync();
+  void selectWoices(const QStringList &files);
+
   QString m_last_search_dir;
   QStringList m_last_search_files;
   QFileDialog *m_browse_search_folder_dialog, *m_browse_woice_dialog;
