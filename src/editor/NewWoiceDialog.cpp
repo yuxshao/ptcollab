@@ -35,6 +35,7 @@ bool NewWoiceDialog::searchPart() {
         dir, QDir::Files, QDirIterator::Subdirectories);
     m_last_search_num_files = 0;
     ui->searchResultsList->clear();
+    m_search_results_paths.clear();
     return false;
   }
 
@@ -55,6 +56,7 @@ bool NewWoiceDialog::searchPart() {
       m_last_search_dir_it = nullptr;
 
       ui->searchResultsList->clear();
+      m_search_results_paths.clear();
       m_search_file_it = m_last_search_files.begin();
     }
     return false;
@@ -66,10 +68,12 @@ bool NewWoiceDialog::searchPart() {
       m_queries->push_back(QStringMatcher(query, Qt::CaseInsensitive));
 
     ui->searchResultsList->clear();
+    m_search_results_paths.clear();
     m_search_file_it = m_last_search_files.begin();
   }
 
-  for (int i = 0; i < 100 && m_search_file_it != m_last_search_files.end();
+  QStringList labels;
+  for (int i = 0; i < 50 && m_search_file_it != m_last_search_files.end();
        ++i, ++m_search_file_it) {
     QFileInfo entry(*m_search_file_it);
     QString path = *m_search_file_it;
@@ -81,12 +85,12 @@ bool NewWoiceDialog::searchPart() {
         break;
       }
     if (matches) {
-      QListWidgetItem *item = new QListWidgetItem(
-          entry.fileName() + " (" + QFileInfo(path).filePath() + ")",
-          ui->searchResultsList);
-      item->setData(Qt::UserRole, *m_search_file_it);
+      m_search_results_paths.push_back(*m_search_file_it);
+      labels.push_back(entry.fileName() + " (" + QFileInfo(path).filePath() +
+                       ")");
     }
   }
+  ui->searchResultsList->addItems(labels);
 
   if (m_search_file_it != m_last_search_files.end()) {
     ui->searchStatusLabel->setText(
@@ -151,15 +155,15 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
   ui->searchResultsList->setSelectionMode(
       multi ? QAbstractItemView::ExtendedSelection
             : QAbstractItemView::SingleSelection);
-  connect(
-      ui->searchResultsList, &QListWidget::itemSelectionChanged, this,
-      [this]() {
-        QStringList paths;
-        for (QListWidgetItem *item : ui->searchResultsList->selectedItems()) {
-          paths.push_back(item->data(Qt::UserRole).toString());
-        }
-        selectWoices(paths);
-      });
+  connect(ui->searchResultsList, &QListWidget::itemSelectionChanged, this,
+          [this]() {
+            QStringList paths;
+            for (const QModelIndex &i :
+                 ui->searchResultsList->selectionModel()->selectedRows()) {
+              paths.push_back(m_search_results_paths[i.row()]);
+            }
+            selectWoices(paths);
+          });
 
   ui->searchOnTypeCheck->setChecked(Settings::SearchOnType::get());
   connect(ui->searchOnTypeCheck, &QCheckBox::stateChanged, this, [this](int) {
