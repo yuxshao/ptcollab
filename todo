@@ -482,8 +482,8 @@ playback
 Todo by priority
 ----------------
  - find instruments dialog
-   - save dir / file state
    - actually load the instr
+   - woice preview
    - midi key preview
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
