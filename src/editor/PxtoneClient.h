@@ -71,10 +71,10 @@ class PxtoneClient : public QObject {
   void resetAndSuspendAudio();
   void setFollowing(std::optional<qint64> following);
   bool isFollowing();
-  const pxtnService *pxtn() { return m_controller->pxtn(); }
+  const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
-  const mooState *moo() { return m_controller->moo(); }
-  const QAudioOutput *audioState() { return m_audio; }
+  const mooState *moo() const { return m_controller->moo(); }
+  const QAudioOutput *audioState() const { return m_audio; }
 
   const NoIdMap &unitIdMap() { return m_controller->unitIdMap(); }
   const std::map<qint64, RemoteEditState> &remoteEditStates() {

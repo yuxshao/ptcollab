@@ -65,7 +65,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       m_copy_options_dialog(nullptr),
-      m_new_woice_dialog(new NewWoiceDialog(true, this)),
+      m_new_woice_dialog(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -82,6 +82,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_moo_clock = new MooClock(m_client);
 
   m_copy_options_dialog = new CopyOptionsDialog(m_client->clipboard(), this);
+  m_new_woice_dialog = new NewWoiceDialog(true, m_client, this);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 

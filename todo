@@ -485,6 +485,8 @@ Todo by priority
    - actually load the instr
    - woice preview
    - midi key preview
+   - be able to process loop points
+ - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS

@@ -119,8 +119,59 @@ void NewWoiceDialog::selectWoices(const QStringList &files) {
   ui->voicePathLine->setText(files.join(";"));
 }
 
-NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
+AddWoice make_addWoice_from_path(const QString &path, const QString &name) {
+  QFileInfo fileinfo(path);
+  QString filename = fileinfo.fileName();
+  QString suffix = fileinfo.suffix().toLower();
+  pxtnWOICETYPE type;
+
+  if (suffix == "ptvoice")
+    type = pxtnWOICE_PTV;
+  else if (suffix == "ptnoise")
+    type = pxtnWOICE_PTN;
+  else if (suffix == "ogg" || suffix == "oga")
+    type = pxtnWOICE_OGGV;
+  else if (suffix == "wav")
+    type = pxtnWOICE_PCM;
+  else {
+    throw QString("Voice file (%1) has invalid extension (%2)")
+        .arg(filename)
+        .arg(suffix);
+  }
+  QFile file(path);
+  if (!file.open(QIODevice::ReadOnly))
+    throw QString("Could not open file (%1)").arg(filename);
+
+  return AddWoice{type, name == "" ? fileinfo.baseName() : name,
+                  file.readAll()};
+}
+
+void NewWoiceDialog::previewWoice(const QString &path) {
+  try {
+    AddWoice a(make_addWoice_from_path(path, ""));
+    std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
+    {
+      pxtnDescriptor d;
+      d.set_memory_r(a.data.constData(), a.data.size());
+      pxtnERR result = woice->read(&d, a.type);
+      if (result != pxtnOK) throw QString("Invalid voice data");
+      m_client->pxtn()->Woice_ReadyTone(woice);
+    }
+    // TODO: stop existing note preview on creation of new one in this case
+    m_note_preview = std::make_unique<NotePreview>(
+        m_client->pxtn(), &m_client->moo()->params,
+        m_client->editState().mouse_edit_state.last_pitch,
+        m_client->editState().mouse_edit_state.base_velocity, 48000, woice,
+        m_client->audioState()->bufferSize(), this);
+  } catch (const QString &e) {
+    qDebug() << "Could not preview woice at path" << path << ". Error" << e;
+  }
+}
+
+NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
+                               QWidget *parent)
     : QDialog(parent),
+      m_client(client),
       m_browse_search_folder_dialog(
           new QFileDialog(this, "Select search base folder", "")),
       m_browse_woice_dialog(new QFileDialog(this, "Select voice", "")),
@@ -143,6 +194,9 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
     selectWoices(m_browse_woice_dialog->selectedFiles());
   });
 
+  connect(m_browse_woice_dialog, &QFileDialog::currentChanged, this,
+          &NewWoiceDialog::previewWoice);
+
   m_browse_search_folder_dialog->setDirectory(QString());
   if (!m_browse_search_folder_dialog->restoreState(
           Settings::SearchWoiceState::get()))
@@ -158,9 +212,13 @@ NewWoiceDialog::NewWoiceDialog(bool multi, QWidget *parent)
   connect(ui->searchResultsList, &QListWidget::itemSelectionChanged, this,
           [this]() {
             QStringList paths;
-            for (const QModelIndex &i :
-                 ui->searchResultsList->selectionModel()->selectedRows()) {
+            QModelIndexList rows(
+                ui->searchResultsList->selectionModel()->selectedRows());
+            for (const QModelIndex &i : rows)
               paths.push_back(m_search_results_paths[i.row()]);
+            if (rows.count() > 0) {
+              int row = ui->searchResultsList->currentIndex().row();
+              previewWoice(m_search_results_paths[row]);
             }
             selectWoices(paths);
           });
