@@ -575,6 +575,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
     m_new_woice_dialog->inputMidi(e);
     return;
   }
+  if (m_change_woice_dialog->isVisible()) {
+    m_change_woice_dialog->inputMidi(e);
+    return;
+  }
   std::visit(
       overloaded{
           [this](const Input::Event::On &e) {

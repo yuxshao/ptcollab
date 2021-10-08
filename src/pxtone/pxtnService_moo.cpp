@@ -104,7 +104,7 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
       for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
         pxtnVOICETONE* p_tone = p_u->get_tone(v);
         const pxtnVOICEINSTANCE* p_vi = p_wc->get_instance(v);
-        p_tone->life_count = p_vi->env_release + value;
+        p_tone->life_count = p_vi->env_release + value;  //
         p_tone->on_count = value;
       }
     }

@@ -302,8 +302,8 @@ void NewWoiceDialog::inputMidi(const Input::Event::Event &e) {
                  },
                  [this](const Input::Event::Off &e) {
                    if (m_record_note_preview[e.key])
-                     m_record_note_preview[e.key]->processEvent(EVENTKIND_ON,
-                                                                0);
+                     m_record_note_preview[e.key]->processEvent(
+                         EVENTKIND_ON, m_client->moo()->params.smp_smooth);
                  },
                  [](const Input::Event::Skip &) {},
              },
