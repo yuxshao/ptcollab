@@ -45,11 +45,13 @@ bool NewWoiceDialog::searchPart() {
   if (dir == "") return true;
 
   if (dir != m_last_search_dir) {
-    if (QDir(dir).exists()) {
+    // I'm told that in the past setDirectory would cause crashes on Mac after
+    // the first set. so I'm holding off on this for now.
+    /*if (QDir(dir).exists()) {
       m_browse_search_folder_dialog->setDirectory(dir);
       Settings::SearchWoiceState::set(
           m_browse_search_folder_dialog->saveState());
-    }
+    }*/
     m_queries = nullptr;
     m_last_search_dir = dir;
     m_last_search_files.clear();
@@ -277,17 +279,14 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
   });
 }
 
-std::vector<std::pair<QString, QString>> NewWoiceDialog::selectedWoices() {
-  std::vector<std::pair<QString, QString>> woices;
+std::vector<AddWoice> NewWoiceDialog::selectedWoices() {
+  std::vector<AddWoice> woices;
   QStringList names = ui->voiceNameLine->text().split(";");
   QStringList paths = ui->voicePathLine->text().split(";");
   for (int i = 0; i < paths.length(); ++i) {
     QString name;
-    if (i >= names.length())
-      name = QFileInfo(paths[i]).baseName();
-    else
-      name = names[i];
-    woices.push_back({paths[i], name});
+    if (i < names.length()) name = names[i];
+    woices.push_back(make_addWoice_from_path(paths[i], name));
   }
   return woices;
 }

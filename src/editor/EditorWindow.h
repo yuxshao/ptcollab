@@ -79,7 +79,7 @@ class EditorWindow : public QMainWindow {
   MidiWrapper* m_midi_wrapper;
   SettingsDialog* m_settings_dialog;
   CopyOptionsDialog* m_copy_options_dialog;
-  NewWoiceDialog* m_new_woice_dialog;
+  NewWoiceDialog *m_new_woice_dialog, *m_change_woice_dialog;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename, bool warnOnError = true);

@@ -12,31 +12,19 @@
 #include "editor/Settings.h"
 #include "ui_SideMenu.h"
 
-static QFileDialog* make_add_woice_dialog(QWidget* parent) {
-  QFileDialog* dialog = new QFileDialog(
-      parent, parent->tr("Select voice"),
-      QSettings().value(WOICE_DIR_KEY).toString(),
-      parent->tr("Instruments (*.ptvoice *.ptnoise *.wav *.ogg)"));
-
-  QString dir(QSettings().value(WOICE_DIR_KEY).toString());
-  if (!dir.isEmpty()) dialog->setDirectory(dir);
-  return dialog;
-}
-
 SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                    UserListModel* users, SelectWoiceDialog* add_unit_dialog,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
-                   QWidget* parent)
+                   NewWoiceDialog* new_woice_dialog,
+                   NewWoiceDialog* change_woice_dialog, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
-      m_add_woice_dialog(make_add_woice_dialog(this)),
       m_add_unit_dialog(add_unit_dialog),
       m_units(units),
       m_woices(woices),
       m_users(users),
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
-  m_add_woice_dialog->setFileMode(QFileDialog::ExistingFiles);
   ui->setupUi(this);
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -101,42 +89,27 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
-  connect(ui->addWoiceBtn, &QPushButton::clicked, [this]() {
-    m_change_woice = false;
-    m_add_woice_dialog->show();
-  });
-  connect(ui->changeWoiceBtn, &QPushButton::clicked, [this]() {
-    if (ui->woiceList->currentIndex().row() >= 0) {
-      m_change_woice = true;
-      m_add_woice_dialog->show();
-    }
-  });
-  connect(m_add_woice_dialog, &QFileDialog::currentChanged, this,
-          &SideMenu::candidateWoiceSelected);
+  connect(ui->addWoiceBtn, &QPushButton::clicked, new_woice_dialog,
+          &QDialog::show);
+  connect(ui->changeWoiceBtn, &QPushButton::clicked,
+          [this, change_woice_dialog]() {
+            if (ui->woiceList->currentIndex().row() >= 0)
+              change_woice_dialog->show();
+          });
 
-  connect(m_add_woice_dialog, &QDialog::accepted, this, [this]() {
-    // Unfortunately, in the past when we set the directory after every click a
-    // user reported crashes after changing directories multiple times.
-    std::optional<int> change_woice_idx = std::nullopt;
-    QString name;
-    if (m_change_woice) {
-      int idx = ui->woiceList->currentIndex().row();
-      name = ui->woiceList->currentIndex()
-                 .siblingAtColumn(int(WoiceListColumn::Name))
-                 .data()
-                 .toString();
-      if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
-      change_woice_idx = idx;
-    }
-    for (const auto& filename : m_add_woice_dialog->selectedFiles())
-      if (filename != "") {
-        QSettings().setValue(WOICE_DIR_KEY, QFileInfo(filename).absolutePath());
-        if (change_woice_idx == std::nullopt)
-          emit addWoice(filename);
-        else
-          emit changeWoice(change_woice_idx.value(), filename);
-      }
-  });
+  connect(change_woice_dialog, &QDialog::accepted, this,
+          [this, change_woice_dialog]() {
+            if (!ui->woiceList->currentIndex().isValid()) return;
+            int idx = ui->woiceList->currentIndex().row();
+            if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
+            const auto& woices = change_woice_dialog->selectedWoices();
+            if (woices.size() > 0) emit changeWoice(idx, woices[0]);
+          });
+  connect(new_woice_dialog, &QDialog::accepted, this,
+          [this, new_woice_dialog]() {
+            for (const AddWoice& w : new_woice_dialog->selectedWoices())
+              emit addWoice(w);
+          });
 
   connect(ui->tempoField, &QLineEdit::editingFinished, [this]() {
     bool ok;

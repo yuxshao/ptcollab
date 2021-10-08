@@ -66,6 +66,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       m_copy_options_dialog(nullptr),
       m_new_woice_dialog(nullptr),
+      m_change_woice_dialog(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -83,6 +84,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_copy_options_dialog = new CopyOptionsDialog(m_client->clipboard(), this);
   m_new_woice_dialog = new NewWoiceDialog(true, m_client, this);
+  m_change_woice_dialog = new NewWoiceDialog(false, m_client, this);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
@@ -90,7 +92,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_ping_status);
   statusBar()->addPermanentWidget(m_connection_status);
 
-  m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, this);
+  m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, m_new_woice_dialog,
+                                   m_change_woice_dialog, this);
   m_measure_splitter = new QFrame(m_splitter);
   QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
   m_measure_splitter->setLayout(measure_layout);
@@ -415,9 +418,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Q:
       if (event->modifiers() & Qt::AltModifier)
         m_keyboard_view->quantizeSelection();
-      break;
-    case Qt::Key_R:
-      m_new_woice_dialog->show();
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
@@ -979,7 +979,7 @@ void EditorWindow::dropEvent(QDropEvent *event) {
   std::list<AddWoice> add_woices;
   try {
     for (QUrl url : event->mimeData()->urls())
-      add_woices.push_back(make_addWoice_from_path(url.toLocalFile()));
+      add_woices.push_back(make_addWoice_from_path(url.toLocalFile(), ""));
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Unsupported instrument type"), e);
     return;

@@ -12,6 +12,8 @@ namespace Ui {
 class NewWoiceDialog;
 }
 
+extern AddWoice make_addWoice_from_path(const QString &path,
+                                        const QString &name);
 class Query;
 
 class NewWoiceDialog : public QDialog {
@@ -21,7 +23,7 @@ class NewWoiceDialog : public QDialog {
   explicit NewWoiceDialog(bool multi, const PxtoneClient *client,
                           QWidget *parent = nullptr);
   ~NewWoiceDialog();
-  std::vector<std::pair<QString, QString>> selectedWoices();
+  std::vector<AddWoice> selectedWoices();
   void inputMidi(const Input::Event::Event &);
 
  private:

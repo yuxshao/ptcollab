@@ -6,37 +6,11 @@
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 
-// TODO: Put this somewhere else, like in remote action or sth.
-AddWoice make_addWoice_from_path(const QString &path) {
-  QFileInfo fileinfo(path);
-  QString filename = fileinfo.fileName();
-  QString suffix = fileinfo.suffix().toLower();
-  pxtnWOICETYPE type;
-
-  if (suffix == "ptvoice")
-    type = pxtnWOICE_PTV;
-  else if (suffix == "ptnoise")
-    type = pxtnWOICE_PTN;
-  else if (suffix == "ogg" || suffix == "oga")
-    type = pxtnWOICE_OGGV;
-  else if (suffix == "wav")
-    type = pxtnWOICE_PCM;
-  else {
-    throw QString("Voice file (%1) has invalid extension (%2)")
-        .arg(filename)
-        .arg(suffix);
-  }
-  QFile file(path);
-  if (!file.open(QIODevice::ReadOnly))
-    throw QString("Could not open file (%1)").arg(filename);
-
-  QString name = fileinfo.baseName();
-  return AddWoice{type, name, file.readAll()};
-}
-
 // The model parents are the menu's parents because otherwise there's an init
 // cycle.
 PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
+                               NewWoiceDialog *new_woice_dialog,
+                               NewWoiceDialog *change_woice_dialog,
                                QWidget *parent)
     : SideMenu(new UnitListModel(client, parent),
                new WoiceListModel(client, parent),
@@ -44,7 +18,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
                new SelectWoiceDialog(new BasicWoiceListModel(client, parent),
                                      client, parent),
                new DelayEffectModel(client, parent),
-               new OverdriveEffectModel(client, parent)),
+               new OverdriveEffectModel(client, parent), new_woice_dialog,
+               change_woice_dialog),
       m_client(client),
       m_moo_clock(moo_clock) {
   setEditWidgetsEnabled(false);
@@ -69,18 +44,17 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
             m_client->pxtn()->Woice_Get(woice_id)->get_name_buf_jis(nullptr)),
         unit_name});
   });
-  connect(this, &SideMenu::addWoice, [this](QString path) {
+  connect(this, &SideMenu::addWoice, [this](const AddWoice &w) {
     try {
-      m_client->sendAction(make_addWoice_from_path(path));
+      m_client->sendAction(w);
     } catch (const QString &e) {
       QMessageBox::critical(this, tr("Unable to add voice"), e);
     }
   });
-  connect(this, &SideMenu::changeWoice, [this](int idx, QString path) {
+  connect(this, &SideMenu::changeWoice, [this](int idx, const AddWoice &w) {
     try {
       int woice_id = m_client->controller()->woiceIdMap().noToId(idx);
-      m_client->sendAction(
-          ChangeWoice{RemoveWoice{woice_id}, make_addWoice_from_path(path)});
+      m_client->sendAction(ChangeWoice{RemoveWoice{woice_id}, w});
     } catch (const QString &e) {
       QMessageBox::critical(this, tr("Unable to change voice"), e);
     }
@@ -96,27 +70,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       m_client->sendAction(RemoveWoice{woice_id});
     }
   });
-  connect(this, &SideMenu::candidateWoiceSelected, [this](QString path) {
-    try {
-      AddWoice a(make_addWoice_from_path(path));
-      std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
-      {
-        pxtnDescriptor d;
-        d.set_memory_r(a.data.constData(), a.data.size());
-        pxtnERR result = woice->read(&d, a.type);
-        if (result != pxtnOK) throw QString("Invalid voice data");
-        m_client->pxtn()->Woice_ReadyTone(woice);
-      }
-      // TODO: stop existing note preview on creation of new one in this case
-      m_note_preview = std::make_unique<NotePreview>(
-          m_client->pxtn(), &m_client->moo()->params,
-          m_client->editState().mouse_edit_state.last_pitch,
-          m_client->editState().mouse_edit_state.base_velocity, 48000, woice,
-          m_client->audioState()->bufferSize(), this);
-    } catch (const QString &e) {
-      qDebug() << "Could not preview woice at path" << path << ". Error" << e;
-    }
-  });
+
   connect(this, &SideMenu::selectWoice, [this](int idx) {
     // TODO: Adjust the length based off pitch and if the instrument loops or
     // not. Also this is variable on tempo rn - fix that.
