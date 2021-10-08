@@ -483,7 +483,7 @@ Todo by priority
 ----------------
  - find instruments dialog
    - actually load the instr
-   - woice preview
+   - woice preview settings
    - midi key preview
    - be able to process loop points
  - extend upper limit piano roll

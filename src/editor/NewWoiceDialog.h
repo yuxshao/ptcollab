@@ -12,6 +12,8 @@ namespace Ui {
 class NewWoiceDialog;
 }
 
+class Query;
+
 class NewWoiceDialog : public QDialog {
   Q_OBJECT
 
@@ -33,7 +35,7 @@ class NewWoiceDialog : public QDialog {
   QFileDialog *m_browse_search_folder_dialog, *m_browse_woice_dialog;
   QStringList m_search_results_paths;
   std::unique_ptr<QDirIterator> m_last_search_dir_it;
-  std::unique_ptr<std::list<QStringMatcher>> m_queries;
+  std::unique_ptr<std::list<Query>> m_queries;
   std::unique_ptr<NotePreview> m_note_preview;
   QStringList::iterator m_search_file_it;
   int m_last_search_num_files;

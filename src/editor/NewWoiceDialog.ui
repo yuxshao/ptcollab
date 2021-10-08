@@ -87,8 +87,11 @@
           </item>
           <item>
            <widget class="QLabel" name="label_4">
+            <property name="toolTip">
+             <string>Ex. &quot;organ -organya&quot; -&gt; names with &quot;organ&quot; but not &quot;organya&quot;</string>
+            </property>
             <property name="text">
-             <string>Query</string>
+             <string>Query (?)</string>
             </property>
            </widget>
           </item>

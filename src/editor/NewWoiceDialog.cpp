@@ -18,6 +18,28 @@ struct SearchEntry {
   QString displayString;
 };
 
+class Query {
+ public:
+  Query(const QString &q) : negated(false) {
+    if (q.length() == 0) return;
+    if (q[0] == "-") {
+      negated = true;
+      matcher = QStringMatcher(QString(q).remove(0, 1), Qt::CaseInsensitive);
+    } else {
+      negated = false;
+      matcher = QStringMatcher(q, Qt::CaseInsensitive);
+    }
+  }
+
+  bool matches(const QString &path) const {
+    return (matcher.indexIn(path) == -1) == negated;
+  }
+
+ private:
+  bool negated;
+  QStringMatcher matcher;
+};
+
 bool NewWoiceDialog::searchPart() {
   QString dir = QFileInfo(ui->searchFolderLine->text()).absoluteFilePath();
   if (dir == "") return true;
@@ -63,9 +85,9 @@ bool NewWoiceDialog::searchPart() {
   }
 
   if (m_queries == nullptr) {
-    m_queries = std::make_unique<std::list<QStringMatcher>>();
+    m_queries = std::make_unique<std::list<Query>>();
     for (const QString &query : ui->searchQueryLine->text().split(" "))
-      m_queries->push_back(QStringMatcher(query, Qt::CaseInsensitive));
+      m_queries->emplace_back(query);
 
     ui->searchResultsList->clear();
     m_search_results_paths.clear();
@@ -79,8 +101,8 @@ bool NewWoiceDialog::searchPart() {
     QString path = *m_search_file_it;
     path.remove(0, dir.length());
     bool matches = true;
-    for (const QStringMatcher &query : *m_queries)
-      if (query.indexIn(path) == -1) {
+    for (const Query &query : *m_queries)
+      if (!query.matches(path)) {
         matches = false;
         break;
       }
