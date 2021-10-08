@@ -118,9 +118,9 @@ QSlider::sub-page {
 }
 QSlider::handle:horizontal {
 	border: 1px transparent;
-	width: 1px;
-	margin-top: -1px;
-	margin-bottom: -1px;
+        width: 7px;
+        margin-top: -4px;
+        margin-bottom: -4px;
 	border-image: url("slider-handle.png"), 1px 1px 1px 1px fill, stretch stretch;
 }
 QAbstractScrollArea::corner {
