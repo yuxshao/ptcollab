@@ -168,29 +168,32 @@ AddWoice make_addWoice_from_path(const QString &path, const QString &name) {
                   file.readAll()};
 }
 
+void NewWoiceDialog::setPreviewWoice(const QString &path) {
+  AddWoice a(make_addWoice_from_path(path, ""));
+  m_preview_woice = std::make_shared<pxtnWoice>();
+
+  pxtnDescriptor d;
+  d.set_memory_r(a.data.constData(), a.data.size());
+  pxtnERR result = m_preview_woice->read(&d, a.type);
+  if (result != pxtnOK) {
+    qDebug() << "Could not load preview woice at path" << path;
+    m_preview_woice = nullptr;
+  } else
+    m_client->pxtn()->Woice_ReadyTone(m_preview_woice);
+}
 void NewWoiceDialog::previewWoice(const QString &path) {
-  try {
-    AddWoice a(make_addWoice_from_path(path, ""));
-    std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
-    {
-      pxtnDescriptor d;
-      d.set_memory_r(a.data.constData(), a.data.size());
-      pxtnERR result = woice->read(&d, a.type);
-      if (result != pxtnOK) throw QString("Invalid voice data");
-      m_client->pxtn()->Woice_ReadyTone(woice);
-    }
-    bool ok;
-    int key = ui->previewKeyLine->text().toInt(&ok) * PITCH_PER_KEY;
-    int vel =
-        ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
-    if (!ok) key = EVENTDEFAULT_BASICKEY;
-    // TODO: stop existing note preview on creation of new one in this case
-    m_note_preview = std::make_unique<NotePreview>(
-        m_client->pxtn(), &m_client->moo()->params, key, vel, 48000, woice,
-        m_client->audioState()->bufferSize(), this);
-  } catch (const QString &e) {
-    qDebug() << "Could not preview woice at path" << path << ". Error" << e;
-  }
+  setPreviewWoice(path);
+  if (m_preview_woice == nullptr) return;
+
+  bool ok;
+  int key = ui->previewKeyLine->text().toInt(&ok) * PITCH_PER_KEY;
+  if (!ok) key = EVENTDEFAULT_BASICKEY;
+
+  int vel =
+      ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
+  m_note_preview = std::make_unique<NotePreview>(
+      m_client->pxtn(), &m_client->moo()->params, key, vel, 48000,
+      m_preview_woice, m_client->audioState()->bufferSize(), this);
 }
 
 NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
@@ -287,6 +290,25 @@ std::vector<std::pair<QString, QString>> NewWoiceDialog::selectedWoices() {
     woices.push_back({paths[i], name});
   }
   return woices;
+}
+
+void NewWoiceDialog::inputMidi(const Input::Event::Event &e) {
+  std::visit(overloaded{
+                 [this](const Input::Event::On &e) {
+                   if (m_preview_woice == nullptr) return;
+                   m_record_note_preview[e.key] = std::make_unique<NotePreview>(
+                       m_client->pxtn(), &m_client->moo()->params, e.key, e.vel,
+                       100000000, m_preview_woice,
+                       m_client->audioState()->bufferSize(), this);
+                 },
+                 [this](const Input::Event::Off &e) {
+                   if (m_record_note_preview[e.key])
+                     m_record_note_preview[e.key]->processEvent(EVENTKIND_ON,
+                                                                0);
+                 },
+                 [](const Input::Event::Skip &) {},
+             },
+             e);
 }
 
 NewWoiceDialog::~NewWoiceDialog() { delete ui; }

@@ -571,6 +571,10 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
+  if (m_new_woice_dialog->isVisible()) {
+    m_new_woice_dialog->inputMidi(e);
+    return;
+  }
   std::visit(
       overloaded{
           [this](const Input::Event::On &e) {

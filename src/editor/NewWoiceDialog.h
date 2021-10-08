@@ -22,12 +22,14 @@ class NewWoiceDialog : public QDialog {
                           QWidget *parent = nullptr);
   ~NewWoiceDialog();
   std::vector<std::pair<QString, QString>> selectedWoices();
+  void inputMidi(const Input::Event::Event &);
 
  private:
   bool searchPart();
   void searchAsync();
   void previewWoice(const QString &path);
   void selectWoices(const QStringList &files);
+  void setPreviewWoice(const QString &path);
 
   const PxtoneClient *m_client;
   QString m_last_search_dir;
@@ -37,6 +39,8 @@ class NewWoiceDialog : public QDialog {
   std::unique_ptr<QDirIterator> m_last_search_dir_it;
   std::unique_ptr<std::list<Query>> m_queries;
   std::unique_ptr<NotePreview> m_note_preview;
+  std::shared_ptr<pxtnWoice> m_preview_woice;
+  std::map<int, std::unique_ptr<NotePreview>> m_record_note_preview;
   QStringList::iterator m_search_file_it;
   int m_last_search_num_files;
   Ui::NewWoiceDialog *ui;

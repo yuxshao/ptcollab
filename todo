@@ -479,12 +479,12 @@ playback
 2. tooltip about copy box
 3. vibrato on key drag
 
+10/7
+1. find instruments dialog w/ note + midi preview
+
 Todo by priority
 ----------------
  - find instruments dialog
-   - actually load the instr
-   - woice preview settings
-   - midi key preview
    - be able to process loop points
  - extend upper limit piano roll
 

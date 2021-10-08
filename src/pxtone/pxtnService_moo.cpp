@@ -81,7 +81,6 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
     case EVENTKIND_REPEAT:
     case EVENTKIND_LAST:
     case EVENTKIND_NULL:
-    case EVENTKIND_ON:
     case EVENTKIND_NUM:
       break;
     case EVENTKIND_VOICENO: {
@@ -98,6 +97,17 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
     case EVENTKIND_TUNING:
       p_u->Tone_Tuning(*((float*)(&value)));
       break;
+    case EVENTKIND_ON: {
+      // A bit hacky but interpret EVENTKIND_ON value as how much time is left
+      std::shared_ptr<const pxtnWoice> p_wc;
+      if (!(p_wc = p_u->get_woice())) break;
+      for (int32_t v = 0; v < p_wc->get_voice_num(); v++) {
+        pxtnVOICETONE* p_tone = p_u->get_tone(v);
+        const pxtnVOICEINSTANCE* p_vi = p_wc->get_instance(v);
+        p_tone->life_count = p_vi->env_release + value;
+        p_tone->on_count = value;
+      }
+    }
   }
 }
 
@@ -196,8 +206,8 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
   int32_t smp_end = ((double)master->get_play_meas() * master->get_beat_num() *
                      master->get_beat_clock() * moo_state.params.clock_rate);
 
-  /* Notify all the units of events that occurred since the last time increment
-     and adjust sampling parameters accordingly */
+  /* Notify all the units of events that occurred since the last time
+     increment and adjust sampling parameters accordingly */
   // events..
 
   // Keep the last played event in moo_state, so that if a new event pops up
