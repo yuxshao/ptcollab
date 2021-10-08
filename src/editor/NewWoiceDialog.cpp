@@ -189,7 +189,7 @@ void NewWoiceDialog::previewWoice(const QString &path) {
 
   bool ok;
   int key = ui->previewKeyLine->text().toInt(&ok) * PITCH_PER_KEY;
-  if (!ok) key = EVENTDEFAULT_BASICKEY;
+  if (!ok) key = EVENTDEFAULT_KEY;
 
   int vel =
       ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
@@ -209,7 +209,7 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
   ui->previewKeyLine->setText(
-      QString("%1").arg(EVENTDEFAULT_BASICKEY / PITCH_PER_KEY));
+      QString("%1").arg(EVENTDEFAULT_KEY / PITCH_PER_KEY));
   ui->previewKeyLine->setValidator(new QIntValidator(0, 150, this));
 
   m_browse_woice_dialog->setDirectory(QString());
