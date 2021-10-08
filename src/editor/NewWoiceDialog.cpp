@@ -179,11 +179,14 @@ void NewWoiceDialog::previewWoice(const QString &path) {
       if (result != pxtnOK) throw QString("Invalid voice data");
       m_client->pxtn()->Woice_ReadyTone(woice);
     }
+    bool ok;
+    int key = ui->previewKeyLine->text().toInt(&ok) * PITCH_PER_KEY;
+    int vel =
+        ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
+    if (!ok) key = EVENTDEFAULT_BASICKEY;
     // TODO: stop existing note preview on creation of new one in this case
     m_note_preview = std::make_unique<NotePreview>(
-        m_client->pxtn(), &m_client->moo()->params,
-        m_client->editState().mouse_edit_state.last_pitch,
-        m_client->editState().mouse_edit_state.base_velocity, 48000, woice,
+        m_client->pxtn(), &m_client->moo()->params, key, vel, 48000, woice,
         m_client->audioState()->bufferSize(), this);
   } catch (const QString &e) {
     qDebug() << "Could not preview woice at path" << path << ". Error" << e;
@@ -200,6 +203,9 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       m_last_search_dir_it(nullptr),
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
+  ui->previewKeyLine->setText(
+      QString("%1").arg(EVENTDEFAULT_BASICKEY / PITCH_PER_KEY));
+  ui->previewKeyLine->setValidator(new QIntValidator(0, 150, this));
 
   m_browse_woice_dialog->setDirectory(QString());
   if (!m_browse_woice_dialog->restoreState(Settings::BrowseWoiceState::get()))
