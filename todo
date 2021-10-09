@@ -482,9 +482,13 @@ playback
 10/7
 1. find instruments dialog w/ note + midi preview
 
+10/8
+
+
 Todo by priority
 ----------------
  - be able to process loop points and base midi note
+ - double click in voice dialog to select voice
  - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
