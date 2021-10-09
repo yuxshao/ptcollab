@@ -261,6 +261,8 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
             }
             selectWoices(paths);
           });
+  connect(ui->searchResultsList, &QListWidget::itemDoubleClicked, this,
+          &QDialog::accept);
 
   ui->searchOnTypeCheck->setChecked(Settings::SearchOnType::get());
   connect(ui->searchOnTypeCheck, &QCheckBox::stateChanged, this, [this](int) {

@@ -265,6 +265,8 @@ void SideMenu::setCopy(bool copy) {
   ui->copyCheckbox->setCheckState(copy ? Qt::Checked : Qt::Unchecked);
 }
 
+void SideMenu::openAddUnitWindow() { m_add_unit_dialog->show(); }
+
 void SideMenu::setParamKindIndex(int index) {
   if (ui->paramSelection->currentIndex() != index)
     ui->paramSelection->setCurrentIndex(index);

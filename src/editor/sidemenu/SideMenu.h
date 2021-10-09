@@ -74,6 +74,7 @@ class SideMenu : public QWidget {
   void setBeats(int beats);
   void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
+  void openAddUnitWindow();
 
  private:
   Ui::SideMenu *ui;

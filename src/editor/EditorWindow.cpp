@@ -409,6 +409,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
 #ifdef DEBUG_RECORD_INPUT
       if (!event->isAutoRepeat())
         recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
+#else
+      if (event->modifiers() & Qt::ShiftModifier)
+        m_side_menu->openAddUnitWindow();
+      else
+        m_new_woice_dialog->show();
 #endif
       break;
     case Qt::Key_P:
