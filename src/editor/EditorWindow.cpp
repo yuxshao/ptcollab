@@ -65,6 +65,8 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
       m_copy_options_dialog(nullptr),
+      m_new_woice_dialog(nullptr),
+      m_change_woice_dialog(nullptr),
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
@@ -81,6 +83,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_moo_clock = new MooClock(m_client);
 
   m_copy_options_dialog = new CopyOptionsDialog(m_client->clipboard(), this);
+  m_new_woice_dialog = new NewWoiceDialog(true, m_client, this);
+  m_change_woice_dialog = new NewWoiceDialog(false, m_client, this);
 
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
 
@@ -88,7 +92,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   statusBar()->addPermanentWidget(m_ping_status);
   statusBar()->addPermanentWidget(m_connection_status);
 
-  m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, this);
+  m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, m_new_woice_dialog,
+                                   m_change_woice_dialog, this);
   m_measure_splitter = new QFrame(m_splitter);
   QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
   m_measure_splitter->setLayout(measure_layout);
@@ -566,6 +571,14 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
+  if (m_new_woice_dialog->isVisible()) {
+    m_new_woice_dialog->inputMidi(e);
+    return;
+  }
+  if (m_change_woice_dialog->isVisible()) {
+    m_change_woice_dialog->inputMidi(e);
+    return;
+  }
   std::visit(
       overloaded{
           [this](const Input::Event::On &e) {
@@ -970,7 +983,7 @@ void EditorWindow::dropEvent(QDropEvent *event) {
   std::list<AddWoice> add_woices;
   try {
     for (QUrl url : event->mimeData()->urls())
-      add_woices.push_back(make_addWoice_from_path(url.toLocalFile()));
+      add_woices.push_back(make_addWoice_from_path(url.toLocalFile(), ""));
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Unsupported instrument type"), e);
     return;

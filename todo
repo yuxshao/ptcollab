@@ -479,9 +479,14 @@ playback
 2. tooltip about copy box
 3. vibrato on key drag
 
+10/7
+1. find instruments dialog w/ note + midi preview
+
 Todo by priority
 ----------------
- - find instruments dialog
+ - be able to process loop points and base midi note
+ - extend upper limit piano roll
+
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
 

@@ -4,11 +4,10 @@
 #include <QObject>
 
 #include "SideMenu.h"
+#include "editor/NewWoiceDialog.h"
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
 #include "editor/views/MooClock.h"
-
-extern AddWoice make_addWoice_from_path(const QString &path);
 
 class PxtoneSideMenu : public SideMenu {
   Q_OBJECT
@@ -24,6 +23,8 @@ class PxtoneSideMenu : public SideMenu {
 
  public:
   explicit PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
+                          NewWoiceDialog *new_woice_dialog,
+                          NewWoiceDialog *change_woice_dialog,
                           QWidget *parent = nullptr);
  signals:
 };

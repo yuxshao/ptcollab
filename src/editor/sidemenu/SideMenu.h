@@ -12,6 +12,7 @@
 #include "UnitListModel.h"
 #include "UserListModel.h"
 #include "WoiceListModel.h"
+#include "editor/NewWoiceDialog.h"
 
 namespace Ui {
 class SideMenu;
@@ -26,6 +27,8 @@ class SideMenu : public QWidget {
   explicit SideMenu(UnitListModel *units, WoiceListModel *woices,
                     UserListModel *users, SelectWoiceDialog *add_unit_dialog,
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
+                    NewWoiceDialog *new_woice_dialog,
+                    NewWoiceDialog *change_woice_dialog,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   void setTab(int index);
@@ -45,11 +48,10 @@ class SideMenu : public QWidget {
   void removeUnit();
   void addOverdrive();
   void removeOverdrive(int no);
-  void addWoice(QString filename);
+  void addWoice(const AddWoice &w);
   void removeWoice(int idx);
-  void changeWoice(int idx, QString filename);
+  void changeWoice(int idx, const AddWoice &w);
   void selectWoice(int idx);
-  void candidateWoiceSelected(QString filename);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
   void followPlayheadClicked(FollowPlayhead);
@@ -75,8 +77,6 @@ class SideMenu : public QWidget {
 
  private:
   Ui::SideMenu *ui;
-  QFileDialog *m_add_woice_dialog;
-  bool m_change_woice;
   SelectWoiceDialog *m_add_unit_dialog;
   UnitListModel *m_units;
   WoiceListModel *m_woices;

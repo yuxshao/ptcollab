@@ -179,4 +179,22 @@ void set(const QList<int> &value) {
   return QSettings().setValue(KEY, intListToVariant(value));
 }
 }  // namespace CopyKinds
+
+namespace SearchWoiceState {
+const char *KEY = "search_woice_state";
+QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
+void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
+}  // namespace SearchWoiceState
+
+namespace BrowseWoiceState {
+const char *KEY = "browse_woice_state";
+QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
+void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
+}  // namespace BrowseWoiceState
+
+namespace SearchOnType {
+const char *KEY = "search_on_type";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace SearchOnType
 }  // namespace Settings

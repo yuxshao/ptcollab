@@ -115,6 +115,21 @@ QList<int> get();
 void set(const QList<int> &);
 }  // namespace CopyKinds
 
+namespace SearchWoiceState {
+QByteArray get();
+void set(const QByteArray &);
+}  // namespace SearchWoiceState
+
+namespace BrowseWoiceState {
+QByteArray get();
+void set(const QByteArray &);
+}  // namespace BrowseWoiceState
+
+namespace SearchOnType {
+bool get();
+void set(bool);
+}  // namespace SearchOnType
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H
