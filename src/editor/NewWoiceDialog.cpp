@@ -143,7 +143,7 @@ void NewWoiceDialog::selectWoices(const QStringList &files) {
   ui->voicePathLine->setText(files.join(";"));
 }
 
-AddWoice make_addWoice_from_path(const QString &path, const QString &name) {
+AddWoice make_addWoice_from_path_exn(const QString &path, const QString &name) {
   QFileInfo fileinfo(path);
   QString filename = fileinfo.fileName();
   QString suffix = fileinfo.suffix().toLower();
@@ -171,14 +171,20 @@ AddWoice make_addWoice_from_path(const QString &path, const QString &name) {
 }
 
 void NewWoiceDialog::setPreviewWoice(const QString &path) {
-  AddWoice a(make_addWoice_from_path(path, ""));
   m_preview_woice = std::make_shared<pxtnWoice>();
-
-  pxtnDescriptor d;
-  d.set_memory_r(a.data.constData(), a.data.size());
-  pxtnERR result = m_preview_woice->read(&d, a.type);
+  pxtnERR result;
+  QString e;
+  try {
+    AddWoice a(make_addWoice_from_path_exn(path, ""));
+    pxtnDescriptor d;
+    d.set_memory_r(a.data.constData(), a.data.size());
+    result = m_preview_woice->read(&d, a.type);
+  } catch (const QString &error) {
+    e = error;
+    result = pxtnERR_pcm_unknown;
+  }
   if (result != pxtnOK) {
-    qDebug() << "Could not load preview woice at path" << path;
+    qDebug() << "Could not load preview woice at path" << path << ": " << e;
     m_preview_woice = nullptr;
   } else
     m_client->pxtn()->Woice_ReadyTone(m_preview_woice);
@@ -286,7 +292,11 @@ std::vector<AddWoice> NewWoiceDialog::selectedWoices() {
   for (int i = 0; i < paths.length(); ++i) {
     QString name;
     if (i < names.length()) name = names[i];
-    woices.push_back(make_addWoice_from_path(paths[i], name));
+    try {
+      woices.push_back(make_addWoice_from_path_exn(paths[i], name));
+    } catch (const QString &e) {
+      qWarning() << "Unable to load " << paths[i] << ": " << e;
+    }
   }
   return woices;
 }

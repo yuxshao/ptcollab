@@ -12,8 +12,8 @@ namespace Ui {
 class NewWoiceDialog;
 }
 
-extern AddWoice make_addWoice_from_path(const QString &path,
-                                        const QString &name);
+extern AddWoice make_addWoice_from_path_exn(const QString &path,
+                                            const QString &name);
 class Query;
 
 class NewWoiceDialog : public QDialog {

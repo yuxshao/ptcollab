@@ -983,7 +983,7 @@ void EditorWindow::dropEvent(QDropEvent *event) {
   std::list<AddWoice> add_woices;
   try {
     for (QUrl url : event->mimeData()->urls())
-      add_woices.push_back(make_addWoice_from_path(url.toLocalFile(), ""));
+      add_woices.push_back(make_addWoice_from_path_exn(url.toLocalFile(), ""));
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Unsupported instrument type"), e);
     return;
