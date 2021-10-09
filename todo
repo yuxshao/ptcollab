@@ -484,12 +484,12 @@ playback
 
 10/8
 1. N & Shift+N as add voice / unit shortcuts
+2. import wav files with loop points (in particular, try to read first loop
+   point metadata and repeat sample until 3s. loopforward only)
 
 
 Todo by priority
 ----------------
- - be able to process loop points and base midi note
- - double click in voice dialog to select voice
  - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?

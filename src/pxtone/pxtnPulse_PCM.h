@@ -28,7 +28,7 @@ class pxtnPulse_PCM {
   pxtnERR Create(int32_t ch, int32_t sps, int32_t bps, int32_t sample_num);
   void Release();
 
-  pxtnERR read(pxtnDescriptor *doc);
+  pxtnERR read(pxtnDescriptor *doc, uint32_t *basic_key);
   bool write(pxtnDescriptor *doc, const char *pstrLIST) const;
 
   bool Convert(int32_t new_ch, int32_t new_sps, int32_t new_bps);

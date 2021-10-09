@@ -3,6 +3,7 @@
 
 #include "./pxtn.h"
 #include "./pxtnDescriptor.h"
+#include "./pxtnEvelist.h"
 #include "./pxtnMem.h"
 
 typedef struct {
@@ -68,10 +69,30 @@ pxtnERR pxtnPulse_PCM::Create(int32_t ch, int32_t sps, int32_t bps,
   return pxtnOK;
 }
 
-pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc) {
+int findWavChunk(pxtnDescriptor *doc, const char *name) {
+  char buf[16]{};
+  uint32_t size;
+  if (!doc->seek(pxtnSEEK_set, 12)) {
+    return 0;
+  }  // skip 'RIFFxxxxWAVE'
+
+  while (true) {
+    if (!doc->r(buf, sizeof(char), 4)) return 0;
+    if (!doc->r(&size, sizeof(uint32_t), 1)) return 0;
+
+    if (buf[0] == name[0] && buf[1] == name[1] && buf[2] == name[2] &&
+        buf[3] == name[3])
+      return size;
+    if (!doc->seek(pxtnSEEK_cur, size)) return 0;
+  }
+}
+
+pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc, uint32_t *basic_key) {
   pxtnERR res = pxtnERR_VOID;
   char buf[16]{};
   uint32_t size = 0;
+  *basic_key = EVENTDEFAULT_BASICKEY;
+  uint32_t repeat_start = 0, repeat_end = 0;
   WAVEFORMATCHUNK format{};
 
   _p_smp = NULL;
@@ -112,44 +133,71 @@ pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc) {
     goto term;
   }
 
-  // find 'data'
-  if (!doc->seek(pxtnSEEK_set, 12)) {
-    res = pxtnERR_desc_r;
-    goto term;
-  }  // skip 'RIFFxxxxWAVE'
-
-  while (1) {
-    if (!doc->r(buf, sizeof(char), 4)) {
-      res = pxtnERR_desc_r;
-      goto term;
-    }
-    if (!doc->r(&size, sizeof(uint32_t), 1)) {
-      res = pxtnERR_desc_r;
-      goto term;
-    }
-    if (buf[0] == 'd' && buf[1] == 'a' && buf[2] == 't' && buf[3] == 'a') break;
-    if (!doc->seek(pxtnSEEK_cur, size)) {
-      res = pxtnERR_desc_r;
-      goto term;
+  if (findWavChunk(doc, "smpl") >= 60) {
+    doc->seek(pxtnSEEK_cur, 12);
+    doc->r(basic_key, sizeof(uint32_t), 1);
+    *basic_key *= 256;
+    doc->seek(pxtnSEEK_cur, 20);
+    // beginning of loop point
+    doc->seek(pxtnSEEK_cur, 4);
+    uint32_t type = -1;
+    doc->r(&type, sizeof(uint32_t), 1);
+    if (type == 0) {
+      doc->r(&repeat_start, sizeof(uint32_t), 1);
+      doc->r(&repeat_end, sizeof(uint32_t), 1);
+      ++repeat_end;  // make it exclusive
     }
   }
 
-  res = Create(format.ch, format.sps, format.bps,
-               size * 8 / format.bps / format.ch);
-  if (res != pxtnOK) goto term;
-
-  if (!doc->r(_p_smp, sizeof(uint8_t), size)) {
+  size = findWavChunk(doc, "data");
+  if (size <= 0) {
     res = pxtnERR_desc_r;
     goto term;
   }
 
-  res = pxtnOK;
+  {
+    uint32_t num_samples = size * 8 / format.bps / format.ch;
+    if (repeat_end == 0 || repeat_end > num_samples) repeat_end = num_samples;
+  }
+
+  if (repeat_start == 0) {
+    res = Create(format.ch, format.sps, format.bps, repeat_end);
+    if (res != pxtnOK) goto term;
+
+    if (!doc->r(_p_smp, sizeof(uint8_t),
+                repeat_end * format.bps * format.ch / 8)) {
+      res = pxtnERR_desc_r;
+      goto term;
+    }
+
+    res = pxtnOK;
+  } else {
+    // There's a loop point, copy the data in the loop point to fill 3s.
+    uint32_t sample_length = 3 * format.sps;
+    if (repeat_end > sample_length) sample_length = repeat_end;
+    res = Create(format.ch, format.sps, format.bps, sample_length);
+
+    uint32_t repeat_data_start = repeat_start * format.bps * format.ch / 8;
+    uint32_t repeat_data_end = repeat_end * format.bps * format.ch / 8;
+
+    if (res != pxtnOK) goto term;
+    if (!doc->r(_p_smp, sizeof(uint8_t), repeat_data_end)) {
+      res = pxtnERR_desc_r;
+      goto term;
+    }
+    for (uint32_t i = repeat_data_end;
+         i < sample_length * format.bps * format.ch / 8; ++i)
+      _p_smp[i] = _p_smp[(i - repeat_data_start) %
+                             (repeat_data_end - repeat_data_start) +
+                         repeat_data_start];
+  }
 term:
 
   if (res != pxtnOK && _p_smp) {
     free(_p_smp);
     _p_smp = NULL;
   }
+
   return res;
 }
 
@@ -226,6 +274,8 @@ bool pxtnPulse_PCM::write(pxtnDescriptor *doc, const char *pstrLIST) const {
   if (!doc->w_asfile(tag_data, sizeof(char), 4)) goto End;
   if (!doc->w_asfile(&sample_size, sizeof(int32_t), 1)) goto End;
   if (!doc->w_asfile(_p_smp, sizeof(char), sample_size)) goto End;
+
+  // TODO: Include smpl chunk with basickey info.
 
   b_ret = true;
 
@@ -407,12 +457,15 @@ bool pxtnPulse_PCM::_Convert_SamplePerSecond(int32_t new_sps) {
   body_size = _smp_body * _ch * _bps / 8;
   tail_size = _smp_tail * _ch * _bps / 8;
 
-  head_size = (int32_t)(
-      ((double)head_size * (double)new_sps + (double)(_sps)-1) / _sps);
-  body_size = (int32_t)(
-      ((double)body_size * (double)new_sps + (double)(_sps)-1) / _sps);
-  tail_size = (int32_t)(
-      ((double)tail_size * (double)new_sps + (double)(_sps)-1) / _sps);
+  head_size =
+      (int32_t)(((double)head_size * (double)new_sps + (double)(_sps)-1) /
+                _sps);
+  body_size =
+      (int32_t)(((double)body_size * (double)new_sps + (double)(_sps)-1) /
+                _sps);
+  tail_size =
+      (int32_t)(((double)tail_size * (double)new_sps + (double)(_sps)-1) /
+                _sps);
 
   work_size = head_size + body_size + tail_size;
 

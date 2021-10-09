@@ -536,6 +536,7 @@ bool PxtoneController::applyWoiceSet(const Woice::Set &a, qint64 uid) {
                                   flag = PTV_VOICEFLAG_WAVELOOP;
                                   break;
                                 case Woice::Flag::BEATFIT:
+                                default:
                                   flag = PTV_VOICEFLAG_BEATFIT;
                                   break;
                               }

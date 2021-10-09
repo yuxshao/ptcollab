@@ -202,8 +202,10 @@ pxtnERR pxtnWoice::read(pxtnDescriptor* desc, pxtnWOICETYPE type) {
       if (!Voice_Allocate(1)) goto term;
       p_vc = &_voices[0];
       p_vc->type = pxtnVOICE_Sampling;
-      res = p_vc->p_pcm->read(desc);
+      uint32_t basic_key;
+      res = p_vc->p_pcm->read(desc, &basic_key);
       if (res != pxtnOK) goto term;
+      p_vc->basic_key = basic_key;
       // if under 0.005 sec, set LOOP.
       if (p_vc->p_pcm->get_sec() < 0.005f)
         p_vc->voice_flags |= PTV_VOICEFLAG_WAVELOOP;
