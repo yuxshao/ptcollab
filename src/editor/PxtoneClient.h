@@ -104,7 +104,7 @@ class PxtoneClient : public QObject {
   void setUnitOperated(int unit_no, bool operated);
   void cycleSolo(int unit_no);
   void removeUnusedUnitsAndWoices();
-  const std::vector<VolumeMeter> &volumeLevels() const;
+  const std::vector<InterpolatedVolumeMeter> &volumeLevels() const;
 
  private:
   void processRemoteAction(const ServerAction &a);

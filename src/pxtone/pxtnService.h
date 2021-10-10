@@ -21,7 +21,7 @@
 #define pxtnVOMITPREPFLAG_loop 0x01
 #define pxtnVOMITPREPFLAG_unit_mute 0x02
 
-class VolumeMeter;
+class InterpolatedVolumeMeter;
 
 typedef struct {
   int32_t start_pos_meas;
@@ -262,7 +262,7 @@ class pxtnService {
 
   bool Moo(mooState &moo_state, void *p_buf, int32_t size,
            int32_t *filled_size = nullptr,
-           std::vector<VolumeMeter> *volume_meters = nullptr) const;
+           std::vector<InterpolatedVolumeMeter> *volume_meters = nullptr) const;
 
   int32_t moo_tone_sample_multi(std::map<int, pxtnUnitTone *> p_us,
                                 const mooParams &params, void *data,

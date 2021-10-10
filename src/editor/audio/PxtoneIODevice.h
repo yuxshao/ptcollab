@@ -16,7 +16,7 @@ class PxtoneIODevice : public QIODevice {
   void setPlaying(bool playing);
   bool playing();
   double current_volume_dbfs();
-  const std::vector<VolumeMeter> &volumeLevels() const;
+  const std::vector<InterpolatedVolumeMeter> &volumeLevels() const;
 
  signals:
   void MooError();
@@ -26,7 +26,7 @@ class PxtoneIODevice : public QIODevice {
   const pxtnService *pxtn;
   mooState *moo_state;
   bool m_playing;
-  std::vector<VolumeMeter> m_volume_meters;
+  std::vector<InterpolatedVolumeMeter> m_volume_meters;
 
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);

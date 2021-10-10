@@ -518,6 +518,6 @@ void PxtoneClient::removeUnusedUnitsAndWoices() {
   }
 }
 
-const std::vector<VolumeMeter> &PxtoneClient::volumeLevels() const {
+const std::vector<InterpolatedVolumeMeter> &PxtoneClient::volumeLevels() const {
   return m_pxtn_device->volumeLevels();
 }

@@ -479,9 +479,9 @@ int32_t pxtnService::moo_get_total_sample() const {
 // Moo ...
 ////////////////////
 
-bool pxtnService::Moo(mooState& moo_state, void* p_buf, int32_t size,
-                      int32_t* filled_size,
-                      std::vector<VolumeMeter>* volume_meters) const {
+bool pxtnService::Moo(
+    mooState& moo_state, void* p_buf, int32_t size, int32_t* filled_size,
+    std::vector<InterpolatedVolumeMeter>* volume_meters) const {
   if (filled_size) *filled_size = 0;
 
   if (!_moo_b_valid_data) return false;

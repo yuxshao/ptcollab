@@ -7,8 +7,8 @@ PxtoneIODevice::PxtoneIODevice(QObject *parent, const pxtnService *pxtn,
     : QIODevice(parent), pxtn(pxtn), moo_state(moo_state), m_playing(false) {
   int32_t ch_num, sps;
   if (pxtn->get_destination_quality(&ch_num, &sps))
-    m_volume_meters =
-        std::vector<VolumeMeter>(ch_num, VolumeMeter(sps / 100, sps));
+    m_volume_meters = std::vector<InterpolatedVolumeMeter>(
+        ch_num, InterpolatedVolumeMeter(sps / 25, sps));
 }
 
 void PxtoneIODevice::setPlaying(bool playing) {
@@ -19,12 +19,15 @@ void PxtoneIODevice::setPlaying(bool playing) {
 
 bool PxtoneIODevice::playing() { return m_playing; }
 
-const std::vector<VolumeMeter> &PxtoneIODevice::volumeLevels() const {
+const std::vector<InterpolatedVolumeMeter> &PxtoneIODevice::volumeLevels()
+    const {
   return m_volume_meters;
 }
 
 qint64 PxtoneIODevice::readData(char *data, qint64 maxlen) {
   int32_t filled_len = 0;
+
+  for (auto &m : m_volume_meters) m.new_batch();
   if (m_playing) {
     auto *meters = m_volume_meters.size() > 0 ? &m_volume_meters : nullptr;
     if (!pxtn->Moo(*moo_state, data, int32_t(maxlen), &filled_len, meters))
