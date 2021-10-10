@@ -20,7 +20,6 @@ void VolumeMeterWidget::paintEvent(QPaintEvent *event) {
     int w = std::clamp<int>((levels[i].current_volume_dbfs() - MIN_DB) *
                                 width() / (MAX_DB - MIN_DB),
                             0, width());
-    qDebug() << levels.size() << w;
     p.fillRect(
         QRect(0, height() * i / levels.size(), w, height() / levels.size()),
         Qt::green);

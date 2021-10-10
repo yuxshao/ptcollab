@@ -32,6 +32,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   previous->widget()->deleteLater();
   volume_meter_widget->setSizePolicy(
       QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+  volume_meter_widget->setParent(this);
 
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
