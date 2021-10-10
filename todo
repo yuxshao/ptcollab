@@ -490,6 +490,14 @@ playback
 
 Todo by priority
 ----------------
+ - peak meter
+  - colour code properly
+  - add labels
+  - add borders
+
+ - octave markers
+
+  - 
  - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
