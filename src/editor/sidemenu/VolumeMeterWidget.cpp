@@ -5,6 +5,9 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QVBoxLayout>
+
+#include "editor/Settings.h"
+
 const double MIN_DB = -36;
 const double MID_DB = -6;
 const double HIGH_DB = -1;
@@ -83,10 +86,12 @@ void VolumeMeterFrame::resetPeaks() {
 QSize VolumeMeterFrame::minimumSizeHint() const { return QSize(0, 13); }
 
 VolumeMeterLabels::VolumeMeterLabels(VolumeMeterFrame *frame, QWidget *parent)
-    : QWidget(parent), m_frame(frame), m_show_text(true) {}
+    : QWidget(parent),
+      m_frame(frame),
+      m_show_text(Settings::ShowVolumeMeterLabels::get()) {}
 
-void VolumeMeterLabels::toggleText() {
-  m_show_text = !m_show_text;
+void VolumeMeterLabels::refreshShowText() {
+  m_show_text = Settings::ShowVolumeMeterLabels::get();
   updateGeometry();
 }
 
@@ -138,5 +143,8 @@ void VolumeMeterWidget::mousePressEvent(QMouseEvent *) {
 }
 
 void VolumeMeterWidget::mouseDoubleClickEvent(QMouseEvent *) {
-  m_labels->toggleText();
+  Settings::ShowVolumeMeterLabels::set(!Settings::ShowVolumeMeterLabels::get());
+  refreshShowText();
 }
+
+void VolumeMeterWidget::refreshShowText() { m_labels->refreshShowText(); }

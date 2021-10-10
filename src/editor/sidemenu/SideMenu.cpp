@@ -28,14 +28,13 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
-  VolumeMeterWidget* volume_meter_widget =
-      new VolumeMeterWidget(volume_meter_frame, this);
+  m_volume_meter_widget = new VolumeMeterWidget(volume_meter_frame, this);
   QLayoutItem* previous =
-      layout()->replaceWidget(ui->volumeMeterWidget, volume_meter_widget);
+      layout()->replaceWidget(ui->volumeMeterWidget, m_volume_meter_widget);
   previous->widget()->deleteLater();
-  volume_meter_widget->setSizePolicy(
+  m_volume_meter_widget->setSizePolicy(
       QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-  volume_meter_widget->setParent(this);
+  m_volume_meter_widget->setParent(this);
 
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
@@ -277,6 +276,10 @@ void SideMenu::setCopy(bool copy) {
 }
 
 void SideMenu::openAddUnitWindow() { m_add_unit_dialog->show(); }
+
+void SideMenu::refreshVolumeMeterShowText() {
+  m_volume_meter_widget->refreshShowText();
+}
 
 void SideMenu::setParamKindIndex(int index) {
   if (ui->paramSelection->currentIndex() != index)

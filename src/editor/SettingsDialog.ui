@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>332</width>
-    <height>436</height>
+    <height>505</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,6 +111,13 @@
         <widget class="QCheckBox" name="showWelcomeDialogCheck">
          <property name="text">
           <string>Show welcome dialog on startup</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="showVolumeMeterLabelsCheck">
+         <property name="text">
+          <string>Show peak meter numbers</string>
          </property>
         </widget>
        </item>

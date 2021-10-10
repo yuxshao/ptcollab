@@ -77,6 +77,7 @@ class SideMenu : public QWidget {
   void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
   void openAddUnitWindow();
+  void refreshVolumeMeterShowText();
 
  private:
   Ui::SideMenu *ui;
@@ -86,6 +87,7 @@ class SideMenu : public QWidget {
   UserListModel *m_users;
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
+  VolumeMeterWidget *m_volume_meter_widget;
 };
 
 #endif  // SIDEMENU_H

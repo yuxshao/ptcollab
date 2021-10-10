@@ -31,7 +31,7 @@ class VolumeMeterLabels : public QWidget {
  public:
   explicit VolumeMeterLabels(VolumeMeterFrame *frame,
                              QWidget *parent = nullptr);
-  void toggleText();
+  void refreshShowText();
 
  private:
   void paintEvent(QPaintEvent *event) override;
@@ -52,6 +52,7 @@ class VolumeMeterWidget : public QWidget {
                              QWidget *parent = nullptr);
   void mousePressEvent(QMouseEvent *event) override;
   void mouseDoubleClickEvent(QMouseEvent *event) override;
+  void refreshShowText();
 
  signals:
 };

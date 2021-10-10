@@ -130,6 +130,11 @@ bool get();
 void set(bool);
 }  // namespace SearchOnType
 
+namespace ShowVolumeMeterLabels {
+bool get();
+void set(bool);
+}  // namespace ShowVolumeMeterLabels
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H
