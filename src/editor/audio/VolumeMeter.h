@@ -19,7 +19,7 @@ class VolumeMeter {
   std::queue<uint64_t> m_window;
   RunningMax m_peak;
   uint32_t m_window_size;
-  uint64_t m_squared_mean;
+  uint64_t m_squared_sum;
 
  public:
   VolumeMeter(uint32_t window_size, uint32_t peak_duration);

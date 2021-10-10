@@ -35,8 +35,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           [this](const std::vector<VolumeMeter> &levels) {
             qDebug() << QString("Volume: (%1dbfs,%2dbfs), peak (%3dbfs,%4dbfs)")
                             .arg(levels[0].current_volume_dbfs())
-                            .arg(levels[0].current_volume_dbfs())
-                            .arg(levels[1].last_peak_dbfs())
+                            .arg(levels[1].current_volume_dbfs())
+                            .arg(levels[0].last_peak_dbfs())
                             .arg(levels[1].last_peak_dbfs());
             setVolumeMeterLevel((levels[0].current_volume_dbfs() +
                                  levels[1].current_volume_dbfs()) /
