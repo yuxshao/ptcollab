@@ -9,6 +9,7 @@
 class RunningMax {
   // https://stackoverflow.com/questions/4802038/implement-a-queue-in-which-push-rear-pop-front-and-get-min-are-all-consta
   std::stack<std::pair<double, double>> s1, s2;
+  double s1max(), s2max();
 
  public:
   RunningMax(uint32_t window);

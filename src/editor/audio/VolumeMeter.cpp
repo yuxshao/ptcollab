@@ -26,10 +26,28 @@ double VolumeMeter::current_volume_dbfs() const {
          3.0103;
 }
 
-RunningMax::RunningMax(uint32_t window) {}
-void RunningMax::insert(double x) {}
+RunningMax::RunningMax(uint32_t window) {
+  for (uint32_t i = 0; i < std::max(window, 1u); ++i)
+    s1.push({-INFINITY, -INFINITY});
+}
 
-double RunningMax::max() const { return 0; }
+inline double stackMax(const std::stack<std::pair<double, double>> &s) {
+  return (s.size() > 0 ? s.top().second : -INFINITY);
+}
+
+void RunningMax::insert(double x) {
+  if (s2.size() == 0) {
+    while (s1.size() > 0) {
+      double v = s1.top().first;
+      s1.pop();
+      s2.push({v, std::max(v, stackMax(s2))});
+    }
+  }
+  s1.push({x, std::max(x, stackMax(s1))});
+  s2.pop();
+}
+
+double RunningMax::max() const { return std::max(stackMax(s1), stackMax(s2)); }
 
 void InterpolatedVolumeMeter::commit() const {
   int samples_to_commit = m_batch_timer.nsecsElapsed() * 44100 / 1e9;
