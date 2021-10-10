@@ -43,6 +43,8 @@ VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
     : QFrame(parent), m_client(client), m_animation(new Animation(this)) {
   setFrameStyle(QFrame::Panel | QFrame::Sunken);
   connect(m_animation, &Animation::nextFrame, this, [this]() { update(); });
+  connect(client, &PxtoneClient::connected, this,
+          &VolumeMeterFrame::resetPeaks);
 }
 
 void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
