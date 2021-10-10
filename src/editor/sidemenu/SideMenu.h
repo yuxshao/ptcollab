@@ -11,6 +11,7 @@
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 #include "UserListModel.h"
+#include "VolumeMeterWidget.h"
 #include "WoiceListModel.h"
 #include "editor/NewWoiceDialog.h"
 
@@ -75,6 +76,7 @@ class SideMenu : public QWidget {
   void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
   void openAddUnitWindow();
+  void setVolumeMeterLevel(double value);
 
  private:
   Ui::SideMenu *ui;

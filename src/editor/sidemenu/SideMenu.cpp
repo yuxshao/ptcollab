@@ -267,6 +267,11 @@ void SideMenu::setCopy(bool copy) {
 
 void SideMenu::openAddUnitWindow() { m_add_unit_dialog->show(); }
 
+void SideMenu::setVolumeMeterLevel(double v) {
+  ui->volumeMeter->setValue(std::clamp(int(v * 100), ui->volumeMeter->minimum(),
+                                       ui->volumeMeter->maximum()));
+}
+
 void SideMenu::setParamKindIndex(int index) {
   if (ui->paramSelection->currentIndex() != index)
     ui->paramSelection->setCurrentIndex(index);

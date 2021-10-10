@@ -89,12 +89,28 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme=":/icons/save" resource="../../icons.qrc">
+        <iconset theme=":/icons/save">
          <normaloff>:/icons/light/save</normaloff>:/icons/light/save</iconset>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="volumeMeter">
+     <property name="minimum">
+      <number>-3600</number>
+     </property>
+     <property name="maximum">
+      <number>300</number>
+     </property>
+     <property name="value">
+      <number>-3600</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
@@ -220,7 +236,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../icons.qrc">
+            <iconset>
              <normaloff>:/icons/light/up</normaloff>:/icons/light/up</iconset>
            </property>
           </widget>
@@ -234,7 +250,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../icons.qrc">
+            <iconset>
              <normaloff>:/icons/light/down</normaloff>:/icons/light/down</iconset>
            </property>
           </widget>

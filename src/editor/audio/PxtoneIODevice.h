@@ -3,8 +3,8 @@
 
 #include <QIODevice>
 
+#include "VolumeMeter.h"
 #include "pxtone/pxtnService.h"
-
 /**
  * @brief A pxtnService wrapper for QTAudioOutput.
  */
@@ -15,15 +15,19 @@ class PxtoneIODevice : public QIODevice {
   virtual ~PxtoneIODevice(){};
   void setPlaying(bool playing);
   bool playing();
+  double current_volume_dbfs();
 
  signals:
   void MooError();
   void playingChanged(bool);
+  void volumeLevelChanged(const std::vector<VolumeMeter> &);
 
  private:
   const pxtnService *pxtn;
   mooState *moo_state;
   bool m_playing;
+  std::unique_ptr<std::vector<VolumeMeter>> m_volume_meters;
+
   qint64 readData(char *data, qint64 maxlen);
   qint64 writeData(const char *data, qint64 len);
 };

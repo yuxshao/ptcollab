@@ -1,4 +1,5 @@
 
+#include "../editor/audio/VolumeMeter.h"
 #include "./pxtn.h"
 #include "./pxtnMem.h"
 #include "./pxtnService.h"
@@ -479,7 +480,8 @@ int32_t pxtnService::moo_get_total_sample() const {
 ////////////////////
 
 bool pxtnService::Moo(mooState& moo_state, void* p_buf, int32_t size,
-                      int32_t* filled_size) const {
+                      int32_t* filled_size,
+                      std::vector<VolumeMeter>* volume_meters) const {
   if (filled_size) *filled_size = 0;
 
   if (!_moo_b_valid_data) return false;
@@ -508,7 +510,10 @@ bool pxtnService::Moo(mooState& moo_state, void* p_buf, int32_t size,
         moo_state.end_vomit = true;
         break;
       }
-      for (int ch = 0; ch < _dst_ch_num; ch++, p16++) *p16 = sample[ch];
+      for (int ch = 0; ch < _dst_ch_num; ch++, p16++) {
+        if (volume_meters) (*volume_meters)[ch].insert(sample[ch]);
+        *p16 = sample[ch];
+      }
     }
     for (; smp_w < smp_num; smp_w++) {
       for (int ch = 0; ch < _dst_ch_num; ch++, p16++) *p16 = 0;
