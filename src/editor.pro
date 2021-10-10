@@ -102,7 +102,6 @@ HEADERS += \
            editor/sidemenu/IconHelper.h \
            editor/sidemenu/OverdriveEffectModel.h \
            editor/sidemenu/UserListModel.h \
-           editor/sidemenu/VolumeMeterFrame.h \
            editor/sidemenu/VolumeMeterWidget.h \
            editor/sidemenu/WoiceListModel.h \
            editor/views/Animation.h \
@@ -191,7 +190,6 @@ SOURCES += main.cpp \
            editor/sidemenu/IconHelper.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
            editor/sidemenu/UserListModel.cpp \
-           editor/sidemenu/VolumeMeterFrame.cpp \
            editor/sidemenu/VolumeMeterWidget.cpp \
            editor/sidemenu/WoiceListModel.cpp \
            editor/views/Animation.cpp \

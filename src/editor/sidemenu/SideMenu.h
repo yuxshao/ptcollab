@@ -11,7 +11,7 @@
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 #include "UserListModel.h"
-#include "VolumeMeterFrame.h"
+#include "VolumeMeterWidget.h"
 #include "WoiceListModel.h"
 #include "editor/NewWoiceDialog.h"
 
