@@ -197,4 +197,11 @@ const char *KEY = "search_on_type";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace SearchOnType
+
+namespace ShowVolumeMeterLabels {
+const char *KEY = "show_volume_meter_labels";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace ShowVolumeMeterLabels
+
 }  // namespace Settings

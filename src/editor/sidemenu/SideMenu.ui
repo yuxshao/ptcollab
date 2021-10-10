@@ -89,12 +89,29 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme=":/icons/save" resource="../../icons.qrc">
+        <iconset theme=":/icons/save">
          <normaloff>:/icons/light/save</normaloff>:/icons/light/save</iconset>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QFrame" name="volumeMeterWidget">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+    </widget>
    </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
@@ -220,7 +237,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../icons.qrc">
+            <iconset>
              <normaloff>:/icons/light/up</normaloff>:/icons/light/up</iconset>
            </property>
           </widget>
@@ -234,7 +251,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../../icons.qrc">
+            <iconset>
              <normaloff>:/icons/light/down</normaloff>:/icons/light/down</iconset>
            </property>
           </widget>

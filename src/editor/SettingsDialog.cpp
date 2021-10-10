@@ -1,14 +1,16 @@
 #include "SettingsDialog.h"
 
-#include "Settings.h"
-#include "StyleEditor.h"
-#include "ui_SettingsDialog.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include <QtDebug>
 
+#include "Settings.h"
+#include "StyleEditor.h"
+#include "ui_SettingsDialog.h"
+
 SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
-    : QDialog(parent), m_midi_wrapper(midi_wrapper),
+    : QDialog(parent),
+      m_midi_wrapper(midi_wrapper),
       ui(new Ui::SettingsDialog) {
   ui->setupUi(this);
 
@@ -31,6 +33,8 @@ void SettingsDialog::apply() {
   Settings::PolyphonicMidiNotePreview::set(
       ui->polyphonicMidiNotePreviewCheck->isChecked());
   Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
+  Settings::ShowVolumeMeterLabels::set(
+      ui->showVolumeMeterLabelsCheck->isChecked());
 
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
@@ -52,6 +56,8 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->polyphonicMidiNotePreviewCheck->setChecked(
       Settings::PolyphonicMidiNotePreview::get());
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
+  ui->showVolumeMeterLabelsCheck->setChecked(
+      Settings::ShowVolumeMeterLabels::get());
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box

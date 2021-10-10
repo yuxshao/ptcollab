@@ -11,6 +11,7 @@
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 #include "UserListModel.h"
+#include "VolumeMeterWidget.h"
 #include "WoiceListModel.h"
 #include "editor/NewWoiceDialog.h"
 
@@ -29,6 +30,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     NewWoiceDialog *new_woice_dialog,
                     NewWoiceDialog *change_woice_dialog,
+                    VolumeMeterFrame *volume_meter_widget,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   void setTab(int index);
@@ -75,6 +77,7 @@ class SideMenu : public QWidget {
   void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
   void openAddUnitWindow();
+  void refreshVolumeMeterShowText();
 
  private:
   Ui::SideMenu *ui;
@@ -84,6 +87,7 @@ class SideMenu : public QWidget {
   UserListModel *m_users;
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
+  VolumeMeterWidget *m_volume_meter_widget;
 };
 
 #endif  // SIDEMENU_H
