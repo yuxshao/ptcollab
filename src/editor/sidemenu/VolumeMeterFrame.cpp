@@ -5,15 +5,30 @@
 #include <QPaintEvent>
 #include <QPainter>
 const int MIN_DB = -36;
+const int MID_DB = -6;
+const int HIGH_DB = 0;
 const int MAX_DB = 3;
 
 // TODO: make this colour dynamic
 const static QColor BGCOLOR = QColor::fromRgb(26, 25, 73);           // #1A1949
 const static QColor BGCOLOR_SOFT = QColor::fromRgb(26, 25, 73, 30);  // #1A1949
 const static QColor BAR_COLOR = QColor::fromRgb(0, 240, 128);        // #00F080
+const static QColor BAR_MID_COLOR = QColor::fromRgb(255, 255, 128);  // #FFFF80
 const static QColor LABEL_COLOR = QColor::fromRgb(210, 202, 156);    // #D2CA9C
 const static QColor TICK_COLOR = QColor::fromRgb(52, 50, 65);        // #343241
 const static QColor BAR_HIGH_COLOR = Qt::red;
+
+static QLinearGradient barGradient() {
+  static QLinearGradient g = []() {
+    QLinearGradient g(0, 0, 1, 0);
+    g.setCoordinateMode(QGradient::ObjectMode);
+    g.setColorAt(0, BAR_COLOR);
+    g.setColorAt(double(MID_DB - MIN_DB) / (MAX_DB - MIN_DB), BAR_MID_COLOR);
+    g.setColorAt(double(HIGH_DB - MIN_DB) / (MAX_DB - MIN_DB), BAR_HIGH_COLOR);
+    return g;
+  }();
+  return g;
+}
 
 VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
     : QFrame(parent), m_client(client), m_animation(new Animation(this)) {
@@ -24,23 +39,24 @@ VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
 void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
   QPainter p(this);
   p.fillRect(e->rect(), BGCOLOR);
-  int w_limit = dbToX(-3);
+  // int w_limit = dbToX(-3);
 
   const auto &levels = m_client->volumeLevels();
   for (uint i = 0; i < levels.size(); ++i) {
     int w = dbToX(levels[i].current_volume_dbfs());
     int y = (height() + 1) * i / levels.size();
     int h = (height() + 1) / levels.size() - 1;
-    if (w_limit > w)
-      p.fillRect(QRect(0, y, w, h), BAR_COLOR);
-    else {
-      p.fillRect(QRect(0, y, w_limit, h), BAR_COLOR);
-      p.fillRect(QRect(w_limit, y, w - w_limit, h), BAR_HIGH_COLOR);
-    }
+    p.fillRect(QRect(0, y, width(), h), barGradient());
+    // p.fillRect(QRect(0, y, width(), h), BAR_HIGH_COLOR);
+    // p.fillRect(QRect(0, y, dbToX(HIGH_DB), h), BAR_MID_COLOR);
+    // p.fillRect(QRect(0, y, dbToX(MID_DB), h), BAR_COLOR);
+
+    // p.fillRect(QRect(w, y, width() - w, h), BGCOLOR);
   }
   for (int db = MIN_DB; db < MAX_DB; db += 3)
     p.fillRect(dbToX(db), 0, 1, height(), BGCOLOR_SOFT);
-  p.fillRect(dbToX(-3), 0, 1, height(), BGCOLOR);
+  p.fillRect(dbToX(-3), 0, 1, height(), BGCOLOR_SOFT);
+  p.fillRect(dbToX(-3), 0, 1, height(), BGCOLOR_SOFT);
   QFrame::paintEvent(e);
 }
 
@@ -49,7 +65,7 @@ int VolumeMeterFrame::dbToX(double db) {
                          width());
 }
 
-QSize VolumeMeterFrame::minimumSizeHint() const { return QSize(0, 16); }
+QSize VolumeMeterFrame::minimumSizeHint() const { return QSize(0, 13); }
 
 VolumeMeterLabels::VolumeMeterLabels(VolumeMeterFrame *frame, QWidget *parent)
     : QWidget(parent), m_frame(frame) {}
