@@ -488,6 +488,10 @@ playback
    point metadata and repeat sample until 3s. loopforward only)
 
 
+10/10
+1. peak meter
+2. fix crash on select last unit when there are fewer voices than units
+
 Todo by priority
 ----------------
  - peak meter
