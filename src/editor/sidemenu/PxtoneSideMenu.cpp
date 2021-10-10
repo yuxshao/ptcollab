@@ -98,7 +98,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       else
         m_note_preview = nullptr;
     }
-    m_client->setCurrentWoiceNo(idx, false);
+    m_client->setCurrentUnitNo(idx, false);
   });
   connect(this, &SideMenu::removeUnit, m_client,
           &PxtoneClient::removeCurrentUnit);
