@@ -14,6 +14,7 @@ class VolumeMeterWidget : public QFrame {
 
  private:
   void paintEvent(QPaintEvent *event) override;
+  int dbToX(double db);
   QSize minimumSizeHint() const override;
   const PxtoneClient *m_client;
   Animation *m_animation;
