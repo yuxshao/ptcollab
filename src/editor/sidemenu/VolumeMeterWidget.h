@@ -1,23 +1,18 @@
 #ifndef VOLUMEMETERWIDGET_H
 #define VOLUMEMETERWIDGET_H
 
-#include <QFrame>
+#include <QWidget>
 
-#include "editor/PxtoneClient.h"
-#include "editor/views/Animation.h"
+#include "VolumeMeterFrame.h"
 
-class VolumeMeterWidget : public QFrame {
+class VolumeMeterWidget : public QWidget {
   Q_OBJECT
- public:
-  explicit VolumeMeterWidget(const PxtoneClient *client,
-                             QWidget *parent = nullptr);
-
  private:
-  void paintEvent(QPaintEvent *event) override;
-  int dbToX(double db);
-  QSize minimumSizeHint() const override;
-  const PxtoneClient *m_client;
-  Animation *m_animation;
+  VolumeMeterFrame *m_meter;
+
+ public:
+  explicit VolumeMeterWidget(VolumeMeterFrame *meter,
+                             QWidget *parent = nullptr);
 
  signals:
 };

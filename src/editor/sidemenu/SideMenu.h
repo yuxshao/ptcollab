@@ -11,7 +11,7 @@
 #include "SelectWoiceDialog.h"
 #include "UnitListModel.h"
 #include "UserListModel.h"
-#include "VolumeMeterWidget.h"
+#include "VolumeMeterFrame.h"
 #include "WoiceListModel.h"
 #include "editor/NewWoiceDialog.h"
 
@@ -30,7 +30,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     NewWoiceDialog *new_woice_dialog,
                     NewWoiceDialog *change_woice_dialog,
-                    VolumeMeterWidget *volume_meter_widget,
+                    VolumeMeterFrame *volume_meter_widget,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   void setTab(int index);

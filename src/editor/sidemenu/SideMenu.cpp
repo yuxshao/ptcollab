@@ -8,6 +8,7 @@
 #include <QSettings>
 
 #include "IconHelper.h"
+#include "VolumeMeterWidget.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "ui_SideMenu.h"
@@ -17,7 +18,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    NewWoiceDialog* new_woice_dialog,
                    NewWoiceDialog* change_woice_dialog,
-                   VolumeMeterWidget* volume_meter_widget, QWidget* parent)
+                   VolumeMeterFrame* volume_meter_frame, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_unit_dialog(add_unit_dialog),
@@ -27,6 +28,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
+  VolumeMeterWidget* volume_meter_widget =
+      new VolumeMeterWidget(volume_meter_frame, this);
   QLayoutItem* previous =
       layout()->replaceWidget(ui->volumeMeterWidget, volume_meter_widget);
   previous->widget()->deleteLater();

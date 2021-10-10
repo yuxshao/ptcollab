@@ -20,7 +20,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent), new_woice_dialog,
                change_woice_dialog,
-               new VolumeMeterWidget(
+               new VolumeMeterFrame(
                    client,
                    nullptr)),  // VolumeMeterWidget gets reparented which causes
                                // some weird lifetime issues with its children
