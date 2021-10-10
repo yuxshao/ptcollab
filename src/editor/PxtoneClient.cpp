@@ -44,8 +44,6 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
   m_audio->setVolume(1.0);
   connect(m_pxtn_device, &PxtoneIODevice::playingChanged, this,
           &PxtoneClient::playStateChanged);
-  connect(m_pxtn_device, &PxtoneIODevice::volumeLevelChanged, this,
-          &PxtoneClient::volumeLevelChanged);
 
   connect(m_ping_timer, &QTimer::timeout, [this]() {
     sendPlayState(false);
@@ -518,4 +516,8 @@ void PxtoneClient::removeUnusedUnitsAndWoices() {
       sendAction(RemoveWoice{id});
     }
   }
+}
+
+const std::vector<VolumeMeter> &PxtoneClient::volumeLevels() const {
+  return m_pxtn_device->volumeLevels();
 }

@@ -19,7 +19,11 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
                                      client, parent),
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent), new_woice_dialog,
-               change_woice_dialog),
+               change_woice_dialog,
+               new VolumeMeterWidget(
+                   client,
+                   nullptr)),  // VolumeMeterWidget gets reparented which causes
+                               // some weird lifetime issues with its children
       m_client(client),
       m_moo_clock(moo_clock) {
   setEditWidgetsEnabled(false);
@@ -31,7 +35,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   connect(m_client->controller(), &PxtoneController::tempoBeatChanged, this,
           &PxtoneSideMenu::refreshTempoBeat);
   connect(m_client, &PxtoneClient::playStateChanged, this, &SideMenu::setPlay);
-  connect(m_client, &PxtoneClient::volumeLevelChanged, this,
+  /*connect(m_client, &PxtoneClient::volumeLevelChanged, this,
           [this](const std::vector<VolumeMeter> &levels) {
             qDebug() << QString("Volume: (%1dbfs,%2dbfs), peak (%3dbfs,%4dbfs)")
                             .arg(levels[0].current_volume_dbfs())
@@ -41,7 +45,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
             setVolumeMeterLevel((levels[0].current_volume_dbfs() +
                                  levels[1].current_volume_dbfs()) /
                                 2);
-          });
+          });*/
 
   connect(this, &SideMenu::currentUnitChanged,
           [this](int unit_no) { m_client->setCurrentUnitNo(unit_no, false); });

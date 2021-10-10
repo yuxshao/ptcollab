@@ -47,7 +47,6 @@ class PxtoneClient : public QObject {
   void followActivity(const EditState &r);
   void updatePing(std::optional<qint64> ping_length);
   void connected();
-  void volumeLevelChanged(const std::vector<VolumeMeter> &);
 
   void beginAddUser(int index);
   void endAddUser();
@@ -105,6 +104,7 @@ class PxtoneClient : public QObject {
   void setUnitOperated(int unit_no, bool operated);
   void cycleSolo(int unit_no);
   void removeUnusedUnitsAndWoices();
+  const std::vector<VolumeMeter> &volumeLevels() const;
 
  private:
   void processRemoteAction(const ServerAction &a);

@@ -16,7 +16,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                    UserListModel* users, SelectWoiceDialog* add_unit_dialog,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    NewWoiceDialog* new_woice_dialog,
-                   NewWoiceDialog* change_woice_dialog, QWidget* parent)
+                   NewWoiceDialog* change_woice_dialog,
+                   VolumeMeterWidget* volume_meter_widget, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_unit_dialog(add_unit_dialog),
@@ -26,6 +27,12 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
+  QLayoutItem* previous =
+      layout()->replaceWidget(ui->volumeMeterWidget, volume_meter_widget);
+  previous->widget()->deleteLater();
+  volume_meter_widget->setSizePolicy(
+      QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+
   for (auto [label, value] : quantizeXOptions)
     ui->quantX->addItem(label, value);
   for (auto [label, value] : quantizeYOptions)
@@ -266,11 +273,6 @@ void SideMenu::setCopy(bool copy) {
 }
 
 void SideMenu::openAddUnitWindow() { m_add_unit_dialog->show(); }
-
-void SideMenu::setVolumeMeterLevel(double v) {
-  ui->volumeMeter->setValue(std::clamp(int(v * 100), ui->volumeMeter->minimum(),
-                                       ui->volumeMeter->maximum()));
-}
 
 void SideMenu::setParamKindIndex(int index) {
   if (ui->paramSelection->currentIndex() != index)

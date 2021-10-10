@@ -1,12 +1,22 @@
 #ifndef VOLUMEMETERWIDGET_H
 #define VOLUMEMETERWIDGET_H
 
-#include <QProgressBar>
+#include <QFrame>
 
-class VolumeMeterWidget : public QProgressBar {
+#include "editor/PxtoneClient.h"
+#include "editor/views/Animation.h"
+
+class VolumeMeterWidget : public QFrame {
   Q_OBJECT
  public:
-  explicit VolumeMeterWidget(QWidget *parent = nullptr);
+  explicit VolumeMeterWidget(const PxtoneClient *client,
+                             QWidget *parent = nullptr);
+
+ private:
+  void paintEvent(QPaintEvent *event) override;
+  QSize minimumSizeHint() const override;
+  const PxtoneClient *m_client;
+  Animation *m_animation;
 
  signals:
 };

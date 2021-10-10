@@ -30,6 +30,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     NewWoiceDialog *new_woice_dialog,
                     NewWoiceDialog *change_woice_dialog,
+                    VolumeMeterWidget *volume_meter_widget,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   void setTab(int index);
@@ -76,7 +77,6 @@ class SideMenu : public QWidget {
   void setFollowPlayhead(FollowPlayhead follow);
   void setCopy(bool);
   void openAddUnitWindow();
-  void setVolumeMeterLevel(double value);
 
  private:
   Ui::SideMenu *ui;

@@ -97,19 +97,20 @@
     </layout>
    </item>
    <item>
-    <widget class="QProgressBar" name="volumeMeter">
-     <property name="minimum">
-      <number>-3600</number>
+    <widget class="QFrame" name="volumeMeterWidget">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>16</height>
+      </size>
      </property>
-     <property name="maximum">
-      <number>300</number>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="value">
-      <number>-3600</number>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
-     <property name="textVisible">
-      <bool>false</bool>
-     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4"/>
     </widget>
    </item>
    <item>
