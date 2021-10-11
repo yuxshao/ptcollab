@@ -39,23 +39,6 @@ void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
   drawCursor(position, painter, color, username, uid);
 }
 
-constexpr int NUM_WIDTH = 8;
-constexpr int NUM_HEIGHT = 8;
-constexpr int NUM_OFFSET_X = 0;
-constexpr int NUM_OFFSET_Y = 40;
-static void drawNum(QPainter *painter, int x, int y, int w, int num) {
-  static QPixmap images(":/images/images");
-  int xr = x + w;
-  do {
-    int digit = num % 10;
-    xr -= NUM_WIDTH;
-    painter->drawPixmap(xr, y, NUM_WIDTH, NUM_HEIGHT, images,
-                        NUM_OFFSET_X + digit * NUM_WIDTH, NUM_OFFSET_Y,
-                        NUM_WIDTH, NUM_HEIGHT);
-    num = (num - digit) / 10;
-  } while (num > 0);
-}
-
 enum struct FlagType : qint8 { Top, Repeat, Last };
 constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
@@ -207,8 +190,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
       if (measure < activeMeas)
-        drawNum(&painter, x + 1, 1, MEASURE_NUM_BLOCK_WIDTH - 1,
-                beat / master->get_beat_num());
+        drawNumAlignTopRight(&painter, x + MEASURE_NUM_BLOCK_WIDTH, 1,
+                             beat / master->get_beat_num());
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
                        beatBrush);
@@ -377,7 +360,8 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               m_audio_note_preview = std::make_unique<NotePreview>(
                   m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
                   clock, std::list<EVERECORD>(),
-                  m_client->audioState()->bufferSize(), Settings::ChordPreview::get(), this);
+                  m_client->audioState()->bufferSize(),
+                  Settings::ChordPreview::get(), this);
               s.mouse_edit_state.base_velocity =
                   m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
                                                      EVENTKIND_VELOCITY);

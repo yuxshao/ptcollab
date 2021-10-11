@@ -31,6 +31,7 @@ QSize KeyboardView::sizeHint() const {
 KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
                            QScrollArea *parent)
     : QWidget(parent),
+      m_scrollarea(parent),
       m_pxtn(client->pxtn()),
       m_timer(new QElapsedTimer),
       painted(0),
@@ -358,6 +359,8 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
   }
 }
 
+#include <QScrollBar>
+#include <QStyle>
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
@@ -381,12 +384,17 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QBrush rootNoteBrush(QColor::fromRgb(84, 76, 76));
-  QBrush whiteNoteBrush(QColor::fromRgb(64, 64, 64));
-  QBrush blackNoteBrush(QColor::fromRgb(32, 32, 32));
-  QBrush black(Qt::black);
+  QColor rootNoteBrush(QColor::fromRgb(84, 76, 76));
+  QColor whiteNoteBrush(QColor::fromRgb(64, 64, 64));
+  QColor blackNoteBrush(QColor::fromRgb(32, 32, 32));
+  QColor black(Qt::black);
+
+  QLinearGradient gradient(0, 0, 1, 0);
+  gradient.setColorAt(0.5, rootNoteBrush);
+  gradient.setColorAt(1, Qt::transparent);
+  gradient.setCoordinateMode(QGradient::ObjectMode);
   for (int row = 0; true; ++row) {
-    QBrush *brush;
+    QColor *brush;
 
     if (m_dark)
       brush = &black;
@@ -410,6 +418,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
         size().height())
       break;
+
     int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     // Because of rounding error, calculate height by subbing next from this
     int next_y =
@@ -417,6 +426,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y, size().width(), h, *brush);
+
+    if (row % 12 == 0) {
+      int x = -pos().x();
+      int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+      painter.fillRect(x, this_y, 32, h, rootNoteBrush);
+      if (floor_h > 13) {
+        drawCNumAlignBottomLeft(&painter, x + 4, this_y + h - 2, 8 - row / 12);
+      }
+    }
   }
 
   // Draw FPS
@@ -618,6 +636,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         },
         false);
   }
+}
+
+void KeyboardView::moveEvent(QMoveEvent *e) {
+  update();
+  QWidget::moveEvent(e);
 }
 
 void KeyboardView::wheelEvent(QWheelEvent *event) {

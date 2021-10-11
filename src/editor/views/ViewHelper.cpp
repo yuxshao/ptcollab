@@ -155,6 +155,51 @@ void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
                    tailLineHeight - 2, color);
 }
 
+constexpr int NUM_WIDTH = 8;
+constexpr int NUM_HEIGHT = 8;
+constexpr int NUM_OFFSET_X = 0;
+constexpr int NUM_OFFSET_Y = 40;
+constexpr int DARK_NUM_OFFSET_Y = 48;
+void drawNum(QPainter *painter, int xr, int y, int num, int num_width,
+             int num_height, int num_offset_x, int num_offset_y) {
+  static QPixmap images(":/images/images");
+  do {
+    int digit = num % 10;
+    xr -= NUM_WIDTH;
+    painter->drawPixmap(xr, y, num_width, num_height, images,
+                        num_offset_x + digit * num_width, num_offset_y,
+                        num_width, num_height);
+    num = (num - digit) / 10;
+  } while (num > 0);
+}
+
+void drawNumAlignTopRight(QPainter *painter, int xr, int y, int num) {
+  drawNum(painter, xr, y, num, NUM_WIDTH, NUM_HEIGHT, NUM_OFFSET_X,
+          NUM_OFFSET_Y);
+}
+
+static int num_digits(int num) {
+  int i = 0;
+  do {
+    ++i;
+    num /= 10;
+  } while (num > 0);
+
+  return i;
+}
+
+void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num) {
+  static QPixmap images(":/images/images");
+  static int num_width = 9;
+  static int num_height = 9;
+  static int num_offset_x = num_width;
+  static int num_offset_y = 56;
+  painter->drawPixmap(x, y - num_height, num_width, num_height, images, 0,
+                      num_offset_y, num_width, num_height);
+  drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
+          num_width, num_height, num_offset_x, num_offset_y);
+}
+
 const QColor brightGreen(QColor::fromRgb(0, 240, 128));
 
 const int WINDOW_BOUND_SLACK = 32;

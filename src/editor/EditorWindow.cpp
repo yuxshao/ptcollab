@@ -86,8 +86,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_new_woice_dialog = new NewWoiceDialog(true, m_client, this);
   m_change_woice_dialog = new NewWoiceDialog(false, m_client, this);
 
-  m_keyboard_view = new KeyboardView(m_client, m_moo_clock, nullptr);
-
   statusBar()->addPermanentWidget(m_fps_status);
   statusBar()->addPermanentWidget(m_ping_status);
   statusBar()->addPermanentWidget(m_connection_status);
@@ -109,6 +107,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
+  m_keyboard_view = new KeyboardView(m_client, m_moo_clock, m_scroll_area);
   m_scroll_area->setWidget(m_keyboard_view);
 
   // TODO: find a better place for this.

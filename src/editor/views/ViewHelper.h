@@ -76,4 +76,7 @@ extern const QColor brightGreen;
 extern const int WINDOW_BOUND_SLACK;
 extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
                            const QColor &color);
+
+extern void drawNumAlignTopRight(QPainter *painter, int x, int y, int num);
+extern void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num);
 #endif  // VIEWHELPER_H
