@@ -387,6 +387,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QColor rootNoteBrush(QColor::fromRgb(84, 76, 76));
   QColor whiteNoteBrush(QColor::fromRgb(64, 64, 64));
   QColor blackNoteBrush(QColor::fromRgb(32, 32, 32));
+
+  QColor whiteLeftBrush(QColor::fromRgb(131, 126, 120, 128));
+  QColor blackLeftBrush(QColor::fromRgb(78, 75, 97, 128));
   QColor black(Qt::black);
 
   QLinearGradient gradient(0, 0, 1, 0);
@@ -394,7 +397,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   gradient.setColorAt(1, Qt::transparent);
   gradient.setCoordinateMode(QGradient::ObjectMode);
   for (int row = 0; true; ++row) {
-    QColor *brush;
+    QColor *brush, *leftBrush;
 
     if (m_dark)
       brush = &black;
@@ -409,9 +412,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           case 9:
           case 11:
             brush = &blackNoteBrush;
+            leftBrush = &blackLeftBrush;
             break;
           default:
             brush = &whiteNoteBrush;
+            leftBrush = &whiteLeftBrush;
         }
     }
 
@@ -427,11 +432,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y, size().width(), h, *brush);
 
-    if (row % 12 == 0) {
+    // draw left side piano
+    {
       int x = -pos().x();
       int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-      painter.fillRect(x, this_y, 32, h, rootNoteBrush);
-      if (floor_h > 13) {
+      painter.fillRect(x, this_y, 29, h, *leftBrush);
+      if (floor_h > 13 && row % 12 == 0) {
         drawCNumAlignBottomLeft(&painter, x + 4, this_y + h - 2, 8 - row / 12);
       }
     }
