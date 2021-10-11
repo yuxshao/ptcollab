@@ -106,11 +106,11 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   p.setPen(LABEL_COLOR);
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
-             (Qt::AlignRight | Qt::AlignTop), "dB");
+             (Qt::AlignRight | Qt::AlignBottom), "dB");
   for (int db = MIN_DB + 6; db < MAX_DB; db += 6) {
     int x = m_frame->dbToX(db);
     p.drawText(QRect(x - 20, 0, 40, height() - TICK_HEIGHT),
-               (Qt::AlignHCenter | Qt::AlignTop), QString("%1").arg(db));
+               (Qt::AlignHCenter | Qt::AlignBottom), QString("%1").arg(db));
   }
   for (int db = MIN_DB; db < MAX_DB; db += 1) {
     int x = m_frame->dbToX(db);
