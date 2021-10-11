@@ -436,7 +436,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     {
       int x = -pos().x();
       int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-      painter.fillRect(x, this_y, 29, h, *leftBrush);
+      painter.fillRect(x, this_y, 28, h, *leftBrush);
+      painter.fillRect(x + 28, this_y + 1, 1, h - 2, *leftBrush);
       if (floor_h > 13 && row % 12 == 0) {
         drawCNumAlignBottomLeft(&painter, x + 4, this_y + h - 2, 8 - row / 12);
       }
