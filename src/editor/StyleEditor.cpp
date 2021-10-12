@@ -97,7 +97,8 @@ QString relativizeUrls(QString stylesheet, const QString &basedir,
 }
 
 void loadFonts(const QString path) {
-  QDirIterator it(path, QDir::NoDotAndDotDot | QDir::Files);
+  QDirIterator it(path, QDir::NoDotAndDotDot | QDir::Files,
+                  QDirIterator::Subdirectories);
   while (it.hasNext()) {
     it.next();
     QFileInfo e(it.filePath());
