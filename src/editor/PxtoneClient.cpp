@@ -194,13 +194,6 @@ qint32 PxtoneClient::quantizeClock() {
       quantizeXOptions[editState().m_quantize_clock_idx].second);
 }
 
-qint32 PxtoneClient::quantizePitch(int idx) { return PITCH_PER_KEY / idx; }
-
-qint32 PxtoneClient::quantizePitch() {
-  return quantizePitch(
-      quantizeYOptions[editState().m_quantize_pitch_idx].second);
-}
-
 qint32 PxtoneClient::lastSeek() const { return m_last_seek; }
 
 void PxtoneClient::applyAction(const std::list<Action::Primitive> &as) {

@@ -84,8 +84,6 @@ class PxtoneClient : public QObject {
   qint64 following_uid() const;
   qint32 quantizeClock(int idx);
   qint32 quantizeClock();
-  qint32 quantizePitch(int idx);
-  qint32 quantizePitch();
   qint32 lastSeek() const;
 
   void setCurrentUnitNo(int unit_no, bool preserveFollow);
