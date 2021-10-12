@@ -97,7 +97,16 @@ bool NewWoiceDialog::searchPart() {
   }
 
   QStringList labels;
-  for (int i = 0; i < 50 && m_search_file_it != m_last_search_files.end();
+  int num_results = m_search_results_paths.size();
+  int batch_size = 100;
+  if (num_results > 100) batch_size = 50;
+  if (num_results > 300) batch_size = 25;
+  if (num_results > 500) batch_size = 10;
+  int search_result_max = 1000;
+
+  for (int i = 0;
+       i < batch_size && m_search_file_it != m_last_search_files.end() &&
+       num_results < search_result_max;
        ++i, ++m_search_file_it) {
     QFileInfo entry(*m_search_file_it);
     QString path = *m_search_file_it;
@@ -116,7 +125,8 @@ bool NewWoiceDialog::searchPart() {
   }
   ui->searchResultsList->addItems(labels);
 
-  if (m_search_file_it != m_last_search_files.end()) {
+  if (m_search_file_it != m_last_search_files.end() &&
+      num_results < search_result_max) {
     ui->searchStatusLabel->setText(
         QString("Filtering...\n(%1 matches / %2 voices)")
             .arg(ui->searchResultsList->count())
@@ -124,9 +134,14 @@ bool NewWoiceDialog::searchPart() {
     return false;
   }
 
-  ui->searchStatusLabel->setText(QString("%1 matches / %2 voices")
-                                     .arg(ui->searchResultsList->count())
-                                     .arg(m_last_search_files.size()));
+  if (num_results < search_result_max)
+    ui->searchStatusLabel->setText(QString("%1 matches / %2 voices")
+                                       .arg(ui->searchResultsList->count())
+                                       .arg(m_last_search_files.size()));
+  else
+    ui->searchStatusLabel->setText(QString("%1+ matches / %2 voices")
+                                       .arg(search_result_max)
+                                       .arg(m_last_search_files.size()));
   return true;
 }
 
