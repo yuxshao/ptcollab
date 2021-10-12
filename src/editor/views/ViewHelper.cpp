@@ -159,7 +159,6 @@ constexpr int NUM_WIDTH = 8;
 constexpr int NUM_HEIGHT = 8;
 constexpr int NUM_OFFSET_X = 0;
 constexpr int NUM_OFFSET_Y = 40;
-constexpr int DARK_NUM_OFFSET_Y = 48;
 void drawNum(QPainter *painter, int xr, int y, int num, int num_width,
              int num_height, int num_offset_x, int num_offset_y) {
   static QPixmap images(":/images/images");
@@ -188,16 +187,22 @@ static int num_digits(int num) {
   return i;
 }
 
-void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num) {
+void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
+                             int height) {
   static QPixmap images(":/images/images");
-  static int num_width = 9;
-  static int num_height = 9;
-  static int num_offset_x = num_width;
-  static int num_offset_y = 56;
-  painter->drawPixmap(x, y - num_height, num_width, num_height, images, 0,
-                      num_offset_y, num_width, num_height);
-  drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
-          num_width, num_height, num_offset_x, num_offset_y);
+  if (height > 10) {
+    bool big = height > 13;
+    int num_width = (big ? 9 : 8);
+    int num_height = (big ? 9 : 6);
+    int num_offset_x = num_width;
+    int num_offset_y = (big ? 56 : 49);
+    painter->drawPixmap(x, y - num_height, num_width, num_height, images, 0,
+                        num_offset_y, num_width, num_height);
+    drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
+            num_width, num_height, num_offset_x, num_offset_y);
+  } else if (height >= 7)
+    painter->drawPixmap(x - 2, y - (height + 1) / 2, 6, 6, images, 88, 48, 6,
+                        6);
 }
 
 const QColor brightGreen(QColor::fromRgb(0, 240, 128));

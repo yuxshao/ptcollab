@@ -399,12 +399,14 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush;
 
-    if (m_dark)
+    if (m_dark) {
       brush = &black;
-    else {
-      if (row == 39)
+      leftBrush = &black;
+    } else {
+      if (row == 39) {
         brush = &rootNoteBrush;
-      else
+        leftBrush = &whiteLeftBrush;
+      } else
         switch (row % 12) {
           case 2:
           case 4:
@@ -435,7 +437,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     // draw left side piano
     {
       int x = -pos().x();
-      int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
       painter.fillRect(x, this_y, 28, h, *leftBrush);
       painter.fillRect(x + 28, this_y + 1, 1, h - 2, *leftBrush);
     }
@@ -567,22 +568,21 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
   int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-  if (floor_h > 13)
-    for (int row = 0; true; row += 12) {
-      // TODO: dedup heigh calculation with above...
-      int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-      if (this_y > height()) break;
+  for (int row = 0; true; row += 12) {
+    // TODO: dedup heigh calculation with above...
+    int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+    if (this_y > height()) break;
 
-      // Because of rounding error, calculate height by subbing next from this
-      int next_y =
-          (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-      int h = next_y - this_y - 1;
+    // Because of rounding error, calculate height by subbing next from this
+    int next_y =
+        (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+    int h = next_y - this_y - 1;
 
-      // painter.setOpacity(0.5);
-      drawCNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
-                              8 - row / 12);
-      // painter.setOpacity(1)
-    }
+    // painter.setOpacity(0.5);
+    drawCNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
+                            8 - row / 12, floor_h);
+    // painter.setOpacity(1)
+  }
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
