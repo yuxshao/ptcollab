@@ -13,23 +13,18 @@
 #include "editor/Settings.h"
 #include "ui_SideMenu.h"
 
-SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
-                   UserListModel* users, SelectWoiceDialog* add_unit_dialog,
-                   DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
-                   NewWoiceDialog* new_woice_dialog,
-                   NewWoiceDialog* change_woice_dialog,
-                   VolumeMeterFrame* volume_meter_frame, QWidget* parent)
-    : QWidget(parent),
-      ui(new Ui::SideMenu),
-      m_add_unit_dialog(add_unit_dialog),
-      m_units(units),
-      m_woices(woices),
-      m_users(users),
-      m_delays(delays),
+SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
+                   UserListModel *users, SelectWoiceDialog *add_unit_dialog,
+                   DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
+                   NewWoiceDialog *new_woice_dialog,
+                   NewWoiceDialog *change_woice_dialog,
+                   VolumeMeterFrame *volume_meter_frame, QWidget *parent)
+    : QWidget(parent), ui(new Ui::SideMenu), m_add_unit_dialog(add_unit_dialog),
+      m_units(units), m_woices(woices), m_users(users), m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
   m_volume_meter_widget = new VolumeMeterWidget(volume_meter_frame, this);
-  QLayoutItem* previous =
+  QLayoutItem *previous =
       layout()->replaceWidget(ui->volumeMeterWidget, m_volume_meter_widget);
   previous->widget()->deleteLater();
   m_volume_meter_widget->setSizePolicy(
@@ -48,9 +43,16 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
+
+  ui->unitList->verticalHeader()->hide();
+  ui->woiceList->verticalHeader()->hide();
+  ui->usersList->verticalHeader()->hide();
+  ui->delayList->verticalHeader()->hide();
+  ui->overdriveList->verticalHeader()->hide();
+
   ui->unitList->setItemDelegate(new UnitListDelegate);
   setPlay(false);
-  for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
+  for (auto *list : {ui->unitList, ui->woiceList, ui->delayList,
                      ui->overdriveList, ui->usersList}) {
     list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     list->horizontalHeader()->setSectionResizeMode(
@@ -71,12 +73,13 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &SideMenu::stopButtonPressed);
   connect(ui->unitList->selectionModel(),
           &QItemSelectionModel::currentRowChanged,
-          [this](const QModelIndex& current, const QModelIndex& previous) {
+          [this](const QModelIndex &current, const QModelIndex &previous) {
             (void)previous;
-            if (current.isValid()) emit currentUnitChanged(current.row());
+            if (current.isValid())
+              emit currentUnitChanged(current.row());
           });
   connect(ui->unitList, &QTableView::clicked,
-          [this](const QModelIndex& index) { emit unitClicked(index.row()); });
+          [this](const QModelIndex &index) { emit unitClicked(index.row()); });
   connect(ui->saveBtn, &QPushButton::clicked, this,
           &SideMenu::saveButtonPressed);
   connect(ui->addUnitBtn, &QPushButton::clicked, m_add_unit_dialog,
@@ -109,15 +112,18 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   connect(change_woice_dialog, &QDialog::accepted, this,
           [this, change_woice_dialog]() {
-            if (!ui->woiceList->currentIndex().isValid()) return;
+            if (!ui->woiceList->currentIndex().isValid())
+              return;
             int idx = ui->woiceList->currentIndex().row();
-            if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
-            const auto& woices = change_woice_dialog->selectedWoices();
-            if (woices.size() > 0) emit changeWoice(idx, woices[0]);
+            if (idx < 0 && ui->woiceList->model()->rowCount() > 0)
+              return;
+            const auto &woices = change_woice_dialog->selectedWoices();
+            if (woices.size() > 0)
+              emit changeWoice(idx, woices[0]);
           });
   connect(new_woice_dialog, &QDialog::accepted, this,
           [this, new_woice_dialog]() {
-            for (const AddWoice& w : new_woice_dialog->selectedWoices())
+            for (const AddWoice &w : new_woice_dialog->selectedWoices())
               emit addWoice(w);
           });
 
@@ -168,7 +174,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             emit selectWoice(curr.row());
           });*/
   connect(ui->woiceList, &QTableView::clicked,
-          [this](const QModelIndex& index) {
+          [this](const QModelIndex &index) {
             if (index.column() == int(WoiceListColumn::Name) ||
                 index.column() == int(WoiceListColumn::Key))
               emit selectWoice(index.row());
@@ -199,7 +205,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     bool ok;
     int v;
     v = QSettings().value(VOLUME_KEY).toInt(&ok);
-    if (ok) ui->volumeSlider->setValue(v);
+    if (ok)
+      ui->volumeSlider->setValue(v);
   }
   connect(ui->volumeSlider, &QSlider::valueChanged, [this](int v) {
     QSettings().setValue(VOLUME_KEY, v);
@@ -211,7 +218,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     v = QSettings()
             .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
             .toDouble(&ok);
-    if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
+    if (ok)
+      ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;
@@ -223,7 +231,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     }
   });
   connect(ui->usersList, &QTableView::activated,
-          [this](const QModelIndex& index) { emit userSelected(index.row()); });
+          [this](const QModelIndex &index) { emit userSelected(index.row()); });
   connect(ui->watchBtn, &QPushButton::clicked, [this]() {
     if (ui->usersList->selectionModel()->hasSelection())
       emit userSelected(ui->usersList->currentIndex().row());

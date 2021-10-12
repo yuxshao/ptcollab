@@ -47,27 +47,20 @@ QString autoSavePath(const QString &filename) {
 }
 
 EditorWindow::EditorWindow(QWidget *parent)
-    : QMainWindow(parent),
-      m_server(nullptr),
-      m_filename(std::nullopt),
+    : QMainWindow(parent), m_server(nullptr), m_filename(std::nullopt),
       m_connection_status(new ConnectionStatusLabel(this)),
       m_fps_status(new QLabel("FPS", this)),
-      m_ping_status(new QLabel("", this)),
-      m_modified(false),
-      m_modified_autosave(false),
-      m_autosave_counter(0),
-      m_autosave_timer(new QTimer(this)),
-      m_host_dialog(new HostDialog(this)),
+      m_ping_status(new QLabel("", this)), m_modified(false),
+      m_modified_autosave(false), m_autosave_counter(0),
+      m_autosave_timer(new QTimer(this)), m_host_dialog(new HostDialog(this)),
       m_welcome_dialog(new WelcomeDialog(this)),
       m_connect_dialog(new ConnectDialog(this)),
       m_shortcuts_dialog(new ShortcutsDialog(this)),
       m_render_dialog(new RenderDialog(this)),
       m_midi_wrapper(new MidiWrapper()),
       m_settings_dialog(new SettingsDialog(m_midi_wrapper, this)),
-      m_copy_options_dialog(nullptr),
-      m_new_woice_dialog(nullptr),
-      m_change_woice_dialog(nullptr),
-      ui(new Ui::EditorWindow) {
+      m_copy_options_dialog(nullptr), m_new_woice_dialog(nullptr),
+      m_change_woice_dialog(nullptr), ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
   int sample_rate = 44100;
@@ -226,12 +219,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
-    QMessageBox::about(this, "About",
-                       tr("Multiplayer pxtone music editor. Special "
-                          "thanks to all testers and everyone in the pxtone "
-                          "discord!\n\nVersion: "
-                          "%1")
-                           .arg(QApplication::applicationVersion()));
+    QMessageBox m_about_dialog;
+    m_about_dialog.setProperty("aboutDialog", true);
+    m_about_dialog.about(this, "About",
+                         tr("Multiplayer pxtone music editor. Special "
+                            "thanks to all testers and everyone in the pxtone "
+                            "discord!\n\nVersion: "
+                            "%1")
+                             .arg(QApplication::applicationVersion()));
   });
   connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
           &QDialog::show);
@@ -251,7 +246,8 @@ EditorWindow::EditorWindow(QWidget *parent)
         QMessageBox::question(this, tr("Clean units / voices"),
                               tr("Are you sure you want to remove all unused "
                                  "voices and units? This cannot be undone."));
-    if (result != QMessageBox::Yes) return;
+    if (result != QMessageBox::Yes)
+      return;
     m_client->removeUnusedUnitsAndWoices();
   });
   connect(ui->actionCopyOptions, &QAction::triggered, [this]() {
@@ -285,16 +281,16 @@ void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
   if (!event->isAutoRepeat()) {
     int key = event->key();
     switch (key) {
-      case Qt::Key::Key_B:
+    case Qt::Key::Key_B:
 #ifdef DEBUG_RECORD_INPUT
-        recordInput(Input::Event::Off{EVENTDEFAULT_KEY});
+      recordInput(Input::Event::Off{EVENTDEFAULT_KEY});
 #endif
-        break;
-      case Qt::Key::Key_N:
+      break;
+    case Qt::Key::Key_N:
 #ifdef DEBUG_RECORD_INPUT
-        recordInput(Input::Event::Off{EVENTDEFAULT_KEY + 256});
+      recordInput(Input::Event::Off{EVENTDEFAULT_KEY + 256});
 #endif
-        break;
+      break;
     }
   }
 }
@@ -302,239 +298,244 @@ void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
 void EditorWindow::keyPressEvent(QKeyEvent *event) {
   int key = event->key();
   switch (key) {
-    case Qt::Key_A:
-      if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier) {
-          m_client->selectAllUnits(true);
-        } else
-          m_keyboard_view->selectAll(false);
-      }
-      break;
-    case Qt::Key_B:
+  case Qt::Key_A:
+    if (event->modifiers() & Qt::ControlModifier) {
+      if (event->modifiers() & Qt::ShiftModifier) {
+        m_client->selectAllUnits(true);
+      } else
+        m_keyboard_view->selectAll(false);
+    }
+    break;
+  case Qt::Key_B:
 #ifdef DEBUG_RECORD_INPUT
-      if (!event->isAutoRepeat())
-        recordInput(Input::Event::On{EVENTDEFAULT_KEY, 127});
+    if (!event->isAutoRepeat())
+      recordInput(Input::Event::On{EVENTDEFAULT_KEY, 127});
 #endif
-      break;
-    case Qt::Key_C:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->copySelection();
-      else {
-        EVENTKIND kind =
-            paramOptions[m_client->editState().current_param_kind_idx()].second;
-        m_client->clipboard()->setKindIsCopied(
-            kind, !m_client->clipboard()->kindIsCopied(kind));
-      }
-      break;
-    case Qt::Key_D:
-      if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier) {
-          m_client->selectAllUnits(false);
-        } else
-          m_client->deselect(false);
-      } else if (event->modifiers() & Qt::ShiftModifier)
-        m_keyboard_view->toggleDark();
-      else {
-        m_client->changeEditState(
-            [&](EditState &s) {
-              ++s.m_current_param_kind_idx;
-              s.m_current_param_kind_idx = s.current_param_kind_idx();
-            },
-            false);
-      }
-      break;
-    case Qt::Key_E:
+    break;
+  case Qt::Key_C:
+    if (event->modifiers() & Qt::ControlModifier)
+      m_keyboard_view->copySelection();
+    else {
+      EVENTKIND kind =
+          paramOptions[m_client->editState().current_param_kind_idx()].second;
+      m_client->clipboard()->setKindIsCopied(
+          kind, !m_client->clipboard()->kindIsCopied(kind));
+    }
+    break;
+  case Qt::Key_D:
+    if (event->modifiers() & Qt::ControlModifier) {
+      if (event->modifiers() & Qt::ShiftModifier) {
+        m_client->selectAllUnits(false);
+      } else
+        m_client->deselect(false);
+    } else if (event->modifiers() & Qt::ShiftModifier)
+      m_keyboard_view->toggleDark();
+    else {
       m_client->changeEditState(
           [&](EditState &s) {
-            --s.m_current_param_kind_idx;
+            ++s.m_current_param_kind_idx;
             s.m_current_param_kind_idx = s.current_param_kind_idx();
           },
           false);
-      break;
-    case Qt::Key_F:
-      m_client->changeEditState(
-          [&](EditState &s) {
-            s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
-                                      ? FollowPlayhead::Jump
-                                      : FollowPlayhead::None;
-          },
-          false);
-      break;
-    /*case Qt::Key_H:
-      if (event->modifiers() & Qt::ShiftModifier) {
-        m_keyboard_view->toggleTestActivity();
-      }
-      break;*/
-    case Qt::Key_I:
-      m_client->changeEditState(
-          [&](EditState &e) {
-            auto &qx = e.m_quantize_clock_idx;
-            if (qx > 0) qx--;
-          },
-          false);
-      break;
-    case Qt::Key_J:
-      // if (!event->isAutoRepeat())
-      recordInput(Input::Event::Skip{-1});
-      break;
-    case Qt::Key_K:
-      m_client->changeEditState(
-          [&](EditState &e) {
-            auto &qx = e.m_quantize_clock_idx;
-            int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
-            if (qx < size - 1) qx++;
-          },
-          false);
-      break;
-    case Qt::Key_L:
-      if (event->modifiers() & Qt::ControlModifier)
-        Settings::AutoAdvance::set(!Settings::AutoAdvance::get());
-      else
-        recordInput(Input::Event::Skip{1});
-      break;
-    case Qt::Key_M: {
-      std::optional<int> maybe_unit_no =
-          m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-      if (maybe_unit_no.has_value()) {
-        int unit_no = maybe_unit_no.value();
-        if (event->modifiers() & Qt::ShiftModifier)
-          m_client->cycleSolo(unit_no);
-        else {
-          const pxtnUnit *u = m_pxtn.Unit_Get(unit_no);
-          if (u) m_client->setUnitPlayed(unit_no, !u->get_played());
-        }
-      }
-      break;
     }
-    case Qt::Key_N:
-#ifdef DEBUG_RECORD_INPUT
-      if (!event->isAutoRepeat())
-        recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
-#else
+    break;
+  case Qt::Key_E:
+    m_client->changeEditState(
+        [&](EditState &s) {
+          --s.m_current_param_kind_idx;
+          s.m_current_param_kind_idx = s.current_param_kind_idx();
+        },
+        false);
+    break;
+  case Qt::Key_F:
+    m_client->changeEditState(
+        [&](EditState &s) {
+          s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
+                                    ? FollowPlayhead::Jump
+                                    : FollowPlayhead::None;
+        },
+        false);
+    break;
+  /*case Qt::Key_H:
+    if (event->modifiers() & Qt::ShiftModifier) {
+      m_keyboard_view->toggleTestActivity();
+    }
+    break;*/
+  case Qt::Key_I:
+    m_client->changeEditState(
+        [&](EditState &e) {
+          auto &qx = e.m_quantize_clock_idx;
+          if (qx > 0)
+            qx--;
+        },
+        false);
+    break;
+  case Qt::Key_J:
+    // if (!event->isAutoRepeat())
+    recordInput(Input::Event::Skip{-1});
+    break;
+  case Qt::Key_K:
+    m_client->changeEditState(
+        [&](EditState &e) {
+          auto &qx = e.m_quantize_clock_idx;
+          int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
+          if (qx < size - 1)
+            qx++;
+        },
+        false);
+    break;
+  case Qt::Key_L:
+    if (event->modifiers() & Qt::ControlModifier)
+      Settings::AutoAdvance::set(!Settings::AutoAdvance::get());
+    else
+      recordInput(Input::Event::Skip{1});
+    break;
+  case Qt::Key_M: {
+    std::optional<int> maybe_unit_no =
+        m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+    if (maybe_unit_no.has_value()) {
+      int unit_no = maybe_unit_no.value();
       if (event->modifiers() & Qt::ShiftModifier)
-        m_side_menu->openAddUnitWindow();
-      else
-        m_new_woice_dialog->show();
-#endif
-      break;
-    case Qt::Key_P:
-      if (event->modifiers() & Qt::ControlModifier)
-        Settings::ChordPreview::set(!Settings::ChordPreview::get());
-      break;
-    case Qt::Key_Q:
-      if (event->modifiers() & Qt::AltModifier)
-        m_keyboard_view->quantizeSelection();
-      break;
-    case Qt::Key_S:
-      if (!(event->modifiers() & Qt::ControlModifier))
-        m_keyboard_view->cycleCurrentUnit(
-            1, event->modifiers() & Qt::ShiftModifier);
-      break;
-    case Qt::Key_W:
-      m_keyboard_view->cycleCurrentUnit(-1,
-                                        event->modifiers() & Qt::ShiftModifier);
-      break;
-    case Qt::Key_V:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->paste(false);
-      break;
-    case Qt::Key_X:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->cutSelection();
-      break;
-    case Qt::Key_Y:
-      if (event->modifiers() & Qt::ControlModifier)
-        m_client->sendAction(UndoRedo::REDO);
-      break;
-    case Qt::Key_Z:
-      if (event->modifiers() & Qt::ControlModifier) {
-        if (event->modifiers() & Qt::ShiftModifier)
-          m_client->sendAction(UndoRedo::REDO);
-        else
-          m_client->sendAction(UndoRedo::UNDO);
+        m_client->cycleSolo(unit_no);
+      else {
+        const pxtnUnit *u = m_pxtn.Unit_Get(unit_no);
+        if (u)
+          m_client->setUnitPlayed(unit_no, !u->get_played());
       }
-      break;
-
-    case Qt::Key_F1:
-    case Qt::Key_F2:
-    case Qt::Key_F3:
-    case Qt::Key_F4:
-      m_side_menu->setTab(key - Qt::Key_F1);
-      break;
-    case Qt::Key_1:
-    case Qt::Key_2:
-    case Qt::Key_3:
-    case Qt::Key_4:
-    case Qt::Key_5:
-    case Qt::Key_6:
-    case Qt::Key_7:
-    case Qt::Key_8:
-    case Qt::Key_9:
-      m_keyboard_view->setCurrentUnitNo(key - Qt::Key_1, false);
-      break;
-    case Qt::Key_0:
-      m_keyboard_view->setCurrentUnitNo(9, false);
-      break;
-    case Qt::Key_PageDown:
+    }
+    break;
+  }
+  case Qt::Key_N:
+#ifdef DEBUG_RECORD_INPUT
+    if (!event->isAutoRepeat())
+      recordInput(Input::Event::On{EVENTDEFAULT_KEY + 256, 127});
+#else
+    if (event->modifiers() & Qt::ShiftModifier)
+      m_side_menu->openAddUnitWindow();
+    else
+      m_new_woice_dialog->show();
+#endif
+    break;
+  case Qt::Key_P:
+    if (event->modifiers() & Qt::ControlModifier)
+      Settings::ChordPreview::set(!Settings::ChordPreview::get());
+    break;
+  case Qt::Key_Q:
+    if (event->modifiers() & Qt::AltModifier)
+      m_keyboard_view->quantizeSelection();
+    break;
+  case Qt::Key_S:
+    if (!(event->modifiers() & Qt::ControlModifier))
       m_keyboard_view->cycleCurrentUnit(1,
                                         event->modifiers() & Qt::ShiftModifier);
-      break;
-    case Qt::Key_PageUp:
-      m_keyboard_view->cycleCurrentUnit(-1,
-                                        event->modifiers() & Qt::ShiftModifier);
-      break;
-    case Qt::Key_Space:
-      m_client->togglePlayState();
-      break;
-    case Qt::Key_Escape:
-      m_client->resetAndSuspendAudio();
-      m_keyboard_view->setFocus(Qt::OtherFocusReason);
-      break;
-    case Qt::Key_Backspace:
-      if (event->modifiers() & Qt::ControlModifier &&
-          event->modifiers() & Qt::ShiftModifier)
-        m_client->removeCurrentUnit();
-      else {
-        int now = m_moo_clock->now();
-        int end = quantize(now - 1, m_client->quantizeClock());
-        if (end < 0) end = 0;
-        Interval clock_int{end, now};
-        int unit_id = m_client->editState().m_current_unit_id;
-        std::list<Action::Primitive> actions;
-        actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
-                           Action::Delete{clock_int.end}});
-        actions.push_back({EVENTKIND_VELOCITY, unit_id, clock_int.start,
-                           Action::Delete{clock_int.end}});
-        actions.push_back({EVENTKIND_KEY, unit_id, clock_int.start,
-                           Action::Delete{clock_int.end}});
-        m_client->applyAction(actions);
-        m_client->seekMoo(end);
-      }
-      break;
-    case Qt::Key_Delete:
-      m_keyboard_view->clearSelection();
-      break;
-    case Qt::Key_Up:
-    case Qt::Key_Down: {
-      Direction dir =
-          (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
-      bool wide = (event->modifiers() & Qt::ControlModifier);
-      bool shift = (event->modifiers() & Qt::ShiftModifier);
-      m_keyboard_view->transposeSelection(dir, wide, shift);
-    } break;
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-      if (event->modifiers() & Qt::ShiftModifier) {
-        bool shift_right = event->key() == Qt::Key_Right;
-        bool grow = (event->modifiers() & Qt::ControlModifier);
-        tweakSelectionRange(shift_right, grow);
-      }
-      break;
+    break;
+  case Qt::Key_W:
+    m_keyboard_view->cycleCurrentUnit(-1,
+                                      event->modifiers() & Qt::ShiftModifier);
+    break;
+  case Qt::Key_V:
+    if (event->modifiers() & Qt::ControlModifier)
+      m_keyboard_view->paste(false);
+    break;
+  case Qt::Key_X:
+    if (event->modifiers() & Qt::ControlModifier)
+      m_keyboard_view->cutSelection();
+    break;
+  case Qt::Key_Y:
+    if (event->modifiers() & Qt::ControlModifier)
+      m_client->sendAction(UndoRedo::REDO);
+    break;
+  case Qt::Key_Z:
+    if (event->modifiers() & Qt::ControlModifier) {
+      if (event->modifiers() & Qt::ShiftModifier)
+        m_client->sendAction(UndoRedo::REDO);
+      else
+        m_client->sendAction(UndoRedo::UNDO);
+    }
+    break;
+
+  case Qt::Key_F1:
+  case Qt::Key_F2:
+  case Qt::Key_F3:
+  case Qt::Key_F4:
+    m_side_menu->setTab(key - Qt::Key_F1);
+    break;
+  case Qt::Key_1:
+  case Qt::Key_2:
+  case Qt::Key_3:
+  case Qt::Key_4:
+  case Qt::Key_5:
+  case Qt::Key_6:
+  case Qt::Key_7:
+  case Qt::Key_8:
+  case Qt::Key_9:
+    m_keyboard_view->setCurrentUnitNo(key - Qt::Key_1, false);
+    break;
+  case Qt::Key_0:
+    m_keyboard_view->setCurrentUnitNo(9, false);
+    break;
+  case Qt::Key_PageDown:
+    m_keyboard_view->cycleCurrentUnit(1,
+                                      event->modifiers() & Qt::ShiftModifier);
+    break;
+  case Qt::Key_PageUp:
+    m_keyboard_view->cycleCurrentUnit(-1,
+                                      event->modifiers() & Qt::ShiftModifier);
+    break;
+  case Qt::Key_Space:
+    m_client->togglePlayState();
+    break;
+  case Qt::Key_Escape:
+    m_client->resetAndSuspendAudio();
+    m_keyboard_view->setFocus(Qt::OtherFocusReason);
+    break;
+  case Qt::Key_Backspace:
+    if (event->modifiers() & Qt::ControlModifier &&
+        event->modifiers() & Qt::ShiftModifier)
+      m_client->removeCurrentUnit();
+    else {
+      int now = m_moo_clock->now();
+      int end = quantize(now - 1, m_client->quantizeClock());
+      if (end < 0)
+        end = 0;
+      Interval clock_int{end, now};
+      int unit_id = m_client->editState().m_current_unit_id;
+      std::list<Action::Primitive> actions;
+      actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                         Action::Delete{clock_int.end}});
+      actions.push_back({EVENTKIND_VELOCITY, unit_id, clock_int.start,
+                         Action::Delete{clock_int.end}});
+      actions.push_back({EVENTKIND_KEY, unit_id, clock_int.start,
+                         Action::Delete{clock_int.end}});
+      m_client->applyAction(actions);
+      m_client->seekMoo(end);
+    }
+    break;
+  case Qt::Key_Delete:
+    m_keyboard_view->clearSelection();
+    break;
+  case Qt::Key_Up:
+  case Qt::Key_Down: {
+    Direction dir =
+        (event->key() == Qt::Key_Up ? Direction::UP : Direction::DOWN);
+    bool wide = (event->modifiers() & Qt::ControlModifier);
+    bool shift = (event->modifiers() & Qt::ShiftModifier);
+    m_keyboard_view->transposeSelection(dir, wide, shift);
+  } break;
+  case Qt::Key_Left:
+  case Qt::Key_Right:
+    if (event->modifiers() & Qt::ShiftModifier) {
+      bool shift_right = event->key() == Qt::Key_Right;
+      bool grow = (event->modifiers() & Qt::ControlModifier);
+      tweakSelectionRange(shift_right, grow);
+    }
+    break;
   }
 }
 
 void EditorWindow::tweakSelectionRange(bool shift_right, bool grow) {
-  if (m_client->editState().mouse_edit_state.selection == std::nullopt) return;
+  if (m_client->editState().mouse_edit_state.selection == std::nullopt)
+    return;
   qint32 q = m_client->quantizeClock();
   m_client->changeEditState(
       [&](EditState &e) {
@@ -573,7 +574,8 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
     actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
                        clock_int.start, Add{v.on.key}});
   }
-  if (actions.size() > 0) client->applyAction(actions);
+  if (actions.size() > 0)
+    client->applyAction(actions);
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
@@ -643,24 +645,25 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
 }
 
 bool EditorWindow::maybeSave() {
-  if (!m_modified) return true;
+  if (!m_modified)
+    return true;
 
-  int ret = QMessageBox::question(
-      this, tr("Unsaved changes"),
-      tr("Do you want to save your changes first?"),
-      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-      QMessageBox::Save);
+  int ret = QMessageBox::question(this, tr("Unsaved changes"),
+                                  tr("Do you want to save your changes first?"),
+                                  QMessageBox::Save | QMessageBox::Discard |
+                                      QMessageBox::Cancel,
+                                  QMessageBox::Save);
   switch (ret) {
-    case QMessageBox::Save:
-      return save(false);
-    case QMessageBox::Discard:
-      return true;
-    case QMessageBox::Cancel:
-      return false;
-      break;
-    default:
-      qWarning() << "Unexpected maybeSave answer" << ret;
-      return false;
+  case QMessageBox::Save:
+    return save(false);
+  case QMessageBox::Discard:
+    return true;
+  case QMessageBox::Cancel:
+    return false;
+    break;
+  default:
+    qWarning() << "Unexpected maybeSave answer" << ret;
+    return false;
   }
 }
 
@@ -726,11 +729,13 @@ void EditorWindow::closeEvent(QCloseEvent *event) {
 
 static const QString HISTORY_SAVE_FILE = "history_save_file";
 void EditorWindow::Host(HostSetting host_setting) {
-  if (!maybeSave()) return;
+  if (!maybeSave())
+    return;
   if (m_server) {
     int other_sessions = 0;
     for (const auto *s : m_server->sessions())
-      if (s->uid() != m_client->uid()) ++other_sessions;
+      if (s->uid() != m_client->uid())
+        ++other_sessions;
     if (other_sessions > 0) {
       auto result =
           QMessageBox::question(this, tr("Others connected to server"),
@@ -738,19 +743,23 @@ void EditorWindow::Host(HostSetting host_setting) {
                                    "the server. Stop the server and "
                                    "start a new one?",
                                    "", other_sessions));
-      if (result != QMessageBox::Yes) return;
+      if (result != QMessageBox::Yes)
+        return;
     }
   }
   switch (host_setting) {
-    case HostSetting::NewFile:
-      if (!m_host_dialog->start(false)) return;
-      break;
-    case HostSetting::LoadFile:
-      if (!m_host_dialog->start(true)) return;
-      break;
-    case HostSetting::SkipFile:
-      if (!m_host_dialog->exec()) return;
-      break;
+  case HostSetting::NewFile:
+    if (!m_host_dialog->start(false))
+      return;
+    break;
+  case HostSetting::LoadFile:
+    if (!m_host_dialog->start(true))
+      return;
+    break;
+  case HostSetting::SkipFile:
+    if (!m_host_dialog->exec())
+      return;
+    break;
   }
   m_host_dialog->persistSettings();
 
@@ -803,7 +812,7 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
                                 QString username) {
   try {
     m_server = new BroadcastServer(filename, host, port, recording_save_file,
-                                   this);  // , 3000, 0.3);
+                                   this); // , 3000, 0.3);
   } catch (QString e) {
     QMessageBox::critical(this, "Server startup error", e);
     return;
@@ -837,7 +846,8 @@ bool EditorWindow::saveToFile(QString filename, bool warnOnError) {
     return false;
   }
   pxtnDescriptor desc;
-  if (!desc.set_file_w(f.get())) return false;
+  if (!desc.set_file_w(f.get()))
+    return false;
   int version_from_pxtn_service = 5;
   if (m_pxtn.write(&desc, false, version_from_pxtn_service) != pxtnOK)
     return false;
@@ -854,9 +864,11 @@ bool EditorWindow::save(bool forceSelectFilename) {
         this, "Save file",
         QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
         "pxtone projects (*.ptcop)");
-  if (filename.isEmpty()) return false;
+  if (filename.isEmpty())
+    return false;
 
-  if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
+  if (QFileInfo(filename).suffix() != "ptcop")
+    filename += ".ptcop";
   bool saved = saveToFile(filename);
   if (saved) {
     settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
@@ -878,7 +890,8 @@ bool EditorWindow::render() {
   m_render_dialog->setVolume(m_client->moo()->params.master_vol);
 
   try {
-    if (!m_render_dialog->exec()) return false;
+    if (!m_render_dialog->exec())
+      return false;
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
     volume = m_render_dialog->renderVolume();
@@ -909,20 +922,23 @@ bool EditorWindow::render() {
         return !progress.wasCanceled();
       });
   progress.close();
-  if (!result) return false;
+  if (!result)
+    return false;
   file.commit();
   QMessageBox::information(this, tr("Rendering done"), tr("Rendering done"));
   return true;
 }
 
 void EditorWindow::connectToHost() {
-  if (!maybeSave()) return;
+  if (!maybeSave())
+    return;
   if (m_server &&
       QMessageBox::question(this, "Server running", "Stop the server first?") !=
           QMessageBox::Yes)
     return;
 
-  if (!m_connect_dialog->exec()) return;
+  if (!m_connect_dialog->exec())
+    return;
   m_connect_dialog->persistSettings();
   QStringList parsed_host_and_port = m_connect_dialog->address().split(":");
   if (parsed_host_and_port.length() != 2) {
@@ -956,7 +972,8 @@ void EditorWindow::connectToHost() {
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent *event) {
-  if (event->mimeData()->hasUrls()) event->acceptProposedAction();
+  if (event->mimeData()->hasUrls())
+    event->acceptProposedAction();
 }
 
 void EditorWindow::dropEvent(QDropEvent *event) {
@@ -994,5 +1011,6 @@ void EditorWindow::dropEvent(QDropEvent *event) {
     QMessageBox::warning(this, tr("Unsupported instrument type"), e);
     return;
   }
-  for (const AddWoice &w : add_woices) m_client->sendAction(w);
+  for (const AddWoice &w : add_woices)
+    m_client->sendAction(w);
 }
