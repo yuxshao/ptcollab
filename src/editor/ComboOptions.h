@@ -1,5 +1,5 @@
-#ifndef QUANTIZE_H
-#define QUANTIZE_H
+#ifndef COMBOOPTIONS_H
+#define COMBOOPTIONS_H
 
 #include <QString>
 
@@ -17,4 +17,4 @@ static std::pair<QString, EVENTKIND> paramOptions[] = {
     {"Portamento", EVENTKIND_PORTAMENT}, {"Fine-tune", EVENTKIND_TUNING},
     {"Voice", EVENTKIND_VOICENO},        {"Group", EVENTKIND_GROUPNO}};
 
-#endif  // QUANTIZE_H
+#endif  // COMBOOPTIONS_H

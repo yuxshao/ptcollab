@@ -299,6 +299,12 @@ static void drawCursor(const EditState &state, QPainter &painter,
   drawCursor(position, painter, color, username, uid);
 }
 
+constexpr int LEFT_PIANO_WIDTH = 28;
+void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
+  painter.fillRect(x, y, LEFT_PIANO_WIDTH, h, b);
+  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1, 1, h - 2, b);
+}
+
 double smoothDistance(double dy, double dx) {
   double r = dy * dy + dx * dx;
   return std::max(0.0, 1 / (r + 1));
@@ -309,18 +315,21 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                       const Interval &bounds, const Brush &brush, qint32 alpha,
                       const Scale &scale, qint32 current_clock,
                       const MouseEditState &mouse, bool drawTooltip, bool muted,
-                      int width) {
+                      int width, bool playing, int viewportLeft) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
-  bool playing = on.contains(current_clock);
+  playing = playing && on.contains(current_clock);
   bool firstBlock = interval.start == on.start;
-  if (playing && firstBlock && !muted && alpha > 0)
+  if (playing && firstBlock && !muted && alpha > 0) {
+    QColor c = brush.toQColor(
+        128, false, 16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256);
     paintBlock(state.pitch.value, Interval{0, int(scale.clockPerPx * width)},
-               painter,
-               brush.toQColor(
-                   128, false,
-                   16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256),
-               scale);
+               painter, c, scale);
+    c.setAlpha((32 + c.alpha() * 2 / 3) *
+               (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
+    drawLeftPiano(painter, viewportLeft, scale.pitchToY(state.pitch.value),
+                  PITCH_PER_KEY / scale.pitchPerPx, c);
+  }
   if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
   if (muted)
@@ -359,8 +368,6 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
   }
 }
 
-#include <QScrollBar>
-#include <QStyle>
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
@@ -399,28 +406,24 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush;
 
-    if (m_dark) {
-      brush = &black;
-      leftBrush = &black;
-    } else {
-      if (row == 39) {
-        brush = &rootNoteBrush;
-        leftBrush = &whiteLeftBrush;
-      } else
-        switch (row % 12) {
-          case 2:
-          case 4:
-          case 6:
-          case 9:
-          case 11:
-            brush = &blackNoteBrush;
-            leftBrush = &blackLeftBrush;
-            break;
-          default:
-            brush = &whiteNoteBrush;
-            leftBrush = &whiteLeftBrush;
-        }
-    }
+    if (row == 39) {
+      brush = &rootNoteBrush;
+      leftBrush = &whiteLeftBrush;
+    } else
+      switch (row % 12) {
+        case 2:
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+          brush = &blackNoteBrush;
+          leftBrush = &blackLeftBrush;
+          break;
+        default:
+          brush = &whiteNoteBrush;
+          leftBrush = &whiteLeftBrush;
+      }
+    if (m_dark) brush = &black;
 
     if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
         size().height())
@@ -434,12 +437,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y, size().width(), h, *brush);
 
-    // draw left side piano
-    {
-      int x = -pos().x();
-      painter.fillRect(x, this_y, 28, h, *leftBrush);
-      painter.fillRect(x + 28, this_y + 1, 1, h - 2, *leftBrush);
-    }
+    drawLeftPiano(painter, -pos().x(), this_y, h, *leftBrush);
   }
 
   // Draw FPS
@@ -512,7 +510,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                            thisSelection, clockBounds, brush, alpha,
                            m_client->editState().scale, clock,
                            m_client->editState().mouse_edit_state, matchingUnit,
-                           muted, width());
+                           muted, width(), m_client->isPlaying(), -pos().x());
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
@@ -526,7 +524,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                            thisSelection, clockBounds, brush, alpha,
                            m_client->editState().scale, clock,
                            m_client->editState().mouse_edit_state, matchingUnit,
-                           muted, width());
+                           muted, width(), m_client->isPlaying(), -pos().x());
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -557,16 +555,18 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       if (selection.has_value() &&
           selected_unit_nos.find(unit_no) != selected_unit_nos.end())
         thisSelection = selection;
-      drawStateSegment(
-          thisPainter, state,
-          {state.pitch.clock, state.ongoingOnEvent.value().end}, thisSelection,
-          clockBounds, brush, alpha, m_client->editState().scale, clock,
-          m_client->editState().mouse_edit_state, matchingUnit, muted, width());
+      drawStateSegment(thisPainter, state,
+                       {state.pitch.clock, state.ongoingOnEvent.value().end},
+                       thisSelection, clockBounds, brush, alpha,
+                       m_client->editState().scale, clock,
+                       m_client->editState().mouse_edit_state, matchingUnit,
+                       muted, width(), m_client->isPlaying(), -pos().x());
 
       state.ongoingOnEvent.reset();
     }
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
+
   int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
   for (int row = 0; true; row += 12) {
     // TODO: dedup heigh calculation with above...
