@@ -36,11 +36,11 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
   m_volume_meter_widget->setParent(this);
 
-  for (auto [label, value] : quantizeXOptions)
+  for (auto [label, value] : quantizeXOptions())
     ui->quantX->addItem(label, value);
-  for (auto [label, value] : quantizeYOptions)
+  for (auto [label, value] : quantizeYOptions())
     ui->quantY->addItem(label, value);
-  for (auto [label, value] : paramOptions)
+  for (auto [label, value] : paramOptions())
     ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);

@@ -321,7 +321,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->copySelection();
       else {
         EVENTKIND kind =
-            paramOptions[m_client->editState().current_param_kind_idx()].second;
+            paramOptions()[m_client->editState().current_param_kind_idx()]
+                .second;
         m_client->clipboard()->setKindIsCopied(
             kind, !m_client->clipboard()->kindIsCopied(kind));
       }
@@ -381,8 +382,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &e) {
             auto &qx = e.m_quantize_clock_idx;
-            int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
-            if (qx < size - 1) qx++;
+            if (qx < int(quantizeXOptions().size()) - 1) qx++;
           },
           false);
       break;

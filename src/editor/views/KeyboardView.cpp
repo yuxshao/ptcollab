@@ -16,9 +16,9 @@
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
   m_quantize_clock = pxtn->master->get_beat_clock() /
-                     quantizeXOptions[s.m_quantize_clock_idx].second;
+                     quantizeXOptions()[s.m_quantize_clock_idx].second;
   m_quantize_pitch =
-      PITCH_PER_KEY / quantizeYOptions[s.m_quantize_pitch_idx].second;
+      PITCH_PER_KEY / quantizeYOptions()[s.m_quantize_pitch_idx].second;
   scale = s.scale;
 }
 
@@ -869,7 +869,7 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
       offset *= PITCH_PER_KEY * (wide ? 12 : 1);
     } else {
       EVENTKIND current_kind =
-          paramOptions[m_client->editState().m_current_param_kind_idx].second;
+          paramOptions()[m_client->editState().m_current_param_kind_idx].second;
       switch (current_kind) {
         case EVENTKIND_KEY:
         case EVENTKIND_PAN_VOLUME:

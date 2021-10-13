@@ -195,6 +195,7 @@ SOURCES += main.cpp \
            editor/views/Animation.cpp \
            editor/audio/AudioFormat.cpp \
            editor/Clipboard.cpp \
+           editor/ComboOptions.cpp \
            editor/DummySyncServer.cpp \
            editor/EditState.cpp \
            editor/EditorScrollArea.cpp \

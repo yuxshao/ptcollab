@@ -143,7 +143,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           });
   connect(this, &SideMenu::copyChanged, [this](bool copy) {
     EVENTKIND kind =
-        paramOptions[m_client->editState().current_param_kind_idx()].second;
+        paramOptions()[m_client->editState().current_param_kind_idx()].second;
     if (m_client->clipboard()->kindIsCopied(kind) != copy)
       m_client->clipboard()->setKindIsCopied(kind, copy);
   });
@@ -176,7 +176,7 @@ void PxtoneSideMenu::refreshTempoBeat() {
 
 void PxtoneSideMenu::refreshCopyCheckbox() {
   EVENTKIND kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
+      paramOptions()[m_client->editState().current_param_kind_idx()].second;
   setCopy(m_client->clipboard()->kindIsCopied(kind));
 }
 

@@ -201,7 +201,7 @@ qint32 PxtoneClient::quantizeClock(int idx) {
 
 qint32 PxtoneClient::quantizeClock() {
   return quantizeClock(
-      quantizeXOptions[editState().m_quantize_clock_idx].second);
+      quantizeXOptions()[editState().m_quantize_clock_idx].second);
 }
 
 qint32 PxtoneClient::lastSeek() const { return m_last_seek; }

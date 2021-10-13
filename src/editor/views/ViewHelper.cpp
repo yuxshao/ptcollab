@@ -89,11 +89,10 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
     // In this case, alt flips the scroll direction.
     // Maybe alt shift could handle quantize y?
     qreal delta = event->angleDelta().x();
-    int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
     client->changeEditState(
         [&](EditState &e) {
           auto &qx = e.m_quantize_clock_idx;
-          if (delta < 0 && qx < size - 1) qx++;
+          if (delta < 0 && qx < int(quantizeXOptions().size()) - 1) qx++;
           if (delta > 0 && qx > 0) qx--;
         },
         false);

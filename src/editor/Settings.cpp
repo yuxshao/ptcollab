@@ -167,7 +167,7 @@ namespace CopyKinds {
 const char *KEY = "copy_kinds";
 QList<int> default_value() {
   QList<int> v;
-  for (auto [name, kind] : paramOptions)
+  for (auto [name, kind] : paramOptions())
     if (kind != EVENTKIND_VOICENO) v.push_back(kind);
   return v;
 }
