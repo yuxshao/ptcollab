@@ -214,6 +214,8 @@ std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
   return intervals;
 }
 
+int quantize_pitch(int p, int q) { return quantize(p, q) + q; }
+
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        QPainter &painter, int width, int height,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -238,16 +240,14 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       // TODO: maybe factor out this quantization logic
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock));
-      int pitch = quantize(keyboard_edit_state.start_pitch,
-                           localState.m_quantize_pitch) +
-                  localState.m_quantize_pitch;
+      int pitch = quantize_pitch(keyboard_edit_state.start_pitch,
+                                 localState.m_quantize_pitch);
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
 
       if (mouse_edit_state.type == MouseEditState::Type::SetNote) {
-        int end_pitch = quantize(keyboard_edit_state.current_pitch,
-                                 localState.m_quantize_pitch) +
-                        localState.m_quantize_pitch;
+        int end_pitch = quantize_pitch(keyboard_edit_state.current_pitch,
+                                       localState.m_quantize_pitch);
         std::list<SetNoteInterval> intervals = vibratoIntervals(
             interval, localState.m_quantize_clock, pitch, end_pitch);
         for (const auto &[interval, pitch] : intervals) {
@@ -757,8 +757,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
                   s.mouse_edit_state.kind)) {
             int pitch = std::get<MouseKeyboardEdit>(s.mouse_edit_state.kind)
                             .current_pitch;
-            pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
-                    m_edit_state.m_quantize_pitch;
+            pitch = quantize_pitch(pitch, m_edit_state.m_quantize_pitch);
             s.mouse_edit_state.last_pitch = pitch;
 
             int clock = m_client->editState().mouse_edit_state.current_clock;
@@ -920,9 +919,8 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
 
   Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
       m_client->quantizeClock()));
-  int start_pitch =
-      quantize(keyboard_edit_state.start_pitch, m_edit_state.m_quantize_pitch) +
-      m_edit_state.m_quantize_pitch;
+  int start_pitch = quantize_pitch(keyboard_edit_state.start_pitch,
+                                   m_edit_state.m_quantize_pitch);
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
 
   m_client->changeEditState(
@@ -967,9 +965,9 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
 
               if (m_client->editState().mouse_edit_state.type ==
                   MouseEditState::SetNote) {
-                int current_pitch = quantize(keyboard_edit_state.current_pitch,
-                                             m_edit_state.m_quantize_pitch) +
-                                    m_edit_state.m_quantize_pitch;
+                int current_pitch =
+                    quantize_pitch(keyboard_edit_state.current_pitch,
+                                   m_edit_state.m_quantize_pitch);
                 const auto intervals =
                     vibratoIntervals(clock_int, m_client->quantizeClock(),
                                      start_pitch, current_pitch);
