@@ -524,9 +524,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     } break;
     case Qt::Key_Left:
     case Qt::Key_Right:
-      if (event->modifiers() & Qt::ShiftModifier) {
+      if (event->modifiers() & Qt::AltModifier) {
         bool shift_right = event->key() == Qt::Key_Right;
-        bool grow = (event->modifiers() & Qt::ControlModifier);
+        bool grow = (event->modifiers() & Qt::ShiftModifier);
         tweakSelectionRange(shift_right, grow);
       }
       break;

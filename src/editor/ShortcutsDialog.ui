@@ -542,7 +542,7 @@
      </item>
      <item row="32" column="0">
       <property name="text">
-       <string>Ctrl+(Shift)+(Left/Right)</string>
+       <string>Alt+(Shift)+(Left/Right)</string>
       </property>
      </item>
      <item row="32" column="1">
