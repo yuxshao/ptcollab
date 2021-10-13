@@ -496,11 +496,12 @@ playback
 10/13
 1. sorta janky shift left and right
 2. adjust copy / paste so that it's less janky
+3. fix draw offset when you draw notes in snap under semitone
 
 Todo by priority
 ----------------
  - way to elongate notes (ctrl click in unit row)
- - fix draw offset when you draw notes in snap under semitone
+ - experiment with other temperaments?
  - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
