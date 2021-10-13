@@ -214,7 +214,11 @@ std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
   return intervals;
 }
 
-int quantize_pitch(int p, int q) { return quantize(p, q) + q; }
+int quantize_pitch(int p, int q) {
+  // Formula empirically found so that the note that's drawn isn't too far from
+  // the mouse
+  return quantize(p + (q + PITCH_PER_KEY) / 2, q);
+}
 
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        QPainter &painter, int width, int height,
