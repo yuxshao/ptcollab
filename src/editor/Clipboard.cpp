@@ -102,22 +102,25 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
   uint8_t first_unit_no = (min == unit_nos.end() ? 0 : *min);
   for (const int &i : unit_nos) m_unit_nos.insert(i - first_unit_no);
 
-  const EVERECORD *e = nullptr;
-  for (e = pxtn->evels->get_Records(); e; e = e->next)
-    if (e->clock >= range.start) break;
-
-  for (; e && e->clock < range.end; e = e->next) {
+  for (const EVERECORD *e = pxtn->evels->get_Records();
+       e && e->clock < range.end; e = e->next) {
     EVENTKIND kind(EVENTKIND(e->kind));
+    bool is_tail = Evelist_Kind_IsTail(e->kind);
+    if (e->clock + (is_tail ? e->value : 0) < range.start) continue;
+
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kinds_to_copy.find(kind) != kinds_to_copy.end()) {
       int32_t v = e->value;
+      int32_t clock = e->clock;
       if (kind == EVENTKIND_VOICENO)
         v = woiceIdMap.noToId(v);
-      else if (Evelist_Kind_IsTail(e->kind))
-        v = std::min(v, range.end - e->clock);
+      else if (is_tail) {
+        clock = std::max(e->clock, range.start);
+        v = std::min(v, range.end - clock);
+      }
 
       uint8_t unit_no = e->unit_no - first_unit_no;
-      m_items.emplace_back(Item{e->clock - range.start, unit_no, kind, v});
+      m_items.emplace_back(Item{clock - range.start, unit_no, kind, v});
     }
   }
 }
