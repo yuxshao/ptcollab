@@ -200,6 +200,15 @@ std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
   return actions;
 }
 
+PasteResult Clipboard::makeShift(const std::set<int> &unit_nos,
+                                 const Interval &range, qint32 dest_start_clock,
+                                 const pxtnService *pxtn,
+                                 const NoIdMap &woiceIdMap) {
+  CopyState c(unit_nos, range, pxtn, woiceIdMap, m_kinds_to_copy);
+  return {c.makePaste(unit_nos, m_kinds_to_copy, dest_start_clock, woiceIdMap),
+          c.m_copy_length};
+}
+
 void Clipboard::setKindIsCopied(EVENTKIND kind, bool set) {
   if (kind == EVENTKIND_ON || kind == EVENTKIND_VELOCITY) {
     if (set) {

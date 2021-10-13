@@ -466,7 +466,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // previous block.
   // TODO: Draw the current unit at the top.
   std::optional<Interval> selection = std::nullopt;
-  std::set<int> selected_unit_nos = selectedUnitNos();
+  std::set<int> selected_unit_nos = m_client->selectedUnitNos();
   if (m_dark)
     painter.setCompositionMode(QPainter::CompositionMode_Plus);
   else
@@ -885,7 +885,7 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
 
     using namespace Action;
     std::list<Primitive> as;
-    for (qint32 unitNo : selectedUnitNos()) {
+    for (qint32 unitNo : m_client->selectedUnitNos()) {
       qint32 unit = m_client->unitIdMap().noToId(unitNo);
       if (kind != EVENTKIND_VELOCITY) {
         int32_t start_val =
@@ -1001,21 +1001,10 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
       false);
 }
 
-std::set<int> KeyboardView::selectedUnitNos() {
-  std::set<int> unit_nos;
-  auto unit_no =
-      m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-  if (unit_no.has_value()) unit_nos.insert(unit_no.value());
-
-  for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
-    if (m_pxtn->Unit_Get(i)->get_operated()) unit_nos.insert(i);
-  return unit_nos;
-}
-
 void KeyboardView::copySelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->clipboard()->copy(
-      selectedUnitNos(),
+      m_client->selectedUnitNos(),
       m_client->editState().mouse_edit_state.selection.value(), m_pxtn,
       m_client->controller()->woiceIdMap());
 }
@@ -1023,7 +1012,7 @@ void KeyboardView::copySelection() {
 void KeyboardView::clearSelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   std::list<Action::Primitive> actions = m_client->clipboard()->makeClear(
-      selectedUnitNos(),
+      m_client->selectedUnitNos(),
       m_client->editState().mouse_edit_state.selection.value(),
       m_client->unitIdMap());
   if (actions.size() > 0) m_client->applyAction(actions);
@@ -1039,7 +1028,7 @@ void KeyboardView::quantizeSelection() {
       {EVENTKIND_VELOCITY, EVENTKIND_KEY, EVENTKIND_ON});
   const Interval &range =
       m_client->editState().mouse_edit_state.selection.value();
-  const std::set<int> &unit_nos(selectedUnitNos());
+  const std::set<int> &unit_nos(m_client->selectedUnitNos());
   LocalEditState localState(m_pxtn, m_client->editState());
   int quantizeClock = localState.m_quantize_clock;
   // Quantize with rounding, rather than flooring / ceiling is more useful for
@@ -1086,7 +1075,8 @@ void KeyboardView::paste(bool preserveFollow) {
       [&](auto &s) {
         Interval &selection = s.mouse_edit_state.selection.value();
         PasteResult paste_result = m_client->clipboard()->makePaste(
-            selectedUnitNos(), selection.start, m_client->unitIdMap());
+            m_client->selectedUnitNos(), selection.start,
+            m_client->unitIdMap());
         if (paste_result.actions.size() > 0)
           m_client->applyAction(paste_result.actions);
         selection.end = selection.start + paste_result.length;

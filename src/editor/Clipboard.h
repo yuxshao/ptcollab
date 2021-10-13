@@ -35,6 +35,12 @@ class Clipboard : public QObject {
   std::list<Action::Primitive> makeClear(const std::set<int> &unit_nos,
                                          const Interval &range,
                                          const NoIdMap &map);
+
+  // Shifting L/R is in the clipboard right now since it knows which event kinds
+  // to move + the shfit is basically a copy / paste atm.
+  PasteResult makeShift(const std::set<int> &unit_nos, const Interval &range,
+                        qint32 dest_start_clock, const pxtnService *pxtn,
+                        const NoIdMap &woiceIdMap);
   void setKindIsCopied(EVENTKIND kind, bool set);
   bool kindIsCopied(EVENTKIND kind) const;
  signals:

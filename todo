@@ -493,8 +493,14 @@ playback
 2. fix crash on select last unit when there are fewer voices than units
 3. octave markers, with halberstadt keyboard on left
 
+10/13
+1. sorta janky shift left and right
+2. 
+
 Todo by priority
 ----------------
+ - way to elongate notes (ctrl click in unit row)
+ - fix draw offset when you draw notes in snap under semitone
  - extend upper limit piano roll
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
