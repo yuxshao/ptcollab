@@ -59,6 +59,7 @@ QTableWidget, QTableView, QListWidget, QListView {
 QTableView::item {
 	background-color: none;
 	border: none;
+	padding: 2px 4px;
 }
 QTableView::item:hover {
 	background-color: #69656D;
