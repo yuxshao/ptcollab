@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <QtDebug>
 
+#include "ComboOptions.h"
 #include "Settings.h"
 #include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
@@ -17,6 +18,9 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
   connect(ui->styleButton, &QPushButton::released,
           []() { StyleEditor::initializeStyleDir(); });
+
+  for (auto &[label, value] : keyboardDisplayOptions())
+    ui->rowDisplayCombo->addItem(label, value);
 }
 
 void SettingsDialog::apply() {
@@ -37,6 +41,8 @@ void SettingsDialog::apply() {
       ui->showVolumeMeterLabelsCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
+  Settings::KeyboardDisplayQuantize::set(
+      ui->rowDisplayCombo->currentData().toInt());
 
   emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
@@ -63,6 +69,13 @@ void SettingsDialog::showEvent(QShowEvent *) {
       Settings::ShowVolumeMeterLabels::get());
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
+
+  int currentRowDisplay = Settings::KeyboardDisplayQuantize::get();
+  for (int i = 0; i < ui->rowDisplayCombo->count(); ++i)
+    if (ui->rowDisplayCombo->itemData(i).toInt() == currentRowDisplay) {
+      ui->rowDisplayCombo->setCurrentIndex(i);
+      break;
+    }
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box

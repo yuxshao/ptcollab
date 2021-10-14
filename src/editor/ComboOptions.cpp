@@ -26,6 +26,16 @@ const std::vector<std::pair<QString, int>> &quantizeYOptionsAdvanced() {
   return v;
 }
 
+// TODO: somehow dedup with above
+const std::vector<std::pair<QString, int>> &keyboardDisplayOptions() {
+  static auto v = ([]() {
+    std::vector<std::pair<QString, int>> v;
+    for (int i = 7; i <= 36; ++i) v.push_back({QString("%1-edo").arg(i), i});
+    return v;
+  })();
+  return v;
+}
+
 const std::vector<std::pair<QString, EVENTKIND>> &paramOptions() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, EVENTKIND>>{

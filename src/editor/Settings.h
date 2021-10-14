@@ -145,6 +145,11 @@ bool get();
 void set(bool);
 }  // namespace OctaveDisplayA
 
+namespace KeyboardDisplayQuantize {
+int get();
+void set(int);
+}  // namespace KeyboardDisplayQuantize
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H
