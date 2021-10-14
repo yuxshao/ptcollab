@@ -131,12 +131,9 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
     m_client->changeEditState(
         [&](EditState &s) { s.m_quantize_clock_idx = index; }, false);
   });
-  connect(this, &SideMenu::quantYIndexActivated, [this](int index) {
+  connect(this, &SideMenu::quantYDenomActivated, [this](int denom) {
     m_client->changeEditState(
-        [&](EditState &s) {
-          s.m_quantize_pitch_denom = quantizeYOptions()[index].second;
-        },
-        false);
+        [&](EditState &s) { s.m_quantize_pitch_denom = denom; }, false);
   });
 
   connect(this, &SideMenu::followPlayheadClicked,

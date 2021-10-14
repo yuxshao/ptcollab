@@ -38,9 +38,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   for (auto [label, value] : quantizeXOptions())
     ui->quantX->addItem(label, value);
-  for (auto [label, value] : quantizeYOptions())
-    ui->quantY->addItem(label, value);
-  setQuantYDenom(EditState().m_quantize_pitch_denom);
+  updateQuantizeYOptions();
   for (auto [label, value] : paramOptions())
     ui->paramSelection->addItem(label, value);
 
@@ -64,8 +62,9 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   connect(ui->quantX, comboItemActivated, this,
           &SideMenu::quantXIndexActivated);
-  connect(ui->quantY, comboItemActivated, this,
-          &SideMenu::quantYIndexActivated);
+  connect(ui->quantY, comboItemActivated, this, [this](int index) {
+    emit quantYDenomActivated(ui->quantY->itemData(index).toInt());
+  });
   connect(ui->playBtn, &QPushButton::clicked, this,
           &SideMenu::playButtonPressed);
   connect(ui->stopBtn, &QPushButton::clicked, this,
@@ -251,9 +250,9 @@ SideMenu::~SideMenu() { delete ui; }
 
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }
 void SideMenu::setQuantYDenom(int denom) {
-  uint i;
-  for (i = 0; i < quantizeYOptions().size() - 1; ++i)
-    if (quantizeYOptions()[i].second == denom) break;
+  int i;
+  for (i = 0; i < ui->quantY->count() - 1; ++i)
+    if (ui->quantY->itemData(i).toInt() == denom) break;
   ui->quantY->setCurrentIndex(i);
 }
 
@@ -285,6 +284,15 @@ void SideMenu::openAddUnitWindow() { m_add_unit_dialog->show(); }
 
 void SideMenu::refreshVolumeMeterShowText() {
   m_volume_meter_widget->refreshShowText();
+}
+
+void SideMenu::updateQuantizeYOptions() {
+  const auto& options = Settings::AdvancedQuantizeY::get()
+                            ? quantizeYOptionsAdvanced()
+                            : quantizeYOptionsSimple();
+  ui->quantY->clear();
+  for (auto& [label, value] : options) ui->quantY->addItem(label, value);
+  setQuantYDenom(EditState().m_quantize_pitch_denom);
 }
 
 void SideMenu::setParamKindIndex(int index) {

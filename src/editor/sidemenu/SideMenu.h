@@ -39,7 +39,7 @@ class SideMenu : public QWidget {
 
  signals:
   void quantXIndexActivated(int);
-  void quantYIndexActivated(int);
+  void quantYDenomActivated(int);
   void currentUnitChanged(int);
   void unitClicked(int);
   void paramKindIndexActivated(int);
@@ -78,6 +78,7 @@ class SideMenu : public QWidget {
   void setCopy(bool);
   void openAddUnitWindow();
   void refreshVolumeMeterShowText();
+  void updateQuantizeYOptions();
 
  private:
   Ui::SideMenu *ui;

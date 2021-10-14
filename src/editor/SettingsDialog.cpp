@@ -35,7 +35,9 @@ void SettingsDialog::apply() {
   Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
   Settings::ShowVolumeMeterLabels::set(
       ui->showVolumeMeterLabelsCheck->isChecked());
+  Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
 
+  emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
 }
@@ -58,6 +60,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
   ui->showVolumeMeterLabelsCheck->setChecked(
       Settings::ShowVolumeMeterLabels::get());
+  ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box

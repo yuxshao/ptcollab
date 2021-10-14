@@ -244,6 +244,8 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
+  connect(m_settings_dialog, &SettingsDialog::quantYOptionsChanged, m_side_menu,
+          &SideMenu::updateQuantizeYOptions);
   connect(m_settings_dialog, &SettingsDialog::accepted, m_side_menu,
           &SideMenu::refreshVolumeMeterShowText);
   connect(ui->actionClean, &QAction::triggered, [&]() {

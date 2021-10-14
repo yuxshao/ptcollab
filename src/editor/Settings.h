@@ -135,6 +135,11 @@ bool get();
 void set(bool);
 }  // namespace ShowVolumeMeterLabels
 
+namespace AdvancedQuantizeY {
+bool get();
+void set(bool);
+}  // namespace AdvancedQuantizeY
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

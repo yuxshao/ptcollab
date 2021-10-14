@@ -204,4 +204,10 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace ShowVolumeMeterLabels
 
+namespace AdvancedQuantizeY {
+const char *KEY = "advanced_quantize_y";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace AdvancedQuantizeY
+
 }  // namespace Settings

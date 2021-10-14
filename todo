@@ -496,15 +496,16 @@ playback
 10/13
 1. sorta janky shift left and right
 2. adjust copy / paste so that it's less janky
-3. fix draw offset when you draw notes in snap under semitone
-4. transpose by quanty, add snap shortcut for quanty
-5. fix bug at end of selection when you snap to x
+3. fix bug at end of selection when you snap to x
+4. mirotone stuff
+  - fix draw offset when you draw notes in snap under semitone
+  - transpose by quanty, add snap shortcut for quanty
+  - toggle for showing all the tuning options
 
 Todo by priority
 ----------------
  - way to elongate notes (ctrl click in unit row)
  - experiment with other temperaments?
-  - toggle between having a ton (7 - 36, None) and not really (12, 24, 36, None)
   - allow showing different piano
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
