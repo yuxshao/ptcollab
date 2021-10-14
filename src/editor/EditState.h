@@ -73,6 +73,7 @@ QDataStream &operator<<(QDataStream &out, const MouseEditState &a);
 QDataStream &operator>>(QDataStream &in, MouseEditState &a);
 
 constexpr int PITCH_PER_KEY = 256;
+constexpr int PITCH_PER_OCTAVE = 12 * PITCH_PER_KEY;
 constexpr int EVENTMAX_KEY = 135 * PITCH_PER_KEY;
 constexpr int EVENTMIN_KEY = 46 * PITCH_PER_KEY;
 struct Scale {

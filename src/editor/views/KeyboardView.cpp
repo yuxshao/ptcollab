@@ -858,7 +858,8 @@ void KeyboardView::selectAll(bool preserveFollow) {
 }
 
 void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
-  if (m_client->editState().mouse_edit_state.selection.has_value()) {
+  const auto &e = m_client->editState();
+  if (e.mouse_edit_state.selection.has_value()) {
     int offset;
     switch (dir) {
       case Direction::UP:
@@ -872,10 +873,13 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
     EVENTKIND kind;
     if (shift) {
       kind = EVENTKIND_KEY;
-      offset *= PITCH_PER_KEY * (wide ? 12 : 1);
+      offset *= wide ? PITCH_PER_OCTAVE
+                     : int(double(PITCH_PER_OCTAVE) /
+                               std::min(e.m_quantize_pitch_denom, 36) +
+                           0.5);
     } else {
       EVENTKIND current_kind =
-          paramOptions()[m_client->editState().m_current_param_kind_idx].second;
+          paramOptions()[e.m_current_param_kind_idx].second;
       switch (current_kind) {
         case EVENTKIND_KEY:
         case EVENTKIND_PAN_VOLUME:
@@ -890,7 +894,7 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
       }
       offset *= (wide ? 16 : 4);
     }
-    Interval interval(m_client->editState().mouse_edit_state.selection.value());
+    Interval interval(e.mouse_edit_state.selection.value());
 
     using namespace Action;
     std::list<Primitive> as;
