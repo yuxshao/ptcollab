@@ -140,6 +140,11 @@ bool get();
 void set(bool);
 }  // namespace AdvancedQuantizeY
 
+namespace OctaveDisplayA {
+bool get();
+void set(bool);
+}  // namespace OctaveDisplayA
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

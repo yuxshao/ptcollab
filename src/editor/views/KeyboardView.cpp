@@ -578,7 +578,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
 
   int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-  for (int row = 0; true; row += 12) {
+  bool octave_display_a = Settings::OctaveDisplayA::get();
+  for (int row = (octave_display_a ? 3 : 0); true; row += 12) {
     // TODO: dedup heigh calculation with above...
     int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     if (this_y > height()) break;
@@ -589,8 +590,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
 
     // painter.setOpacity(0.5);
-    drawCNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
-                            8 - row / 12, floor_h);
+    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
+                                 8 - (row + 9) / 12, floor_h, octave_display_a);
     // painter.setOpacity(1)
   }
 

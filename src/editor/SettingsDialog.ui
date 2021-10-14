@@ -142,6 +142,27 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Keyboard</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="octaveMarkerACheck">
+         <property name="text">
+          <string>Display octave markers on A</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="alternateTuningCheck">
          <property name="text">
           <string>Show alternate tuning systems</string>

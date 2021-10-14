@@ -210,4 +210,10 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace AdvancedQuantizeY
 
+namespace OctaveDisplayA {
+const char *KEY = "octave_display_a";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace OctaveDisplayA
+
 }  // namespace Settings

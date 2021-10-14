@@ -36,6 +36,7 @@ void SettingsDialog::apply() {
   Settings::ShowVolumeMeterLabels::set(
       ui->showVolumeMeterLabelsCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
+  Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
 
   emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
@@ -61,6 +62,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showVolumeMeterLabelsCheck->setChecked(
       Settings::ShowVolumeMeterLabels::get());
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
+  ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box
