@@ -422,8 +422,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         Settings::ChordPreview::set(!Settings::ChordPreview::get());
       break;
     case Qt::Key_Q:
-      if (event->modifiers() & Qt::AltModifier)
-        m_keyboard_view->quantizeSelection();
+      if (event->modifiers() & Qt::AltModifier) {
+        if (event->modifiers() & Qt::ShiftModifier)
+          m_keyboard_view->quantizeSelectionY();
+        else
+          m_keyboard_view->quantizeSelectionX();
+      }
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))

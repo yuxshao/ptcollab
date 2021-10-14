@@ -1035,7 +1035,7 @@ void KeyboardView::cutSelection() {
   clearSelection();
 }
 
-void KeyboardView::quantizeSelection() {
+void KeyboardView::quantizeSelectionX() {
   const static std::set<EVENTKIND> kindsToQuantize(
       {EVENTKIND_VELOCITY, EVENTKIND_KEY, EVENTKIND_ON});
   const Interval &range =
@@ -1081,7 +1081,35 @@ void KeyboardView::quantizeSelection() {
         actions.push_back({kind, unit_id, start_clock, Action::Add{e->value}});
     }
   }
-  qDebug() << "apply quantize";
+  qDebug() << "apply quantizeX";
+  m_client->applyAction(actions);
+}
+
+void KeyboardView::quantizeSelectionY() {
+  const Interval &range =
+      m_client->editState().mouse_edit_state.selection.value();
+  const std::set<int> &unit_nos(m_client->selectedUnitNos());
+  int denom = m_client->editState().m_quantize_pitch_denom;
+
+  const EVERECORD *e = nullptr;
+  for (e = m_pxtn->evels->get_Records(); e; e = e->next)
+    if (e->clock >= range.start) break;
+
+  std::list<Action::Primitive> actions;
+  for (int unit_no : unit_nos) {
+    int unit_id = m_client->unitIdMap().noToId(unit_no);
+    actions.push_back(
+        {EVENTKIND_KEY, unit_id, range.start, Action::Delete{range.end}});
+  }
+
+  for (; e && e->clock < range.end; e = e->next) {
+    if (e->kind != EVENTKIND_KEY) continue;
+    if (unit_nos.find(e->unit_no) == unit_nos.end()) continue;
+    int unit_id = m_client->unitIdMap().noToId(e->unit_no);
+    actions.push_back({EVENTKIND_KEY, unit_id, e->clock,
+                       Action::Add{quantize_pitch(e->value, denom)}});
+  }
+  qDebug() << "apply quantizeY";
   m_client->applyAction(actions);
 }
 

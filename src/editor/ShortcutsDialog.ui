@@ -215,6 +215,11 @@
        <string>New Row</string>
       </property>
      </row>
+     <row>
+      <property name="text">
+       <string>New Row</string>
+      </property>
+     </row>
      <column>
       <property name="text">
        <string>Shortcut</string>
@@ -522,55 +527,65 @@
      </item>
      <item row="29" column="1">
       <property name="text">
-       <string>Quantize selection (useful for MIDI)</string>
+       <string>Quantize selection to note snap (useful for MIDI)</string>
       </property>
      </item>
      <item row="30" column="0">
       <property name="text">
-       <string>Ctrl+Shift+C</string>
+       <string>Shift+Alt+Q</string>
       </property>
      </item>
      <item row="30" column="1">
       <property name="text">
-       <string>Toggle copy options dialog</string>
+       <string>Quantize selection to tuning scale</string>
       </property>
      </item>
      <item row="31" column="0">
       <property name="text">
-       <string>Ctrl+Shift+(A/D)</string>
+       <string>Ctrl+Shift+C</string>
       </property>
      </item>
      <item row="31" column="1">
       <property name="text">
-       <string>(De)select all units</string>
+       <string>Toggle copy options dialog</string>
       </property>
      </item>
      <item row="32" column="0">
       <property name="text">
-       <string>Ctrl+P</string>
+       <string>Ctrl+Shift+(A/D)</string>
       </property>
      </item>
      <item row="32" column="1">
       <property name="text">
-       <string>Toggle preview with all units</string>
+       <string>(De)select all units</string>
       </property>
      </item>
      <item row="33" column="0">
       <property name="text">
-       <string>Alt+(Shift)+(Left/Right)</string>
+       <string>Ctrl+P</string>
       </property>
      </item>
      <item row="33" column="1">
       <property name="text">
-       <string>Tweak selection</string>
+       <string>Toggle preview with all units</string>
       </property>
      </item>
      <item row="34" column="0">
       <property name="text">
-       <string>(Shift)+N</string>
+       <string>Alt+(Shift)+(Left/Right)</string>
       </property>
      </item>
      <item row="34" column="1">
+      <property name="text">
+       <string>Tweak selection</string>
+      </property>
+     </item>
+     <item row="35" column="0">
+      <property name="text">
+       <string>(Shift)+N</string>
+      </property>
+     </item>
+     <item row="35" column="1">
       <property name="text">
        <string>New voice (unit)</string>
       </property>

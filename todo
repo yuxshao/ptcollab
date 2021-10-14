@@ -497,13 +497,13 @@ playback
 1. sorta janky shift left and right
 2. adjust copy / paste so that it's less janky
 3. fix draw offset when you draw notes in snap under semitone
-4. transpose by quanty
+4. transpose by quanty, add snap shortcut for quanty
+5. fix bug at end of selection when you snap to x
 
 Todo by priority
 ----------------
  - way to elongate notes (ctrl click in unit row)
  - experiment with other temperaments?
-  - add a snap shortcut
   - toggle between having a ton (7 - 36, None) and not really (12, 24, 36, None)
   - allow showing different piano
 
