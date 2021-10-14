@@ -1062,16 +1062,20 @@ void KeyboardView::quantizeSelection() {
     }
   for (; e && e->clock < range.end; e = e->next) {
     EVENTKIND kind(EVENTKIND(e->kind));
+    qint32 start_clock = quantize(e->clock);
+    if (start_clock >= range.end) continue;
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kindsToQuantize.find(kind) != kindsToQuantize.end()) {
       int unit_id = m_client->unitIdMap().noToId(e->unit_no);
-      qint32 start_clock = quantize(e->clock);
       if (Evelist_Kind_IsTail(e->kind)) {
-        // We round the end time up. Even though this might cause an add
-        // overlap with the next value, this should be okay in terms of
-        // interacting with undo, since the undos of both of these is 2
+        // We round the end time up if it's too small. Even though this might
+        // cause an add overlap with the next value, this should be okay in
+        // terms of interacting with undo, since the undos of both of these is 2
         // clears. (It takes some effort to explain)
-        int v = std::max(quantizeClock, quantize(e->value));
+
+        // 2021-10-13: However we don't let it go beyond the selection end.
+        int v = std::min(std::max(quantizeClock, quantize(e->value)),
+                         range.end - start_clock);
         actions.push_back({kind, unit_id, start_clock, Action::Add{v}});
       } else
         actions.push_back({kind, unit_id, start_clock, Action::Add{e->value}});
