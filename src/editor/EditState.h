@@ -130,7 +130,7 @@ struct EditState {
   int m_current_woice_id;
   int m_current_param_kind_idx;
   int m_quantize_clock_idx;
-  int m_quantize_pitch_idx;
+  int m_quantize_pitch_denom;
   FollowPlayhead m_follow_playhead;
   Input::State::State m_input_state;
   int current_param_kind_idx() const;

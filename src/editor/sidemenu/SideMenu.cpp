@@ -40,6 +40,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     ui->quantX->addItem(label, value);
   for (auto [label, value] : quantizeYOptions())
     ui->quantY->addItem(label, value);
+  setQuantYDenom(EditState().m_quantize_pitch_denom);
   for (auto [label, value] : paramOptions())
     ui->paramSelection->addItem(label, value);
 
@@ -249,7 +250,12 @@ void SideMenu::setTab(int index) { ui->tabWidget->setCurrentIndex(index); }
 SideMenu::~SideMenu() { delete ui; }
 
 void SideMenu::setQuantXIndex(int i) { ui->quantX->setCurrentIndex(i); }
-void SideMenu::setQuantYIndex(int i) { ui->quantY->setCurrentIndex(i); }
+void SideMenu::setQuantYDenom(int denom) {
+  uint i;
+  for (i = 0; i < quantizeYOptions().size() - 1; ++i)
+    if (quantizeYOptions()[i].second == denom) break;
+  ui->quantY->setCurrentIndex(i);
+}
 
 void SideMenu::setModified(bool modified) {
   if (modified)

@@ -11,8 +11,10 @@ const std::vector<std::pair<QString, int>> &quantizeXOptions() {
 
 const std::vector<std::pair<QString, int>> &quantizeYOptions() {
   static auto v = ([]() {
-    return std::vector<std::pair<QString, int>>{
-        {"1", 1}, {"1/2", 2}, {"1/3", 3}, {"1/4", 4}, {"None", 256}};
+    std::vector<std::pair<QString, int>> v;
+    for (int i = 7; i <= 36; ++i) v.push_back({QString("1/%1").arg(i), i});
+    v.push_back({"None", 3072});
+    return v;
   })();
   return v;
 }

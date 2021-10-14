@@ -65,7 +65,7 @@ class SideMenu : public QWidget {
 
  public slots:
   void setQuantXIndex(int);
-  void setQuantYIndex(int);
+  void setQuantYDenom(int);
   void setParamKindIndex(int);
   // void setSelectedUnits(QList<qint32> idx);
   void setCurrentUnit(int unit_no);

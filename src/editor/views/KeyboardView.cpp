@@ -17,8 +17,7 @@ void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
   m_quantize_clock = pxtn->master->get_beat_clock() /
                      quantizeXOptions()[s.m_quantize_clock_idx].second;
-  m_quantize_pitch =
-      PITCH_PER_KEY / quantizeYOptions()[s.m_quantize_pitch_idx].second;
+  m_quantize_pitch = s.m_quantize_pitch_denom;
   scale = s.scale;
 }
 
@@ -214,10 +213,17 @@ std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
   return intervals;
 }
 
-int quantize_pitch(int p, int q) {
+int quantize_pitch(long p, long d) {
   // Formula empirically found so that the note that's drawn isn't too far from
   // the mouse
-  return quantize(p + (q + PITCH_PER_KEY) / 2, q);
+
+  // double q = PITCH_PER_OCTAVE / d;
+  // return quantize(p + (q + PITCH_PER_KEY) / 2, q);
+
+  static int PITCH_PER_OCTAVE = PITCH_PER_KEY * 12;
+  return (((p * d + (PITCH_PER_OCTAVE + PITCH_PER_KEY * d) / 2) /
+           PITCH_PER_OCTAVE) *
+          PITCH_PER_OCTAVE / d);
 }
 
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,

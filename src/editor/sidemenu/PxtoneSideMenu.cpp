@@ -133,7 +133,10 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   });
   connect(this, &SideMenu::quantYIndexActivated, [this](int index) {
     m_client->changeEditState(
-        [&](EditState &s) { s.m_quantize_pitch_idx = index; }, false);
+        [&](EditState &s) {
+          s.m_quantize_pitch_denom = quantizeYOptions()[index].second;
+        },
+        false);
   });
 
   connect(this, &SideMenu::followPlayheadClicked,
@@ -183,8 +186,9 @@ void PxtoneSideMenu::refreshCopyCheckbox() {
 void PxtoneSideMenu::handleNewEditState(const EditState &s) {
   if (m_last_edit_state.m_quantize_clock_idx != s.m_quantize_clock_idx)
     setQuantXIndex(s.m_quantize_clock_idx);
-  if (m_last_edit_state.m_quantize_pitch_idx != s.m_quantize_pitch_idx)
-    setQuantYIndex(s.m_quantize_pitch_idx);
+  if (m_last_edit_state.m_quantize_pitch_denom != s.m_quantize_pitch_denom)
+    setQuantYDenom(s.m_quantize_pitch_denom);
+
   if (m_last_edit_state.m_current_unit_id != s.m_current_unit_id) {
     std::optional<qint32> x = m_client->unitIdMap().idToNo(s.m_current_unit_id);
     if (x.has_value()) setCurrentUnit(x.value());
