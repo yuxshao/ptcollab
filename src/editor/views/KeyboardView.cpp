@@ -113,7 +113,7 @@ static void paintAtClockPitch(int clock, int pitch, int widthInPx,
                               const Scale &scale) {
   int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
   painter.fillRect(clock / scale.clockPerPx,
-                   scale.pitchToY(pitch) + rowHeight / 6, widthInPx,
+                   scale.pitchToY(pitch) - rowHeight / 3, widthInPx,
                    rowHeight * 2 / 3, brush);
 }
 
@@ -121,7 +121,7 @@ static void drawAtClockPitch(int clock, int pitch, int widthInPx,
                              QPainter &painter, const Scale &scale) {
   int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
   painter.drawRect(clock / scale.clockPerPx - 1,
-                   scale.pitchToY(pitch) + rowHeight / 6 - 1, widthInPx + 1,
+                   scale.pitchToY(pitch) - rowHeight / 3 - 1, widthInPx + 1,
                    rowHeight * 2 / 3 + 1);
 }
 
@@ -311,8 +311,8 @@ static void drawCursor(const EditState &state, QPainter &painter,
 
 constexpr int LEFT_PIANO_WIDTH = 28;
 void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
-  painter.fillRect(x, y, LEFT_PIANO_WIDTH, h, b);
-  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1, 1, h - 2, b);
+  painter.fillRect(x, y - h / 2, LEFT_PIANO_WIDTH, h, b);
+  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1 - h / 2, 1, h - 2, b);
 }
 
 double smoothDistance(double dy, double dx) {
@@ -445,7 +445,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
-    painter.fillRect(0, this_y, size().width(), h, *brush);
+    painter.fillRect(0, this_y - h / 2, size().width(), h, *brush);
 
     drawLeftPiano(painter, -pos().x(), this_y, h, *leftBrush);
   }
@@ -590,8 +590,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
 
     // painter.setOpacity(0.5);
-    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
-                                 8 - (row + 9) / 12, floor_h, octave_display_a);
+    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4 - h / 2,
+                                 this_y + h - 2, 8 - (row + 9) / 12, floor_h,
+                                 octave_display_a);
     // painter.setOpacity(1)
   }
 
