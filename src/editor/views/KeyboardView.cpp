@@ -428,6 +428,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
   int displayEdo = Settings::DisplayEdo::get();
   const Scale &scale = m_client->editState().scale;
+  bool octave_display_a = Settings::OctaveDisplayA::get();
+
+  QPixmap octaveDisplayLayer(event->rect().size());
+  octaveDisplayLayer.fill(Qt::transparent);
+  QPainter octaveDisplayPainter(&octaveDisplayLayer);
+  octaveDisplayPainter.translate(-event->rect().topLeft());
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush;
     int pitch = quantize_pitch(
@@ -454,7 +460,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       }
     if (m_dark) brush = &black;
 
-    int half_floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo / 2;
+    int floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
     int this_y = scale.pitchToY(pitch);
     int next_y = scale.pitchToY(nextPitch);
 
@@ -462,10 +468,18 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     // Because of rounding error, calculate height by subbing next from this
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
-    painter.fillRect(0, this_y - half_floor_h, size().width(), h, *brush);
+    painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
-    drawLeftPiano(painter, -pos().x(), this_y - half_floor_h, h, *leftBrush);
+    drawLeftPiano(painter, -pos().x(), this_y - floor_h / 2, h, *leftBrush);
     // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255, 50));
+
+    int pitch_offset = 0;
+    if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
+    if ((pitch - EVENTDEFAULT_KEY) % PITCH_PER_OCTAVE == pitch_offset)
+      drawOctaveNumAlignBottomLeft(
+          &octaveDisplayPainter, -pos().x() + 4, this_y - floor_h / 2 + h - 2,
+          (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
+          octave_display_a);
   }
   // Draw FPS
   QPen pen;
@@ -594,22 +608,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
 
-  int floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
-  bool octave_display_a = Settings::OctaveDisplayA::get();
-  for (int row = (octave_display_a ? 3 : 0); true; row += 12) {
-    // TODO: dedup heigh calculation with above...
-    int this_y = row * PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
-    if (this_y > height()) break;
-
-    // Because of rounding error, calculate height by subbing next from this
-    int next_y = (row + 1) * PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
-
-    // painter.setOpacity(0.5);
-    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4,
-                                 (this_y + next_y) / 2 - 1, 8 - (row + 9) / 12,
-                                 floor_h, octave_display_a);
-    // painter.setOpacity(1)
-  }
+  painter.drawPixmap(event->rect(), octaveDisplayLayer,
+                     octaveDisplayLayer.rect());
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
