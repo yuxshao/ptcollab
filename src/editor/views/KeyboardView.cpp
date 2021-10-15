@@ -220,10 +220,10 @@ int quantize_pitch(long p, long d) {
   // double q = PITCH_PER_OCTAVE / d;
   // return quantize(p + (q + PITCH_PER_KEY) / 2, q);
 
-  static int PITCH_PER_OCTAVE = PITCH_PER_KEY * 12;
-  return (((p * d + (PITCH_PER_OCTAVE + PITCH_PER_KEY * d) / 2) /
-           PITCH_PER_OCTAVE) *
-          PITCH_PER_OCTAVE / d);
+  int q = ((2 * p * d + PITCH_PER_OCTAVE) / (2 * PITCH_PER_OCTAVE)) *
+          PITCH_PER_OCTAVE / d;
+  qDebug() << p << d << q;
+  return q;
 }
 
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
@@ -311,8 +311,8 @@ static void drawCursor(const EditState &state, QPainter &painter,
 
 constexpr int LEFT_PIANO_WIDTH = 28;
 void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
-  painter.fillRect(x, y - h / 2, LEFT_PIANO_WIDTH, h, b);
-  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1 - h / 2, 1, h - 2, b);
+  painter.fillRect(x, y, LEFT_PIANO_WIDTH, h, b);
+  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1, 1, h - 2, b);
 }
 
 double smoothDistance(double dy, double dx) {
@@ -337,7 +337,9 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                painter, c, scale);
     c.setAlpha((32 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPiano(painter, viewportLeft, scale.pitchToY(state.pitch.value),
+    drawLeftPiano(painter, viewportLeft,
+                  scale.pitchToY(state.pitch.value) -
+                      int(PITCH_PER_KEY / scale.pitchPerPx / 2),
                   PITCH_PER_KEY / scale.pitchPerPx, c);
   }
   if (interval_intersect(interval, bounds).empty()) return;
@@ -435,19 +437,21 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       }
     if (m_dark) brush = &black;
 
-    if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
+    if ((row - 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
         size().height())
       break;
 
-    int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+    double pitchPerPx = m_client->editState().scale.pitchPerPx;
+    int half_floor_h = PITCH_PER_KEY / pitchPerPx / 2;
+    int this_y = row * PITCH_PER_KEY / pitchPerPx;
     // Because of rounding error, calculate height by subbing next from this
-    int next_y =
-        (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+    int next_y = (row + 1) * PITCH_PER_KEY / pitchPerPx;
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
-    painter.fillRect(0, this_y - h / 2, size().width(), h, *brush);
+    painter.fillRect(0, this_y - half_floor_h, size().width(), h, *brush);
 
-    drawLeftPiano(painter, -pos().x(), this_y, h, *leftBrush);
+    drawLeftPiano(painter, -pos().x(), this_y - half_floor_h, h, *leftBrush);
+    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255, 30));
   }
 
   // Draw FPS
@@ -587,12 +591,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     // Because of rounding error, calculate height by subbing next from this
     int next_y =
         (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-    int h = next_y - this_y - 1;
 
     // painter.setOpacity(0.5);
-    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4 - h / 2,
-                                 this_y + h - 2, 8 - (row + 9) / 12, floor_h,
-                                 octave_display_a);
+    drawOctaveNumAlignBottomLeft(&painter, -pos().x() + 4,
+                                 (this_y + next_y) / 2 - 1, 8 - (row + 9) / 12,
+                                 floor_h, octave_display_a);
     // painter.setOpacity(1)
   }
 
