@@ -2,6 +2,7 @@
 #define COMBOOPTIONS_H
 
 #include <QString>
+#include <vector>
 
 #include "pxtone/pxtnEvelist.h"
 extern const std::vector<std::pair<QString, int>> &quantizeXOptions();
