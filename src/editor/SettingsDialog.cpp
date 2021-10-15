@@ -41,7 +41,7 @@ void SettingsDialog::apply() {
       ui->showVolumeMeterLabelsCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
-  Settings::KeyboardDisplayQuantize::set(
+  Settings::DisplayEdo::set(
       ui->rowDisplayCombo->currentData().toInt());
 
   emit quantYOptionsChanged();
@@ -70,7 +70,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
 
-  int currentRowDisplay = Settings::KeyboardDisplayQuantize::get();
+  int currentRowDisplay = Settings::DisplayEdo::get();
   for (int i = 0; i < ui->rowDisplayCombo->count(); ++i)
     if (ui->rowDisplayCombo->itemData(i).toInt() == currentRowDisplay) {
       ui->rowDisplayCombo->setCurrentIndex(i);

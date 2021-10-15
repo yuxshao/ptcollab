@@ -216,10 +216,10 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace OctaveDisplayA
 
-namespace KeyboardDisplayQuantize {
-const char *KEY = "keyboard_display_quantize";
+namespace DisplayEdo {
+const char *KEY = "display_edo";
 int get() { return QSettings().value(KEY, 12).toInt(); }
 void set(int value) { return QSettings().setValue(KEY, value); }
-}  // namespace KeyboardDisplayQuantize
+}  // namespace DisplayEdo
 
 }  // namespace Settings

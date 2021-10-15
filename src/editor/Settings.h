@@ -145,7 +145,7 @@ bool get();
 void set(bool);
 }  // namespace OctaveDisplayA
 
-namespace KeyboardDisplayQuantize {
+namespace DisplayEdo {
 int get();
 void set(int);
 }  // namespace KeyboardDisplayQuantize
