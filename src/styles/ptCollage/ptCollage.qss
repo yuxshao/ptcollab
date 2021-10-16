@@ -70,7 +70,6 @@ QHeaderView::section {
   background-color: #69656D;
   border: none;
   color: #D2CA9C;
-  padding: 2px 4px;
 }
 
 QHeaderView::section:hover {
@@ -91,7 +90,11 @@ QListView {
 QTableView::item {
   background-color: none;
   border: none;
-  padding: 2px 4px;
+}
+
+QHeaderView::section,
+QTableView::item {
+  padding-left: 1px;
 }
 
 QTableView::item:hover {
@@ -349,8 +352,4 @@ QScrollBar::up-arrow:pressed {
 QScrollBar::down-arrow:hover,
 QScrollBar::down-arrow:pressed {
   image: url("image/scrollbar-down-down.png");
-}
-
-* {
-  outline: none;
 }
