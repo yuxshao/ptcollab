@@ -255,5 +255,4 @@ QScrollBar::down-arrow:hover, QScrollBar::down-arrow:pressed {
 }
 * {
 	outline: none;
-	font: 10pt "Cantarell";
 }
