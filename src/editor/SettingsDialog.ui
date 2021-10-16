@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
+    <width>347</width>
     <height>505</height>
    </rect>
   </property>
@@ -165,7 +165,7 @@
        <item>
         <widget class="QCheckBox" name="alternateTuningCheck">
          <property name="text">
-          <string>Show alternate tuning systems</string>
+          <string>Show alternate tuning systems (beta)</string>
          </property>
         </widget>
        </item>
