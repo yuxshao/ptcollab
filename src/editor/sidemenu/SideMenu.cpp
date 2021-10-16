@@ -47,13 +47,6 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
-
-  ui->unitList->verticalHeader()->hide();
-  ui->woiceList->verticalHeader()->hide();
-  ui->usersList->verticalHeader()->hide();
-  ui->delayList->verticalHeader()->hide();
-  ui->overdriveList->verticalHeader()->hide();
-
   ui->unitList->setItemDelegate(new UnitListDelegate);
   setPlay(false);
   for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
