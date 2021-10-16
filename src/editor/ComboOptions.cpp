@@ -12,7 +12,7 @@ const std::vector<std::pair<QString, int>> &quantizeXOptions() {
 const std::vector<std::pair<QString, int>> &quantizeYOptionsSimple() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, int>>{
-        {"1/12", 12}, {"1/24", 24}, {"1/36", 36}, {"None", 3072}};
+        {"1", 12}, {"1/2", 24}, {"1/3", 36}, {"None", 3072}};
   })();
   return v;
 }

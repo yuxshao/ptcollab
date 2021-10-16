@@ -227,6 +227,7 @@ QList<int> get() {
 void set(const QList<int> &value) {
   QSettings().setValue(KEY, intListToVariant(value));
 }
+void clear() { return QSettings().remove(KEY); }
 }  // namespace DisplayEdo
 
 }  // namespace Settings

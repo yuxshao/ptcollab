@@ -18,6 +18,8 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
   connect(ui->styleButton, &QPushButton::released,
           []() { StyleEditor::initializeStyleDir(); });
+  connect(ui->alternateTuningCheck, &QCheckBox::stateChanged,
+          ui->alternateTuningSystemContainer, &QWidget::setVisible);
 }
 
 void SettingsDialog::apply() {
@@ -36,18 +38,21 @@ void SettingsDialog::apply() {
   Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
   Settings::ShowVolumeMeterLabels::set(
       ui->showVolumeMeterLabelsCheck->isChecked());
-  Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
-  QList<int> rowDisplayPattern;
-  for (char c : ui->rowDisplayEdit->text().toStdString()) {
-    if (rowDisplayPattern.size() >= 35) break;
-    if (c == 'b' || c == 'B')
-      rowDisplayPattern.push_back(1);
-    else if (c == 'w' || c == 'W')
-      rowDisplayPattern.push_back(0);
-  }
-  if (rowDisplayPattern.size() < 1) rowDisplayPattern = {0, 1};
-  Settings::DisplayEdo::set(rowDisplayPattern);
+  Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
+  if (ui->alternateTuningCheck->isChecked()) {
+    QList<int> rowDisplayPattern;
+    for (char c : ui->rowDisplayEdit->text().toStdString()) {
+      if (rowDisplayPattern.size() >= 35) break;
+      if (c == 'b' || c == 'B')
+        rowDisplayPattern.push_back(1);
+      else if (c == 'w' || c == 'W')
+        rowDisplayPattern.push_back(0);
+    }
+    if (rowDisplayPattern.size() < 1) rowDisplayPattern = {0, 1};
+    Settings::DisplayEdo::set(rowDisplayPattern);
+  } else
+    Settings::DisplayEdo::clear();
 
   emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
@@ -73,6 +78,8 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showVolumeMeterLabelsCheck->setChecked(
       Settings::ShowVolumeMeterLabels::get());
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
+  ui->alternateTuningSystemContainer->setVisible(
+      ui->alternateTuningCheck->isChecked());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
 
   QString rowDisplay = "";

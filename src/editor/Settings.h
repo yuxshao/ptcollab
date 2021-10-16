@@ -148,6 +148,7 @@ void set(bool);
 namespace DisplayEdo {
 QList<int> get();
 void set(const QList<int> &);
+void clear();
 }  // namespace DisplayEdo
 
 }  // namespace Settings

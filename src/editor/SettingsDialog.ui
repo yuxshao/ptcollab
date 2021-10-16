@@ -170,14 +170,35 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Black/white octave pattern</string>
-         </property>
+        <widget class="QWidget" name="alternateTuningSystemContainer" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="toolTip">
+             <string extracomment="Pattern of white and black keys to fill the octave. Use Snap-Y in the sidemenu to select input edo"/>
+            </property>
+            <property name="text">
+             <string>Background piano pattern (?)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="rowDisplayEdit"/>
+          </item>
+         </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="rowDisplayEdit"/>
        </item>
        <item>
         <spacer name="verticalSpacer_3">
