@@ -50,7 +50,7 @@ class SideMenu : public QWidget {
   void removeUnit();
   void addOverdrive();
   void removeOverdrive(int no);
-  void addWoice(const AddWoice &w);
+  void addWoices(const std::vector<AddWoice> &w);
   void removeWoice(int idx);
   void changeWoice(int idx, const AddWoice &w);
   void selectWoice(int idx);
