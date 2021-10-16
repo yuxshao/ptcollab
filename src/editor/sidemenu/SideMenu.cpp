@@ -19,8 +19,13 @@ SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
                    NewWoiceDialog *new_woice_dialog,
                    NewWoiceDialog *change_woice_dialog,
                    VolumeMeterFrame *volume_meter_frame, QWidget *parent)
-    : QWidget(parent), ui(new Ui::SideMenu), m_add_unit_dialog(add_unit_dialog),
-      m_units(units), m_woices(woices), m_users(users), m_delays(delays),
+    : QWidget(parent),
+      ui(new Ui::SideMenu),
+      m_add_unit_dialog(add_unit_dialog),
+      m_units(units),
+      m_woices(woices),
+      m_users(users),
+      m_delays(delays),
       m_ovdrvs(ovdrvs) {
   ui->setupUi(this);
   m_volume_meter_widget = new VolumeMeterWidget(volume_meter_frame, this);
@@ -75,8 +80,7 @@ SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex &current, const QModelIndex &previous) {
             (void)previous;
-            if (current.isValid())
-              emit currentUnitChanged(current.row());
+            if (current.isValid()) emit currentUnitChanged(current.row());
           });
   connect(ui->unitList, &QTableView::clicked,
           [this](const QModelIndex &index) { emit unitClicked(index.row()); });
@@ -112,14 +116,11 @@ SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
 
   connect(change_woice_dialog, &QDialog::accepted, this,
           [this, change_woice_dialog]() {
-            if (!ui->woiceList->currentIndex().isValid())
-              return;
+            if (!ui->woiceList->currentIndex().isValid()) return;
             int idx = ui->woiceList->currentIndex().row();
-            if (idx < 0 && ui->woiceList->model()->rowCount() > 0)
-              return;
+            if (idx < 0 && ui->woiceList->model()->rowCount() > 0) return;
             const auto &woices = change_woice_dialog->selectedWoices();
-            if (woices.size() > 0)
-              emit changeWoice(idx, woices[0]);
+            if (woices.size() > 0) emit changeWoice(idx, woices[0]);
           });
   connect(new_woice_dialog, &QDialog::accepted, this,
           [this, new_woice_dialog]() {
@@ -205,8 +206,7 @@ SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
     bool ok;
     int v;
     v = QSettings().value(VOLUME_KEY).toInt(&ok);
-    if (ok)
-      ui->volumeSlider->setValue(v);
+    if (ok) ui->volumeSlider->setValue(v);
   }
   connect(ui->volumeSlider, &QSlider::valueChanged, [this](int v) {
     QSettings().setValue(VOLUME_KEY, v);
@@ -218,8 +218,7 @@ SideMenu::SideMenu(UnitListModel *units, WoiceListModel *woices,
     v = QSettings()
             .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
             .toDouble(&ok);
-    if (ok)
-      ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
+    if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;

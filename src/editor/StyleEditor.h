@@ -7,6 +7,6 @@ namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 QStringList getStyles();
-} // namespace StyleEditor
+}  // namespace StyleEditor
 
-#endif // STYLEEDITOR_H
+#endif  // STYLEEDITOR_H

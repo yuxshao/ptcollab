@@ -1,8 +1,8 @@
 #ifndef STATUSLABEL_H
 #define STATUSLABEL_H
 
-#include <optional>
 #include <QLabel>
+#include <optional>
 
 class ConnectionStatusLabel : public QLabel {
   Q_OBJECT

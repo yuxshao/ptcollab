@@ -7,16 +7,15 @@ namespace Ui {
 class ShortcutsDialog;
 }
 
-class ShortcutsDialog : public QDialog
-{
+class ShortcutsDialog : public QDialog {
   Q_OBJECT
 
-public:
+ public:
   explicit ShortcutsDialog(QWidget *parent = nullptr);
   ~ShortcutsDialog();
 
-private:
+ private:
   Ui::ShortcutsDialog *ui;
 };
 
-#endif // SHORTCUTSDIALOG_H
+#endif  // SHORTCUTSDIALOG_H
