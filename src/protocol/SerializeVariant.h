@@ -2,8 +2,8 @@
 #define SERIALIZEVARIANT_H
 
 #include <QDataStream>
-#include <variant>
 #include <stdexcept>
+#include <variant>
 
 // Some scourging the internet to find a way to deserialize a variant b/c
 // variants work well for deduping code for the msg protocol

@@ -3,8 +3,8 @@
 #include <QDebug>
 #include <QTimer>
 
-DummySyncServer::DummySyncServer(PxtoneController *sync,
-                                 float commit_lag_s, float mirror_lag_s)
+DummySyncServer::DummySyncServer(PxtoneController *sync, float commit_lag_s,
+                                 float mirror_lag_s)
     : m_sync(sync),
       m_commit_lag_s(commit_lag_s),
       m_mirror_lag_s(mirror_lag_s) {}
