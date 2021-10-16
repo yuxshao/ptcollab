@@ -106,7 +106,14 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
        e && e->clock < range.end; e = e->next) {
     EVENTKIND kind(EVENTKIND(e->kind));
     bool is_tail = Evelist_Kind_IsTail(e->kind);
-    if (e->clock + (is_tail ? e->value : 0) < range.start) continue;
+
+    if (e->clock < range.start) {
+      if (!is_tail) continue;
+      // For on events, we don't want to include them if they end at the start
+      // of the selection. Hence the <=. But 0-length tail events that are in
+      // range should still be counted.
+      if (is_tail && e->clock + e->value <= range.start) continue;
+    }
 
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kinds_to_copy.find(kind) != kinds_to_copy.end()) {
@@ -116,7 +123,7 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
         v = woiceIdMap.noToId(v);
       else if (is_tail) {
         clock = std::max(e->clock, range.start);
-        v = std::min(v, range.end - clock);
+        v = std::min(v, e->clock + e->value - range.start);
       }
 
       uint8_t unit_no = e->unit_no - first_unit_no;
