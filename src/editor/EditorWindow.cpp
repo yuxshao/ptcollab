@@ -226,14 +226,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionExit, &QAction::triggered,
           []() { QApplication::instance()->quit(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
-    QMessageBox m_about_dialog;
-    m_about_dialog.setProperty("aboutDialog", true);
-    m_about_dialog.about(this, "About",
-                         tr("Multiplayer pxtone music editor. Special "
-                            "thanks to all testers and everyone in the pxtone "
-                            "discord!\n\nVersion: "
-                            "%1")
-                             .arg(QApplication::applicationVersion()));
+    QMessageBox::about(this, "About",
+                       tr("Multiplayer pxtone music editor. Special "
+                          "thanks to all testers and everyone in the pxtone "
+                          "discord!\n\nVersion: "
+                          "%1")
+                           .arg(QApplication::applicationVersion()));
   });
   connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
           &QDialog::show);
