@@ -218,7 +218,6 @@ void set(bool value) { return QSettings().setValue(KEY, value); }
 
 namespace DisplayEdo {
 const char *KEY = "display_edo";
-static const QList<int> default_{QList{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1}};
 QList<int> get() {
   QList<int> r = getIntList(KEY, QList{0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1});
   if (r.size() < 2) r = {0, 1};

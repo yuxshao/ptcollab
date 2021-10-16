@@ -504,10 +504,12 @@ playback
 
 Todo by priority
 ----------------
+ - bug: selection paste copies note that ended just before it
  - way to elongate notes (ctrl click in unit row)
  - experiment with other temperaments?
-  - will need to recentre drawing on centre of note / units
-  - allow showing different piano
+  - allow drawing different piano (probably limit 7 - 35. also limit lowest note)
+   - with diff pianos also change the scale limits
+  - 
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
