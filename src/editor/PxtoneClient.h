@@ -71,6 +71,7 @@ class PxtoneClient : public QObject {
   void resetAndSuspendAudio();
   void setFollowing(std::optional<qint64> following);
   bool isFollowing();
+  std::set<int> selectedUnitNos();
   const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
   const mooState *moo() const { return m_controller->moo(); }

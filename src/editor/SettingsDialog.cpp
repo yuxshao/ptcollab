@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <QtDebug>
 
+#include "ComboOptions.h"
 #include "Settings.h"
 #include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
@@ -17,6 +18,8 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
   connect(ui->styleButton, &QPushButton::released,
           []() { StyleEditor::initializeStyleDir(); });
+  connect(ui->alternateTuningCheck, &QCheckBox::stateChanged,
+          ui->alternateTuningSystemContainer, &QWidget::setVisible);
 }
 
 void SettingsDialog::apply() {
@@ -35,7 +38,23 @@ void SettingsDialog::apply() {
   Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
   Settings::ShowVolumeMeterLabels::set(
       ui->showVolumeMeterLabelsCheck->isChecked());
+  Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
+  Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
+  if (ui->alternateTuningCheck->isChecked()) {
+    QList<int> rowDisplayPattern;
+    for (char c : ui->rowDisplayEdit->text().toStdString()) {
+      if (rowDisplayPattern.size() >= 35) break;
+      if (c == 'b' || c == 'B')
+        rowDisplayPattern.push_back(1);
+      else if (c == 'w' || c == 'W')
+        rowDisplayPattern.push_back(0);
+    }
+    if (rowDisplayPattern.size() < 1) rowDisplayPattern = {0, 1};
+    Settings::DisplayEdo::set(rowDisplayPattern);
+  } else
+    Settings::DisplayEdo::clear();
 
+  emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
     emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
 }
@@ -58,6 +77,14 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
   ui->showVolumeMeterLabelsCheck->setChecked(
       Settings::ShowVolumeMeterLabels::get());
+  ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
+  ui->alternateTuningSystemContainer->setVisible(
+      ui->alternateTuningCheck->isChecked());
+  ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
+
+  QString rowDisplay = "";
+  for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");
+  ui->rowDisplayEdit->setText(rowDisplay);
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box

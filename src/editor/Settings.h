@@ -135,6 +135,22 @@ bool get();
 void set(bool);
 }  // namespace ShowVolumeMeterLabels
 
+namespace AdvancedQuantizeY {
+bool get();
+void set(bool);
+}  // namespace AdvancedQuantizeY
+
+namespace OctaveDisplayA {
+bool get();
+void set(bool);
+}  // namespace OctaveDisplayA
+
+namespace DisplayEdo {
+QList<int> get();
+void set(const QList<int> &);
+void clear();
+}  // namespace DisplayEdo
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

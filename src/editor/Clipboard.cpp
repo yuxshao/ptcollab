@@ -102,22 +102,32 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
   uint8_t first_unit_no = (min == unit_nos.end() ? 0 : *min);
   for (const int &i : unit_nos) m_unit_nos.insert(i - first_unit_no);
 
-  const EVERECORD *e = nullptr;
-  for (e = pxtn->evels->get_Records(); e; e = e->next)
-    if (e->clock >= range.start) break;
-
-  for (; e && e->clock < range.end; e = e->next) {
+  for (const EVERECORD *e = pxtn->evels->get_Records();
+       e && e->clock < range.end; e = e->next) {
     EVENTKIND kind(EVENTKIND(e->kind));
+    bool is_tail = Evelist_Kind_IsTail(e->kind);
+
+    if (e->clock < range.start) {
+      if (!is_tail) continue;
+      // For on events, we don't want to include them if they end at the start
+      // of the selection. Hence the <=. But 0-length tail events that are in
+      // range should still be counted.
+      if (is_tail && e->clock + e->value <= range.start) continue;
+    }
+
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kinds_to_copy.find(kind) != kinds_to_copy.end()) {
       int32_t v = e->value;
+      int32_t clock = e->clock;
       if (kind == EVENTKIND_VOICENO)
         v = woiceIdMap.noToId(v);
-      else if (Evelist_Kind_IsTail(e->kind))
-        v = std::min(v, range.end - e->clock);
+      else if (is_tail) {
+        clock = std::max(e->clock, range.start);
+        v = std::min(v, e->clock + e->value - range.start);
+      }
 
       uint8_t unit_no = e->unit_no - first_unit_no;
-      m_items.emplace_back(Item{e->clock - range.start, unit_no, kind, v});
+      m_items.emplace_back(Item{clock - range.start, unit_no, kind, v});
     }
   }
 }
@@ -198,6 +208,15 @@ std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
           Primitive{kind, unit_id, range.start, Delete{range.end}});
   }
   return actions;
+}
+
+PasteResult Clipboard::makeShift(const std::set<int> &unit_nos,
+                                 const Interval &range, qint32 dest_start_clock,
+                                 const pxtnService *pxtn,
+                                 const NoIdMap &woiceIdMap) {
+  CopyState c(unit_nos, range, pxtn, woiceIdMap, m_kinds_to_copy);
+  return {c.makePaste(unit_nos, m_kinds_to_copy, dest_start_clock, woiceIdMap),
+          c.m_copy_length};
 }
 
 void Clipboard::setKindIsCopied(EVENTKIND kind, bool set) {

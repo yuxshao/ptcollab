@@ -131,9 +131,9 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
     m_client->changeEditState(
         [&](EditState &s) { s.m_quantize_clock_idx = index; }, false);
   });
-  connect(this, &SideMenu::quantYIndexActivated, [this](int index) {
+  connect(this, &SideMenu::quantYDenomActivated, [this](int denom) {
     m_client->changeEditState(
-        [&](EditState &s) { s.m_quantize_pitch_idx = index; }, false);
+        [&](EditState &s) { s.m_quantize_pitch_denom = denom; }, false);
   });
 
   connect(this, &SideMenu::followPlayheadClicked,
@@ -143,7 +143,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           });
   connect(this, &SideMenu::copyChanged, [this](bool copy) {
     EVENTKIND kind =
-        paramOptions[m_client->editState().current_param_kind_idx()].second;
+        paramOptions()[m_client->editState().current_param_kind_idx()].second;
     if (m_client->clipboard()->kindIsCopied(kind) != copy)
       m_client->clipboard()->setKindIsCopied(kind, copy);
   });
@@ -176,15 +176,16 @@ void PxtoneSideMenu::refreshTempoBeat() {
 
 void PxtoneSideMenu::refreshCopyCheckbox() {
   EVENTKIND kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
+      paramOptions()[m_client->editState().current_param_kind_idx()].second;
   setCopy(m_client->clipboard()->kindIsCopied(kind));
 }
 
 void PxtoneSideMenu::handleNewEditState(const EditState &s) {
   if (m_last_edit_state.m_quantize_clock_idx != s.m_quantize_clock_idx)
     setQuantXIndex(s.m_quantize_clock_idx);
-  if (m_last_edit_state.m_quantize_pitch_idx != s.m_quantize_pitch_idx)
-    setQuantYIndex(s.m_quantize_pitch_idx);
+  if (m_last_edit_state.m_quantize_pitch_denom != s.m_quantize_pitch_denom)
+    setQuantYDenom(s.m_quantize_pitch_denom);
+
   if (m_last_edit_state.m_current_unit_id != s.m_current_unit_id) {
     std::optional<qint32> x = m_client->unitIdMap().idToNo(s.m_current_unit_id);
     if (x.has_value()) setCurrentUnit(x.value());

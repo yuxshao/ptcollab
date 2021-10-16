@@ -69,10 +69,10 @@ QDataStream &operator>>(QDataStream &in, Scale &a) {
   return (in >> a.clockPerPx >> a.pitchPerPx >> a.noteHeight >> a.pitchOffset);
 }
 
-static int num_param_options = sizeof(paramOptions) / sizeof(paramOptions[0]);
 int EditState::current_param_kind_idx() const {
-  return ((m_current_param_kind_idx % num_param_options) + num_param_options) %
-         num_param_options;
+  return ((m_current_param_kind_idx % paramOptions().size()) +
+          paramOptions().size()) %
+         paramOptions().size();
 }
 
 EditState::EditState()
@@ -83,14 +83,14 @@ EditState::EditState()
       m_current_woice_id(0),
       m_current_param_kind_idx(0),
       m_quantize_clock_idx(0),
-      m_quantize_pitch_idx(0),
+      m_quantize_pitch_denom(12),
       m_follow_playhead(FollowPlayhead::None) {}
 
 QDataStream &operator<<(QDataStream &out, const EditState &a) {
   return (out << a.mouse_edit_state << a.scale << a.viewport
               << a.m_current_unit_id << a.m_current_woice_id
               << a.m_current_param_kind_idx << a.m_quantize_clock_idx
-              << a.m_quantize_pitch_idx << a.m_follow_playhead
+              << a.m_quantize_pitch_denom << a.m_follow_playhead
               << a.m_input_state);
 }
 
@@ -98,7 +98,7 @@ QDataStream &operator>>(QDataStream &in, EditState &a) {
   return (in >> a.mouse_edit_state >> a.scale >> a.viewport >>
           a.m_current_unit_id >> a.m_current_woice_id >>
           a.m_current_param_kind_idx >> a.m_quantize_clock_idx >>
-          a.m_quantize_pitch_idx >> a.m_follow_playhead >> a.m_input_state);
+          a.m_quantize_pitch_denom >> a.m_follow_playhead >> a.m_input_state);
 }
 
 std::vector<Interval> Input::State::On::clock_ints(

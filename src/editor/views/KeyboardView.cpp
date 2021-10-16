@@ -16,9 +16,8 @@
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
   m_quantize_clock = pxtn->master->get_beat_clock() /
-                     quantizeXOptions[s.m_quantize_clock_idx].second;
-  m_quantize_pitch =
-      PITCH_PER_KEY / quantizeYOptions[s.m_quantize_pitch_idx].second;
+                     quantizeXOptions()[s.m_quantize_clock_idx].second;
+  m_quantize_pitch = s.m_quantize_pitch_denom;
   scale = s.scale;
 }
 
@@ -111,36 +110,39 @@ struct KeyBlock {
 
 static void paintAtClockPitch(int clock, int pitch, int widthInPx,
                               QPainter &painter, const QBrush &brush,
-                              const Scale &scale) {
-  int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
+                              const Scale &scale, int displayEdo) {
+  int rowHeight = PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo;
   painter.fillRect(clock / scale.clockPerPx,
-                   scale.pitchToY(pitch) + rowHeight / 6, widthInPx,
+                   scale.pitchToY(pitch) - rowHeight / 3, widthInPx,
                    rowHeight * 2 / 3, brush);
 }
 
 static void drawAtClockPitch(int clock, int pitch, int widthInPx,
-                             QPainter &painter, const Scale &scale) {
-  int rowHeight = PITCH_PER_KEY / scale.pitchPerPx;
+                             QPainter &painter, const Scale &scale,
+                             int displayEdo) {
+  int rowHeight = PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo;
   painter.drawRect(clock / scale.clockPerPx - 1,
-                   scale.pitchToY(pitch) + rowHeight / 6 - 1, widthInPx + 1,
+                   scale.pitchToY(pitch) - rowHeight / 3 - 1, widthInPx + 1,
                    rowHeight * 2 / 3 + 1);
 }
 
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
-                       const QBrush &brush, const Scale &scale) {
+                       const QBrush &brush, const Scale &scale,
+                       int displayEdo) {
   paintAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
-                    painter, brush, scale);
+                    painter, brush, scale, displayEdo);
 }
 
 static void drawBlock(int pitch, const Interval &segment, QPainter &painter,
-                      const Scale &scale) {
+                      const Scale &scale, int displayEdo) {
   drawAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
-                   painter, scale);
+                   painter, scale, displayEdo);
 }
 
 static void paintHighlight(int pitch, int clock, QPainter &painter,
-                           const QBrush &brush, const Scale &scale) {
-  paintAtClockPitch(clock, pitch, 2, painter, brush, scale);
+                           const QBrush &brush, const Scale &scale,
+                           int displayEdo) {
+  paintAtClockPitch(clock, pitch, 2, painter, brush, scale, displayEdo);
 }
 
 int pixelsPerVelocity = 3;
@@ -164,30 +166,36 @@ int impliedVelocity(MouseEditState state, const Scale &scale) {
 static qint32 arbitrarily_tall = 512;
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
-                    const Brush &brush, const Scale &scale, qint32 alpha) {
+                    const Brush &brush, const Scale &scale, qint32 alpha,
+                    int displayEdo) {
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
   painter.setPen(brush.toQColor(draw_vel, true, alpha));
   painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
-  painter.drawText(clock / scale.clockPerPx,
-                   scale.pitchToY(pitch) - arbitrarily_tall, arbitrarily_tall,
-                   arbitrarily_tall, Qt::AlignBottom, QString("%1").arg(vel));
+  painter.drawText(
+      clock / scale.clockPerPx,
+      scale.pitchToY(pitch + PITCH_PER_OCTAVE / displayEdo * 2 / 5) -
+          arbitrarily_tall,
+      arbitrarily_tall, arbitrarily_tall, Qt::AlignBottom,
+      QString("%1").arg(vel));
 }
 
 void drawGhostOnNote(QPainter &painter, const Interval &interval,
                      const Scale &scale, int width, const Brush &brush,
                      int velocity, int alpha, double alphaMultiplier,
-                     bool rowHighlight, int pitch) {
+                     bool rowHighlight, int pitch, int displayEdo) {
   if (rowHighlight)
     paintBlock(
         pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
         brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
-        scale);
+        scale, displayEdo);
   paintBlock(pitch, interval, painter,
-             brush.toQColor(velocity, false, alpha * alphaMultiplier), scale);
+             brush.toQColor(velocity, false, alpha * alphaMultiplier), scale,
+             displayEdo);
 
   paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                 brush.toQColor(128, true, alpha * alphaMultiplier), scale);
+                 brush.toQColor(128, true, alpha * alphaMultiplier), scale,
+                 displayEdo);
 }
 
 struct SetNoteInterval {
@@ -214,11 +222,20 @@ std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
   return intervals;
 }
 
+int quantize_pitch(long p, long d) {
+  // basically snap p to the nearest PITCH_PER_OCTAVE / d. need to handle neg.
+  bool neg = p < 0;
+  int q =
+      ((2 * (neg ? -p : p) * d + PITCH_PER_OCTAVE) / (2 * PITCH_PER_OCTAVE)) *
+      PITCH_PER_OCTAVE / d;
+  return (neg ? -q : q);
+}
+
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        QPainter &painter, int width, int height,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
-                       double alphaMultiplier,
-                       double selectionAlphaMultiplier) {
+                       double alphaMultiplier, double selectionAlphaMultiplier,
+                       int displayEdo) {
   const Brush &brush =
       brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
@@ -238,31 +255,31 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       // TODO: maybe factor out this quantization logic
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock));
-      int pitch = quantize(keyboard_edit_state.start_pitch,
-                           localState.m_quantize_pitch) +
-                  localState.m_quantize_pitch;
+      int pitch = quantize_pitch(keyboard_edit_state.start_pitch,
+                                 localState.m_quantize_pitch);
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
 
       if (mouse_edit_state.type == MouseEditState::Type::SetNote) {
-        int end_pitch = quantize(keyboard_edit_state.current_pitch,
-                                 localState.m_quantize_pitch) +
-                        localState.m_quantize_pitch;
+        int end_pitch = quantize_pitch(keyboard_edit_state.current_pitch,
+                                       localState.m_quantize_pitch);
         std::list<SetNoteInterval> intervals = vibratoIntervals(
             interval, localState.m_quantize_clock, pitch, end_pitch);
         for (const auto &[interval, pitch] : intervals) {
           drawGhostOnNote(painter, interval, state.scale, width, brush,
-                          velocity, alpha, alphaMultiplier, false, pitch);
+                          velocity, alpha, alphaMultiplier, false, pitch,
+                          displayEdo);
         }
       } else {
         bool rowHighlight = (mouse_edit_state.type != MouseEditState::Nothing);
         drawGhostOnNote(painter, interval, state.scale, width, brush, velocity,
-                        alpha, alphaMultiplier, rowHighlight, pitch);
+                        alpha, alphaMultiplier, rowHighlight, pitch,
+                        displayEdo);
       }
 
       if (mouse_edit_state.type == MouseEditState::SetOn)
         drawVelTooltip(painter, velocity, interval.start, pitch, brush,
-                       state.scale, 255 * alphaMultiplier);
+                       state.scale, 255 * alphaMultiplier, displayEdo);
 
     } break;
     case MouseEditState::Type::Seek:
@@ -283,7 +300,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
     for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
-                      255, alphaMultiplier, true, v.on.key);
+                      255, alphaMultiplier, true, v.on.key, displayEdo);
   }
 }
 
@@ -315,7 +332,8 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                       const Interval &bounds, const Brush &brush, qint32 alpha,
                       const Scale &scale, qint32 current_clock,
                       const MouseEditState &mouse, bool drawTooltip, bool muted,
-                      int width, bool playing, int viewportLeft) {
+                      int width, bool playing, int viewportLeft,
+                      int displayEdo) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
   playing = playing && on.contains(current_clock);
@@ -324,20 +342,22 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
     QColor c = brush.toQColor(
         128, false, 16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256);
     paintBlock(state.pitch.value, Interval{0, int(scale.clockPerPx * width)},
-               painter, c, scale);
+               painter, c, scale, displayEdo);
     c.setAlpha((32 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPiano(painter, viewportLeft, scale.pitchToY(state.pitch.value),
-                  PITCH_PER_KEY / scale.pitchPerPx, c);
+    drawLeftPiano(painter, viewportLeft,
+                  scale.pitchToY(state.pitch.value) -
+                      int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
+                  PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c);
   }
   if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
   if (muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
-  paintBlock(state.pitch.value, interval, painter, color, scale);
+  paintBlock(state.pitch.value, interval, painter, color, scale, displayEdo);
   if (firstBlock) {
     paintHighlight(state.pitch.value, interval.start, painter,
-                   brush.toQColor(255, true, alpha), scale);
+                   brush.toQColor(255, true, alpha), scale, displayEdo);
     if (drawTooltip) {
       double alphaMultiplier = 0;
       if (std::holds_alternative<MouseKeyboardEdit>(mouse.kind)) {
@@ -355,7 +375,8 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
       else if (selection.has_value() && selection.value().contains(on.start))
         alphaMultiplier += 0.3;
       drawVelTooltip(painter, state.velocity.value, interval.start,
-                     state.pitch.value, brush, scale, alpha * alphaMultiplier);
+                     state.pitch.value, brush, scale, alpha * alphaMultiplier,
+                     displayEdo);
     }
   }
   if (selection.has_value()) {
@@ -363,7 +384,8 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
         interval_intersect(selection.value(), interval);
     if (!selection_segment.empty()) {
       painter.setPen(brush.toQColor(EVENTDEFAULT_VELOCITY, true, alpha));
-      drawBlock(state.pitch.value, selection_segment, painter, scale);
+      drawBlock(state.pitch.value, selection_segment, painter, scale,
+                displayEdo);
     }
   }
 }
@@ -403,43 +425,59 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   gradient.setColorAt(0.5, rootNoteBrush);
   gradient.setColorAt(1, Qt::transparent);
   gradient.setCoordinateMode(QGradient::ObjectMode);
+  double pitchPerPx = m_client->editState().scale.pitchPerPx;
+  const QList<int> &displayEdoList = Settings::DisplayEdo::get();
+  int displayEdo = displayEdoList.size();
+  const Scale &scale = m_client->editState().scale;
+  bool octave_display_a = Settings::OctaveDisplayA::get();
+
+  QPixmap octaveDisplayLayer(event->rect().size());
+  octaveDisplayLayer.fill(Qt::transparent);
+  QPainter octaveDisplayPainter(&octaveDisplayLayer);
+  octaveDisplayPainter.translate(-event->rect().topLeft());
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush;
-
-    if (row == 39) {
+    int pitch = quantize_pitch(
+        EVENTMAX_KEY - row * PITCH_PER_OCTAVE / displayEdo, displayEdo);
+    int nextPitch =
+        quantize_pitch(pitch - PITCH_PER_OCTAVE / displayEdo, displayEdo);
+    if (pitch == EVENTDEFAULT_KEY) {
       brush = &rootNoteBrush;
       leftBrush = &whiteLeftBrush;
-    } else
-      switch (row % 12) {
-        case 2:
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-          brush = &blackNoteBrush;
-          leftBrush = &blackLeftBrush;
-          break;
-        default:
-          brush = &whiteNoteBrush;
-          leftBrush = &whiteLeftBrush;
+    } else {
+      if (displayEdoList[(((3 - row) % displayEdo) + displayEdo) %
+                         displayEdo]) {
+        brush = &blackNoteBrush;
+        leftBrush = &blackLeftBrush;
+      } else {
+        brush = &whiteNoteBrush;
+        leftBrush = &whiteLeftBrush;
       }
+    }
     if (m_dark) brush = &black;
 
-    if (row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx >
-        size().height())
-      break;
+    int floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
+    int this_y = scale.pitchToY(pitch);
+    int next_y = scale.pitchToY(nextPitch);
 
-    int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
+    if (this_y > size().height()) break;
     // Because of rounding error, calculate height by subbing next from this
-    int next_y =
-        (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
-    painter.fillRect(0, this_y, size().width(), h, *brush);
+    painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
-    drawLeftPiano(painter, -pos().x(), this_y, h, *leftBrush);
+    drawLeftPiano(painter, -pos().x(), this_y - floor_h / 2, h, *leftBrush);
+    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
+    // 50));
+
+    int pitch_offset = 0;
+    if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
+    if ((pitch - EVENTDEFAULT_KEY) % PITCH_PER_OCTAVE == pitch_offset)
+      drawOctaveNumAlignBottomLeft(
+          &octaveDisplayPainter, -pos().x() + 4, this_y - floor_h / 2 + h - 2,
+          (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
+          octave_display_a);
   }
-
   // Draw FPS
   QPen pen;
   pen.setBrush(Qt::white);
@@ -466,7 +504,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // previous block.
   // TODO: Draw the current unit at the top.
   std::optional<Interval> selection = std::nullopt;
-  std::set<int> selected_unit_nos = selectedUnitNos();
+  std::set<int> selected_unit_nos = m_client->selectedUnitNos();
   if (m_dark)
     painter.setCompositionMode(QPainter::CompositionMode_Plus);
   else
@@ -506,11 +544,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         // Draw the last block of the previous on event if there's one to
         // draw.
         if (state.ongoingOnEvent.has_value())
-          drawStateSegment(thisPainter, state, {state.pitch.clock, e->clock},
-                           thisSelection, clockBounds, brush, alpha,
-                           m_client->editState().scale, clock,
-                           m_client->editState().mouse_edit_state, matchingUnit,
-                           muted, width(), m_client->isPlaying(), -pos().x());
+          drawStateSegment(
+              thisPainter, state, {state.pitch.clock, e->clock}, thisSelection,
+              clockBounds, brush, alpha, m_client->editState().scale, clock,
+              m_client->editState().mouse_edit_state, matchingUnit, muted,
+              width(), m_client->isPlaying(), -pos().x(), displayEdo);
 
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
@@ -520,11 +558,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       case EVENTKIND_KEY:
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
-          drawStateSegment(thisPainter, state, {state.pitch.clock, e->clock},
-                           thisSelection, clockBounds, brush, alpha,
-                           m_client->editState().scale, clock,
-                           m_client->editState().mouse_edit_state, matchingUnit,
-                           muted, width(), m_client->isPlaying(), -pos().x());
+          drawStateSegment(
+              thisPainter, state, {state.pitch.clock, e->clock}, thisSelection,
+              clockBounds, brush, alpha, m_client->editState().scale, clock,
+              m_client->editState().mouse_edit_state, matchingUnit, muted,
+              width(), m_client->isPlaying(), -pos().x(), displayEdo);
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -555,34 +593,20 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       if (selection.has_value() &&
           selected_unit_nos.find(unit_no) != selected_unit_nos.end())
         thisSelection = selection;
-      drawStateSegment(thisPainter, state,
-                       {state.pitch.clock, state.ongoingOnEvent.value().end},
-                       thisSelection, clockBounds, brush, alpha,
-                       m_client->editState().scale, clock,
-                       m_client->editState().mouse_edit_state, matchingUnit,
-                       muted, width(), m_client->isPlaying(), -pos().x());
+      drawStateSegment(
+          thisPainter, state,
+          {state.pitch.clock, state.ongoingOnEvent.value().end}, thisSelection,
+          clockBounds, brush, alpha, m_client->editState().scale, clock,
+          m_client->editState().mouse_edit_state, matchingUnit, muted, width(),
+          m_client->isPlaying(), -pos().x(), displayEdo);
 
       state.ongoingOnEvent.reset();
     }
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
 
-  int floor_h = PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-  for (int row = 0; true; row += 12) {
-    // TODO: dedup heigh calculation with above...
-    int this_y = row * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-    if (this_y > height()) break;
-
-    // Because of rounding error, calculate height by subbing next from this
-    int next_y =
-        (row + 1) * PITCH_PER_KEY / m_client->editState().scale.pitchPerPx;
-    int h = next_y - this_y - 1;
-
-    // painter.setOpacity(0.5);
-    drawCNumAlignBottomLeft(&painter, -pos().x() + 4, this_y + h - 2,
-                            8 - row / 12, floor_h);
-    // painter.setOpacity(1)
-  }
+  painter.drawPixmap(event->rect(), octaveDisplayLayer,
+                     octaveDisplayLayer.rect());
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -603,14 +627,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       drawOngoingAction(adjusted_state, LocalEditState(m_pxtn, adjusted_state),
                         painter, width(), height(), std::nullopt,
                         m_pxtn->master, alphaMultiplier,
-                        selectionAlphaMultiplier);
+                        selectionAlphaMultiplier, displayEdo);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, size().height(),
                         1);
   drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
-                    height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1);
+                    height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
+                    displayEdo);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
@@ -757,8 +782,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
                   s.mouse_edit_state.kind)) {
             int pitch = std::get<MouseKeyboardEdit>(s.mouse_edit_state.kind)
                             .current_pitch;
-            pitch = quantize(pitch, m_edit_state.m_quantize_pitch) +
-                    m_edit_state.m_quantize_pitch;
+            pitch = quantize_pitch(pitch, m_edit_state.m_quantize_pitch);
             s.mouse_edit_state.last_pitch = pitch;
 
             int clock = m_client->editState().mouse_edit_state.current_clock;
@@ -849,7 +873,8 @@ void KeyboardView::selectAll(bool preserveFollow) {
 }
 
 void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
-  if (m_client->editState().mouse_edit_state.selection.has_value()) {
+  const auto &e = m_client->editState();
+  if (e.mouse_edit_state.selection.has_value()) {
     int offset;
     switch (dir) {
       case Direction::UP:
@@ -863,10 +888,13 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
     EVENTKIND kind;
     if (shift) {
       kind = EVENTKIND_KEY;
-      offset *= PITCH_PER_KEY * (wide ? 12 : 1);
+      offset *= wide ? PITCH_PER_OCTAVE
+                     : int(double(PITCH_PER_OCTAVE) /
+                               std::min(e.m_quantize_pitch_denom, 36) +
+                           0.5);
     } else {
       EVENTKIND current_kind =
-          paramOptions[m_client->editState().m_current_param_kind_idx].second;
+          paramOptions()[e.m_current_param_kind_idx].second;
       switch (current_kind) {
         case EVENTKIND_KEY:
         case EVENTKIND_PAN_VOLUME:
@@ -881,11 +909,11 @@ void KeyboardView::transposeSelection(Direction dir, bool wide, bool shift) {
       }
       offset *= (wide ? 16 : 4);
     }
-    Interval interval(m_client->editState().mouse_edit_state.selection.value());
+    Interval interval(e.mouse_edit_state.selection.value());
 
     using namespace Action;
     std::list<Primitive> as;
-    for (qint32 unitNo : selectedUnitNos()) {
+    for (qint32 unitNo : m_client->selectedUnitNos()) {
       qint32 unit = m_client->unitIdMap().noToId(unitNo);
       if (kind != EVENTKIND_VELOCITY) {
         int32_t start_val =
@@ -920,9 +948,8 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
 
   Interval clock_int(m_client->editState().mouse_edit_state.clock_int(
       m_client->quantizeClock()));
-  int start_pitch =
-      quantize(keyboard_edit_state.start_pitch, m_edit_state.m_quantize_pitch) +
-      m_edit_state.m_quantize_pitch;
+  int start_pitch = quantize_pitch(keyboard_edit_state.start_pitch,
+                                   m_edit_state.m_quantize_pitch);
   // int end_pitch = int(round(pitchOfY(event->localPos().y())));
 
   m_client->changeEditState(
@@ -967,9 +994,9 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
 
               if (m_client->editState().mouse_edit_state.type ==
                   MouseEditState::SetNote) {
-                int current_pitch = quantize(keyboard_edit_state.current_pitch,
-                                             m_edit_state.m_quantize_pitch) +
-                                    m_edit_state.m_quantize_pitch;
+                int current_pitch =
+                    quantize_pitch(keyboard_edit_state.current_pitch,
+                                   m_edit_state.m_quantize_pitch);
                 const auto intervals =
                     vibratoIntervals(clock_int, m_client->quantizeClock(),
                                      start_pitch, current_pitch);
@@ -1001,21 +1028,10 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
       false);
 }
 
-std::set<int> KeyboardView::selectedUnitNos() {
-  std::set<int> unit_nos;
-  auto unit_no =
-      m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
-  if (unit_no.has_value()) unit_nos.insert(unit_no.value());
-
-  for (int i = 0; i < m_pxtn->Unit_Num(); ++i)
-    if (m_pxtn->Unit_Get(i)->get_operated()) unit_nos.insert(i);
-  return unit_nos;
-}
-
 void KeyboardView::copySelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->clipboard()->copy(
-      selectedUnitNos(),
+      m_client->selectedUnitNos(),
       m_client->editState().mouse_edit_state.selection.value(), m_pxtn,
       m_client->controller()->woiceIdMap());
 }
@@ -1023,7 +1039,7 @@ void KeyboardView::copySelection() {
 void KeyboardView::clearSelection() {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   std::list<Action::Primitive> actions = m_client->clipboard()->makeClear(
-      selectedUnitNos(),
+      m_client->selectedUnitNos(),
       m_client->editState().mouse_edit_state.selection.value(),
       m_client->unitIdMap());
   if (actions.size() > 0) m_client->applyAction(actions);
@@ -1034,12 +1050,12 @@ void KeyboardView::cutSelection() {
   clearSelection();
 }
 
-void KeyboardView::quantizeSelection() {
+void KeyboardView::quantizeSelectionX() {
   const static std::set<EVENTKIND> kindsToQuantize(
       {EVENTKIND_VELOCITY, EVENTKIND_KEY, EVENTKIND_ON});
   const Interval &range =
       m_client->editState().mouse_edit_state.selection.value();
-  const std::set<int> &unit_nos(selectedUnitNos());
+  const std::set<int> &unit_nos(m_client->selectedUnitNos());
   LocalEditState localState(m_pxtn, m_client->editState());
   int quantizeClock = localState.m_quantize_clock;
   // Quantize with rounding, rather than flooring / ceiling is more useful for
@@ -1061,22 +1077,54 @@ void KeyboardView::quantizeSelection() {
     }
   for (; e && e->clock < range.end; e = e->next) {
     EVENTKIND kind(EVENTKIND(e->kind));
+    qint32 start_clock = quantize(e->clock);
+    if (start_clock >= range.end) continue;
     if (unit_nos.find(e->unit_no) != unit_nos.end() &&
         kindsToQuantize.find(kind) != kindsToQuantize.end()) {
       int unit_id = m_client->unitIdMap().noToId(e->unit_no);
-      qint32 start_clock = quantize(e->clock);
       if (Evelist_Kind_IsTail(e->kind)) {
-        // We round the end time up. Even though this might cause an add
-        // overlap with the next value, this should be okay in terms of
-        // interacting with undo, since the undos of both of these is 2
-        // clears. (It takes some effort to explain)
-        int v = std::max(quantizeClock, quantize(e->value));
+        // We round the end time up if it's too small. Even though this might
+        // cause an add overlap with the next value, this should be okay in
+        // terms of interacting with undo, since the undos of both of these is
+        // 2 clears. (It takes some effort to explain)
+
+        // 2021-10-13: However we don't let it go beyond the selection end.
+        int v = std::min(std::max(quantizeClock, quantize(e->value)),
+                         range.end - start_clock);
         actions.push_back({kind, unit_id, start_clock, Action::Add{v}});
       } else
         actions.push_back({kind, unit_id, start_clock, Action::Add{e->value}});
     }
   }
-  qDebug() << "apply quantize";
+  qDebug() << "apply quantizeX";
+  m_client->applyAction(actions);
+}
+
+void KeyboardView::quantizeSelectionY() {
+  const Interval &range =
+      m_client->editState().mouse_edit_state.selection.value();
+  const std::set<int> &unit_nos(m_client->selectedUnitNos());
+  int denom = m_client->editState().m_quantize_pitch_denom;
+
+  const EVERECORD *e = nullptr;
+  for (e = m_pxtn->evels->get_Records(); e; e = e->next)
+    if (e->clock >= range.start) break;
+
+  std::list<Action::Primitive> actions;
+  for (int unit_no : unit_nos) {
+    int unit_id = m_client->unitIdMap().noToId(unit_no);
+    actions.push_back(
+        {EVENTKIND_KEY, unit_id, range.start, Action::Delete{range.end}});
+  }
+
+  for (; e && e->clock < range.end; e = e->next) {
+    if (e->kind != EVENTKIND_KEY) continue;
+    if (unit_nos.find(e->unit_no) == unit_nos.end()) continue;
+    int unit_id = m_client->unitIdMap().noToId(e->unit_no);
+    actions.push_back({EVENTKIND_KEY, unit_id, e->clock,
+                       Action::Add{quantize_pitch(e->value, denom)}});
+  }
+  qDebug() << "apply quantizeY";
   m_client->applyAction(actions);
 }
 
@@ -1086,7 +1134,8 @@ void KeyboardView::paste(bool preserveFollow) {
       [&](auto &s) {
         Interval &selection = s.mouse_edit_state.selection.value();
         PasteResult paste_result = m_client->clipboard()->makePaste(
-            selectedUnitNos(), selection.start, m_client->unitIdMap());
+            m_client->selectedUnitNos(), selection.start,
+            m_client->unitIdMap());
         if (paste_result.actions.size() > 0)
           m_client->applyAction(paste_result.actions);
         selection.end = selection.start + paste_result.length;

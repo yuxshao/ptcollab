@@ -167,7 +167,7 @@ namespace CopyKinds {
 const char *KEY = "copy_kinds";
 QList<int> default_value() {
   QList<int> v;
-  for (auto [name, kind] : paramOptions)
+  for (auto [name, kind] : paramOptions())
     if (kind != EVENTKIND_VOICENO) v.push_back(kind);
   return v;
 }
@@ -203,5 +203,31 @@ const char *KEY = "show_volume_meter_labels";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace ShowVolumeMeterLabels
+
+namespace AdvancedQuantizeY {
+const char *KEY = "advanced_quantize_y";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace AdvancedQuantizeY
+
+namespace OctaveDisplayA {
+const char *KEY = "octave_display_a";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace OctaveDisplayA
+
+namespace DisplayEdo {
+const char *KEY = "display_edo";
+QList<int> get() {
+  QList<int> r = getIntList(KEY, QList{0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1});
+  if (r.size() < 2) r = {0, 1};
+  if (r.size() > 35) r = r.mid(0, 35);
+  return r;
+}
+void set(const QList<int> &value) {
+  QSettings().setValue(KEY, intListToVariant(value));
+}
+void clear() { return QSettings().remove(KEY); }
+}  // namespace DisplayEdo
 
 }  // namespace Settings

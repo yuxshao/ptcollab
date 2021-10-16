@@ -179,6 +179,16 @@ bool PxtoneClient::isFollowing() {
           m_following_user.value() != m_controller->uid());
 }
 
+std::set<int> PxtoneClient::selectedUnitNos() {
+  std::set<int> unit_nos;
+  auto unit_no = unitIdMap().idToNo(editState().m_current_unit_id);
+  if (unit_no.has_value()) unit_nos.insert(unit_no.value());
+
+  for (int i = 0; i < pxtn()->Unit_Num(); ++i)
+    if (pxtn()->Unit_Get(i)->get_operated()) unit_nos.insert(i);
+  return unit_nos;
+}
+
 qint64 PxtoneClient::uid() const { return m_controller->uid(); }
 qint64 PxtoneClient::following_uid() const {
   if (m_following_user.has_value()) return m_following_user.value();
@@ -191,7 +201,7 @@ qint32 PxtoneClient::quantizeClock(int idx) {
 
 qint32 PxtoneClient::quantizeClock() {
   return quantizeClock(
-      quantizeXOptions[editState().m_quantize_clock_idx].second);
+      quantizeXOptions()[editState().m_quantize_clock_idx].second);
 }
 
 qint32 PxtoneClient::lastSeek() const { return m_last_seek; }

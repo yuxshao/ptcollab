@@ -89,11 +89,10 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
     // In this case, alt flips the scroll direction.
     // Maybe alt shift could handle quantize y?
     qreal delta = event->angleDelta().x();
-    int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
     client->changeEditState(
         [&](EditState &e) {
           auto &qx = e.m_quantize_clock_idx;
-          if (delta < 0 && qx < size - 1) qx++;
+          if (delta < 0 && qx < int(quantizeXOptions().size()) - 1) qx++;
           if (delta > 0 && qx > 0) qx--;
         },
         false);
@@ -187,21 +186,22 @@ static int num_digits(int num) {
   return i;
 }
 
-void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
-                             int height) {
+void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
+                                  int height, bool a) {
   static QPixmap images(":/images/images");
   if (height > 10) {
     bool big = height > 13;
     int num_width = (big ? 9 : 8);
     int num_height = (big ? 9 : 6);
-    int num_offset_x = num_width;
+    int num_offset_x = num_width * 2;
     int num_offset_y = (big ? 56 : 49);
-    painter->drawPixmap(x, y - num_height, num_width, num_height, images, 0,
-                        num_offset_y, num_width, num_height);
+    painter->drawPixmap(x, y - num_height, num_width, num_height, images,
+                        (a ? 0 : num_width), num_offset_y, num_width,
+                        num_height);
     drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
             num_width, num_height, num_offset_x, num_offset_y);
   } else if (height >= 7)
-    painter->drawPixmap(x - 2, y - (height + 1) / 2, 6, 6, images, 88, 48, 6,
+    painter->drawPixmap(x - 2, y - (height + 1) / 2, 6, 6, images, 96, 48, 6,
                         6);
 }
 

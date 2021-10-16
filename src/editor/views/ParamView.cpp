@@ -315,7 +315,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
   }
 
   EVENTKIND current_kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
+      paramOptions()[m_client->editState().current_param_kind_idx()].second;
 
   QPixmap thisUnit(event->rect().size());
   thisUnit.fill(Qt::transparent);
@@ -508,7 +508,7 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
             int unit_no = maybe_unit_no.value();
             EVERECORD e;
             e.kind =
-                paramOptions[m_client->editState().current_param_kind_idx()]
+                paramOptions()[m_client->editState().current_param_kind_idx()]
                     .second;
             e.value =
                 std::get<MouseParamEdit>(s.mouse_edit_state.kind).current_param;
@@ -551,7 +551,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
       m_client->quantizeClock()));
 
   EVENTKIND kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
+      paramOptions()[m_client->editState().current_param_kind_idx()].second;
   if (kind == EVENTKIND_PORTAMENT)
     clock_int = m_client->editState().mouse_edit_state.clock_int_short(
         m_client->quantizeClock());
@@ -648,7 +648,7 @@ void ParamView::wheelEvent(QWheelEvent *event) {
 void ParamView::mouseMoveEvent(QMouseEvent *event) {
   // TODO: Change the note preview based off position.
   EVENTKIND current_kind =
-      paramOptions[m_client->editState().current_param_kind_idx()].second;
+      paramOptions()[m_client->editState().current_param_kind_idx()].second;
   if (!m_client->isFollowing())
     m_client->changeEditState(
         [&](auto &s) {

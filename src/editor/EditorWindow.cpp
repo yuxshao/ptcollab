@@ -246,6 +246,8 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
+  connect(m_settings_dialog, &SettingsDialog::quantYOptionsChanged, m_side_menu,
+          &SideMenu::updateQuantizeYOptions);
   connect(m_settings_dialog, &SettingsDialog::accepted, m_side_menu,
           &SideMenu::refreshVolumeMeterShowText);
   connect(ui->actionClean, &QAction::triggered, [&]() {
@@ -323,7 +325,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         m_keyboard_view->copySelection();
       else {
         EVENTKIND kind =
-            paramOptions[m_client->editState().current_param_kind_idx()].second;
+            paramOptions()[m_client->editState().current_param_kind_idx()]
+                .second;
         m_client->clipboard()->setKindIsCopied(
             kind, !m_client->clipboard()->kindIsCopied(kind));
       }
@@ -383,8 +386,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &e) {
             auto &qx = e.m_quantize_clock_idx;
-            int size = sizeof(quantizeXOptions) / sizeof(quantizeXOptions[0]);
-            if (qx < size - 1) qx++;
+            if (qx < int(quantizeXOptions().size()) - 1) qx++;
           },
           false);
       break;
@@ -424,8 +426,12 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         Settings::ChordPreview::set(!Settings::ChordPreview::get());
       break;
     case Qt::Key_Q:
-      if (event->modifiers() & Qt::AltModifier)
-        m_keyboard_view->quantizeSelection();
+      if (event->modifiers() & Qt::AltModifier) {
+        if (event->modifiers() & Qt::ShiftModifier)
+          m_keyboard_view->quantizeSelectionY();
+        else
+          m_keyboard_view->quantizeSelectionX();
+      }
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
@@ -525,13 +531,55 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_keyboard_view->transposeSelection(dir, wide, shift);
     } break;
     case Qt::Key_Left:
-    case Qt::Key_Right:
-      if (event->modifiers() & Qt::ShiftModifier) {
-        bool shift_right = event->key() == Qt::Key_Right;
-        bool grow = (event->modifiers() & Qt::ControlModifier);
-        tweakSelectionRange(shift_right, grow);
+    case Qt::Key_Right: {
+      bool shift_mod = (event->modifiers() & Qt::ShiftModifier);
+      bool shift_right = event->key() == Qt::Key_Right;
+      if (event->modifiers() & Qt::AltModifier) {
+        tweakSelectionRange(shift_right, shift_mod);
+      } else if (shift_mod) {
+        m_client->changeEditState(
+            [&](auto &s) {
+              if (!s.mouse_edit_state.selection.has_value()) return;
+              Interval &sel = s.mouse_edit_state.selection.value();
+              qint32 q;
+              if (event->modifiers() & Qt::ControlModifier)
+                q = m_pxtn.master->get_beat_num() *
+                    m_pxtn.master->get_beat_clock();
+              else
+                q = m_client->quantizeClock();
+              int proposed_from_end, proposed_from_start;
+              if (shift_right) {
+                proposed_from_end = quantize(sel.end + q, q) - sel.end;
+                proposed_from_start = quantize(sel.start + q, q) - sel.start;
+              } else {
+                proposed_from_end = quantize(sel.end - 1, q) - sel.end;
+                proposed_from_start = quantize(sel.start - 1, q) - sel.start;
+              }
+
+              int shift = proposed_from_start;
+              if (abs(proposed_from_end) < abs(proposed_from_start))
+                shift = proposed_from_end;
+              auto [actions, length] = m_client->clipboard()->makeShift(
+                  m_client->selectedUnitNos(), sel, sel.start + shift,
+                  m_client->pxtn(), m_client->controller()->unitIdMap());
+
+              Interval difference;
+              if (shift_right)
+                difference = {sel.start, sel.start + shift};
+              else
+                difference = {sel.end + shift, sel.end};
+              if (!difference.empty())
+                actions.splice(actions.end(),
+                               m_client->clipboard()->makeClear(
+                                   m_client->selectedUnitNos(), difference,
+                                   m_client->controller()->unitIdMap()));
+              if (actions.size() > 0) m_client->applyAction(actions);
+              sel.start += shift;
+              sel.end += shift;
+            },
+            false);
       }
-      break;
+    } break;
   }
 }
 
@@ -707,7 +755,8 @@ void EditorWindow::checkForOldAutoSaves() {
       if (QMessageBox::question(
               this, tr("Found backup files from previous run"),
               tr("Old backup save files found. This usually happens if a "
-                 "previous ptcollab session quit unexpxectedly. Would you like "
+                 "previous ptcollab session quit unexpxectedly. Would you "
+                 "like "
                  "to open the backup directory?")))
         QDesktopServices::openUrl(autoSaveDir());
       break;

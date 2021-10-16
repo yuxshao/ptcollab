@@ -493,9 +493,19 @@ playback
 2. fix crash on select last unit when there are fewer voices than units
 3. octave markers, with halberstadt keyboard on left
 
+10/13
+1. sorta janky shift left and right
+2. adjust copy / paste so that it's less janky
+3. fix bug at end of selection when you snap to x
+4. mirotone stuff
+  - fix draw offset when you draw notes in snap under semitone
+  - transpose by quanty, add snap shortcut for quanty
+  - toggle for showing all the tuning options
+
 Todo by priority
 ----------------
- - extend upper limit piano roll
+ - way to elongate notes (ctrl click in unit row)
+ - experiment with other temperaments?
 
  - fix crashes when installed from aur for whatever reason??? more oob things?
    - turns out it's GLIBCXX_ASSERTIONS
@@ -507,6 +517,7 @@ Todo by priority
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
+- extend upper limit piano roll
 - when following and someone does midi it can mess you up
 - save dialog state instead of just last dir <- not that easy since you gotta save the state at diff places and the ptrec key is useful for the host dialog prefill
 

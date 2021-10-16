@@ -18,6 +18,7 @@ class SettingsDialog : public QDialog {
   ~SettingsDialog();
 
  signals:
+  void quantYOptionsChanged();
   void midiPortSelected(int port_no);
 
  private:

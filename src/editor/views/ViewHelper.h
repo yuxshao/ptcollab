@@ -78,6 +78,6 @@ extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
                            const QColor &color);
 
 extern void drawNumAlignTopRight(QPainter *painter, int x, int y, int num);
-extern void drawCNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
-                                    int height);
+extern void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y,
+                                         int num, int height, bool a);
 #endif  // VIEWHELPER_H
