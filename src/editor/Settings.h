@@ -146,9 +146,9 @@ void set(bool);
 }  // namespace OctaveDisplayA
 
 namespace DisplayEdo {
-int get();
-void set(int);
-}  // namespace KeyboardDisplayQuantize
+QList<int> get();
+void set(const QList<int> &);
+}  // namespace DisplayEdo
 
 }  // namespace Settings
 

@@ -426,7 +426,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   gradient.setColorAt(1, Qt::transparent);
   gradient.setCoordinateMode(QGradient::ObjectMode);
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
-  int displayEdo = Settings::DisplayEdo::get();
+  const QList<int> &displayEdoList = Settings::DisplayEdo::get();
+  int displayEdo = displayEdoList.size();
   const Scale &scale = m_client->editState().scale;
   bool octave_display_a = Settings::OctaveDisplayA::get();
 
@@ -440,24 +441,19 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         EVENTMAX_KEY - row * PITCH_PER_OCTAVE / displayEdo, displayEdo);
     int nextPitch =
         quantize_pitch(pitch - PITCH_PER_OCTAVE / displayEdo, displayEdo);
-    if (nextPitch == pitch) qDebug() << pitch;
-    if (row == 39) {
+    if (pitch == EVENTDEFAULT_KEY) {
       brush = &rootNoteBrush;
       leftBrush = &whiteLeftBrush;
-    } else
-      switch (row % 12) {
-        case 2:
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-          brush = &blackNoteBrush;
-          leftBrush = &blackLeftBrush;
-          break;
-        default:
-          brush = &whiteNoteBrush;
-          leftBrush = &whiteLeftBrush;
+    } else {
+      if (displayEdoList[(((3 - row) % displayEdo) + displayEdo) %
+                         displayEdo]) {
+        brush = &blackNoteBrush;
+        leftBrush = &blackLeftBrush;
+      } else {
+        brush = &whiteNoteBrush;
+        leftBrush = &whiteLeftBrush;
       }
+    }
     if (m_dark) brush = &black;
 
     int floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
@@ -471,7 +467,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
     drawLeftPiano(painter, -pos().x(), this_y - floor_h / 2, h, *leftBrush);
-    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255, 50));
+    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
+    // 50));
 
     int pitch_offset = 0;
     if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
@@ -1088,8 +1085,8 @@ void KeyboardView::quantizeSelectionX() {
       if (Evelist_Kind_IsTail(e->kind)) {
         // We round the end time up if it's too small. Even though this might
         // cause an add overlap with the next value, this should be okay in
-        // terms of interacting with undo, since the undos of both of these is 2
-        // clears. (It takes some effort to explain)
+        // terms of interacting with undo, since the undos of both of these is
+        // 2 clears. (It takes some effort to explain)
 
         // 2021-10-13: However we don't let it go beyond the selection end.
         int v = std::min(std::max(quantizeClock, quantize(e->value)),

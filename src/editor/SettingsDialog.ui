@@ -172,12 +172,12 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Row display</string>
+          <string>Black/white octave pattern</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="rowDisplayCombo"/>
+        <widget class="QLineEdit" name="rowDisplayEdit"/>
        </item>
        <item>
         <spacer name="verticalSpacer_3">

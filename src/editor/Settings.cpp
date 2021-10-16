@@ -218,8 +218,16 @@ void set(bool value) { return QSettings().setValue(KEY, value); }
 
 namespace DisplayEdo {
 const char *KEY = "display_edo";
-int get() { return QSettings().value(KEY, 12).toInt(); }
-void set(int value) { return QSettings().setValue(KEY, value); }
+static const QList<int> default_{QList{0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1}};
+QList<int> get() {
+  QList<int> r = getIntList(KEY, QList{0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1});
+  if (r.size() < 2) r = {0, 1};
+  if (r.size() > 35) r = r.mid(0, 35);
+  return r;
+}
+void set(const QList<int> &value) {
+  QSettings().setValue(KEY, intListToVariant(value));
+}
 }  // namespace DisplayEdo
 
 }  // namespace Settings

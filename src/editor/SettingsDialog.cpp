@@ -18,9 +18,6 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
   connect(this, &QDialog::accepted, this, &SettingsDialog::apply);
   connect(ui->styleButton, &QPushButton::released,
           []() { StyleEditor::initializeStyleDir(); });
-
-  for (auto &[label, value] : keyboardDisplayOptions())
-    ui->rowDisplayCombo->addItem(label, value);
 }
 
 void SettingsDialog::apply() {
@@ -41,8 +38,16 @@ void SettingsDialog::apply() {
       ui->showVolumeMeterLabelsCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
-  Settings::DisplayEdo::set(
-      ui->rowDisplayCombo->currentData().toInt());
+  QList<int> rowDisplayPattern;
+  for (char c : ui->rowDisplayEdit->text().toStdString()) {
+    if (rowDisplayPattern.size() >= 35) break;
+    if (c == 'b' || c == 'B')
+      rowDisplayPattern.push_back(1);
+    else if (c == 'w' || c == 'W')
+      rowDisplayPattern.push_back(0);
+  }
+  if (rowDisplayPattern.size() < 1) rowDisplayPattern = {0, 1};
+  Settings::DisplayEdo::set(rowDisplayPattern);
 
   emit quantYOptionsChanged();
   if (ui->midiInputPortCombo->currentIndex() > 0)
@@ -70,12 +75,9 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
 
-  int currentRowDisplay = Settings::DisplayEdo::get();
-  for (int i = 0; i < ui->rowDisplayCombo->count(); ++i)
-    if (ui->rowDisplayCombo->itemData(i).toInt() == currentRowDisplay) {
-      ui->rowDisplayCombo->setCurrentIndex(i);
-      break;
-    }
+  QString rowDisplay = "";
+  for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");
+  ui->rowDisplayEdit->setText(rowDisplay);
 
   // Identify Styles
   // then add those names to a list for usage in the Combo Box
