@@ -1,5 +1,3 @@
-
-
 SideMenu QLabel,
 QTabWidget>QWidget {
   font-weight: bold;
