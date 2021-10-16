@@ -117,8 +117,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           });
   connect(new_woice_dialog, &QDialog::accepted, this,
           [this, new_woice_dialog]() {
-            for (const AddWoice& w : new_woice_dialog->selectedWoices())
-              emit addWoice(w);
+            emit addWoices(new_woice_dialog->selectedWoices());
           });
 
   connect(ui->tempoField, &QLineEdit::editingFinished, [this]() {

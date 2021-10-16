@@ -60,12 +60,21 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
             m_client->pxtn()->Woice_Get(woice_id)->get_name_buf_jis(nullptr)),
         unit_name});
   });
-  connect(this, &SideMenu::addWoice, [this](const AddWoice &w) {
-    try {
-      m_client->sendAction(w);
-    } catch (const QString &e) {
-      QMessageBox::critical(this, tr("Unable to add voice"), e);
-    }
+  connect(this, &SideMenu::addWoices, [this](const std::vector<AddWoice> &ws) {
+    uint woice_capacity =
+        m_client->pxtn()->Woice_Max() - m_client->pxtn()->Woice_Num();
+    if (ws.size() >= woice_capacity)
+      QMessageBox::warning(this, tr("Voice add error"),
+                           tr("You are trying to add too many voices (%1). "
+                              "There is space for %2.")
+                               .arg(ws.size())
+                               .arg(woice_capacity));
+    else
+      try {
+        for (const AddWoice &w : ws) m_client->sendAction(w);
+      } catch (const QString &e) {
+        QMessageBox::critical(this, tr("Unable to add voice"), e);
+      }
   });
   connect(this, &SideMenu::changeWoice, [this](int idx, const AddWoice &w) {
     try {

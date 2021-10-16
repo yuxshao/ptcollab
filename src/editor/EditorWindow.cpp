@@ -1036,9 +1036,20 @@ void EditorWindow::dropEvent(QDropEvent *event) {
   }
 
   std::list<AddWoice> add_woices;
+  uint woice_capacity =
+      m_client->pxtn()->Woice_Max() - m_client->pxtn()->Woice_Num();
   try {
-    for (QUrl url : event->mimeData()->urls())
+    for (QUrl url : event->mimeData()->urls()) {
+      if (add_woices.size() >= woice_capacity) {
+        QMessageBox::warning(this, tr("Voice add error"),
+                             tr("You are trying to add too many voices (%1). "
+                                "There is space for %2.")
+                                 .arg(event->mimeData()->urls().length())
+                                 .arg(woice_capacity));
+        return;
+      }
       add_woices.push_back(make_addWoice_from_path_exn(url.toLocalFile(), ""));
+    }
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Unsupported instrument type"), e);
     return;
