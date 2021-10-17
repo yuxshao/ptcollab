@@ -146,6 +146,9 @@
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
          </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
          <attribute name="verticalHeaderMinimumSectionSize">
           <number>24</number>
          </attribute>
@@ -217,6 +220,9 @@
          </attribute>
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
          </attribute>
          <attribute name="verticalHeaderMinimumSectionSize">
           <number>24</number>
@@ -313,6 +319,9 @@
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
          </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
         </widget>
        </item>
        <item>
@@ -334,6 +343,9 @@
          </attribute>
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
          </attribute>
         </widget>
        </item>
