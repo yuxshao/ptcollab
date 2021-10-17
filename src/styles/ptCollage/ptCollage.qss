@@ -353,3 +353,7 @@ QScrollBar::down-arrow:hover,
 QScrollBar::down-arrow:pressed {
   image: url("image/scrollbar-down-down.png");
 }
+
+* {
+  outline: none;
+}
