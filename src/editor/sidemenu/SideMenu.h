@@ -78,7 +78,7 @@ class SideMenu : public QWidget {
   void setCopy(bool);
   void openAddUnitWindow();
   void refreshVolumeMeterShowText();
-  void updateQuantizeYOptions();
+  void updateQuantizeYOptions(int currentDenom);
 
  private:
   Ui::SideMenu *ui;
