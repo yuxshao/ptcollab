@@ -152,7 +152,8 @@ void NewWoiceDialog::searchAsync() {
 
 void NewWoiceDialog::selectWoices(const QStringList &files) {
   QStringList names;
-  for (const auto &file : files) names.push_back(QFileInfo(file).baseName());
+  for (const auto &file : files)
+    names.push_back(QFileInfo(file).completeBaseName());
 
   ui->voiceNameLine->setText(names.join(";"));
   ui->voicePathLine->setText(files.join(";"));
@@ -181,7 +182,7 @@ AddWoice make_addWoice_from_path_exn(const QString &path, const QString &name) {
   if (!file.open(QIODevice::ReadOnly))
     throw QString("Could not open file (%1)").arg(filename);
 
-  return AddWoice{type, name == "" ? fileinfo.baseName() : name,
+  return AddWoice{type, name == "" ? fileinfo.completeBaseName() : name,
                   file.readAll()};
 }
 
