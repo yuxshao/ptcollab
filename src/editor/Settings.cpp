@@ -182,12 +182,14 @@ void set(const QList<int> &value) {
 
 namespace SearchWoiceState {
 const char *KEY = "search_woice_state";
+bool isSet() { return QSettings().contains(KEY); }
 QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
 void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
 }  // namespace SearchWoiceState
 
 namespace BrowseWoiceState {
 const char *KEY = "browse_woice_state";
+bool isSet() { return QSettings().contains(KEY); }
 QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
 void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
 }  // namespace BrowseWoiceState

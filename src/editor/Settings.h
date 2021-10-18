@@ -116,11 +116,13 @@ void set(const QList<int> &);
 }  // namespace CopyKinds
 
 namespace SearchWoiceState {
+bool isSet();
 QByteArray get();
 void set(const QByteArray &);
 }  // namespace SearchWoiceState
 
 namespace BrowseWoiceState {
+bool isSet();
 QByteArray get();
 void set(const QByteArray &);
 }  // namespace BrowseWoiceState

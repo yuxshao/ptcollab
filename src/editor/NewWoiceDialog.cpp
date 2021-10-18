@@ -234,7 +234,10 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       QString("%1").arg(EVENTDEFAULT_KEY / PITCH_PER_KEY));
   ui->previewKeyLine->setValidator(new QIntValidator(0, 150, this));
 
-  m_browse_woice_dialog->setDirectory(QString());
+  // If we don't unset the directory, then it'll stay as the cwd. But we want to
+  // use cwd if this is a first open, hence the if.
+  if (Settings::BrowseWoiceState::isSet())
+    m_browse_woice_dialog->setDirectory(QString());
   if (!m_browse_woice_dialog->restoreState(Settings::BrowseWoiceState::get()))
     qDebug() << "Could not restore browse woice dialog state";
   m_browse_woice_dialog->setFileMode(multi ? QFileDialog::ExistingFiles
@@ -252,7 +255,8 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
   connect(m_browse_woice_dialog, &QFileDialog::currentChanged, this,
           &NewWoiceDialog::previewWoice);
 
-  m_browse_search_folder_dialog->setDirectory(QString());
+  if (Settings::SearchWoiceState::isSet())
+    m_browse_search_folder_dialog->setDirectory(QString());
   if (!m_browse_search_folder_dialog->restoreState(
           Settings::SearchWoiceState::get()))
     qDebug() << "Could not restore woice search dialog state";
