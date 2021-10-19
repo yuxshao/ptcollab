@@ -919,7 +919,7 @@ bool EditorWindow::save(bool forceSelectFilename) {
   return saved;
 }
 
-bool EditorWindow::render() {
+void EditorWindow::render() {
   double length, fadeout, volume;
   double secs_per_meas =
       m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
@@ -930,41 +930,46 @@ bool EditorWindow::render() {
   m_render_dialog->setVolume(m_client->moo()->params.master_vol);
 
   try {
-    if (!m_render_dialog->exec()) return false;
+    if (!m_render_dialog->exec()) return;
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
     volume = m_render_dialog->renderVolume();
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Render settings invalid"), e);
-    return false;
+    return;
   }
 
   if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
     QMessageBox::warning(this, tr("Could not render"),
                          tr("Filename must end with .wav"));
-    return false;
+    return;
   }
 
   QSaveFile file(m_render_dialog->renderDestination());
   if (!file.open(QIODevice::WriteOnly)) {
     QMessageBox::warning(this, tr("Could not render"),
                          tr("Could not open file for rendering"));
-    return false;
+    return;
   }
 
   constexpr int GRANULARITY = 1000;
   QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
   progress.setWindowModality(Qt::WindowModal);
-  bool result = m_client->controller()->render(
-      &file, length, fadeout, volume, [&](double p) {
-        progress.setValue(p * GRANULARITY);
-        return !progress.wasCanceled();
-      });
+  bool finished;
+  try {
+    finished = m_client->controller()->render_exn(
+        &file, length, fadeout, volume, [&](double p) {
+          progress.setValue(p * GRANULARITY);
+          return !progress.wasCanceled();
+        });
+  } catch (const QString &e) {
+    QMessageBox::warning(this, tr("Render error"), e);
+    finished = false;
+  }
   progress.close();
-  if (!result) return false;
+  if (!finished) return;
   file.commit();
   QMessageBox::information(this, tr("Rendering done"), tr("Rendering done"));
-  return true;
 }
 
 void EditorWindow::connectToHost() {
