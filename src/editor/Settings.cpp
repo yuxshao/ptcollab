@@ -187,6 +187,12 @@ QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
 void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
 }  // namespace SearchWoiceState
 
+namespace SearchWoiceLastSelection {
+const char *KEY = "search_woice_last_selection";
+QString get() { return QSettings().value(KEY, QVariant()).toString(); }
+void set(const QString &value) { return QSettings().setValue(KEY, value); }
+}  // namespace SearchWoiceLastSelection
+
 namespace BrowseWoiceState {
 const char *KEY = "browse_woice_state";
 bool isSet() { return QSettings().contains(KEY); }

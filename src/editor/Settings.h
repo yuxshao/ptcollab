@@ -121,6 +121,11 @@ QByteArray get();
 void set(const QByteArray &);
 }  // namespace SearchWoiceState
 
+namespace SearchWoiceLastSelection {
+QString get();
+void set(const QString &);
+}  // namespace SearchWoiceLastSelection
+
 namespace BrowseWoiceState {
 bool isSet();
 QByteArray get();
