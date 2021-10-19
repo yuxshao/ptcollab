@@ -2,12 +2,10 @@
 
 #include "ComboOptions.h"
 
-const QString WOICE_DIR_KEY("woice_dir");
 const QString BUFFER_LENGTH_KEY("buffer_length");
 const double DEFAULT_BUFFER_LENGTH = 0.15;
 const QString VOLUME_KEY("volume");
 
-const QString PTCOP_FILE_KEY("ptcop_dir");
 const QString PTREC_SAVE_FILE_KEY("ptrec_save_dir");
 const QString DISPLAY_NAME_KEY("display_name");
 
@@ -192,6 +190,19 @@ const char *KEY = "search_woice_last_selection";
 QString get() { return QSettings().value(KEY, QVariant()).toString(); }
 void set(const QString &value) { return QSettings().setValue(KEY, value); }
 }  // namespace SearchWoiceLastSelection
+
+namespace OpenProjectState {
+const char *KEY = "open_project_state";
+bool isSet() { return QSettings().contains(KEY); }
+QByteArray get() { return QSettings().value(KEY, QVariant()).toByteArray(); }
+void set(const QByteArray &value) { return QSettings().setValue(KEY, value); }
+}  // namespace OpenProjectState
+
+namespace OpenProjectLastSelection {
+const char *KEY = "open_project_last_selection";
+QString get() { return QSettings().value(KEY, QVariant()).toString(); }
+void set(const QString &value) { return QSettings().setValue(KEY, value); }
+}  // namespace OpenProjectLastSelection
 
 namespace BrowseWoiceState {
 const char *KEY = "browse_woice_state";

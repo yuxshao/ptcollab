@@ -502,13 +502,14 @@ playback
   - transpose by quanty, add snap shortcut for quanty
   - toggle for showing all the tuning options
 
+10/18
+1. fix last search not showing up in line edit
+2. project file dialog has its own history
+
 Todo by priority
 ----------------
+ - test to see if the midi noodling is causing the lag. delete voice previews if so
  - way to elongate notes (ctrl click in unit row)
- - experiment with other temperaments?
-
- - fix crashes when installed from aur for whatever reason??? more oob things?
-   - turns out it's GLIBCXX_ASSERTIONS
 
  - show other's midi inputs if you're either following the or they're not playing
  - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk

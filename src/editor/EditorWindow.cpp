@@ -901,17 +901,27 @@ bool EditorWindow::save(bool forceSelectFilename) {
   QString filename;
   if (m_filename.has_value() && !forceSelectFilename)
     filename = m_filename.value();
-  else
-    filename = QFileDialog::getSaveFileName(
-        this, "Save file",
-        QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
-        "pxtone projects (*.ptcop)");
+  else {
+    QFileDialog f(this, "Save file", "", "pxtone projects (*.ptcop)");
+    f.setAcceptMode(QFileDialog::AcceptSave);
+    if (Settings::OpenProjectState::isSet()) {
+      f.setDirectory("");  // Unset directory so the state also restores dir
+      if (!f.restoreState(Settings::OpenProjectState::get()))
+        qWarning() << "Failed to restore save dialog state";
+    }
+    if (f.exec() == QDialog::Accepted) {
+      filename = f.selectedFiles().value(0);
+      Settings::OpenProjectState::set(f.saveState());
+    }
+  }
+
   if (filename.isEmpty()) return false;
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   bool saved = saveToFile(filename);
   if (saved) {
-    settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
+    Settings::OpenProjectLastSelection::set(
+        QFileInfo(filename).absoluteFilePath());
     setCurrentFilename(filename);
     m_modified = false;
     m_side_menu->setModified(false);

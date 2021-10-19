@@ -1,5 +1,6 @@
 #include "HostDialog.h"
 
+#include <QDebug>
 #include <QFileDialog>
 #include <QIntValidator>
 #include <QSettings>
@@ -63,13 +64,20 @@ HostDialog::HostDialog(QWidget *parent)
 }
 
 bool HostDialog::selectProjectFile() {
-  QSettings settings;
-  QString dir =
-      QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath();
-  // ui->openProjectFile->setText(dir);
-  QString filename = QFileDialog::getOpenFileName(
-      this, "Open file", dir,
-      "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
+  QFileDialog f(this, "Open file", "",
+                "pxtone projects (*.ptcop);;ptcollab recordings (*.ptrec)");
+  f.setAcceptMode(QFileDialog::AcceptOpen);
+  if (Settings::OpenProjectState::isSet()) {
+    f.setDirectory("");  // Unset directory so the state also restores dir
+    if (!f.restoreState(Settings::OpenProjectState::get()))
+      qWarning() << "Failed to restore open dialog state";
+  }
+  QString filename;
+  if (f.exec() == QDialog::Accepted) {
+    filename = f.selectedFiles().value(0);
+    Settings::OpenProjectState::set(f.saveState());
+  }
+
   if (filename.isEmpty()) return false;
   ui->openProjectFile->setText(filename);
   return true;
@@ -112,8 +120,8 @@ void HostDialog::persistSettings() {
 
   std::optional<QString> filename = projectName();
   if (filename.has_value())
-    settings.setValue(PTCOP_FILE_KEY,
-                      QFileInfo(filename.value()).absoluteFilePath());
+    Settings::OpenProjectLastSelection::set(
+        QFileInfo(filename.value()).absoluteFilePath());
 
   filename = recordingName();
   if (filename.has_value())
