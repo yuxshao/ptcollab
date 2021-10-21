@@ -84,7 +84,7 @@ class EditorWindow : public QMainWindow {
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename, bool warnOnError = true);
   bool save(bool forceSelectFilename);
-  bool render();
+  void render();
   bool maybeSave();
   void autoSave();
   void checkForOldAutoSaves();

@@ -244,8 +244,11 @@ EditorWindow::EditorWindow(QWidget *parent)
                                           Qt::HighEventPriority);
             });
           });
-  connect(m_settings_dialog, &SettingsDialog::quantYOptionsChanged, m_side_menu,
-          &SideMenu::updateQuantizeYOptions);
+  connect(m_settings_dialog, &SettingsDialog::quantYOptionsChanged, this,
+          [this]() {
+            m_side_menu->updateQuantizeYOptions(
+                m_client->editState().m_quantize_pitch_denom);
+          });
   connect(m_settings_dialog, &SettingsDialog::accepted, m_side_menu,
           &SideMenu::refreshVolumeMeterShowText);
   connect(ui->actionClean, &QAction::triggered, [&]() {
@@ -898,17 +901,27 @@ bool EditorWindow::save(bool forceSelectFilename) {
   QString filename;
   if (m_filename.has_value() && !forceSelectFilename)
     filename = m_filename.value();
-  else
-    filename = QFileDialog::getSaveFileName(
-        this, "Save file",
-        QFileInfo(settings.value(PTCOP_FILE_KEY).toString()).absolutePath(),
-        "pxtone projects (*.ptcop)");
+  else {
+    QFileDialog f(this, "Save file", "", "pxtone projects (*.ptcop)");
+    f.setAcceptMode(QFileDialog::AcceptSave);
+    if (Settings::OpenProjectState::isSet()) {
+      f.setDirectory("");  // Unset directory so the state also restores dir
+      if (!f.restoreState(Settings::OpenProjectState::get()))
+        qWarning() << "Failed to restore save dialog state";
+    }
+    if (f.exec() == QDialog::Accepted) {
+      filename = f.selectedFiles().value(0);
+      Settings::OpenProjectState::set(f.saveState());
+    }
+  }
+
   if (filename.isEmpty()) return false;
 
   if (QFileInfo(filename).suffix() != "ptcop") filename += ".ptcop";
   bool saved = saveToFile(filename);
   if (saved) {
-    settings.setValue(PTCOP_FILE_KEY, QFileInfo(filename).absoluteFilePath());
+    Settings::OpenProjectLastSelection::set(
+        QFileInfo(filename).absoluteFilePath());
     setCurrentFilename(filename);
     m_modified = false;
     m_side_menu->setModified(false);
@@ -916,7 +929,7 @@ bool EditorWindow::save(bool forceSelectFilename) {
   return saved;
 }
 
-bool EditorWindow::render() {
+void EditorWindow::render() {
   double length, fadeout, volume;
   double secs_per_meas =
       m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
@@ -927,41 +940,46 @@ bool EditorWindow::render() {
   m_render_dialog->setVolume(m_client->moo()->params.master_vol);
 
   try {
-    if (!m_render_dialog->exec()) return false;
+    if (!m_render_dialog->exec()) return;
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
     volume = m_render_dialog->renderVolume();
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Render settings invalid"), e);
-    return false;
+    return;
   }
 
   if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
     QMessageBox::warning(this, tr("Could not render"),
                          tr("Filename must end with .wav"));
-    return false;
+    return;
   }
 
   QSaveFile file(m_render_dialog->renderDestination());
   if (!file.open(QIODevice::WriteOnly)) {
     QMessageBox::warning(this, tr("Could not render"),
                          tr("Could not open file for rendering"));
-    return false;
+    return;
   }
 
   constexpr int GRANULARITY = 1000;
   QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
   progress.setWindowModality(Qt::WindowModal);
-  bool result = m_client->controller()->render(
-      &file, length, fadeout, volume, [&](double p) {
-        progress.setValue(p * GRANULARITY);
-        return !progress.wasCanceled();
-      });
+  bool finished;
+  try {
+    finished = m_client->controller()->render_exn(
+        &file, length, fadeout, volume, [&](double p) {
+          progress.setValue(p * GRANULARITY);
+          return !progress.wasCanceled();
+        });
+  } catch (const QString &e) {
+    QMessageBox::warning(this, tr("Render error"), e);
+    finished = false;
+  }
   progress.close();
-  if (!result) return false;
+  if (!finished) return;
   file.commit();
   QMessageBox::information(this, tr("Rendering done"), tr("Rendering done"));
-  return true;
 }
 
 void EditorWindow::connectToHost() {

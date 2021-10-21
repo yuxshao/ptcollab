@@ -38,7 +38,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 
   for (auto [label, value] : quantizeXOptions())
     ui->quantX->addItem(label, value);
-  updateQuantizeYOptions();
+  updateQuantizeYOptions(EditState().m_quantize_pitch_denom);
   for (auto [label, value] : paramOptions())
     ui->paramSelection->addItem(label, value);
 
@@ -285,13 +285,13 @@ void SideMenu::refreshVolumeMeterShowText() {
   m_volume_meter_widget->refreshShowText();
 }
 
-void SideMenu::updateQuantizeYOptions() {
+void SideMenu::updateQuantizeYOptions(int currentDenom) {
   const auto& options = Settings::AdvancedQuantizeY::get()
                             ? quantizeYOptionsAdvanced()
                             : quantizeYOptionsSimple();
   ui->quantY->clear();
   for (auto& [label, value] : options) ui->quantY->addItem(label, value);
-  setQuantYDenom(EditState().m_quantize_pitch_denom);
+  setQuantYDenom(currentDenom);
 }
 
 void SideMenu::setParamKindIndex(int index) {

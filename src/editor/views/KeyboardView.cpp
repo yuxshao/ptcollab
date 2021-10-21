@@ -437,16 +437,18 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   octaveDisplayPainter.translate(-event->rect().topLeft());
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush;
+    // Start the backgrounds on an A just so that the key pattern lines up
+    int a_above_max_key =
+        (EVENTMAX_KEY / PITCH_PER_OCTAVE + 1) * PITCH_PER_OCTAVE;
     int pitch = quantize_pitch(
-        EVENTMAX_KEY - row * PITCH_PER_OCTAVE / displayEdo, displayEdo);
+        a_above_max_key - row * PITCH_PER_OCTAVE / displayEdo, displayEdo);
     int nextPitch =
         quantize_pitch(pitch - PITCH_PER_OCTAVE / displayEdo, displayEdo);
     if (pitch == EVENTDEFAULT_KEY) {
       brush = &rootNoteBrush;
       leftBrush = &whiteLeftBrush;
     } else {
-      if (displayEdoList[(((3 - row) % displayEdo) + displayEdo) %
-                         displayEdo]) {
+      if (displayEdoList[nonnegative_modulo(-row, displayEdo)]) {
         brush = &blackNoteBrush;
         leftBrush = &blackLeftBrush;
       } else {
@@ -472,7 +474,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
     int pitch_offset = 0;
     if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
-    if ((pitch - EVENTDEFAULT_KEY) % PITCH_PER_OCTAVE == pitch_offset)
+    if (nonnegative_modulo(pitch - EVENTDEFAULT_KEY, PITCH_PER_OCTAVE) ==
+        pitch_offset)
       drawOctaveNumAlignBottomLeft(
           &octaveDisplayPainter, -pos().x() + 4, this_y - floor_h / 2 + h - 2,
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,

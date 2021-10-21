@@ -647,7 +647,7 @@ bool write(QIODevice *dev, const WavHdr &h) {
 }
 
 // TODO: This kind of file-writing is duplicated a bunch.
-bool PxtoneController::render(
+bool PxtoneController::render_exn(
     QIODevice *dev, double secs, double fadeout, double volume,
     std::function<bool(double progress)> should_continue) const {
   qDebug() << "Rendering" << secs << fadeout;
@@ -668,19 +668,17 @@ bool PxtoneController::render(
   h.chunk_size = h.data_size + 36;
 
   mooState moo_state;
-  if (m_pxtn->tones_ready(moo_state) != pxtnOK) {
-    qWarning() << "Error getting tones ready";
-    return false;
-  }
+  pxtnERR err;
+  err = m_pxtn->tones_ready(moo_state);
+  if (err != pxtnOK)
+    throw QString("Error getting tones ready: error code %1").arg(err);
+
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
   prep.start_pos_sample = 0;
   prep.master_volume = volume;
   bool success = m_pxtn->moo_preparation(&prep, moo_state);
-  if (!success) {
-    qWarning() << "Moo preparation error";
-    return false;
-  }
+  if (!success) throw QString("Error preparing moo");
 
   write(dev, h);
   int written = 0;
@@ -688,19 +686,23 @@ bool PxtoneController::render(
     constexpr int SIZE = 4096;
     char buf[SIZE];
     while (written < len) {
-      int filled_len;
+      int mooed_len;
       if (!m_pxtn->Moo(moo_state, buf, int32_t(std::min(len - written, SIZE)),
-                       &filled_len)) {
-        qWarning() << "Moo error during rendering";
-        return false;
-      }
-      if (dev->write(buf, filled_len) < filled_len) {
-        qWarning() << "Unable to fill file buffer";
-        return false;
+                       &mooed_len))
+        throw QString("Moo error during rendering. Bytes written so far: %1")
+            .arg(written);
+      qint64 written_this_time = dev->write(buf, mooed_len);
+      if (written_this_time < mooed_len) {
+        throw QString(
+            "Could not write all bytes into device this cycle (wrote %1 / %2). "
+            "Total bytes written so far: ")
+            .arg(written_this_time)
+            .arg(mooed_len)
+            .arg(written);
       }
       if (!should_continue((0.0 + written) / h.data_size)) return false;
 
-      written += filled_len;
+      written += mooed_len;
     }
     return true;
   };

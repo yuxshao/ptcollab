@@ -234,9 +234,13 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       QString("%1").arg(EVENTDEFAULT_KEY / PITCH_PER_KEY));
   ui->previewKeyLine->setValidator(new QIntValidator(0, 150, this));
 
-  m_browse_woice_dialog->setDirectory(QString());
-  if (!m_browse_woice_dialog->restoreState(Settings::BrowseWoiceState::get()))
-    qDebug() << "Could not restore browse woice dialog state";
+  // If we don't unset the directory, then it'll stay as the cwd. But we want to
+  // use cwd if this is a first open, hence the if.
+  if (Settings::BrowseWoiceState::isSet()) {
+    m_browse_woice_dialog->setDirectory(QString());
+    if (!m_browse_woice_dialog->restoreState(Settings::BrowseWoiceState::get()))
+      qDebug() << "Could not restore browse woice dialog state";
+  }
   m_browse_woice_dialog->setFileMode(multi ? QFileDialog::ExistingFiles
                                            : QFileDialog::ExistingFile);
   m_browse_woice_dialog->setNameFilter(
@@ -252,14 +256,18 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
   connect(m_browse_woice_dialog, &QFileDialog::currentChanged, this,
           &NewWoiceDialog::previewWoice);
 
-  m_browse_search_folder_dialog->setDirectory(QString());
-  if (!m_browse_search_folder_dialog->restoreState(
-          Settings::SearchWoiceState::get()))
-    qDebug() << "Could not restore woice search dialog state";
+  if (Settings::SearchWoiceState::isSet()) {
+    m_browse_search_folder_dialog->setDirectory(QString());
+    if (!m_browse_search_folder_dialog->restoreState(
+            Settings::SearchWoiceState::get()))
+      qDebug() << "Could not restore woice search dialog state";
+  }
   m_browse_search_folder_dialog->setFileMode(QFileDialog::Directory);
   m_browse_search_folder_dialog->setOption(QFileDialog::ShowDirsOnly);
   QStringList files = m_browse_search_folder_dialog->selectedFiles();
-  if (files.length() > 0) ui->searchFolderLine->setText(files[0]);
+  ui->searchFolderLine->setText(Settings::SearchWoiceLastSelection::get());
+  connect(ui->searchFolderLine, &QLineEdit::textChanged, this,
+          &Settings::SearchWoiceLastSelection::set);
 
   ui->searchResultsList->setSelectionMode(
       multi ? QAbstractItemView::ExtendedSelection

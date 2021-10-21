@@ -6,12 +6,10 @@
 
 #include "pxtone/pxtnEvelist.h"
 
-const extern QString WOICE_DIR_KEY;
 const extern QString BUFFER_LENGTH_KEY;
 const extern double DEFAULT_BUFFER_LENGTH;
 const extern QString VOLUME_KEY;
 
-const extern QString PTCOP_FILE_KEY;
 const extern QString PTREC_SAVE_FILE_KEY;
 const extern QString DISPLAY_NAME_KEY;
 
@@ -116,14 +114,32 @@ void set(const QList<int> &);
 }  // namespace CopyKinds
 
 namespace SearchWoiceState {
+bool isSet();
 QByteArray get();
 void set(const QByteArray &);
 }  // namespace SearchWoiceState
 
+namespace SearchWoiceLastSelection {
+QString get();
+void set(const QString &);
+}  // namespace SearchWoiceLastSelection
+
 namespace BrowseWoiceState {
+bool isSet();
 QByteArray get();
 void set(const QByteArray &);
 }  // namespace BrowseWoiceState
+
+namespace OpenProjectState {
+bool isSet();
+QByteArray get();
+void set(const QByteArray &);
+}  // namespace OpenProjectState
+
+namespace OpenProjectLastSelection {
+QString get();
+void set(const QString &);
+}  // namespace OpenProjectLastSelection
 
 namespace SearchOnType {
 bool get();
