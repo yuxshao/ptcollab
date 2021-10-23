@@ -252,6 +252,8 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
     Settings::BrowseWoiceState::set(m_browse_woice_dialog->saveState());
     selectWoices(m_browse_woice_dialog->selectedFiles());
   });
+  connect(this, &QDialog::finished, this,
+          [this](int) { m_record_note_preview.clear(); });
 
   connect(m_browse_woice_dialog, &QFileDialog::currentChanged, this,
           &NewWoiceDialog::previewWoice);
