@@ -38,6 +38,7 @@ void SettingsDialog::apply() {
   Settings::ShowWelcomeDialog::set(ui->showWelcomeDialogCheck->isChecked());
   Settings::ShowVolumeMeterLabels::set(
       ui->showVolumeMeterLabelsCheck->isChecked());
+  Settings::AutoConnectMidi::set(ui->autoConnectMidiCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   if (ui->alternateTuningCheck->isChecked()) {
@@ -55,8 +56,9 @@ void SettingsDialog::apply() {
     Settings::DisplayEdo::clear();
 
   emit quantYOptionsChanged();
-  if (ui->midiInputPortCombo->currentIndex() > 0)
-    emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1);
+  if (ui->midiInputPortCombo->currentIndex() >= 0)
+    emit midiPortSelected(ui->midiInputPortCombo->currentIndex() - 1,
+                          ui->midiInputPortCombo->currentText());
 }
 
 SettingsDialog::~SettingsDialog() { delete ui; }
@@ -77,6 +79,8 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->showWelcomeDialogCheck->setChecked(Settings::ShowWelcomeDialog::get());
   ui->showVolumeMeterLabelsCheck->setChecked(
       Settings::ShowVolumeMeterLabels::get());
+  ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
+  ui->autoConnectMidiCheck->setChecked(Settings::AutoConnectMidi::get());
   ui->alternateTuningCheck->setChecked(Settings::AdvancedQuantizeY::get());
   ui->alternateTuningSystemContainer->setVisible(
       ui->alternateTuningCheck->isChecked());

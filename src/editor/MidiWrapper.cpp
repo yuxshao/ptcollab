@@ -68,6 +68,7 @@ bool MidiWrapper::usePort(int port,
     m_in->cancelCallback();
     m_in->closePort();
   }
+  if (port == -1) return true;
   m_cb = cb;
   try {
     m_in->openPort(port);
