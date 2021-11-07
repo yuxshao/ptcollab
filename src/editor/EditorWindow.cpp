@@ -235,15 +235,27 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   connect(ui->actionOptions, &QAction::triggered, this->m_settings_dialog,
           &QDialog::show);
+
   connect(m_settings_dialog, &SettingsDialog::midiPortSelected,
-          [this](int port_no) {
-            qDebug() << "using midi port" << port_no;
-            m_midi_wrapper->usePort(port_no, [this](Input::Event::Event x) {
-              qDebug() << "Received event";
-              QCoreApplication::postEvent(this, new InputEvent(x),
-                                          Qt::HighEventPriority);
-            });
+          [this](int port_no, const QString &name) {
+            qDebug() << "using midi port" << port_no << name;
+            if (m_midi_wrapper->usePort(port_no, [this](Input::Event::Event x) {
+                  QCoreApplication::postEvent(this, new InputEvent(x),
+                                              Qt::HighEventPriority);
+                }))
+              Settings::AutoConnectMidiName::set(name);
           });
+  if (Settings::AutoConnectMidi::get()) {
+    int port_no =
+        m_midi_wrapper->ports().indexOf(Settings::AutoConnectMidiName::get());
+
+    qDebug() << "using startup midi port" << port_no;
+    m_midi_wrapper->usePort(port_no, [this](Input::Event::Event x) {
+      QCoreApplication::postEvent(this, new InputEvent(x),
+                                  Qt::HighEventPriority);
+    });
+  }
+
   connect(m_settings_dialog, &SettingsDialog::quantYOptionsChanged, this,
           [this]() {
             m_side_menu->updateQuantizeYOptions(

@@ -19,7 +19,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 
 namespace Settings {
 namespace Version {
-static QString v("0.5.0");
+static QString v("0.5.0.1");
 const QString &string() { return v; }
 }  // namespace Version
 
@@ -222,6 +222,18 @@ const char *KEY = "show_volume_meter_labels";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace ShowVolumeMeterLabels
+
+namespace AutoConnectMidi {
+const char *KEY = "auto_connect_midi";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace AutoConnectMidi
+
+namespace AutoConnectMidiName {
+const char *KEY = "auto_connect_midi_name";
+QString get() { return QSettings().value(KEY, "").toString(); }
+void set(const QString &value) { return QSettings().setValue(KEY, value); }
+}  // namespace AutoConnectMidiName
 
 namespace AdvancedQuantizeY {
 const char *KEY = "advanced_quantize_y";

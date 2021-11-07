@@ -231,6 +231,13 @@
         <widget class="QComboBox" name="midiInputPortCombo"/>
        </item>
        <item>
+        <widget class="QCheckBox" name="autoConnectMidiCheck">
+         <property name="text">
+          <string>Connect to last MIDI device on startup</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="autoAdvanceCheck">
          <property name="text">
           <string>Auto-step on note input (Ctrl+L)</string>

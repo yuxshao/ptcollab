@@ -151,6 +151,16 @@ bool get();
 void set(bool);
 }  // namespace ShowVolumeMeterLabels
 
+namespace AutoConnectMidi {
+bool get();
+void set(bool);
+}  // namespace AutoConnectMidi
+
+namespace AutoConnectMidiName {
+QString get();
+void set(const QString &);
+}  // namespace AutoConnectMidiName
+
 namespace AdvancedQuantizeY {
 bool get();
 void set(bool);
