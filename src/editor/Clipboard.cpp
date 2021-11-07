@@ -22,7 +22,7 @@ struct CopyState {
   std::list<Action::Primitive> makePaste(
       const std::set<int> &paste_unit_nos,
       const std::set<EVENTKIND> &kinds_to_paste, qint32 start_clock,
-      const NoIdMap &map);
+      const NoIdMap &unitIdMap);
 };
 
 QDataStream &operator<<(QDataStream &out, const Item &a) {
@@ -147,7 +147,7 @@ void Clipboard::copy(const std::set<int> &unit_nos, const Interval &range,
 std::list<Action::Primitive> CopyState::makePaste(
     const std::set<int> &paste_unit_nos,
     const std::set<EVENTKIND> &kinds_to_paste, qint32 start_clock,
-    const NoIdMap &map) {
+    const NoIdMap &unitIdMap) {
   using namespace Action;
   std::list<Primitive> actions;
   auto min = std::min_element(paste_unit_nos.begin(), paste_unit_nos.end());
@@ -158,8 +158,8 @@ std::list<Action::Primitive> CopyState::makePaste(
   for (const int &source_unit_no : m_unit_nos) {
     uint8_t unit_no = source_unit_no + first_unit_no;
     if (paste_unit_nos.find(unit_no) != paste_unit_nos.end()) {
-      if (map.numUnits() <= unit_no) continue;
-      qint32 unit_id = map.noToId(unit_no);
+      if (unitIdMap.numUnits() <= unit_no) continue;
+      qint32 unit_id = unitIdMap.noToId(unit_no);
       for (const EVENTKIND &kind : kinds_to_paste)
         actions.emplace_back(
             Primitive{kind, unit_id, start_clock, Delete{end_clock}});
@@ -170,8 +170,8 @@ std::list<Action::Primitive> CopyState::makePaste(
     uint8_t unit_no = item.unit_no + first_unit_no;
     if (paste_unit_nos.find(unit_no) != paste_unit_nos.end() &&
         kinds_to_paste.find(item.kind) != kinds_to_paste.end()) {
-      if (map.numUnits() <= unit_no) continue;
-      qint32 unit_id = map.noToId(unit_no);
+      if (unitIdMap.numUnits() <= unit_no) continue;
+      qint32 unit_id = unitIdMap.noToId(unit_no);
       actions.emplace_back(Primitive{
           item.kind, unit_id, start_clock + item.clock, Add{item.value}});
     }
@@ -180,7 +180,7 @@ std::list<Action::Primitive> CopyState::makePaste(
 }
 
 PasteResult Clipboard::makePaste(const std::set<int> &paste_unit_nos,
-                                 qint32 start_clock, const NoIdMap &map) {
+                                 qint32 start_clock, const NoIdMap &unitIdMap) {
   using namespace Action;
 
   const QMimeData *mime = QGuiApplication::clipboard()->mimeData();
@@ -189,20 +189,20 @@ PasteResult Clipboard::makePaste(const std::set<int> &paste_unit_nos,
   CopyState c;
   s >> c;
 
-  return {c.makePaste(paste_unit_nos, m_kinds_to_copy, start_clock, map),
+  return {c.makePaste(paste_unit_nos, m_kinds_to_copy, start_clock, unitIdMap),
           c.m_copy_length};
 }
 
 // TODO: Maybe shouldn't be here? Doesn't actually use clipboard state ATM
 std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
                                                   const Interval &range,
-                                                  const NoIdMap &map) {
+                                                  const NoIdMap &unitIdMap) {
   using namespace Action;
   std::list<Primitive> actions;
   // TODO: Dedup with makePaste
   for (const int &unit_no : unit_nos) {
-    if (map.numUnits() <= size_t(unit_no)) continue;
-    qint32 unit_id = map.noToId(unit_no);
+    if (unitIdMap.numUnits() <= size_t(unit_no)) continue;
+    qint32 unit_id = unitIdMap.noToId(unit_no);
     for (const EVENTKIND &kind : m_kinds_to_copy)
       actions.emplace_back(
           Primitive{kind, unit_id, range.start, Delete{range.end}});
@@ -213,9 +213,10 @@ std::list<Action::Primitive> Clipboard::makeClear(const std::set<int> &unit_nos,
 PasteResult Clipboard::makeShift(const std::set<int> &unit_nos,
                                  const Interval &range, qint32 dest_start_clock,
                                  const pxtnService *pxtn,
-                                 const NoIdMap &woiceIdMap) {
+                                 const NoIdMap &woiceIdMap,
+                                 const NoIdMap &unitIdMap) {
   CopyState c(unit_nos, range, pxtn, woiceIdMap, m_kinds_to_copy);
-  return {c.makePaste(unit_nos, m_kinds_to_copy, dest_start_clock, woiceIdMap),
+  return {c.makePaste(unit_nos, m_kinds_to_copy, dest_start_clock, unitIdMap),
           c.m_copy_length};
 }
 

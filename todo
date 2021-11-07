@@ -506,6 +506,9 @@ playback
 1. fix last search not showing up in line edit
 2. project file dialog has its own history
 
+11/07
+1. fix pass wrong voice id map
+
 Todo by priority
 ----------------
  - test to see if the midi noodling is causing the lag. delete voice previews if so

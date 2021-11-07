@@ -574,7 +574,8 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
                 shift = proposed_from_end;
               auto [actions, length] = m_client->clipboard()->makeShift(
                   m_client->selectedUnitNos(), sel, sel.start + shift,
-                  m_client->pxtn(), m_client->controller()->unitIdMap());
+                  m_client->pxtn(), m_client->controller()->woiceIdMap(),
+                  m_client->controller()->unitIdMap());
 
               Interval difference;
               if (shift_right)
