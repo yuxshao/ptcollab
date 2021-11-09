@@ -42,7 +42,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_moo_clock(moo_clock),
       m_test_activity(false) {
-  colorTable = StyleEditor::tryLoadKeyboardPalette();
+  colorTable = StyleEditor::getKeyboardPalette();
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();

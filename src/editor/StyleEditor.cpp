@@ -149,7 +149,7 @@ void constructList(QStringList list, QHash<QString, QColor> *hash,
   }
 }
 
-QHash<QString, QColor> tryLoadMeterPalette() {
+QHash<QString, QColor> getMeterPalette() {
   QString path =
       styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;
@@ -176,7 +176,7 @@ QHash<QString, QColor> tryLoadMeterPalette() {
   }
   return colors;
 }
-QHash<QString, QColor> tryLoadKeyboardPalette() {
+QHash<QString, QColor> getKeyboardPalette() {
   QString path =
       styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;
@@ -205,7 +205,7 @@ QHash<QString, QColor> tryLoadKeyboardPalette() {
   return colors;
 }
 
-QHash<QString, QColor> tryLoadMeasurePalette() {
+QHash<QString, QColor> getMeasurePalette() {
   QString path =
       styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;
@@ -233,7 +233,7 @@ QHash<QString, QColor> tryLoadMeasurePalette() {
   return colors;
 }
 
-QHash<QString, QColor> tryLoadParametersPalette() {
+QHash<QString, QColor> getParametersPalette() {
   QString path =
       styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;

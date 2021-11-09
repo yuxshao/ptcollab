@@ -21,7 +21,7 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       m_audio_note_preview(nullptr),
       m_woice_menu(new QMenu(this)),
       m_last_woice_menu_preview_id(-1) {
-  parametersColorTable = StyleEditor::tryLoadParametersPalette();
+  parametersColorTable = StyleEditor::getParametersPalette();
   blue = parametersColorTable.find("Blue").value();
   darkBlue = parametersColorTable.find("DarkBlue").value();
   darkTeal = parametersColorTable.find("DarkTeal").value();

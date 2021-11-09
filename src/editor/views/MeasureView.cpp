@@ -16,7 +16,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
       m_audio_note_preview(nullptr) {
-  colorTable = StyleEditor::tryLoadMeasurePalette();
+  colorTable = StyleEditor::getMeasurePalette();
   playheadColor = colorTable.find("Playhead").value();
   playheadColor.setAlpha(playheadColor.alpha() /
                          2);  // to accomodate alphaMultiplier.

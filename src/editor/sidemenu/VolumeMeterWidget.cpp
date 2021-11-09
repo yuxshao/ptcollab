@@ -132,7 +132,7 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterFrame *meter, QWidget *parent)
     : QWidget(parent),
       m_frame(meter),
       m_labels(new VolumeMeterLabels(meter, this)) {
-  colorTable = StyleEditor::tryLoadMeterPalette();
+  colorTable = StyleEditor::getMeterPalette();
 
   BGCOLOR = colorTable.find("Background").value();
   BGCOLOR_SOFT = colorTable.find("BackgroundSoft").value();
