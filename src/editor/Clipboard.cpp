@@ -3,6 +3,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QGuiApplication>
+#include <QIODevice>
 #include <QMimeData>
 #include <algorithm>
 

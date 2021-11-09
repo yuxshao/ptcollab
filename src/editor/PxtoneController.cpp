@@ -521,39 +521,38 @@ bool PxtoneController::applyWoiceSet(const Woice::Set &a, qint64 uid) {
   if (woice == nullptr) return false;
   for (int i = 0; i < woice->get_voice_num(); ++i) {
     pxtnVOICEUNIT *voice = woice->get_voice_variable(i);
-    std::visit(overloaded{[&](Woice::Key a) {
-                            if (a.key > 108 * PITCH_PER_KEY)
-                              a.key = 108 * PITCH_PER_KEY;
-                            if (a.key < 21 * PITCH_PER_KEY)
-                              a.key = 21 * PITCH_PER_KEY;
-                            voice->basic_key = a.key;
-                          },
-                          [&](const Woice::Flag &a) {
-                            uint32_t flag;
-                            if (woice->get_type() != pxtnWOICE_PTV) {
-                              switch (a.flag) {
-                                case Woice::Flag::LOOP:
-                                  flag = PTV_VOICEFLAG_WAVELOOP;
-                                  break;
-                                case Woice::Flag::BEATFIT:
-                                default:
-                                  flag = PTV_VOICEFLAG_BEATFIT;
-                                  break;
-                              }
-                              if (a.set)
-                                voice->voice_flags |= flag;
-                              else
-                                voice->voice_flags &= ~flag;
-                            }
-                          },
-                          [&](const Woice::Name &a) {
-                            QByteArray name =
-                                shift_jis_codec->fromUnicode(a.name);
-                            woice->set_name_buf_jis(
-                                name.data(),
-                                std::min(pxtnMAX_TUNEWOICENAME, name.length()));
-                          }},
-               a.setting);
+    std::visit(
+        overloaded{[&](Woice::Key a) {
+                     if (a.key > 108 * PITCH_PER_KEY)
+                       a.key = 108 * PITCH_PER_KEY;
+                     if (a.key < 21 * PITCH_PER_KEY) a.key = 21 * PITCH_PER_KEY;
+                     voice->basic_key = a.key;
+                   },
+                   [&](const Woice::Flag &a) {
+                     uint32_t flag;
+                     if (woice->get_type() != pxtnWOICE_PTV) {
+                       switch (a.flag) {
+                         case Woice::Flag::LOOP:
+                           flag = PTV_VOICEFLAG_WAVELOOP;
+                           break;
+                         case Woice::Flag::BEATFIT:
+                         default:
+                           flag = PTV_VOICEFLAG_BEATFIT;
+                           break;
+                       }
+                       if (a.set)
+                         voice->voice_flags |= flag;
+                       else
+                         voice->voice_flags &= ~flag;
+                     }
+                   },
+                   [&](const Woice::Name &a) {
+                     QByteArray name = shift_jis_codec->fromUnicode(a.name);
+                     woice->set_name_buf_jis(
+                         name.data(),
+                         std::min(pxtnMAX_TUNEWOICENAME, int(name.length())));
+                   }},
+        a.setting);
   }
   emit woiceEdited(a.id);
   emit edited();

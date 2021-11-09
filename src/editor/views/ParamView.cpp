@@ -453,10 +453,10 @@ static void updateStatePositions(EditState &edit_state,
                                  EVENTKIND current_kind, int height) {
   MouseEditState &state = edit_state.mouse_edit_state;
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
+      std::max(0., event->position().x() * edit_state.scale.clockPerPx);
   bool snap = event->modifiers() & Qt::ControlModifier;
   qint32 current_param =
-      paramOfY(event->localPos().y(), current_kind, height, snap);
+      paramOfY(event->position().y(), current_kind, height, snap);
   if (!std::holds_alternative<MouseParamEdit>(state.kind))
     state.kind = MouseParamEdit{current_param, current_param};
   auto &param_edit_state = std::get<MouseParamEdit>(state.kind);
@@ -584,7 +584,8 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
                                 nullptr)));
                     action->setData(id);
                   }
-                  QAction *action = m_woice_menu->exec(event->globalPos());
+                  QAction *action =
+                      m_woice_menu->exec(event->globalPosition().toPoint());
                   if (m_audio_note_preview) m_audio_note_preview = nullptr;
                   if (action != nullptr) {
                     bool ok = true;

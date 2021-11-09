@@ -11,8 +11,8 @@ class TransposableWheelEvent : QWheelEvent {
  public:
   void transpose() {
     // not using QPoint::transposed() because it doesn't exist in older versions
-    pixelD = {pixelD.y(), pixelD.x()};
-    angleD = {angleD.y(), angleD.x()};
+    m_pixelDelta = m_pixelDelta.transposed();
+    m_angleDelta = m_angleDelta.transposed();
   }
 };
 

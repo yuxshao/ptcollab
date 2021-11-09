@@ -23,8 +23,8 @@ struct PasteResult {
 class Clipboard : public QObject {
   Q_OBJECT
   std::set<EVENTKIND> m_kinds_to_copy;
-  friend QDataStream &operator<<(QDataStream &out, const Clipboard &a);
-  friend QDataStream &operator>>(QDataStream &in, Clipboard &a);
+  // friend QDataStream &operator<<(QDataStream &out, const Clipboard &a);
+  // friend QDataStream &operator>>(QDataStream &in, Clipboard &a);
 
  public:
   Clipboard(QObject *parent = nullptr);

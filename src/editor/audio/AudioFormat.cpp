@@ -6,10 +6,8 @@ static QAudioFormat make() {
   int sample_rate = 44100;
   format.setSampleRate(sample_rate);
   format.setChannelCount(channel_num);
-  format.setSampleSize(16);  // Fixed in pxtone
-  format.setCodec("audio/pcm");
-  format.setByteOrder(QAudioFormat::LittleEndian);
-  format.setSampleType(QAudioFormat::SignedInt);
+  format.setSampleFormat(QAudioFormat::Int16);  // Fixed in pxtone
+  // format.setByteOrder(QAudioFormat::LittleEndian);
   return format;
 }
 

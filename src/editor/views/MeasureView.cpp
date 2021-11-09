@@ -318,7 +318,7 @@ static void updateStatePositions(EditState &edit_state,
   MouseEditState &state = edit_state.mouse_edit_state;
 
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
+      std::max(0., event->position().x() * edit_state.scale.clockPerPx);
   if (state.type == MouseEditState::Nothing ||
       state.type == MouseEditState::Seek) {
     state.start_clock = state.current_clock;
@@ -326,7 +326,7 @@ static void updateStatePositions(EditState &edit_state,
     state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
   }
 
-  state.kind = MouseMeasureEdit{event->y()};
+  state.kind = MouseMeasureEdit{event->pos().y()};
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {

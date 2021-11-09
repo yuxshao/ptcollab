@@ -37,7 +37,7 @@ void ServerSession::sendAction(const ServerAction &a) {
   // TODO: Do we also need a isValid and connected guard here?
 
   if (!m_socket->isValid() || m_socket->state() != QTcpSocket::ConnectedState) {
-    qWarning() << "Trying to broadcast to a socket that's not ready?" << a;
+    qWarning() << "Trying to broadcast to a socket that's not ready?";  // << a;
     qWarning() << "Socket state: open(" << m_socket->isOpen() << "), valid ("
                << m_socket->isValid() << "), state(" << m_socket->state()
                << "), error(" << m_socket->errorString() << ")";

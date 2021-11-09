@@ -127,7 +127,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
       QMessageBox::critical(this, tr("Invalid tempo"),
                             tr("Tempo must be number between 20 and 600"));
     else {
-      ui->tempoField->setText(QString(tempo));
+      ui->tempoField->setText(QString::number(tempo));
       emit tempoChanged(tempo);
     }
   });

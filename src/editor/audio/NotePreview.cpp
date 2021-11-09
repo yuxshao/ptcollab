@@ -1,7 +1,7 @@
 #include "NotePreview.h"
 
 #include <QAudioFormat>
-#include <QAudioOutput>
+#include <QAudioSink>
 #include <QDebug>
 #include <QSettings>
 
@@ -15,7 +15,7 @@
 constexpr int32_t LONG_ON_VALUE = 100000000;
 
 static PxtoneUnitIODevice *device = nullptr;
-static QAudioOutput *audio = nullptr;
+static QAudioSink *audio = nullptr;
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
@@ -98,7 +98,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
         m_unit_ids.push_back(device->addUnit(&m_moo_state->units[i]));
 
   if (audio == nullptr) {
-    audio = new QAudioOutput(pxtoneAudioFormat(), device);
+    audio = new QAudioSink(pxtoneAudioFormat(), device);
     audio->setVolume(1.0);
     audio->setBufferSize(bufferSize);
     audio->start(device);

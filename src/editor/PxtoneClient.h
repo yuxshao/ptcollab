@@ -1,7 +1,7 @@
 #ifndef PXTONECLIENT_H
 #define PXTONECLIENT_H
 
-#include <QAudioOutput>
+#include <QAudioSink>
 #include <QLabel>
 #include <QObject>
 
@@ -34,7 +34,7 @@ class PxtoneClient : public QObject {
   std::optional<qint64> m_following_user;
   mooState m_moo_state;
   EditState m_edit_state;
-  QAudioOutput *m_audio;
+  QAudioSink *m_audio;
   PxtoneIODevice *m_pxtn_device;
   std::optional<quint64> m_last_ping;
   QTimer *m_ping_timer;
@@ -75,7 +75,7 @@ class PxtoneClient : public QObject {
   const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
   const mooState *moo() const { return m_controller->moo(); }
-  const QAudioOutput *audioState() const { return m_audio; }
+  const QAudioSink *audioState() const { return m_audio; }
 
   const NoIdMap &unitIdMap() { return m_controller->unitIdMap(); }
   const std::map<qint64, RemoteEditState> &remoteEditStates() {

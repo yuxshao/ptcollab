@@ -83,7 +83,7 @@ void Client::disconnectFromServerSuppressSignal() {
 void Client::sendAction(const ClientAction &m) {
   if (clientActionShouldBeRecorded(m))
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
-             << "Sending" << m;
+             << "Sending" << to_string(m);
   if (m_local->isConnected())
     m_local->sendAction(m);
   else {
@@ -94,7 +94,8 @@ void Client::sendAction(const ClientAction &m) {
         m_socket->state() == QTcpSocket::ConnectedState) {
       m_write_stream << m;
       if (m_socket->bytesToWrite() == 0) {
-        qWarning() << "Client::sendAction didn't seem to fill write." << m;
+        qWarning() << "Client::sendAction didn't seem to fill write."
+                   << to_string(m);
         qWarning() << "Socket state: open(" << m_socket->isOpen()
                    << "), valid (" << m_socket->isValid() << "), state("
                    << m_socket->state() << "), error("
@@ -137,7 +138,7 @@ void Client::tryToRead() {
       if (action.shouldBeRecorded())
         qDebug() << QDateTime::currentDateTime().toString(
                         "yyyy.MM.dd hh:mm:ss.zzz")
-                 << "Received" << action;
+                 << "Received" << to_string(action);
 
       emit receivedAction(action);
     }

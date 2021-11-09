@@ -201,7 +201,7 @@ void BroadcastServer::connectLocalSession(LocalClientSession *client,
 void BroadcastServer::broadcastServerAction(const ServerAction &a) {
   if (a.shouldBeRecorded())
     qDebug() << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz")
-             << "Broadcast to" << m_sessions.size() << a;
+             << "Broadcast to" << m_sessions.size() << to_string(a);
   for (AbstractServerSession *s : m_sessions) s->sendAction(a);
   if (m_save_history) *m_save_history << m_history_elapsed.elapsed() << a;
   if (a.shouldBeRecorded()) m_history.push_back(a);
@@ -214,7 +214,7 @@ void BroadcastServer::broadcastUnreliable(const ServerAction &a) {
     if (a.shouldBeRecorded())
       qDebug() << QDateTime::currentDateTime().toString(
                       "yyyy.MM.dd hh:mm:ss.zzz")
-               << "Dropping from" << m_sessions.size() << a;
+               << "Dropping from" << m_sessions.size() << to_string(a);
     return;
   }
 

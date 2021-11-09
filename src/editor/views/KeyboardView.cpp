@@ -717,8 +717,8 @@ static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
-  qint32 current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
+      std::max(0., event->position().x() * edit_state.scale.clockPerPx);
+  qint32 current_pitch = edit_state.scale.pitchOfY(event->position().y());
   if (!std::holds_alternative<MouseKeyboardEdit>(state.kind))
     state.kind.emplace<MouseKeyboardEdit>(
         MouseKeyboardEdit{current_pitch, current_pitch});

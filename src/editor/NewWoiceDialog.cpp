@@ -22,7 +22,7 @@ class Query {
  public:
   Query(const QString &q) : negated(false) {
     if (q.length() == 0) return;
-    if (q[0] == "-") {
+    if (q[0] == '-') {
       negated = true;
       matcher = QStringMatcher(QString(q).remove(0, 1), Qt::CaseInsensitive);
     } else {

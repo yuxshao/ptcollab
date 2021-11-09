@@ -20,13 +20,21 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
-template <typename T>
+/*template <typename T>
 inline QDebug &operator<<(QDebug &out, const T &a) {
   QString s;
   QTextStream ts(&s);
   ts << a;
   out << s;
   return out;
+}*/
+
+template <typename T>
+inline QString to_string(const T &a) {
+  QString s;
+  QTextStream ts(&s);
+  ts << a;
+  return s;
 }
 
 template <typename T>
