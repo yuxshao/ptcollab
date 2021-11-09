@@ -9,6 +9,12 @@
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
 
+static QHash<QString, QColor> colorTable;
+static QColor playheadColor;
+static QBrush measureBrush;
+static QBrush beatBrush;
+static QBrush unitEditBrush;
+static QBrush measureNumBlockBrush;
 class MeasureView : public QWidget {
   Q_OBJECT
 

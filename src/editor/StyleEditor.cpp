@@ -18,7 +18,7 @@
 
 namespace StyleEditor {
 const static char *SYSTEM_STYLE = "<System>";
-static QString currentBasedir;
+static QString currentStyleBaseDir;
 static QString currentStyleName;
 
 QString styleSheetDir(const QString &basedir, const QString &styleName) {
@@ -32,22 +32,51 @@ struct InvalidColorError {
   QString setting;
 };
 
+const QPixmap getMeasureImages() {
+  QPixmap px(styleSheetDir(currentStyleBaseDir, currentStyleName) +
+             "/images.png");
+  if (!px.isNull() && px.width() == 108 && px.height() == 65) {
+    return px;  // the rare case in which an image has to be a fixed size
+  } else
+    return QPixmap(":/images/images");
+}
+
 inline bool processColorString(QColor *color, const QString str) {
   QString string = str;
+  if (string.isEmpty()) return 1;
   if (string.at(0) != "#") string.prepend("#");
-  if (string.length() == 9) {
-    QString rgb = string.chopped(2);
-    if (QColor::isValidColor(rgb)) {
-      color->setNamedColor(rgb);  // = new QColor(rgb);
-      color->setAlpha(string.left(2).toInt());
-      qDebug() << color->name();
-      return 0;
+  switch (string.length()) {
+    case 4: {  // e.g. #RGB
+      QString rgb;
+      rgb.append("#");
+      rgb.append(string.at(1));
+      rgb.append(string.at(1));
+      rgb.append(string.at(2));
+      rgb.append(string.at(2));
+      rgb.append(string.at(3));
+      rgb.append(string.at(3));  // help me find a better way to do this
+      if (QColor::isValidColor(rgb)) {
+        color->setNamedColor(rgb);
+        return 0;
+      }
+      break;
     }
-
-  } else if (string.length() == 7 && QColor::isValidColor(string)) {
-    color->setNamedColor(string);  //  // new QColor(string);
-    qDebug() << color->name();
-    return 0;
+    case 7: {  // e.g. #RRGGBB
+      if (QColor::isValidColor(string)) {
+        color->setNamedColor(string);
+        return 0;
+      }
+      break;
+    }
+    case 9: {  // e.g. #RRGGBBAA
+      QString rgb = string.chopped(2);
+      if (QColor::isValidColor(rgb)) {
+        color->setNamedColor(rgb);
+        color->setAlpha(string.right(2).toInt(nullptr, 16));
+        return 0;
+      }
+      break;
+    }
   }
   return 1;
 }
@@ -113,7 +142,7 @@ void tryLoadGlobalPalette(const QString &basedir, const QString &styleName) {
 
 QHash<QString, QColor> tryLoadMeterPalette() {
   QString path =
-      styleSheetDir(currentBasedir, currentStyleName) + "/palette.ini";
+      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;
   QHash<QString, QColor> fallbackMeterPalette;
 
@@ -122,17 +151,16 @@ QHash<QString, QColor> tryLoadMeterPalette() {
                 LABEL_COLOR = "Label", TICK_COLOR = "Tick",
                 BAR_HIGH_COLOR = "BarHigh";
 
-  //  fallbackMeterPalette.insert(BG_COLOR, QColor::fromRgb(26, 25, 73));
-  //  fallbackMeterPalette.insert(BGCOLOR_SOFT, QColor::fromRgb(26, 25, 73,
-  //  30)); fallbackMeterPalette.insert(BAR_COLOR, QColor::fromRgb(0, 240,
-  //  128)); fallbackMeterPalette.insert(BAR_MID_COLOR, QColor::fromRgb(255,
-  //  255, 128)); fallbackMeterPalette.insert(LABEL_COLOR, QColor::fromRgb(210,
-  //  202, 156)); fallbackMeterPalette.insert(TICK_COLOR, QColor::fromRgb(52,
-  //  50, 65)); fallbackMeterPalette.insert(BAR_HIGH_COLOR, Qt::red);
+  fallbackMeterPalette.insert(BG_COLOR, QColor::fromRgb(26, 25, 73));
+  fallbackMeterPalette.insert(BGCOLOR_SOFT, QColor::fromRgb(26, 25, 73, 30));
+  fallbackMeterPalette.insert(BAR_COLOR, QColor::fromRgb(0, 240, 128));
+  fallbackMeterPalette.insert(BAR_MID_COLOR, QColor::fromRgb(255, 255, 128));
+  fallbackMeterPalette.insert(LABEL_COLOR, QColor::fromRgb(210, 202, 156));
+  fallbackMeterPalette.insert(TICK_COLOR, QColor::fromRgb(52, 50, 65));
+  fallbackMeterPalette.insert(BAR_HIGH_COLOR, Qt::red);
 
   // defaults -- acts as a fallback only if palette.ini doesn't have the
-  // colors. we only have to do this for the meter & keyboard because they
-  // don't have defaults like the QApplication palette does
+  // colors.
 
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);
@@ -161,7 +189,7 @@ QHash<QString, QColor> tryLoadMeterPalette() {
 }
 QHash<QString, QColor> tryLoadKeyboardPalette() {
   QString path =
-      styleSheetDir(currentBasedir, currentStyleName) + "/palette.ini";
+      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
   QHash<QString, QColor> colors;
   QHash<QString, QColor> fallbackKeyboardPalette;
 
@@ -181,8 +209,7 @@ QHash<QString, QColor> tryLoadKeyboardPalette() {
   fallbackKeyboardPalette.insert(BLACK_COLOR, Qt::black);
 
   // defaults -- acts as a fallback only if palette.ini doesn't have the
-  // colors. we only have to do this for the meter & keyboard because they
-  // don't have defaults like the QApplication palette does
+  // colors.
 
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);
@@ -208,6 +235,118 @@ QHash<QString, QColor> tryLoadKeyboardPalette() {
                                       fallbackKeyboardPalette));
     colors.insert(BLACK_COLOR, getColorFromSetting(stylePalette, BLACK_COLOR,
                                                    fallbackKeyboardPalette));
+    stylePalette.endGroup();
+  }
+  return colors;
+}
+
+QHash<QString, QColor> tryLoadMeasurePalette() {
+  QString path =
+      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
+  QHash<QString, QColor> colors;
+  QHash<QString, QColor> fallbackMeasurePalette;
+
+  const QString PLAYHEAD_COLOR = "Playhead", CURSOR_COLOR = "Cursor",
+                MEASURE_COLOR = "MeasureSeparator",
+                MEASURE_INCLUDED_COLOR = "MeasureIncluded",
+                MEASURE_EXCLUDED_COLOR = "MeasureExcluded", BEAT_COLOR = "Beat",
+                UNIT_EDIT_COLOR = "UnitEdit",
+                MEASURE_NUMBER_BLOCK_COLOR = "MeasureNumberBlock";
+
+  fallbackMeasurePalette.insert(PLAYHEAD_COLOR, Qt::white);
+  fallbackMeasurePalette.insert(CURSOR_COLOR, Qt::white);
+  fallbackMeasurePalette.insert(MEASURE_COLOR, Qt::white);
+  fallbackMeasurePalette.insert(MEASURE_INCLUDED_COLOR, QColor(128, 0, 0));
+  fallbackMeasurePalette.insert(MEASURE_EXCLUDED_COLOR, QColor(64, 0, 0));
+  fallbackMeasurePalette.insert(BEAT_COLOR, QColor(128, 128, 128));
+  fallbackMeasurePalette.insert(UNIT_EDIT_COLOR, QColor(64, 0, 112));
+  fallbackMeasurePalette.insert(MEASURE_NUMBER_BLOCK_COLOR, QColor(96, 96, 96));
+
+  // defaults -- acts as a fallback only if palette.ini doesn't have the
+  // colors.
+
+  if (QFile::exists(path)) {
+    QSettings stylePalette(path, QSettings::IniFormat);
+
+    stylePalette.beginGroup("measure");
+
+    colors.insert(PLAYHEAD_COLOR,
+                  getColorFromSetting(stylePalette, PLAYHEAD_COLOR,
+                                      fallbackMeasurePalette));
+    colors.insert(CURSOR_COLOR, getColorFromSetting(stylePalette, CURSOR_COLOR,
+                                                    fallbackMeasurePalette));
+    colors.insert(MEASURE_COLOR,
+                  getColorFromSetting(stylePalette, MEASURE_COLOR,
+                                      fallbackMeasurePalette));
+    colors.insert(MEASURE_INCLUDED_COLOR,
+                  getColorFromSetting(stylePalette, MEASURE_INCLUDED_COLOR,
+                                      fallbackMeasurePalette));
+    colors.insert(MEASURE_EXCLUDED_COLOR,
+                  getColorFromSetting(stylePalette, MEASURE_EXCLUDED_COLOR,
+                                      fallbackMeasurePalette));
+    colors.insert(BEAT_COLOR, getColorFromSetting(stylePalette, BEAT_COLOR,
+                                                  fallbackMeasurePalette));
+    colors.insert(UNIT_EDIT_COLOR,
+                  getColorFromSetting(stylePalette, UNIT_EDIT_COLOR,
+                                      fallbackMeasurePalette));
+    colors.insert(MEASURE_NUMBER_BLOCK_COLOR,
+                  getColorFromSetting(stylePalette, MEASURE_NUMBER_BLOCK_COLOR,
+                                      fallbackMeasurePalette));
+    stylePalette.endGroup();
+  }
+  return colors;
+}
+QHash<QString, QColor> tryLoadParametersPalette() {
+  QString path =
+      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
+  QHash<QString, QColor> colors;
+  QHash<QString, QColor> fallbackParametersPalette;
+
+  const QString BLUE_COLOR = "Blue", DARK_BLUE_COLOR = "DarkBlue",
+                DARK_TEAL_COLOR = "DarkTeal",
+                BRIGHT_GREEN_COLOR = "BrightGreen",
+                FADED_WHITE_COLOR = "FadedWhite", FONT_COLOR = "Font",
+                BEAT_COLOR = "Beat", MEASURE_COLOR = "Measure";
+
+  fallbackParametersPalette.insert(BLUE_COLOR, QColor(52, 50, 85));
+  fallbackParametersPalette.insert(DARK_BLUE_COLOR, QColor(26, 25, 73));
+  fallbackParametersPalette.insert(DARK_TEAL_COLOR, QColor(0, 96, 96));
+  fallbackParametersPalette.insert(BRIGHT_GREEN_COLOR, QColor(0, 240, 128));
+  fallbackParametersPalette.insert(FADED_WHITE_COLOR, Qt::white);
+  fallbackParametersPalette.insert(FONT_COLOR, Qt::white);
+  fallbackParametersPalette.insert(BEAT_COLOR, QColor(128, 128, 128));
+  fallbackParametersPalette.insert(MEASURE_COLOR, Qt::white);
+
+  // defaults -- acts as a fallback only if palette.ini doesn't have the
+  // colors.
+
+  if (QFile::exists(path)) {
+    QSettings stylePalette(path, QSettings::IniFormat);
+
+    stylePalette.beginGroup("parameters");
+
+    colors.insert(BLUE_COLOR, getColorFromSetting(stylePalette, BLUE_COLOR,
+                                                  fallbackParametersPalette));
+    colors.insert(DARK_BLUE_COLOR,
+                  getColorFromSetting(stylePalette, DARK_BLUE_COLOR,
+                                      fallbackParametersPalette));
+    colors.insert(DARK_TEAL_COLOR,
+                  getColorFromSetting(stylePalette, DARK_TEAL_COLOR,
+                                      fallbackParametersPalette));
+    colors.insert(BRIGHT_GREEN_COLOR,
+                  getColorFromSetting(stylePalette, BRIGHT_GREEN_COLOR,
+                                      fallbackParametersPalette));
+    colors.insert(FADED_WHITE_COLOR,
+                  getColorFromSetting(stylePalette, FADED_WHITE_COLOR,
+                                      fallbackParametersPalette));
+    colors.insert(FONT_COLOR, getColorFromSetting(stylePalette, FONT_COLOR,
+                                                  fallbackParametersPalette));
+    colors.insert(BEAT_COLOR, getColorFromSetting(stylePalette, BEAT_COLOR,
+                                                  fallbackParametersPalette));
+    colors.insert(MEASURE_COLOR,
+                  getColorFromSetting(stylePalette, MEASURE_COLOR,
+                                      fallbackParametersPalette));
+
     stylePalette.endGroup();
   }
   return colors;
@@ -254,7 +393,7 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   }
 
   currentStyleName = styleName;
-  currentBasedir = basedir;
+  currentStyleBaseDir = basedir;
   tryLoadGlobalPalette(basedir, styleName);
   loadFonts(styleSheetDir(basedir, styleName));
   // Only apply custom palette if palette.ini is present. For minimal
@@ -312,7 +451,7 @@ bool tryLoadStyle(const QString &styleName) {
 
   QString basedir = it->second;
   currentStyleName = styleName;
-  currentBasedir = basedir;
+  currentStyleBaseDir = basedir;
   return tryLoadStyle(basedir, styleName);
 }
 

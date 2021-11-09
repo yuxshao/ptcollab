@@ -205,6 +205,4 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                         6);
 }
 
-const QColor brightGreen(QColor::fromRgb(0, 240, 128));
-
 const int WINDOW_BOUND_SLACK = 32;

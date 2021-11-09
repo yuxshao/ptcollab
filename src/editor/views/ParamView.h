@@ -9,6 +9,8 @@
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
 
+static QHash<QString, QColor> parametersColorTable;
+
 class ParamView : public QWidget {
   Q_OBJECT
 

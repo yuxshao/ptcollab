@@ -7,6 +7,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
@@ -15,6 +16,16 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
       m_audio_note_preview(nullptr) {
+  colorTable = StyleEditor::tryLoadMeasurePalette();
+  playheadColor = colorTable.find("Playhead").value();
+  playheadColor.setAlpha(playheadColor.alpha() /
+                         2);  // to accomodate alphaMultiplier.
+
+  measureBrush = colorTable.find("MeasureSeparator").value();
+  beatBrush = colorTable.find("Beat").value();
+  unitEditBrush = QBrush(colorTable.find("UnitEdit").value());
+  measureNumBlockBrush = colorTable.find("MeasureNumberBlock").value();
+
   setFocusPolicy(Qt::NoFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
   updateGeometry();
@@ -44,7 +55,7 @@ constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
 static void drawFlag(QPainter *painter, FlagType type, bool outline,
                      int measure_x, int y) {
-  static QPixmap images(":/images/images");
+  static QPixmap images(StyleEditor::getMeasureImages());
   int sx, sy;
   bool end;
   switch (type) {
@@ -126,10 +137,13 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         break;
       }
       case MouseEditState::Type::Seek:
-        drawPlayhead(
-            painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
-            height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier),
-            true);
+        drawPlayhead(painter,
+                     mouse_edit_state.current_clock / state.scale.clockPerPx,
+                     height,
+                     QColor::fromRgb(playheadColor.red(), playheadColor.green(),
+                                     playheadColor.blue(),
+                                     playheadColor.alpha() * alphaMultiplier),
+                     true);
         break;
       case MouseEditState::Type::Select: {
         drawSelection(painter, interval, height, selectionAlphaMultiplier);
@@ -151,10 +165,6 @@ QSize MeasureView::sizeHint() const {
                1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET + UNIT_EDIT_HEIGHT);
 }
 
-const static QBrush measureBrush(Qt::white);
-const static QBrush beatBrush(QColor::fromRgb(128, 128, 128));
-const static QBrush unitEditBrush(QColor::fromRgb(64, 0, 112));
-const static QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
 void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
 
@@ -170,9 +180,9 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   QColor::fromRgb(128, 0, 0));
+                   colorTable.find("MeasureIncluded").value());
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, QColor::fromRgb(64, 0, 0));
+                   RULER_HEIGHT, colorTable.find("MeasureExcluded").value());
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
                    width(), 1, beatBrush);
@@ -296,7 +306,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       state.scale =
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
-      QColor color = Qt::white;
+      QColor color = colorTable.find("Cursor").value();
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
