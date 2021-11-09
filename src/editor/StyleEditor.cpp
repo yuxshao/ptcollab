@@ -19,7 +19,12 @@
 namespace StyleEditor {
 const static char *SYSTEM_STYLE = "<System>";
 static QString currentStyleBaseDir;
-static QString currentStyleName;
+static QString currentStyleName = SYSTEM_STYLE;
+
+void setSystemStyle() {
+  currentStyleName = SYSTEM_STYLE;
+  // other things may be necessary in the future
+}
 
 QString styleSheetDir(const QString &basedir, const QString &styleName) {
   return basedir + "/" + styleName;
@@ -168,6 +173,8 @@ QHash<QString, QColor> getMeterPalette() {
   fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));     // Tick
   fallback.insert(colorList.at(6), Qt::red);                         // BarHigh
 
+  if (currentStyleName == SYSTEM_STYLE) return fallback;
+
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);
     stylePalette.beginGroup("meter");
@@ -195,6 +202,8 @@ QHash<QString, QColor> getKeyboardPalette() {
   fallback.insert(colorList.at(5),
                   QColor::fromRgb(78, 75, 97, 128));  // BlackLeft
   fallback.insert(colorList.at(6), Qt::black);        // Black
+
+  if (currentStyleName == SYSTEM_STYLE) return fallback;
 
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);
@@ -224,6 +233,8 @@ QHash<QString, QColor> getMeasurePalette() {
   fallback.insert(colorList.at(6), QColor(64, 0, 112));     // UnitEdit
   fallback.insert(colorList.at(7), QColor(96, 96, 96));  // MeasureNumberBlock
 
+  if (currentStyleName == SYSTEM_STYLE) return fallback;
+
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);
     stylePalette.beginGroup("measure");
@@ -251,6 +262,8 @@ QHash<QString, QColor> getParametersPalette() {
   fallback.insert(colorList.at(5), Qt::white);              // Font
   fallback.insert(colorList.at(6), QColor(128, 128, 128));  // Beat
   fallback.insert(colorList.at(7), Qt::white);              // Measure
+
+  if (currentStyleName == SYSTEM_STYLE) return fallback;
 
   if (QFile::exists(path)) {
     QSettings stylePalette(path, QSettings::IniFormat);

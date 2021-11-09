@@ -7,6 +7,7 @@
 
 namespace StyleEditor {
 void initializeStyleDir();
+void setSystemStyle();
 bool tryLoadStyle(const QString &styleName);
 const QPixmap getMeasureImages();
 QHash<QString, QColor> getMeterPalette();
