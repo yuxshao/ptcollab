@@ -11,6 +11,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
@@ -41,6 +42,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_moo_clock(moo_clock),
       m_test_activity(false) {
+  colorTable = StyleEditor::tryLoadKeyboardPalette();
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
@@ -402,7 +404,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
-  QBrush beatBrush(QColor::fromRgb(128, 128, 128));
+  QBrush beatBrush(colorTable.find("Beat")->toRgb());
   QBrush measureBrush(Qt::white);
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
@@ -413,13 +415,19 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush(QColor::fromRgb(84, 76, 76));
-  QColor whiteNoteBrush(QColor::fromRgb(64, 64, 64));
-  QColor blackNoteBrush(QColor::fromRgb(32, 32, 32));
+  QColor rootNoteBrush =
+      colorTable.find("RootNote").value();  // QColor::fromRgb(84, 76, 76));
+  QColor whiteNoteBrush =
+      colorTable.find("WhiteNote").value();  //(QColor::fromRgb(64, 64, 64));
+  QColor blackNoteBrush = colorTable.constFind("BlackNote")
+                              .value();  // QColor::fromRgb(32, 32, 32));
 
-  QColor whiteLeftBrush(QColor::fromRgb(131, 126, 120, 128));
-  QColor blackLeftBrush(QColor::fromRgb(78, 75, 97, 128));
-  QColor black(Qt::black);
+  QColor whiteLeftBrush =
+      colorTable.find("WhiteLeft")
+          .value();  //(QColor::fromRgb(131, 126, 120, 128));
+  QColor blackLeftBrush = colorTable.find("BlackLeft")
+                              .value();  //(QColor::fromRgb(78, 75, 97, 128));
+  QColor black = colorTable.find("Black").value();  //(Qt::black);
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);

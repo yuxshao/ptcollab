@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 
 const double MIN_DB = -36;
 const double MID_DB = -6;
@@ -14,13 +15,16 @@ const double HIGH_DB = -1;
 const double MAX_DB = 3;
 
 // TODO: make this colour dynamic
-const static QColor BGCOLOR = QColor::fromRgb(26, 25, 73);           // #1A1949
-const static QColor BGCOLOR_SOFT = QColor::fromRgb(26, 25, 73, 30);  // #1A1949
-const static QColor BAR_COLOR = QColor::fromRgb(0, 240, 128);        // #00F080
-const static QColor BAR_MID_COLOR = QColor::fromRgb(255, 255, 128);  // #FFFF80
-const static QColor LABEL_COLOR = QColor::fromRgb(210, 202, 156);    // #D2CA9C
-const static QColor TICK_COLOR = QColor::fromRgb(52, 50, 65);        // #343241
-const static QColor BAR_HIGH_COLOR = Qt::red;
+
+static QHash<QString, QColor> colorTable;
+
+static QColor BGCOLOR;
+static QColor BGCOLOR_SOFT;
+static QColor BAR_COLOR;
+static QColor BAR_MID_COLOR;
+static QColor LABEL_COLOR;
+static QColor TICK_COLOR;
+static QColor BAR_HIGH_COLOR;
 
 static QLinearGradient barGradient() {
   static QLinearGradient g = []() {
@@ -128,6 +132,16 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterFrame *meter, QWidget *parent)
     : QWidget(parent),
       m_frame(meter),
       m_labels(new VolumeMeterLabels(meter, this)) {
+  colorTable = StyleEditor::tryLoadMeterPalette();
+
+  BGCOLOR = colorTable.find("Background").value();
+  BGCOLOR_SOFT = colorTable.find("BackgroundSoft").value();
+  BAR_COLOR = colorTable.find("Bar").value();
+  BAR_MID_COLOR = colorTable.find("BarMid").value();
+  LABEL_COLOR = colorTable.find("Label").value();
+  TICK_COLOR = colorTable.find("Tick").value();
+  BAR_HIGH_COLOR = colorTable.find("BarHigh").value();
+
   QVBoxLayout *layout = new QVBoxLayout;
   layout->setMargin(0);
   layout->setSpacing(0);

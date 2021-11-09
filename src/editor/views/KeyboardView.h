@@ -58,6 +58,7 @@ class KeyboardView : public QWidget {
   void wheelEvent(QWheelEvent *event) override;
   void moveEvent(QMoveEvent *event) override;
   void refreshQuantSettings();
+  QHash<QString, QColor> colorTable;
   QSize sizeHint() const override;
   std::set<int> selectedUnitNos();
   QScrollArea *m_scrollarea;
