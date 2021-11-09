@@ -169,9 +169,12 @@ QHash<QString, QColor> getMeterPalette() {
                   QColor::fromRgb(26, 25, 73, 30));  // BackgroundSoft
   fallback.insert(colorList.at(2), QColor::fromRgb(0, 240, 128));    // Bar
   fallback.insert(colorList.at(3), QColor::fromRgb(255, 255, 128));  // BarMid
-  fallback.insert(colorList.at(4), QColor::fromRgb(210, 202, 156));  // Label
-  fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));     // Tick
-  fallback.insert(colorList.at(6), Qt::red);                         // BarHigh
+  if (currentStyleName == SYSTEM_STYLE)
+    fallback.insert(colorList.at(4), qApp->palette().Text);
+  else
+    fallback.insert(colorList.at(4), QColor::fromRgb(210, 202, 156));  // Label
+  fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));       // Tick
+  fallback.insert(colorList.at(6), Qt::red);  // BarHigh
 
   if (currentStyleName == SYSTEM_STYLE) return fallback;
 
