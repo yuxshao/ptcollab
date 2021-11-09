@@ -9,10 +9,10 @@ namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const QPixmap getMeasureImages();
-QHash<QString, QColor> tryLoadMeterPalette();
-QHash<QString, QColor> tryLoadKeyboardPalette();
-QHash<QString, QColor> tryLoadMeasurePalette();
-QHash<QString, QColor> tryLoadParametersPalette();
+QHash<QString, QColor> getMeterPalette();
+QHash<QString, QColor> getKeyboardPalette();
+QHash<QString, QColor> getMeasurePalette();
+QHash<QString, QColor> getParametersPalette();
 QStringList getStyles();
 }  // namespace StyleEditor
 
