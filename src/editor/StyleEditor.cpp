@@ -164,17 +164,25 @@ QHash<QString, QColor> getMeterPalette() {
                               "BarMid",     "Label",          "Tick",
                               "BarHigh"};
 
-  fallback.insert(colorList.at(0), QColor::fromRgb(26, 25, 73));  // Background
-  fallback.insert(colorList.at(1),
-                  QColor::fromRgb(26, 25, 73, 30));  // BackgroundSoft
-  fallback.insert(colorList.at(2), QColor::fromRgb(0, 240, 128));    // Bar
-  fallback.insert(colorList.at(3), QColor::fromRgb(255, 255, 128));  // BarMid
-  if (currentStyleName == SYSTEM_STYLE)
-    fallback.insert(colorList.at(4), qApp->palette().Text);
-  else
+  if (currentStyleName == SYSTEM_STYLE) {
+    fallback.insert(colorList.at(0), qApp->palette().dark().color());
+    fallback.insert(colorList.at(1), qApp->palette().dark().color());
+    fallback.insert(colorList.at(2), Qt::green);
+    fallback.insert(colorList.at(3), Qt::yellow);
+    fallback.insert(colorList.at(4), qApp->palette().text().color());
+    fallback.insert(colorList.at(5), qApp->palette().shadow().color());
+    fallback.insert(colorList.at(6), Qt::red);
+  } else {
+    fallback.insert(colorList.at(0),
+                    QColor::fromRgb(26, 25, 73));  // Background
+    fallback.insert(colorList.at(1),
+                    QColor::fromRgb(26, 25, 73, 30));  // BackgroundSoft
+    fallback.insert(colorList.at(2), QColor::fromRgb(0, 240, 128));    // Bar
+    fallback.insert(colorList.at(3), QColor::fromRgb(255, 255, 128));  // BarMid
     fallback.insert(colorList.at(4), QColor::fromRgb(210, 202, 156));  // Label
-  fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));       // Tick
-  fallback.insert(colorList.at(6), Qt::red);  // BarHigh
+    fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));     // Tick
+    fallback.insert(colorList.at(6), Qt::red);  // BarHigh
+  }
 
   if (currentStyleName == SYSTEM_STYLE) return fallback;
 
