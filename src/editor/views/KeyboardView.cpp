@@ -283,11 +283,14 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        state.scale, 255 * alphaMultiplier, displayEdo);
 
     } break;
-    case MouseEditState::Type::Seek:
+    case MouseEditState::Type::Seek: {
+      QColor color = StyleEditor::getGlobalViewColor("Playhead");
+      color.setAlpha((StyleEditor::getGlobalViewColor("Playhead").alpha() / 2) *
+                     alphaMultiplier);
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
-                       0, 1, height,
-                       QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
+                       0, 1, height, color);
       break;
+    }
     case MouseEditState::Type::Select: {
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock) /

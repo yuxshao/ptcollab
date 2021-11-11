@@ -282,7 +282,9 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       }
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = parametersColorTable.find("FadedWhite").value();
+      QColor color = StyleEditor::getGlobalViewColor("Playhead");
+      color.setAlpha((StyleEditor::getGlobalViewColor("Playhead").alpha() / 2) *
+                     alphaMultiplier);
       painter.fillRect(
           state.current_clock / clockPerPx, 0, 1, height,
           QColor::fromRgb(
