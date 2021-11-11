@@ -20,8 +20,12 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                    QString("%1 (%2)").arg(username).arg(uid));
 }
 
-QColor halfWhite(QColor::fromRgb(255, 255, 255, 128));
-QColor slightTint(QColor::fromRgb(255, 255, 255, 32));
+QColor halfWhite(QColor c) {
+  return QColor{c.red(), c.green(), c.blue(), c.alpha() / 2};
+}
+QColor slightTint(QColor c) {
+  return QColor{c.red(), c.green(), c.blue(), c.alpha() / 8};
+}
 
 void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
                   bool drawHead) {
@@ -40,9 +44,9 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
-  QColor color =
-      (moo_clock->this_seek_caught_up() && moo_clock->now() > 0 ? Qt::white
-                                                                : halfWhite);
+  QColor color = (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
+                      ? StyleEditor::getGlobalViewColor("Playhead")
+                      : halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
   const int x = moo_clock->now() / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
@@ -62,10 +66,10 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
   if (moo_clock->has_last())
     painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
-                     halfWhite);
+                     halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
 
   painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
-                   halfWhite);
+                   halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
@@ -126,10 +130,10 @@ int one_over_last_clock(pxtnService const *pxtn) {
 
 void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
                    double alphaMultiplier) {
-  QColor c = slightTint;
+  QColor c = slightTint(StyleEditor::getGlobalViewColor("Playhead"));
   c.setAlpha(c.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, interval.length(), height, c);
-  c = halfWhite;
+  c = halfWhite(StyleEditor::getGlobalViewColor("Playhead"));
   c.setAlpha(c.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, 1, height, c);
   painter.fillRect(interval.end, 0, 1, height, c);
@@ -163,7 +167,7 @@ constexpr int NUM_OFFSET_X = 0;
 constexpr int NUM_OFFSET_Y = 40;
 void drawNum(QPainter *painter, int xr, int y, int num, int num_width,
              int num_height, int num_offset_x, int num_offset_y) {
-  static QPixmap images(":/images/images");
+  static QPixmap images(StyleEditor::getMeasureImages());
   do {
     int digit = num % 10;
     xr -= NUM_WIDTH;
@@ -191,7 +195,7 @@ static int num_digits(int num) {
 
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
-  static QPixmap images(":/images/images");
+  static QPixmap images(StyleEditor::getMeasureImages());
   if (height > 10) {
     bool big = height > 13;
     int num_width = (big ? 9 : 8);
