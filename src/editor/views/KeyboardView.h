@@ -11,6 +11,7 @@
 #include "Animation.h"
 #include "MooClock.h"
 #include "editor/PxtoneClient.h"
+#include "editor/StyleEditor.h"
 #include "editor/audio/NotePreview.h"
 #include "pxtone/pxtnService.h"
 
@@ -58,7 +59,7 @@ class KeyboardView : public QWidget {
   void wheelEvent(QWheelEvent *event) override;
   void moveEvent(QMoveEvent *event) override;
   void refreshQuantSettings();
-  QHash<QString, QColor> colorTable;
+  QHash<QString, QColor> keyboardColorTable;
   QSize sizeHint() const override;
   std::set<int> selectedUnitNos();
   QScrollArea *m_scrollarea;

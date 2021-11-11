@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "MooClock.h"
 #include "editor/PxtoneClient.h"
+#include "editor/StyleEditor.h"
 #include "editor/audio/NotePreview.h"
 
 static QHash<QString, QColor> parametersColorTable;

@@ -153,6 +153,34 @@ void constructList(QStringList list, QHash<QString, QColor> *hash,
     hash->insert(current, getColorFromSetting(*settings, current, *fallback));
   }
 }
+QHash<QString, QColor> getGlobalViewPalette() {
+  QString path =
+      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
+  QHash<QString, QColor> colors;
+  QHash<QString, QColor> fallback;
+
+  const QStringList colorList{"Playhead", "Cursor"};
+
+  fallback.insert(colorList.at(0), Qt::white);  // Playhead
+  fallback.insert(colorList.at(1), Qt::white);  // Cursor
+
+  if (currentStyleName == SYSTEM_STYLE) return fallback;
+
+  if (QFile::exists(path)) {
+    QSettings stylePalette(path, QSettings::IniFormat);
+    stylePalette.beginGroup("views");
+    constructList(colorList, &colors, &stylePalette, &fallback);
+    stylePalette.endGroup();
+  }
+  return colors;
+}
+
+static QHash<QString, QColor> globalViewColorTable;
+QColor getGlobalViewColor(QString key) {
+  if (globalViewColorTable.isEmpty())
+    globalViewColorTable = getGlobalViewPalette();
+  return getGlobalViewPalette().find(key).value();
+}
 
 QHash<QString, QColor> getMeterPalette() {
   QString path =
@@ -202,7 +230,7 @@ QHash<QString, QColor> getKeyboardPalette() {
 
   const QStringList colorList{"Beat",      "RootNote",  "WhiteNote",
                               "BlackNote", "WhiteLeft", "BlackLeft",
-                              "Black"};
+                              "Black",     "Measure"};
 
   fallback.insert(colorList.at(0), QColor::fromRgb(128, 128, 128));  // Beat
   fallback.insert(colorList.at(1), QColor::fromRgb(84, 76, 76));     // RootNote
@@ -213,6 +241,7 @@ QHash<QString, QColor> getKeyboardPalette() {
   fallback.insert(colorList.at(5),
                   QColor::fromRgb(78, 75, 97, 128));  // BlackLeft
   fallback.insert(colorList.at(6), Qt::black);        // Black
+  fallback.insert(colorList.at(7), Qt::white);
 
   if (currentStyleName == SYSTEM_STYLE) return fallback;
 
@@ -232,17 +261,16 @@ QHash<QString, QColor> getMeasurePalette() {
   QHash<QString, QColor> fallback;
 
   const QStringList colorList{
-      "Playhead",        "Cursor", "MeasureSeparator", "MeasureIncluded",
-      "MeasureExcluded", "Beat",   "UnitEdit",         "MeasureNumberBlock"};
+      "Playhead", "MeasureSeparator", "MeasureIncluded",   "MeasureExcluded",
+      "Beat",     "UnitEdit",         "MeasureNumberBlock"};
 
   fallback.insert(colorList.at(0), Qt::white);              // Playhead
-  fallback.insert(colorList.at(1), Qt::white);              // Cursor
-  fallback.insert(colorList.at(2), Qt::white);              // MeasureSeparator
-  fallback.insert(colorList.at(3), QColor(128, 0, 0));      // MeasureIncluded
-  fallback.insert(colorList.at(4), QColor(64, 0, 0));       // MeasureExcluded
-  fallback.insert(colorList.at(5), QColor(128, 128, 128));  // Beat
-  fallback.insert(colorList.at(6), QColor(64, 0, 112));     // UnitEdit
-  fallback.insert(colorList.at(7), QColor(96, 96, 96));  // MeasureNumberBlock
+  fallback.insert(colorList.at(1), Qt::white);              // MeasureSeparator
+  fallback.insert(colorList.at(2), QColor(128, 0, 0));      // MeasureIncluded
+  fallback.insert(colorList.at(3), QColor(64, 0, 0));       // MeasureExcluded
+  fallback.insert(colorList.at(4), QColor(128, 128, 128));  // Beat
+  fallback.insert(colorList.at(5), QColor(64, 0, 112));     // UnitEdit
+  fallback.insert(colorList.at(6), QColor(96, 96, 96));  // MeasureNumberBlock
 
   if (currentStyleName == SYSTEM_STYLE) return fallback;
 
@@ -273,7 +301,6 @@ QHash<QString, QColor> getParametersPalette() {
   fallback.insert(colorList.at(5), Qt::white);              // Font
   fallback.insert(colorList.at(6), QColor(128, 128, 128));  // Beat
   fallback.insert(colorList.at(7), Qt::white);              // Measure
-
   if (currentStyleName == SYSTEM_STYLE) return fallback;
 
   if (QFile::exists(path)) {

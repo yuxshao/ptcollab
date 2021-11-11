@@ -436,6 +436,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 
   // Draw cursors
+  QColor color = StyleEditor::getGlobalViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
@@ -446,8 +447,6 @@ void ParamView::paintEvent(QPaintEvent *event) {
       state.scale =
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
-      QColor color =
-          parametersColorTable.find("FadedWhite").value();  // FadedWhite again
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
@@ -459,7 +458,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, Qt::white, my_username,
+    drawCursor(m_client->editState(), painter, color, my_username,
                m_client->following_uid(), current_kind, height());
   }
 }

@@ -49,10 +49,13 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 
 void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
                   bool drawHead) {
-  if (client->following_uid() == client->uid())
+  if (client->following_uid() == client->uid()) {
+    QColor color = StyleEditor::getGlobalViewColor("Playhead");
+    color.setAlpha(color.alpha() / 2);
     drawPlayhead(painter,
                  client->lastSeek() / client->editState().scale.clockPerPx,
-                 height, QColor::fromRgb(255, 255, 255, 128), drawHead);
+                 height, color, drawHead);
+  }
 }
 
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,

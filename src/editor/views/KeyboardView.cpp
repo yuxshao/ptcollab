@@ -11,7 +11,6 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
-#include "editor/StyleEditor.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
@@ -42,7 +41,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_moo_clock(moo_clock),
       m_test_activity(false) {
-  colorTable = StyleEditor::getKeyboardPalette();
+  keyboardColorTable = StyleEditor::getKeyboardPalette();
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
@@ -404,8 +403,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
-  QBrush beatBrush(colorTable.find("Beat")->toRgb());
-  QBrush measureBrush(Qt::white);
+  QBrush beatBrush(keyboardColorTable.find("Beat")->toRgb());
+  QBrush measureBrush(keyboardColorTable.find("Measure")->toRgb());
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
     int x = m_pxtn->master->get_beat_clock() * beat /
@@ -415,19 +414,19 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush =
-      colorTable.find("RootNote").value();  // QColor::fromRgb(84, 76, 76));
-  QColor whiteNoteBrush =
-      colorTable.find("WhiteNote").value();  //(QColor::fromRgb(64, 64, 64));
-  QColor blackNoteBrush = colorTable.constFind("BlackNote")
+  QColor rootNoteBrush = keyboardColorTable.find("RootNote")
+                             .value();  // QColor::fromRgb(84, 76, 76));
+  QColor whiteNoteBrush = keyboardColorTable.find("WhiteNote")
+                              .value();  //(QColor::fromRgb(64, 64, 64));
+  QColor blackNoteBrush = keyboardColorTable.constFind("BlackNote")
                               .value();  // QColor::fromRgb(32, 32, 32));
 
   QColor whiteLeftBrush =
-      colorTable.find("WhiteLeft")
+      keyboardColorTable.find("WhiteLeft")
           .value();  //(QColor::fromRgb(131, 126, 120, 128));
-  QColor blackLeftBrush = colorTable.find("BlackLeft")
+  QColor blackLeftBrush = keyboardColorTable.find("BlackLeft")
                               .value();  //(QColor::fromRgb(78, 75, 97, 128));
-  QColor black = colorTable.find("Black").value();  //(Qt::black);
+  QColor black = keyboardColorTable.find("Black").value();  //(Qt::black);
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);
@@ -650,6 +649,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
+  QColor color = StyleEditor::getGlobalViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
@@ -658,7 +658,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
       // Draw cursor
-      QColor color = Qt::white;
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
@@ -669,7 +668,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, Qt::white, my_username,
+    drawCursor(m_client->editState(), painter, color, my_username,
                m_client->following_uid());
   }
 

@@ -7,7 +7,6 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
-#include "editor/StyleEditor.h"
 
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
@@ -16,15 +15,11 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
       m_audio_note_preview(nullptr) {
-  colorTable = StyleEditor::getMeasurePalette();
-  playheadColor = colorTable.find("Playhead").value();
-  playheadColor.setAlpha(playheadColor.alpha() /
-                         2);  // to accomodate alphaMultiplier.
-
-  measureBrush = colorTable.find("MeasureSeparator").value();
-  beatBrush = colorTable.find("Beat").value();
-  unitEditBrush = QBrush(colorTable.find("UnitEdit").value());
-  measureNumBlockBrush = colorTable.find("MeasureNumberBlock").value();
+  measureColorTable = StyleEditor::getMeasurePalette();
+  measureBrush = measureColorTable.find("MeasureSeparator").value();
+  beatBrush = measureColorTable.find("Beat").value();
+  unitEditBrush = QBrush(measureColorTable.find("UnitEdit").value());
+  measureNumBlockBrush = measureColorTable.find("MeasureNumberBlock").value();
 
   setFocusPolicy(Qt::NoFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
@@ -136,15 +131,18 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         }
         break;
       }
-      case MouseEditState::Type::Seek:
-        drawPlayhead(painter,
-                     mouse_edit_state.current_clock / state.scale.clockPerPx,
-                     height,
-                     QColor::fromRgb(playheadColor.red(), playheadColor.green(),
-                                     playheadColor.blue(),
-                                     playheadColor.alpha() * alphaMultiplier),
-                     true);
+      case MouseEditState::Type::Seek: {
+        QColor newColor, color = StyleEditor::getGlobalViewColor("Playhead");
+        newColor = color;
+        newColor.setAlpha(color.alpha() / 2);
+        drawPlayhead(
+            painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
+            height,
+            QColor::fromRgb(newColor.red(), newColor.green(), newColor.blue(),
+                            newColor.alpha() * alphaMultiplier),
+            true);
         break;
+      }
       case MouseEditState::Type::Select: {
         drawSelection(painter, interval, height, selectionAlphaMultiplier);
       } break;
@@ -180,9 +178,10 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   colorTable.find("MeasureIncluded").value());
+                   measureColorTable.find("MeasureIncluded").value());
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, colorTable.find("MeasureExcluded").value());
+                   RULER_HEIGHT,
+                   measureColorTable.find("MeasureExcluded").value());
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
                    width(), 1, beatBrush);
@@ -296,6 +295,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                     m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
 
   // Draw cursors
+  QColor color = StyleEditor::getGlobalViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
@@ -306,7 +306,6 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       state.scale =
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
-      QColor color = colorTable.find("Cursor").value();
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
@@ -318,7 +317,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, Qt::white, my_username,
+    drawCursor(m_client->editState(), painter, color, my_username,
                m_client->following_uid());
   }
 }

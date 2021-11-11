@@ -10,6 +10,7 @@ void initializeStyleDir();
 void setSystemStyle();
 bool tryLoadStyle(const QString &styleName);
 const QPixmap getMeasureImages();
+QColor getGlobalViewColor(QString key);
 QHash<QString, QColor> getMeterPalette();
 QHash<QString, QColor> getKeyboardPalette();
 QHash<QString, QColor> getMeasurePalette();

@@ -6,6 +6,7 @@
 #include <QPainterPath>
 
 #include "MooClock.h"
+#include "editor/StyleEditor.h"
 
 extern void drawCursor(const QPoint &position, QPainter &painter,
                        const QColor &color, const QString &username,
