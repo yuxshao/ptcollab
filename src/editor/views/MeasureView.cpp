@@ -132,7 +132,7 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         break;
       }
       case MouseEditState::Type::Seek: {
-        QColor newColor, color = StyleEditor::getGlobalViewColor("Playhead");
+        QColor newColor, color = StyleEditor::getCommonViewColor("Playhead");
         newColor = color;
         newColor.setAlpha(color.alpha() / 2);
         drawPlayhead(
@@ -295,7 +295,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                     m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
 
   // Draw cursors
-  QColor color = StyleEditor::getGlobalViewColor("Cursor");
+  QColor color = StyleEditor::getCommonViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {

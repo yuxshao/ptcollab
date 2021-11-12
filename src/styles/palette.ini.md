@@ -27,8 +27,8 @@ Tick=#343241
 BarHigh=#FF0000
 
 [views]
-Playhead=#00F080
-Cursor=#00F080
+Playhead=#FFFFFF
+Cursor=#FFFFFF
 
 [measure]
 MeasureSeparator=#FFFFFF

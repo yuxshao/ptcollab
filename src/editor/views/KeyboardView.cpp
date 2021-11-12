@@ -284,8 +284,8 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = StyleEditor::getGlobalViewColor("Playhead");
-      color.setAlpha((StyleEditor::getGlobalViewColor("Playhead").alpha() / 2) *
+      QColor color = StyleEditor::getCommonViewColor("Playhead");
+      color.setAlpha((StyleEditor::getCommonViewColor("Playhead").alpha() / 2) *
                      alphaMultiplier);
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
                        0, 1, height, color);
@@ -493,7 +493,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   // Draw FPS
   QPen pen;
-  pen.setBrush(Qt::white);
+  pen.setBrush(Qt::blue);
   painter.setPen(pen);
   {
     int elapsed = m_timer->elapsed();
@@ -509,7 +509,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   std::vector<DrawState> drawStates;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) drawStates.emplace_back();
 
-  painter.setPen(Qt::blue);
+  painter.setPen(
+      Qt::white);  // I can't see where this is used so I'm leaving it as white
+                   // and not putting it in the palette - Ewan
 
   int clock = m_moo_clock->now();
 
@@ -652,7 +654,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
-  QColor color = StyleEditor::getGlobalViewColor("Cursor");
+  QColor color = StyleEditor::getCommonViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {

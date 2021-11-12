@@ -59,7 +59,7 @@ inline bool processColorString(QColor *color, const QString str) {
       rgb.append(string.at(2));
       rgb.append(string.at(2));
       rgb.append(string.at(3));
-      rgb.append(string.at(3));  // help me find a better way to do this
+      rgb.append(string.at(3));
       if (QColor::isValidColor(rgb)) {
         color->setNamedColor(rgb);
         return 0;
@@ -77,7 +77,7 @@ inline bool processColorString(QColor *color, const QString str) {
       QString rgb = string.chopped(2);
       if (QColor::isValidColor(rgb)) {
         color->setNamedColor(rgb);
-        color->setAlpha(string.right(2).toInt(nullptr, 16));
+        color->setAlpha(string.rightRef(2).toInt(nullptr, 16));
         return 0;
       }
       break;
@@ -176,7 +176,7 @@ QHash<QString, QColor> getGlobalViewPalette() {
 }
 
 static QHash<QString, QColor> globalViewColorTable;
-QColor getGlobalViewColor(QString key) {
+QColor getCommonViewColor(QString key) {
   if (globalViewColorTable.isEmpty())
     globalViewColorTable = getGlobalViewPalette();
   return getGlobalViewPalette().find(key).value();

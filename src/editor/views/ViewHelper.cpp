@@ -20,11 +20,8 @@ void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                    QString("%1 (%2)").arg(username).arg(uid));
 }
 
-QColor halfWhite(QColor c) {
-  return QColor{c.red(), c.green(), c.blue(), c.alpha() / 2};
-}
-QColor slightTint(QColor c) {
-  return QColor{c.red(), c.green(), c.blue(), c.alpha() / 8};
+QColor makeTranslucent(QColor c, int divisor) {
+  return QColor{c.red(), c.green(), c.blue(), c.alpha() / divisor};
 }
 
 void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
@@ -44,9 +41,10 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
-  QColor color = (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
-                      ? StyleEditor::getGlobalViewColor("Playhead")
-                      : halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
+  QColor color =
+      (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
+           ? StyleEditor::getCommonViewColor("Playhead")
+           : makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
   const int x = moo_clock->now() / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
@@ -54,7 +52,7 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
                   bool drawHead) {
   if (client->following_uid() == client->uid()) {
-    QColor color = StyleEditor::getGlobalViewColor("Playhead");
+    QColor color = StyleEditor::getCommonViewColor("Playhead");
     color.setAlpha(color.alpha() / 2);
     drawPlayhead(painter,
                  client->lastSeek() / client->editState().scale.clockPerPx,
@@ -65,11 +63,13 @@ void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
   if (moo_clock->has_last())
-    painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
-                     halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
+    painter.fillRect(
+        moo_clock->last_clock() / clockPerPx, 0, 1, height,
+        makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
 
-  painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
-                   halfWhite(StyleEditor::getGlobalViewColor("Playhead")));
+  painter.fillRect(
+      moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
+      makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
@@ -95,6 +95,7 @@ void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
   } else if (event->modifiers() & Qt::AltModifier) {
     // In this case, alt flips the scroll direction.
     // Maybe alt shift could handle quantize y?
+    // ^ oh lord
     qreal delta = event->angleDelta().x();
     client->changeEditState(
         [&](EditState &e) {
@@ -130,13 +131,14 @@ int one_over_last_clock(pxtnService const *pxtn) {
 
 void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
                    double alphaMultiplier) {
-  QColor c = slightTint(StyleEditor::getGlobalViewColor("Playhead"));
-  c.setAlpha(c.alpha() * alphaMultiplier);
-  painter.fillRect(interval.start, 0, interval.length(), height, c);
-  c = halfWhite(StyleEditor::getGlobalViewColor("Playhead"));
-  c.setAlpha(c.alpha() * alphaMultiplier);
-  painter.fillRect(interval.start, 0, 1, height, c);
-  painter.fillRect(interval.end, 0, 1, height, c);
+  QColor color =
+      makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 8);
+  color.setAlpha(color.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, interval.length(), height, color);
+  color = makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2);
+  color.setAlpha(color.alpha() * alphaMultiplier);
+  painter.fillRect(interval.start, 0, 1, height, color);
+  painter.fillRect(interval.end, 0, 1, height, color);
 }
 
 void drawExistingSelection(QPainter &painter, const MouseEditState &state,

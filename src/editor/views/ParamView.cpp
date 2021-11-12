@@ -282,8 +282,8 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       }
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = StyleEditor::getGlobalViewColor("Playhead");
-      color.setAlpha((StyleEditor::getGlobalViewColor("Playhead").alpha() / 2) *
+      QColor color = StyleEditor::getCommonViewColor("Playhead");
+      color.setAlpha((StyleEditor::getCommonViewColor("Playhead").alpha() / 2) *
                      alphaMultiplier);
       painter.fillRect(
           state.current_clock / clockPerPx, 0, 1, height,
@@ -438,7 +438,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 
   // Draw cursors
-  QColor color = StyleEditor::getGlobalViewColor("Cursor");
+  QColor color = StyleEditor::getCommonViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {

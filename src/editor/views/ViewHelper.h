@@ -23,7 +23,7 @@ extern void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
 extern void handleWheelEventWithModifier(QWheelEvent *event,
                                          PxtoneClient *client);
 
-extern QColor halfWhite(), slightTint();
+extern QColor makeTranslucent(QColor c, int divisor);
 
 template <typename T>
 T clamp(T x, T lo, T hi) {
