@@ -16,12 +16,13 @@ void recolor(QPixmap &src, QColor color) {
 
   // create colorized image
   QImage destImage = QImage(rect.size(), srcImage.format());
-  destImage.setDevicePixelRatio(src.devicePixelRatioF());
   QPainter(&destImage).fillRect(rect, color);
   destImage.setAlphaChannel(srcImage.convertToFormat(QImage::Format_Alpha8));
 
   // apply over original
-  QPainter(&src).drawImage(QPoint(0, 0), destImage);
+  QPainter p(&src);
+  p.setTransform(p.deviceTransform().inverted());
+  p.drawImage(QPoint(0, 0), destImage);
 }
 // Adapted from
 // https://code.woboq.org/qt5/qtbase/src/widgets/effects/qpixmapfilter.cpp.html#1089
