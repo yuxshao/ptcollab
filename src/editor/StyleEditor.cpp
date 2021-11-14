@@ -21,11 +21,6 @@ const static char *SYSTEM_STYLE = "<System>";
 static QString currentStyleBaseDir;
 static QString currentStyleName = SYSTEM_STYLE;
 
-void setSystemStyle() {
-  currentStyleName = SYSTEM_STYLE;
-  // other things may be necessary in the future
-}
-
 QString styleSheetDir(const QString &basedir, const QString &styleName) {
   return basedir + "/" + styleName;
 }
