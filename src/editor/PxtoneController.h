@@ -114,7 +114,6 @@ class PxtoneController : public QObject {
   qint64 m_uid;
   pxtnService *m_pxtn;
   mooState *m_moo_state;
-  PxtoneIODevice *m_moo_io_device;
 
   std::vector<LoggedAction> m_log;
   std::list<std::list<Action::Primitive>> m_uncommitted;
