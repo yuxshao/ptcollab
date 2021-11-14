@@ -86,7 +86,7 @@ void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
                          QSettings &settings, const QString &key) {
   QString str = settings.value(key).toString();
   QColor *color = new QColor(Qt::magenta);
-  if (processColorString(color, str))
+  if (!processColorString(color, str))
     palette.setColor(role, *color);
   else
     throw InvalidColorError{key, str};
