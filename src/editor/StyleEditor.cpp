@@ -63,14 +63,14 @@ inline bool processColorString(QColor *color, const QString str) {
       rgb.append(string.at(3));
       if (QColor::isValidColor(rgb)) {
         color->setNamedColor(rgb);
-        return 0;
+        return true;
       }
       break;
     }
     case 7: {  // e.g. #RRGGBB
       if (QColor::isValidColor(string)) {
         color->setNamedColor(string);
-        return 0;
+        return true;
       }
       break;
     }
@@ -79,21 +79,21 @@ inline bool processColorString(QColor *color, const QString str) {
       if (QColor::isValidColor(rgb)) {
         color->setNamedColor(rgb);
         color->setAlpha(string.rightRef(2).toInt(nullptr, 16));
-        return 0;
+        return true;
       }
       break;
     }
   }
-  return 1;
+  return false;
 }
 
 void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
                          QSettings &settings, const QString &key) {
   QString str = settings.value(key).toString();
   QColor *color = new QColor(Qt::magenta);
-  if (!processColorString(color, str)) {
+  if (processColorString(color, str))
     palette.setColor(role, *color);
-  } else
+  else
     throw InvalidColorError{key, str};
 };
 
