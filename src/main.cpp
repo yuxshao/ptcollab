@@ -42,6 +42,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
 }
 
 int main(int argc, char *argv[]) {
+  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+      Qt::HighDpiScaleFactorRoundingPolicy::Round);
   QApplication a(argc, argv);
 
   // For QSettings
