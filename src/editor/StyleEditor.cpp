@@ -40,10 +40,11 @@ struct InvalidColorError {
 const QPixmap getMeasureImages() {
   QPixmap px(styleSheetDir(currentStyleBaseDir, currentStyleName) +
              "/images.png");
-  if (!px.isNull() && px.width() == 108 && px.height() == 65) {
+  QPixmap fallback = QPixmap(":/images/images");
+  if (!px.isNull() && px.size() == fallback.size())
     return px;  // the rare case in which an image has to be a fixed size
-  } else
-    return QPixmap(":/images/images");
+  else
+    return fallback;
 }
 
 inline bool processColorString(QColor *color, const QString str) {
