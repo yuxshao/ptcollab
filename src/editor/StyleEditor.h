@@ -10,6 +10,12 @@ void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
 struct Palette {
+ private:
+  Palette(){};
+  // Constructor is private so I don't accidentally do
+  // StyleEditor::Palette() instead of ::palette()
+
+ public:
   QColor MeterBackground;
   QColor MeterBackgroundSoft;
   QColor MeterBar;
@@ -45,6 +51,8 @@ struct Palette {
 
   QColor Playhead;
   QColor Cursor;
+
+  static Palette empty() { return {}; }
 };
 const Palette &palette();
 

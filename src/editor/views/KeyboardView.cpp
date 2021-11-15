@@ -483,10 +483,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
           octave_display_a);
   }
-  // Draw FPS
-  QPen pen;
-  pen.setBrush(Qt::blue);
-  painter.setPen(pen);
+
   {
     int elapsed = m_timer->elapsed();
     if (elapsed >= 2000) {
@@ -500,10 +497,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // Set up drawing structures that we'll use while iterating through events
   std::vector<DrawState> drawStates;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) drawStates.emplace_back();
-
-  painter.setPen(
-      Qt::white);  // I can't see where this is used so I'm leaving it as white
-                   // and not putting it in the palette - Ewan
 
   int clock = m_moo_clock->now();
 

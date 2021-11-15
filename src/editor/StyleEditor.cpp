@@ -121,7 +121,7 @@ void loadPalette(const QString &path, Palette &p) {
 }
 
 Palette defaultPalette(bool is_system_theme) {
-  Palette p;
+  Palette p = Palette::empty();
   loadPalette(":/styles/ptCollage/palette.ini", p);
 
   if (is_system_theme) {
@@ -176,7 +176,7 @@ void loadFonts(const QString path) {
 static std::shared_ptr<QPixmap> currentMeasureImages = nullptr;
 const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
 
-static Palette currentPalette;
+static Palette currentPalette = Palette::empty();
 const Palette &palette() { return currentPalette; }
 
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
