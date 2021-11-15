@@ -25,55 +25,118 @@ QString styleSheetDir(const QString &basedir, const QString &styleName) {
 QString styleSheetPath(const QString &basedir, const QString &styleName) {
   return styleSheetDir(basedir, styleName) + "/" + styleName + ".qss";
 }
+QString palettePath(const QString &basedir, const QString &styleName) {
+  return styleSheetDir(basedir, styleName) + "/palette.ini";
+}
+
 struct InvalidColorError {
   QString settingsKey;
   QString setting;
 };
-void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
-                         QSettings &settings, const QString &key) {
-  QString str = settings.value(key).toString();
-  if (QColor::isValidColor(str))
-    palette.setColor(role, str);
-  else
-    throw InvalidColorError{key, str};
+
+void withSettingsColor(const QSettings &settings, const QString &key,
+                       std::function<void(const QColor &)> f) {
+  if (settings.contains(key)) {
+    QString str = settings.value(key).toString();
+    if (QColor::isValidColor(str))
+      f(QColor(str));
+    else
+      qWarning() << QString(
+                        "Invalid color (%1) for "
+                        "setting (%2) in palette")
+                        .arg(str, key);
+  }
+}
+
+void setQPaletteColor(QPalette &palette, QPalette::ColorRole role,
+                      QSettings &settings, const QString &key) {
+  withSettingsColor(settings, key,
+                    [&](const QColor &c) { palette.setColor(role, c); });
 };
 
-void tryLoadPalette(const QString &basedir, const QString &styleName) {
-  QString path = styleSheetDir(basedir, styleName) + "/palette.ini";
-  if (QFile::exists(path)) {
-    QPalette palette = qApp->palette();
-    QSettings stylePalette(path, QSettings::IniFormat);
+void loadQPalette(const QString &path, QPalette &palette) {
+  QSettings stylePalette(path, QSettings::IniFormat);
 
-    stylePalette.beginGroup("palette");
-    try {
-      setColorFromSetting(palette, QPalette::Window, stylePalette, "Window");
-      setColorFromSetting(palette, QPalette::WindowText, stylePalette,
-                          "WindowText");
-      setColorFromSetting(palette, QPalette::Base, stylePalette, "Base");
-      setColorFromSetting(palette, QPalette::ToolTipBase, stylePalette,
-                          "ToolTipBase");
-      setColorFromSetting(palette, QPalette::ToolTipText, stylePalette,
-                          "ToolTipText");
-      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
-      setColorFromSetting(palette, QPalette::Button, stylePalette, "Button");
-      setColorFromSetting(palette, QPalette::ButtonText, stylePalette,
-                          "ButtonText");
-      setColorFromSetting(palette, QPalette::BrightText, stylePalette,
-                          "BrightText");
-      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
-      setColorFromSetting(palette, QPalette::Link, stylePalette, "Link");
-      setColorFromSetting(palette, QPalette::Highlight, stylePalette,
-                          "Highlight");
-      setColorFromSetting(palette, QPalette::Light, stylePalette, "Light");
-      setColorFromSetting(palette, QPalette::Dark, stylePalette, "Dark");
-      qApp->setPalette(palette);
-    } catch (InvalidColorError e) {
-      qWarning()
-          << QString(
-                 "Could not load palette. Invalid color (%1) for setting (%2)")
-                 .arg(e.setting, e.settingsKey);
-    }
+  stylePalette.beginGroup("palette");
+  setQPaletteColor(palette, QPalette::Window, stylePalette, "Window");
+  setQPaletteColor(palette, QPalette::WindowText, stylePalette, "WindowText");
+  setQPaletteColor(palette, QPalette::Base, stylePalette, "Base");
+  setQPaletteColor(palette, QPalette::ToolTipBase, stylePalette, "ToolTipBase");
+  setQPaletteColor(palette, QPalette::ToolTipText, stylePalette, "ToolTipText");
+  setQPaletteColor(palette, QPalette::Text, stylePalette, "Text");
+  setQPaletteColor(palette, QPalette::Button, stylePalette, "Button");
+  setQPaletteColor(palette, QPalette::ButtonText, stylePalette, "ButtonText");
+  setQPaletteColor(palette, QPalette::BrightText, stylePalette, "BrightText");
+  setQPaletteColor(palette, QPalette::Text, stylePalette, "Text");
+  setQPaletteColor(palette, QPalette::Link, stylePalette, "Link");
+  setQPaletteColor(palette, QPalette::Highlight, stylePalette, "Highlight");
+  setQPaletteColor(palette, QPalette::Light, stylePalette, "Light");
+  setQPaletteColor(palette, QPalette::Dark, stylePalette, "Dark");
+  stylePalette.endGroup();
+}
+
+void setPaletteColor(const QSettings &settings, QColor &dst,
+                     const QString &key) {
+  withSettingsColor(settings, key, [&](const QColor &c) { dst = c; });
+};
+
+void loadPalette(const QString &path, Palette &p) {
+  QSettings stylePalette(path, QSettings::IniFormat);
+  setPaletteColor(stylePalette, p.MeterBackground, "meter/Background");
+  setPaletteColor(stylePalette, p.MeterBackgroundSoft, "meter/BackgroundSoft");
+  setPaletteColor(stylePalette, p.MeterBar, "meter/Bar");
+  setPaletteColor(stylePalette, p.MeterBarMid, "meter/BarMid");
+  setPaletteColor(stylePalette, p.MeterLabel, "meter/Label");
+  setPaletteColor(stylePalette, p.MeterTick, "meter/Tick");
+  setPaletteColor(stylePalette, p.MeterBarHigh, "meter/BarHigh");
+
+  setPaletteColor(stylePalette, p.KeyboardBeat, "keyboard/Beat");
+  setPaletteColor(stylePalette, p.KeyboardRootNote, "keyboard/RootNote");
+  setPaletteColor(stylePalette, p.KeyboardWhiteNote, "keyboard/WhiteNote");
+  setPaletteColor(stylePalette, p.KeyboardBlackNote, "keyboard/BlackNote");
+  setPaletteColor(stylePalette, p.KeyboardWhiteLeft, "keyboard/WhiteLeft");
+  setPaletteColor(stylePalette, p.KeyboardBlackLeft, "keyboard/BlackLeft");
+  setPaletteColor(stylePalette, p.KeyboardBlack, "keyboard/Black");
+  setPaletteColor(stylePalette, p.KeyboardMeasure, "keyboard/Measure");
+
+  setPaletteColor(stylePalette, p.MeasureSeparator, "measure/MeasureSeparator");
+  setPaletteColor(stylePalette, p.MeasureIncluded, "measure/MeasureIncluded");
+  setPaletteColor(stylePalette, p.MeasureExcluded, "measure/MeasureExcluded");
+  setPaletteColor(stylePalette, p.MeasureBeat, "measure/Beat");
+  setPaletteColor(stylePalette, p.MeasureUnitEdit, "measure/UnitEdit");
+  setPaletteColor(stylePalette, p.MeasureNumberBlock,
+                  "measure/MeasureNumberBlock");
+
+  setPaletteColor(stylePalette, p.ParamBlue, "parameters/Blue");
+  setPaletteColor(stylePalette, p.ParamDarkBlue, "parameters/DarkBlue");
+  setPaletteColor(stylePalette, p.ParamDarkTeal, "parameters/DarkTeal");
+  setPaletteColor(stylePalette, p.ParamBrightGreen, "parameters/BrightGreen");
+  setPaletteColor(stylePalette, p.ParamFadedWhite, "parameters/FadedWhite");
+  setPaletteColor(stylePalette, p.ParamFont, "parameters/Font");
+  setPaletteColor(stylePalette, p.ParamBeat, "parameters/Beat");
+  setPaletteColor(stylePalette, p.ParamMeasure, "parameters/Measure");
+
+  setPaletteColor(stylePalette, p.Playhead, "views/Playhead");
+  setPaletteColor(stylePalette, p.Cursor, "views/Cursor");
+}
+
+Palette defaultPalette(bool is_system_theme) {
+  Palette p = Palette::empty();
+  loadPalette(":/styles/ptCollage/palette.ini", p);
+
+  if (is_system_theme) {
+    // Use a slightly different colour scheme since the ptcollage style is a bit
+    // jarring
+    p.MeterBackground = qApp->palette().dark().color();
+    p.MeterBackgroundSoft = qApp->palette().dark().color();
+    p.MeterBar = Qt::green;
+    p.MeterBarMid = Qt::yellow;
+    p.MeterLabel = qApp->palette().text().color();
+    p.MeterTick = qApp->palette().shadow().color();
+    p.MeterBarHigh = Qt::red;
   }
+
+  return p;
 }
 
 void initializeStyleDir() {
@@ -89,6 +152,7 @@ void initializeStyleDir() {
   }
   QDesktopServices::openUrl(optimalLocation);
 }
+
 QString relativizeUrls(QString stylesheet, const QString &basedir,
                        const QString &styleName) {
   stylesheet.replace("url(\"",
@@ -109,7 +173,14 @@ void loadFonts(const QString path) {
   }
 }
 
+static std::shared_ptr<QPixmap> currentMeasureImages = nullptr;
+const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
+
+static Palette currentPalette = Palette::empty();
+const Palette &palette = currentPalette;
+
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
+  // A stylesheet needs to exist for any part of the style to be loaded.
   QFile styleSheet = styleSheetPath(basedir, styleName);
   if (!styleSheet.open(QFile::ReadOnly)) {
     qWarning() << "The selected style is not available: " << styleName << " ("
@@ -117,16 +188,29 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
     return false;
   }
 
-  tryLoadPalette(basedir, styleName);
+  QString path = palettePath(basedir, styleName);
+  if (QFile::exists(path)) {
+    QPalette qp(qApp->palette());
+    loadQPalette(path, qp);
+    qApp->setPalette(qp);
+
+    Palette p = defaultPalette(false);
+    loadPalette(path, p);
+    currentPalette = p;
+  }
+
   loadFonts(styleSheetDir(basedir, styleName));
-  // Only apply custom palette if palette.ini is present. For minimal
-  // sheets, the availability of a palette helps their changes blend
-  // in with unchanged aspects.
   qApp->setStyle(QStyleFactory::create("Fusion"));
   // Use Fusion as a base for aspects stylesheet does not cover, it should
   // look consistent across all platforms
   qApp->setStyleSheet(relativizeUrls(styleSheet.readAll(), basedir, styleName));
   styleSheet.close();
+
+  QPixmap px(styleSheetDir(basedir, styleName) + "/images.png");
+  if (!px.isNull() && px.size() == currentMeasureImages->size())
+    currentMeasureImages = std::make_shared<QPixmap>(px);
+  else
+    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
   return true;
 }
 
@@ -162,7 +246,11 @@ std::map<QString, QString> getStyleMap() {
 }
 
 bool tryLoadStyle(const QString &styleName) {
-  if (styleName == SYSTEM_STYLE) return true;
+  if (styleName == SYSTEM_STYLE) {
+    currentPalette = defaultPalette(true);
+    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
+    return true;
+  }
 
   auto styles = getStyleMap();
   auto it = styles.find(styleName);

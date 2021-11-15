@@ -7,6 +7,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
@@ -44,7 +45,6 @@ constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
 static void drawFlag(QPainter *painter, FlagType type, bool outline,
                      int measure_x, int y) {
-  static QPixmap images(":/images/images");
   int sx, sy;
   bool end;
   switch (type) {
@@ -66,7 +66,8 @@ static void drawFlag(QPainter *painter, FlagType type, bool outline,
   }
   if (outline) sy += 8;
   int x = (end ? measure_x - FLAG_WIDTH : measure_x + 1);
-  painter->drawPixmap(x, y, images, sx, sy, FLAG_WIDTH, FLAG_HEIGHT);
+  painter->drawPixmap(x, y, *StyleEditor::measureImages(), sx, sy, FLAG_WIDTH,
+                      FLAG_HEIGHT);
 }
 
 constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
@@ -125,12 +126,14 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         }
         break;
       }
-      case MouseEditState::Type::Seek:
-        drawPlayhead(
-            painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
-            height, QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier),
-            true);
+      case MouseEditState::Type::Seek: {
+        QColor color = StyleEditor::palette.Playhead;
+        color.setAlpha(color.alpha() * alphaMultiplier / 2);
+        drawPlayhead(painter,
+                     mouse_edit_state.current_clock / state.scale.clockPerPx,
+                     height, color, true);
         break;
+      }
       case MouseEditState::Type::Select: {
         drawSelection(painter, interval, height, selectionAlphaMultiplier);
       } break;
@@ -151,10 +154,6 @@ QSize MeasureView::sizeHint() const {
                1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET + UNIT_EDIT_HEIGHT);
 }
 
-const static QBrush measureBrush(Qt::white);
-const static QBrush beatBrush(QColor::fromRgb(128, 128, 128));
-const static QBrush unitEditBrush(QColor::fromRgb(64, 0, 112));
-const static QBrush measureNumBlockBrush(QColor::fromRgb(96, 96, 96));
 void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
 
@@ -170,12 +169,12 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   QColor::fromRgb(128, 0, 0));
+                   StyleEditor::palette.MeasureIncluded);
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, QColor::fromRgb(64, 0, 0));
+                   RULER_HEIGHT, StyleEditor::palette.MeasureExcluded);
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
-                   width(), 1, beatBrush);
+                   width(), 1, StyleEditor::palette.MeasureBeat);
   for (int beat = 0; true; ++beat) {
     int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
@@ -183,18 +182,20 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     if (beat % master->get_beat_num() == 0) {
       int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
-                       measureBrush);
+                       StyleEditor::palette.MeasureSeparator);
       if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
       lastMeasureDraw = x;
-      painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT, measureBrush);
+      painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT,
+                       StyleEditor::palette.MeasureSeparator);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
-                       MEASURE_NUM_BLOCK_HEIGHT, measureNumBlockBrush);
+                       MEASURE_NUM_BLOCK_HEIGHT,
+                       StyleEditor::palette.MeasureNumberBlock);
       if (measure < activeMeas)
         drawNumAlignTopRight(&painter, x + MEASURE_NUM_BLOCK_WIDTH, 1,
                              beat / master->get_beat_num());
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
-                       beatBrush);
+                       StyleEditor::palette.MeasureBeat);
   }
   drawFlag(&painter, FlagType::Top, false, 0, FLAG_Y);
   if (m_moo_clock->repeat_clock() > 0) {
@@ -211,7 +212,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
 
   // Draw on events
 
-  painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT, unitEditBrush);
+  painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT,
+                   StyleEditor::palette.MeasureUnitEdit);
   double scaleX = m_client->editState().scale.clockPerPx;
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
@@ -296,10 +298,12 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       state.scale =
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
-      QColor color = Qt::white;
+      QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
+      else
+        color = StyleEditor::palette.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
@@ -308,8 +312,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, Qt::white, my_username,
-               m_client->following_uid());
+    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
+               my_username, m_client->following_uid());
   }
 }
 

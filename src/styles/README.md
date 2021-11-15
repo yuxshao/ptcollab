@@ -59,7 +59,7 @@ Light=COLOR
 Dark=COLOR
 ``` 
 
-Wherever you see `COLOR` must be occupied by a valid [QColor](https://doc.qt.io/qt-5/qcolor.html#name) value, converted from a string. In practice, this is best represented in the RGB hex color code you're probably familiar with (`#FFFFFF` is white). The values to be set are those of a [QPalette](https://doc.qt.io/qt-5/qpalette.html#details).
+Wherever you see `COLOR` must be occupied by a valid color code; this could be `#RGB`, `#RRGGBB`, or `#AARRGGBB`. The values to be set for `[palette]` are those of a [QPalette](https://doc.qt.io/qt-5/qpalette.html#details). This is the bare minimum required for a stylesheet; please see [palette.ini.md](https://github.com/yuxshao/ptcollab/blob/master/src/styles/palette.ini.md).
 
 Palette colors can be addressed in the stylesheet by using [`palette()`](https://doc.qt.io/qt-5/stylesheet-reference.html#paletterole).
 

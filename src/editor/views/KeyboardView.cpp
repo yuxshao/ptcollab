@@ -11,6 +11,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
@@ -282,11 +283,13 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        state.scale, 255 * alphaMultiplier, displayEdo);
 
     } break;
-    case MouseEditState::Type::Seek:
+    case MouseEditState::Type::Seek: {
+      QColor color = StyleEditor::palette.Playhead;
+      color.setAlpha(color.alpha() * alphaMultiplier / 2);
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
-                       0, 1, height,
-                       QColor::fromRgb(255, 255, 255, 128 * alphaMultiplier));
+                       0, 1, height, color);
       break;
+    }
     case MouseEditState::Type::Select: {
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock) /
@@ -402,8 +405,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
-  QBrush beatBrush(QColor::fromRgb(128, 128, 128));
-  QBrush measureBrush(Qt::white);
+  QBrush beatBrush(StyleEditor::palette.KeyboardBeat);
+  QBrush measureBrush(StyleEditor::palette.KeyboardMeasure);
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
     int x = m_pxtn->master->get_beat_clock() * beat /
@@ -413,13 +416,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush(QColor::fromRgb(84, 76, 76));
-  QColor whiteNoteBrush(QColor::fromRgb(64, 64, 64));
-  QColor blackNoteBrush(QColor::fromRgb(32, 32, 32));
+  QColor rootNoteBrush = StyleEditor::palette.KeyboardRootNote;
+  QColor whiteNoteBrush = StyleEditor::palette.KeyboardWhiteNote;
+  QColor blackNoteBrush = StyleEditor::palette.KeyboardBlackNote;
 
-  QColor whiteLeftBrush(QColor::fromRgb(131, 126, 120, 128));
-  QColor blackLeftBrush(QColor::fromRgb(78, 75, 97, 128));
-  QColor black(Qt::black);
+  QColor whiteLeftBrush = StyleEditor::palette.KeyboardWhiteLeft;
+  QColor blackLeftBrush = StyleEditor::palette.KeyboardBlackLeft;
+  QColor black = StyleEditor::palette.KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);
@@ -481,10 +484,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
           octave_display_a);
   }
-  // Draw FPS
-  QPen pen;
-  pen.setBrush(Qt::white);
-  painter.setPen(pen);
+
   {
     int elapsed = m_timer->elapsed();
     if (elapsed >= 2000) {
@@ -498,8 +498,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // Set up drawing structures that we'll use while iterating through events
   std::vector<DrawState> drawStates;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) drawStates.emplace_back();
-
-  painter.setPen(Qt::blue);
 
   int clock = m_moo_clock->now();
 
@@ -650,10 +648,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
       // Draw cursor
-      QColor color = Qt::white;
+      QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
+      else
+        color = StyleEditor::palette.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
@@ -661,8 +661,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, Qt::white, my_username,
-               m_client->following_uid());
+    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
+               my_username, m_client->following_uid());
   }
 
   drawLastSeek(painter, m_client, height(), false);

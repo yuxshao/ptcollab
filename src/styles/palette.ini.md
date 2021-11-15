@@ -1,3 +1,7 @@
+### palette.ini
+This is an example of a complete palette.ini file.
+
+```ini
 [palette]
 Window=#4E4B61
 WindowText=#D2CA9C
@@ -53,3 +57,15 @@ BlackNote=#202020
 WhiteLeft=#80837E78
 BlackLeft=#804E4B61
 Black=#000000
+
+```
+Notes:
+- The alpha channels for colors `FadedWhite` and `Font` in `[parameters]` are discarded.
+- The alpha channel in color `Playhead` is halved because the opacity of the playheads vary based on other factors.
+
+The colors can be in any of these 3 formats;
+- `#RGB`; "Web colors" -- reduced detail RGB hex value.
+- `#RRGGBB`; Normal RGB hex value.
+- `#AARRGGBB`; ARGB hex value. 
+
+The best way to get to know these colors is to experiment with them. If you're interested in learning more about these colors and how they behave under the hood, please look at the source; this is the extent of the documentation for the majority of these colors.
