@@ -248,6 +248,7 @@ std::map<QString, QString> getStyleMap() {
 bool tryLoadStyle(const QString &styleName) {
   if (styleName == SYSTEM_STYLE) {
     currentPalette = defaultPalette(true);
+    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
     return true;
   }
 
