@@ -17,7 +17,7 @@
 #include "Settings.h"
 
 namespace StyleEditor {
-const static char *SYSTEM_STYLE = "<System>";
+const char *SYSTEM_STYLE = "<System>";
 
 QString styleSheetDir(const QString &basedir, const QString &styleName) {
   return basedir + "/" + styleName;

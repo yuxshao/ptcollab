@@ -278,8 +278,8 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
     } break;
     case MouseEditState::Type::Seek: {
       QColor color = StyleEditor::palette().Playhead;
-      color.setAlpha((StyleEditor::palette().Playhead.alpha() / 2) *
-                     alphaMultiplier);
+      color.setAlpha(StyleEditor::palette().Playhead.alpha() * alphaMultiplier /
+                     2);
       painter.fillRect(
           state.current_clock / clockPerPx, 0, 1, height,
           QColor::fromRgb(

@@ -126,15 +126,11 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         break;
       }
       case MouseEditState::Type::Seek: {
-        QColor newColor, color = StyleEditor::palette().Playhead;
-        newColor = color;
-        newColor.setAlpha(color.alpha() / 2);
-        drawPlayhead(
-            painter, mouse_edit_state.current_clock / state.scale.clockPerPx,
-            height,
-            QColor::fromRgb(newColor.red(), newColor.green(), newColor.blue(),
-                            newColor.alpha() * alphaMultiplier),
-            true);
+        QColor color = StyleEditor::palette().Playhead;
+        color.setAlpha(color.alpha() * alphaMultiplier / 2);
+        drawPlayhead(painter,
+                     mouse_edit_state.current_clock / state.scale.clockPerPx,
+                     height, color, true);
         break;
       }
       case MouseEditState::Type::Select: {
