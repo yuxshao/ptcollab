@@ -43,8 +43,8 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
   QColor color = (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
-                      ? StyleEditor::palette().Playhead
-                      : makeTranslucent(StyleEditor::palette().Playhead, 2));
+                      ? StyleEditor::palette.Playhead
+                      : makeTranslucent(StyleEditor::palette.Playhead, 2));
   const int x = moo_clock->now() / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
@@ -52,7 +52,7 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
                   bool drawHead) {
   if (client->following_uid() == client->uid()) {
-    QColor color = StyleEditor::palette().Playhead;
+    QColor color = StyleEditor::palette.Playhead;
     color.setAlpha(color.alpha() / 2);
     drawPlayhead(painter,
                  client->lastSeek() / client->editState().scale.clockPerPx,
@@ -64,10 +64,10 @@ void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
   if (moo_clock->has_last())
     painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
-                     makeTranslucent(StyleEditor::palette().Playhead, 2));
+                     makeTranslucent(StyleEditor::palette.Playhead, 2));
 
   painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
-                   makeTranslucent(StyleEditor::palette().Playhead, 2));
+                   makeTranslucent(StyleEditor::palette.Playhead, 2));
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
@@ -129,10 +129,10 @@ int one_over_last_clock(pxtnService const *pxtn) {
 
 void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
                    double alphaMultiplier) {
-  QColor color = makeTranslucent(StyleEditor::palette().Playhead, 8);
+  QColor color = makeTranslucent(StyleEditor::palette.Playhead, 8);
   color.setAlpha(color.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, interval.length(), height, color);
-  color = makeTranslucent(StyleEditor::palette().Playhead, 2);
+  color = makeTranslucent(StyleEditor::palette.Playhead, 2);
   color.setAlpha(color.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, 1, height, color);
   painter.fillRect(interval.end, 0, 1, height, color);

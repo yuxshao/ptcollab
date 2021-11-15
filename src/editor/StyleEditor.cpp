@@ -177,7 +177,7 @@ static std::shared_ptr<QPixmap> currentMeasureImages = nullptr;
 const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
 
 static Palette currentPalette = Palette::empty();
-const Palette &palette() { return currentPalette; }
+const Palette &palette = currentPalette;
 
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   // A stylesheet needs to exist for any part of the style to be loaded.

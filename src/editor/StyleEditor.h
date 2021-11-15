@@ -13,7 +13,7 @@ struct Palette {
  private:
   Palette(){};
   // Constructor is private so I don't accidentally do
-  // StyleEditor::Palette() instead of ::palette()
+  // StyleEditor::Palette() instead of ::palette
 
  public:
   QColor MeterBackground;
@@ -54,7 +54,7 @@ struct Palette {
 
   static Palette empty() { return {}; }
 };
-const Palette &palette();
+extern const Palette &palette;
 
 QStringList getStyles();
 }  // namespace StyleEditor

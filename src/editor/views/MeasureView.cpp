@@ -127,7 +127,7 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
         break;
       }
       case MouseEditState::Type::Seek: {
-        QColor color = StyleEditor::palette().Playhead;
+        QColor color = StyleEditor::palette.Playhead;
         color.setAlpha(color.alpha() * alphaMultiplier / 2);
         drawPlayhead(painter,
                      mouse_edit_state.current_clock / state.scale.clockPerPx,
@@ -169,12 +169,12 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   StyleEditor::palette().MeasureIncluded);
+                   StyleEditor::palette.MeasureIncluded);
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, StyleEditor::palette().MeasureExcluded);
+                   RULER_HEIGHT, StyleEditor::palette.MeasureExcluded);
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
-                   width(), 1, StyleEditor::palette().MeasureBeat);
+                   width(), 1, StyleEditor::palette.MeasureBeat);
   for (int beat = 0; true; ++beat) {
     int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
@@ -182,20 +182,20 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     if (beat % master->get_beat_num() == 0) {
       int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
-                       StyleEditor::palette().MeasureSeparator);
+                       StyleEditor::palette.MeasureSeparator);
       if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
       lastMeasureDraw = x;
       painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT,
-                       StyleEditor::palette().MeasureSeparator);
+                       StyleEditor::palette.MeasureSeparator);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT,
-                       StyleEditor::palette().MeasureNumberBlock);
+                       StyleEditor::palette.MeasureNumberBlock);
       if (measure < activeMeas)
         drawNumAlignTopRight(&painter, x + MEASURE_NUM_BLOCK_WIDTH, 1,
                              beat / master->get_beat_num());
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
-                       StyleEditor::palette().MeasureBeat);
+                       StyleEditor::palette.MeasureBeat);
   }
   drawFlag(&painter, FlagType::Top, false, 0, FLAG_Y);
   if (m_moo_clock->repeat_clock() > 0) {
@@ -213,7 +213,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   // Draw on events
 
   painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT,
-                   StyleEditor::palette().MeasureUnitEdit);
+                   StyleEditor::palette.MeasureUnitEdit);
   double scaleX = m_client->editState().scale.clockPerPx;
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
@@ -303,7 +303,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
       else
-        color = StyleEditor::palette().Cursor;
+        color = StyleEditor::palette.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
@@ -312,7 +312,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, StyleEditor::palette().Cursor,
+    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
                my_username, m_client->following_uid());
   }
 }

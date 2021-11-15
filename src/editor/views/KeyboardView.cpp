@@ -284,7 +284,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = StyleEditor::palette().Playhead;
+      QColor color = StyleEditor::palette.Playhead;
       color.setAlpha(color.alpha() * alphaMultiplier / 2);
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
                        0, 1, height, color);
@@ -405,8 +405,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
-  QBrush beatBrush(StyleEditor::palette().KeyboardBeat);
-  QBrush measureBrush(StyleEditor::palette().KeyboardMeasure);
+  QBrush beatBrush(StyleEditor::palette.KeyboardBeat);
+  QBrush measureBrush(StyleEditor::palette.KeyboardMeasure);
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
     int x = m_pxtn->master->get_beat_clock() * beat /
@@ -416,13 +416,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush = StyleEditor::palette().KeyboardRootNote;
-  QColor whiteNoteBrush = StyleEditor::palette().KeyboardWhiteNote;
-  QColor blackNoteBrush = StyleEditor::palette().KeyboardBlackNote;
+  QColor rootNoteBrush = StyleEditor::palette.KeyboardRootNote;
+  QColor whiteNoteBrush = StyleEditor::palette.KeyboardWhiteNote;
+  QColor blackNoteBrush = StyleEditor::palette.KeyboardBlackNote;
 
-  QColor whiteLeftBrush = StyleEditor::palette().KeyboardWhiteLeft;
-  QColor blackLeftBrush = StyleEditor::palette().KeyboardBlackLeft;
-  QColor black = StyleEditor::palette().KeyboardBlack;
+  QColor whiteLeftBrush = StyleEditor::palette.KeyboardWhiteLeft;
+  QColor blackLeftBrush = StyleEditor::palette.KeyboardBlackLeft;
+  QColor black = StyleEditor::palette.KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);
@@ -653,7 +653,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
       else
-        color = StyleEditor::palette().Cursor;
+        color = StyleEditor::palette.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
@@ -661,7 +661,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, StyleEditor::palette().Cursor,
+    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
                my_username, m_client->following_uid());
   }
 
