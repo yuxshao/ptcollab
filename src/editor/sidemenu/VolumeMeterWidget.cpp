@@ -14,33 +14,24 @@ const double MID_DB = -6;
 const double HIGH_DB = -1;
 const double MAX_DB = 3;
 
-// TODO: make this colour dynamic
-
-static QHash<QString, QColor> colorTable;
-
-static QColor BGCOLOR;
-static QColor BGCOLOR_SOFT;
-static QColor BAR_COLOR;
-static QColor BAR_MID_COLOR;
-static QColor LABEL_COLOR;
-static QColor TICK_COLOR;
-static QColor BAR_HIGH_COLOR;
-
 static QLinearGradient barGradient() {
   static QLinearGradient g = []() {
     QLinearGradient g(0, 0, 1, 0);
     g.setCoordinateMode(QGradient::ObjectMode);
-    g.setColorAt(0, BAR_COLOR);
-    g.setColorAt((MID_DB - MIN_DB) / (MAX_DB - MIN_DB), BAR_MID_COLOR);
-    g.setColorAt((HIGH_DB - MIN_DB) / (MAX_DB - MIN_DB), BAR_HIGH_COLOR);
+    g.setColorAt(0, StyleEditor::palette().MeterBar);
+    g.setColorAt((MID_DB - MIN_DB) / (MAX_DB - MIN_DB),
+                 StyleEditor::palette().MeterBarMid);
+    g.setColorAt((HIGH_DB - MIN_DB) / (MAX_DB - MIN_DB),
+                 StyleEditor::palette().MeterBarHigh);
     return g;
   }();
   return g;
 }
 
 static const QColor &colAtDb(double db) {
-  return (db > MID_DB ? (db > HIGH_DB ? BAR_HIGH_COLOR : BAR_MID_COLOR)
-                      : BAR_COLOR);
+  return (db > MID_DB ? (db > HIGH_DB ? StyleEditor::palette().MeterBarHigh
+                                      : StyleEditor::palette().MeterBarMid)
+                      : StyleEditor::palette().MeterBar);
 }
 
 VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
@@ -53,7 +44,7 @@ VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
 
 void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
   QPainter p(this);
-  p.fillRect(e->rect(), BGCOLOR);
+  p.fillRect(e->rect(), StyleEditor::palette().MeterBackground);
   // int w_limit = dbToX(-3);
 
   const auto &levels = m_client->volumeLevels();
@@ -64,12 +55,14 @@ void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
     int h = (height() + 1) / levels.size() - 1;
     p.fillRect(QRect(0, y, width(), h), barGradient());
 
-    p.fillRect(QRect(w, y, width() - w, h), BGCOLOR);
+    p.fillRect(QRect(w, y, width() - w, h),
+               StyleEditor::palette().MeterBackground);
 
     for (int db = MIN_DB; db < MAX_DB; db += 3)
-      p.fillRect(dbToX(db), y, 1, h, BGCOLOR_SOFT);
-    p.fillRect(dbToX(-3), y, 1, h, BGCOLOR_SOFT);
-    p.fillRect(dbToX(-3), y, 1, h, BGCOLOR_SOFT);
+      p.fillRect(dbToX(db), y, 1, h,
+                 StyleEditor::palette().MeterBackgroundSoft);
+    p.fillRect(dbToX(-3), y, 1, h, StyleEditor::palette().MeterBackgroundSoft);
+    p.fillRect(dbToX(-3), y, 1, h, StyleEditor::palette().MeterBackgroundSoft);
 
     double peak = levels[i].last_peak_dbfs();
     p.fillRect(QRect(dbToX(peak) - 1, y, 2, h), colAtDb(peak));
@@ -107,7 +100,7 @@ constexpr int SMALL_TICK_HEIGHT = 2;
 void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   QPainter p(this);
   p.setFont(QFont("Sans serif", 6));
-  p.setPen(LABEL_COLOR);
+  p.setPen(StyleEditor::palette().MeterLabel);
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
              (Qt::AlignRight | Qt::AlignBottom), "dB");
@@ -119,7 +112,7 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   for (int db = MIN_DB; db < MAX_DB; db += 1) {
     int x = m_frame->dbToX(db);
     int h = (db % 6 == 0 ? TICK_HEIGHT : SMALL_TICK_HEIGHT);
-    p.fillRect(x, height() - h, 1, h, TICK_COLOR);
+    p.fillRect(x, height() - h, 1, h, StyleEditor::palette().MeterTick);
   }
   QWidget::paintEvent(e);
 }
@@ -132,16 +125,6 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterFrame *meter, QWidget *parent)
     : QWidget(parent),
       m_frame(meter),
       m_labels(new VolumeMeterLabels(meter, this)) {
-  colorTable = StyleEditor::getMeterPalette();
-
-  BGCOLOR = colorTable.find("Background").value();
-  BGCOLOR_SOFT = colorTable.find("BackgroundSoft").value();
-  BAR_COLOR = colorTable.find("Bar").value();
-  BAR_MID_COLOR = colorTable.find("BarMid").value();
-  LABEL_COLOR = colorTable.find("Label").value();
-  TICK_COLOR = colorTable.find("Tick").value();
-  BAR_HIGH_COLOR = colorTable.find("BarHigh").value();
-
   QVBoxLayout *layout = new QVBoxLayout;
   layout->setMargin(0);
   layout->setSpacing(0);

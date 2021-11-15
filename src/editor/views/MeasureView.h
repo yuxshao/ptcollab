@@ -10,11 +10,6 @@
 #include "editor/StyleEditor.h"
 #include "editor/audio/NotePreview.h"
 
-static QHash<QString, QColor> measureColorTable;
-static QBrush measureBrush;
-static QBrush beatBrush;
-static QBrush unitEditBrush;
-static QBrush measureNumBlockBrush;
 class MeasureView : public QWidget {
   Q_OBJECT
 

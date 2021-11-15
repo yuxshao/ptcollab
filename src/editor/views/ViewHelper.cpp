@@ -41,10 +41,9 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
-  QColor color =
-      (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
-           ? StyleEditor::getCommonViewColor("Playhead")
-           : makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
+  QColor color = (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
+                      ? StyleEditor::Palette().Playhead
+                      : makeTranslucent(StyleEditor::Palette().Playhead, 2));
   const int x = moo_clock->now() / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
@@ -52,7 +51,7 @@ void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
 void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
                   bool drawHead) {
   if (client->following_uid() == client->uid()) {
-    QColor color = StyleEditor::getCommonViewColor("Playhead");
+    QColor color = StyleEditor::Palette().Playhead;
     color.setAlpha(color.alpha() / 2);
     drawPlayhead(painter,
                  client->lastSeek() / client->editState().scale.clockPerPx,
@@ -63,13 +62,11 @@ void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
 void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                           qreal clockPerPx, int height) {
   if (moo_clock->has_last())
-    painter.fillRect(
-        moo_clock->last_clock() / clockPerPx, 0, 1, height,
-        makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
+    painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
+                     makeTranslucent(StyleEditor::Palette().Playhead, 2));
 
-  painter.fillRect(
-      moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
-      makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2));
+  painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
+                   makeTranslucent(StyleEditor::Palette().Playhead, 2));
 }
 
 void handleWheelEventWithModifier(QWheelEvent *event, PxtoneClient *client) {
@@ -131,11 +128,10 @@ int one_over_last_clock(pxtnService const *pxtn) {
 
 void drawSelection(QPainter &painter, const Interval &interval, qint32 height,
                    double alphaMultiplier) {
-  QColor color =
-      makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 8);
+  QColor color = makeTranslucent(StyleEditor::Palette().Playhead, 8);
   color.setAlpha(color.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, interval.length(), height, color);
-  color = makeTranslucent(StyleEditor::getCommonViewColor("Playhead"), 2);
+  color = makeTranslucent(StyleEditor::Palette().Playhead, 2);
   color.setAlpha(color.alpha() * alphaMultiplier);
   painter.fillRect(interval.start, 0, 1, height, color);
   painter.fillRect(interval.end, 0, 1, height, color);
@@ -169,13 +165,12 @@ constexpr int NUM_OFFSET_X = 0;
 constexpr int NUM_OFFSET_Y = 40;
 void drawNum(QPainter *painter, int xr, int y, int num, int num_width,
              int num_height, int num_offset_x, int num_offset_y) {
-  static QPixmap images(StyleEditor::getMeasureImages());
   do {
     int digit = num % 10;
     xr -= NUM_WIDTH;
-    painter->drawPixmap(xr, y, num_width, num_height, images,
-                        num_offset_x + digit * num_width, num_offset_y,
-                        num_width, num_height);
+    painter->drawPixmap(
+        xr, y, num_width, num_height, *StyleEditor::measureImages(),
+        num_offset_x + digit * num_width, num_offset_y, num_width, num_height);
     num = (num - digit) / 10;
   } while (num > 0);
 }
@@ -197,7 +192,7 @@ static int num_digits(int num) {
 
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
-  static QPixmap images(StyleEditor::getMeasureImages());
+  QPixmap &images = *StyleEditor::measureImages();
   if (height > 10) {
     bool big = height > 13;
     int num_width = (big ? 9 : 8);

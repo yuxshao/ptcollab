@@ -18,8 +18,6 @@
 
 namespace StyleEditor {
 const static char *SYSTEM_STYLE = "<System>";
-static QString currentStyleBaseDir;
-static QString currentStyleName = SYSTEM_STYLE;
 
 QString styleSheetDir(const QString &basedir, const QString &styleName) {
   return basedir + "/" + styleName;
@@ -27,285 +25,117 @@ QString styleSheetDir(const QString &basedir, const QString &styleName) {
 QString styleSheetPath(const QString &basedir, const QString &styleName) {
   return styleSheetDir(basedir, styleName) + "/" + styleName + ".qss";
 }
+QString palettePath(const QString &basedir, const QString &styleName) {
+  return styleSheetDir(basedir, styleName) + "/palette.ini";
+}
+
 struct InvalidColorError {
   QString settingsKey;
   QString setting;
 };
 
-const QPixmap getMeasureImages() {
-  QPixmap px(styleSheetDir(currentStyleBaseDir, currentStyleName) +
-             "/images.png");
-  QPixmap fallback = QPixmap(":/images/images");
-  if (!px.isNull() && px.size() == fallback.size())
-    return px;  // the rare case in which an image has to be a fixed size
-  else
-    return fallback;
-}
-
-inline bool processColorString(QColor *color, const QString str) {
-  QString string = str;
-  if (string.isEmpty()) return 1;
-  if (string.at(0) != "#") string.prepend("#");
-  switch (string.length()) {
-    case 4: {  // e.g. #RGB
-      QString rgb;
-      rgb.append("#");
-      rgb.append(string.at(1));
-      rgb.append(string.at(1));
-      rgb.append(string.at(2));
-      rgb.append(string.at(2));
-      rgb.append(string.at(3));
-      rgb.append(string.at(3));
-      if (QColor::isValidColor(rgb)) {
-        color->setNamedColor(rgb);
-        return true;
-      }
-      break;
-    }
-    case 7: {  // e.g. #RRGGBB
-      if (QColor::isValidColor(string)) {
-        color->setNamedColor(string);
-        return true;
-      }
-      break;
-    }
-    case 9: {  // e.g. #RRGGBBAA
-      QString rgb = string.chopped(2);
-      if (QColor::isValidColor(rgb)) {
-        color->setNamedColor(rgb);
-        color->setAlpha(string.rightRef(2).toInt(nullptr, 16));
-        return true;
-      }
-      break;
-    }
+void withSettingsColor(const QSettings &settings, const QString &key,
+                       std::function<void(const QColor &)> f) {
+  if (settings.contains(key)) {
+    QString str = settings.value(key).toString();
+    if (QColor::isValidColor(str))
+      f(QColor(str));
+    else
+      qWarning() << QString(
+                        "Invalid color (%1) for "
+                        "setting (%2) in palette")
+                        .arg(str, key);
   }
-  return false;
 }
 
-void setColorFromSetting(QPalette &palette, QPalette::ColorRole role,
-                         QSettings &settings, const QString &key) {
-  QString str = settings.value(key).toString();
-  QColor *color = new QColor(Qt::magenta);
-  if (!processColorString(color, str))
-    palette.setColor(role, *color);
-  else
-    throw InvalidColorError{key, str};
+void setQPaletteColor(QPalette &palette, QPalette::ColorRole role,
+                      QSettings &settings, const QString &key) {
+  withSettingsColor(settings, key,
+                    [&](const QColor &c) { palette.setColor(role, c); });
 };
 
-QColor getColorFromSetting(QSettings &settings, const QString &key,
-                           QHash<QString, QColor> &fallback) {
-  QString str = settings.value(key).toString();
-  QColor *color = new QColor(Qt::magenta);
-  if (!processColorString(color, str))
-    return *color;
-  else
-    return fallback.find(key).value();
+void loadQPalette(const QString &path, QPalette &palette) {
+  QSettings stylePalette(path, QSettings::IniFormat);
+
+  stylePalette.beginGroup("palette");
+  setQPaletteColor(palette, QPalette::Window, stylePalette, "Window");
+  setQPaletteColor(palette, QPalette::WindowText, stylePalette, "WindowText");
+  setQPaletteColor(palette, QPalette::Base, stylePalette, "Base");
+  setQPaletteColor(palette, QPalette::ToolTipBase, stylePalette, "ToolTipBase");
+  setQPaletteColor(palette, QPalette::ToolTipText, stylePalette, "ToolTipText");
+  setQPaletteColor(palette, QPalette::Text, stylePalette, "Text");
+  setQPaletteColor(palette, QPalette::Button, stylePalette, "Button");
+  setQPaletteColor(palette, QPalette::ButtonText, stylePalette, "ButtonText");
+  setQPaletteColor(palette, QPalette::BrightText, stylePalette, "BrightText");
+  setQPaletteColor(palette, QPalette::Text, stylePalette, "Text");
+  setQPaletteColor(palette, QPalette::Link, stylePalette, "Link");
+  setQPaletteColor(palette, QPalette::Highlight, stylePalette, "Highlight");
+  setQPaletteColor(palette, QPalette::Light, stylePalette, "Light");
+  setQPaletteColor(palette, QPalette::Dark, stylePalette, "Dark");
+  stylePalette.endGroup();
 }
 
-void tryLoadGlobalPalette(const QString &basedir, const QString &styleName) {
-  QString path = styleSheetDir(basedir, styleName) + "/palette.ini";
-  if (QFile::exists(path)) {
-    QPalette palette = qApp->palette();
-    QSettings stylePalette(path, QSettings::IniFormat);
+void setPaletteColor(const QSettings &settings, QColor &dst,
+                     const QString &key) {
+  withSettingsColor(settings, key, [&](const QColor &c) { dst = c; });
+};
 
-    stylePalette.beginGroup("palette");
-    try {
-      setColorFromSetting(palette, QPalette::Window, stylePalette, "Window");
-      setColorFromSetting(palette, QPalette::WindowText, stylePalette,
-                          "WindowText");
-      setColorFromSetting(palette, QPalette::Base, stylePalette, "Base");
-      setColorFromSetting(palette, QPalette::ToolTipBase, stylePalette,
-                          "ToolTipBase");
-      setColorFromSetting(palette, QPalette::ToolTipText, stylePalette,
-                          "ToolTipText");
-      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
-      setColorFromSetting(palette, QPalette::Button, stylePalette, "Button");
-      setColorFromSetting(palette, QPalette::ButtonText, stylePalette,
-                          "ButtonText");
-      setColorFromSetting(palette, QPalette::BrightText, stylePalette,
-                          "BrightText");
-      setColorFromSetting(palette, QPalette::Text, stylePalette, "Text");
-      setColorFromSetting(palette, QPalette::Link, stylePalette, "Link");
-      setColorFromSetting(palette, QPalette::Highlight, stylePalette,
-                          "Highlight");
-      setColorFromSetting(palette, QPalette::Light, stylePalette, "Light");
-      setColorFromSetting(palette, QPalette::Dark, stylePalette, "Dark");
-      qApp->setPalette(palette);
-    } catch (InvalidColorError e) {
-      qWarning() << QString(
-                        "Could not load palette. Invalid color (%1) for "
-                        "setting (%2)")
-                        .arg(e.setting, e.settingsKey);
-    }
-    stylePalette.endGroup();
-  }
+void loadPalette(const QString &path, Palette &p) {
+  QSettings stylePalette(path, QSettings::IniFormat);
+  setPaletteColor(stylePalette, p.MeterBackground, "meter/Background");
+  setPaletteColor(stylePalette, p.MeterBackgroundSoft, "meter/BackgroundSoft");
+  setPaletteColor(stylePalette, p.MeterBar, "meter/Bar");
+  setPaletteColor(stylePalette, p.MeterBarMid, "meter/BarMid");
+  setPaletteColor(stylePalette, p.MeterLabel, "meter/Label");
+  setPaletteColor(stylePalette, p.MeterTick, "meter/Tick");
+  setPaletteColor(stylePalette, p.MeterBarHigh, "meter/BarHigh");
+
+  setPaletteColor(stylePalette, p.KeyboardBeat, "keyboard/Beat");
+  setPaletteColor(stylePalette, p.KeyboardRootNote, "keyboard/RootNote");
+  setPaletteColor(stylePalette, p.KeyboardWhiteNote, "keyboard/WhiteNote");
+  setPaletteColor(stylePalette, p.KeyboardBlackNote, "keyboard/BlackNote");
+  setPaletteColor(stylePalette, p.KeyboardWhiteLeft, "keyboard/WhiteLeft");
+  setPaletteColor(stylePalette, p.KeyboardBlackLeft, "keyboard/BlackLeft");
+  setPaletteColor(stylePalette, p.KeyboardBlack, "keyboard/Black");
+  setPaletteColor(stylePalette, p.KeyboardMeasure, "keyboard/Measure");
+
+  setPaletteColor(stylePalette, p.MeasureSeparator, "measure/Separator");
+  setPaletteColor(stylePalette, p.MeasureIncluded, "measure/Included");
+  setPaletteColor(stylePalette, p.MeasureExcluded, "measure/Excluded");
+  setPaletteColor(stylePalette, p.MeasureBeat, "measure/Beat");
+  setPaletteColor(stylePalette, p.MeasureUnitEdit, "measure/UnitEdit");
+  setPaletteColor(stylePalette, p.MeasureNumberBlock, "measure/NumberBlock");
+
+  setPaletteColor(stylePalette, p.ParamBlue, "param/Blue");
+  setPaletteColor(stylePalette, p.ParamDarkBlue, "param/DarkBlue");
+  setPaletteColor(stylePalette, p.ParamDarkTeal, "param/DarkTeal");
+  setPaletteColor(stylePalette, p.ParamBrightGreen, "param/BrightGreen");
+  setPaletteColor(stylePalette, p.ParamFadedWhite, "param/FadedWhite");
+  setPaletteColor(stylePalette, p.ParamFont, "param/Font");
+  setPaletteColor(stylePalette, p.ParamBeat, "param/Beat");
+  setPaletteColor(stylePalette, p.ParamMeasure, "param/Measure");
+
+  setPaletteColor(stylePalette, p.Playhead, "views/Playhead");
+  setPaletteColor(stylePalette, p.Cursor, "views/Cursor");
 }
 
-void constructList(QStringList list, QHash<QString, QColor> *hash,
-                   QSettings *settings, QHash<QString, QColor> *fallback) {
-  QStringListIterator it(list);
-  while (it.hasNext()) {
-    QString current = it.next();
-    hash->insert(current, getColorFromSetting(*settings, current, *fallback));
-  }
-}
-QHash<QString, QColor> getGlobalViewPalette() {
-  QString path =
-      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
-  QHash<QString, QColor> colors;
-  QHash<QString, QColor> fallback;
+Palette defaultPalette(bool is_system_theme) {
+  Palette p;
+  loadPalette(":/styles/ptCollage/palette.ini", p);
 
-  const QStringList colorList{"Playhead", "Cursor"};
-
-  fallback.insert(colorList.at(0), Qt::white);  // Playhead
-  fallback.insert(colorList.at(1), Qt::white);  // Cursor
-
-  if (currentStyleName == SYSTEM_STYLE) return fallback;
-
-  if (QFile::exists(path)) {
-    QSettings stylePalette(path, QSettings::IniFormat);
-    stylePalette.beginGroup("views");
-    constructList(colorList, &colors, &stylePalette, &fallback);
-    stylePalette.endGroup();
-  }
-  return colors;
-}
-
-static QHash<QString, QColor> globalViewColorTable;
-QColor getCommonViewColor(QString key) {
-  if (globalViewColorTable.isEmpty())
-    globalViewColorTable = getGlobalViewPalette();
-  return getGlobalViewPalette().find(key).value();
-}
-
-QHash<QString, QColor> getMeterPalette() {
-  QString path =
-      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
-  QHash<QString, QColor> colors;
-  QHash<QString, QColor> fallback;
-
-  const QStringList colorList{"Background", "BackgroundSoft", "Bar",
-                              "BarMid",     "Label",          "Tick",
-                              "BarHigh"};
-
-  if (currentStyleName == SYSTEM_STYLE) {
-    fallback.insert(colorList.at(0), qApp->palette().dark().color());
-    fallback.insert(colorList.at(1), qApp->palette().dark().color());
-    fallback.insert(colorList.at(2), Qt::green);
-    fallback.insert(colorList.at(3), Qt::yellow);
-    fallback.insert(colorList.at(4), qApp->palette().text().color());
-    fallback.insert(colorList.at(5), qApp->palette().shadow().color());
-    fallback.insert(colorList.at(6), Qt::red);
-  } else {
-    fallback.insert(colorList.at(0),
-                    QColor::fromRgb(26, 25, 73));  // Background
-    fallback.insert(colorList.at(1),
-                    QColor::fromRgb(26, 25, 73, 30));  // BackgroundSoft
-    fallback.insert(colorList.at(2), QColor::fromRgb(0, 240, 128));    // Bar
-    fallback.insert(colorList.at(3), QColor::fromRgb(255, 255, 128));  // BarMid
-    fallback.insert(colorList.at(4), QColor::fromRgb(210, 202, 156));  // Label
-    fallback.insert(colorList.at(5), QColor::fromRgb(52, 50, 65));     // Tick
-    fallback.insert(colorList.at(6), Qt::red);  // BarHigh
+  if (is_system_theme) {
+    // Use a slightly different colour scheme since the ptcollage style is a bit
+    // jarring
+    p.MeterBackground = qApp->palette().dark().color();
+    p.MeterBackgroundSoft = qApp->palette().dark().color();
+    p.MeterBar = Qt::green;
+    p.MeterBarMid = Qt::yellow;
+    p.MeterLabel = qApp->palette().text().color();
+    p.MeterTick = qApp->palette().shadow().color();
+    p.MeterBarHigh = Qt::red;
   }
 
-  if (currentStyleName == SYSTEM_STYLE) return fallback;
-
-  if (QFile::exists(path)) {
-    QSettings stylePalette(path, QSettings::IniFormat);
-    stylePalette.beginGroup("meter");
-    constructList(colorList, &colors, &stylePalette, &fallback);
-    stylePalette.endGroup();
-  }
-  return colors;
-}
-QHash<QString, QColor> getKeyboardPalette() {
-  QString path =
-      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
-  QHash<QString, QColor> colors;
-  QHash<QString, QColor> fallback;
-
-  const QStringList colorList{"Beat",      "RootNote",  "WhiteNote",
-                              "BlackNote", "WhiteLeft", "BlackLeft",
-                              "Black",     "Measure"};
-
-  fallback.insert(colorList.at(0), QColor::fromRgb(128, 128, 128));  // Beat
-  fallback.insert(colorList.at(1), QColor::fromRgb(84, 76, 76));     // RootNote
-  fallback.insert(colorList.at(2), QColor::fromRgb(64, 64, 64));  // WhiteNote
-  fallback.insert(colorList.at(3), QColor::fromRgb(32, 32, 32));  // BlackNote
-  fallback.insert(colorList.at(4),
-                  QColor::fromRgb(131, 126, 120, 128));  // WhiteLeft
-  fallback.insert(colorList.at(5),
-                  QColor::fromRgb(78, 75, 97, 128));  // BlackLeft
-  fallback.insert(colorList.at(6), Qt::black);        // Black
-  fallback.insert(colorList.at(7), Qt::white);
-
-  if (currentStyleName == SYSTEM_STYLE) return fallback;
-
-  if (QFile::exists(path)) {
-    QSettings stylePalette(path, QSettings::IniFormat);
-    stylePalette.beginGroup("keyboard");
-    constructList(colorList, &colors, &stylePalette, &fallback);
-    stylePalette.endGroup();
-  }
-  return colors;
-}
-
-QHash<QString, QColor> getMeasurePalette() {
-  QString path =
-      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
-  QHash<QString, QColor> colors;
-  QHash<QString, QColor> fallback;
-
-  const QStringList colorList{
-      "Playhead", "MeasureSeparator", "MeasureIncluded",   "MeasureExcluded",
-      "Beat",     "UnitEdit",         "MeasureNumberBlock"};
-
-  fallback.insert(colorList.at(0), Qt::white);              // Playhead
-  fallback.insert(colorList.at(1), Qt::white);              // MeasureSeparator
-  fallback.insert(colorList.at(2), QColor(128, 0, 0));      // MeasureIncluded
-  fallback.insert(colorList.at(3), QColor(64, 0, 0));       // MeasureExcluded
-  fallback.insert(colorList.at(4), QColor(128, 128, 128));  // Beat
-  fallback.insert(colorList.at(5), QColor(64, 0, 112));     // UnitEdit
-  fallback.insert(colorList.at(6), QColor(96, 96, 96));  // MeasureNumberBlock
-
-  if (currentStyleName == SYSTEM_STYLE) return fallback;
-
-  if (QFile::exists(path)) {
-    QSettings stylePalette(path, QSettings::IniFormat);
-    stylePalette.beginGroup("measure");
-    constructList(colorList, &colors, &stylePalette, &fallback);
-    stylePalette.endGroup();
-  }
-  return colors;
-}
-
-QHash<QString, QColor> getParametersPalette() {
-  QString path =
-      styleSheetDir(currentStyleBaseDir, currentStyleName) + "/palette.ini";
-  QHash<QString, QColor> colors;
-  QHash<QString, QColor> fallback;
-
-  const QStringList colorList{"Blue",        "DarkBlue",   "DarkTeal",
-                              "BrightGreen", "FadedWhite", "Font",
-                              "Beat",        "Measure"};
-
-  fallback.insert(colorList.at(0), QColor(52, 50, 85));     // Blue
-  fallback.insert(colorList.at(1), QColor(26, 25, 73));     // DarkBlue
-  fallback.insert(colorList.at(2), QColor(0, 96, 96));      // DarkTeal
-  fallback.insert(colorList.at(3), QColor(0, 240, 128));    // BrightGreen
-  fallback.insert(colorList.at(4), Qt::white);              // FadedWhite
-  fallback.insert(colorList.at(5), Qt::white);              // Font
-  fallback.insert(colorList.at(6), QColor(128, 128, 128));  // Beat
-  fallback.insert(colorList.at(7), Qt::white);              // Measure
-  if (currentStyleName == SYSTEM_STYLE) return fallback;
-
-  if (QFile::exists(path)) {
-    QSettings stylePalette(path, QSettings::IniFormat);
-    stylePalette.beginGroup("parameters");
-    constructList(colorList, &colors, &stylePalette, &fallback);
-    stylePalette.endGroup();
-  }
-  return colors;
+  return p;
 }
 
 void initializeStyleDir() {
@@ -321,6 +151,7 @@ void initializeStyleDir() {
   }
   QDesktopServices::openUrl(optimalLocation);
 }
+
 QString relativizeUrls(QString stylesheet, const QString &basedir,
                        const QString &styleName) {
   stylesheet.replace("url(\"",
@@ -340,7 +171,15 @@ void loadFonts(const QString path) {
     }
   }
 }
+
+static std::shared_ptr<QPixmap> currentMeasureImages = nullptr;
+const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
+
+static Palette currentPalette;
+const Palette &palette() { return currentPalette; }
+
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
+  // A stylesheet needs to exist for any part of the style to be loaded.
   QFile styleSheet = styleSheetPath(basedir, styleName);
   if (!styleSheet.open(QFile::ReadOnly)) {
     qWarning() << "The selected style is not available: " << styleName << " ("
@@ -348,18 +187,29 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
     return false;
   }
 
-  currentStyleName = styleName;
-  currentStyleBaseDir = basedir;
-  tryLoadGlobalPalette(basedir, styleName);
+  QString path = palettePath(basedir, styleName);
+  if (QFile::exists(path)) {
+    QPalette qp(qApp->palette());
+    loadQPalette(path, qp);
+    qApp->setPalette(qp);
+
+    Palette p = defaultPalette(false);
+    loadPalette(path, p);
+    currentPalette = p;
+  }
+
   loadFonts(styleSheetDir(basedir, styleName));
-  // Only apply custom palette if palette.ini is present. For minimal
-  // sheets, the availability of a palette helps their changes blend
-  // in with unchanged aspects.
   qApp->setStyle(QStyleFactory::create("Fusion"));
   // Use Fusion as a base for aspects stylesheet does not cover, it should
   // look consistent across all platforms
   qApp->setStyleSheet(relativizeUrls(styleSheet.readAll(), basedir, styleName));
   styleSheet.close();
+
+  QPixmap px(styleSheetDir(basedir, styleName) + "/images.png");
+  if (!px.isNull() && px.size() == currentMeasureImages->size())
+    currentMeasureImages = std::make_shared<QPixmap>(px);
+  else
+    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
   return true;
 }
 
@@ -395,7 +245,10 @@ std::map<QString, QString> getStyleMap() {
 }
 
 bool tryLoadStyle(const QString &styleName) {
-  if (styleName == SYSTEM_STYLE) return true;
+  if (styleName == SYSTEM_STYLE) {
+    currentPalette = defaultPalette(true);
+    return true;
+  }
 
   auto styles = getStyleMap();
   auto it = styles.find(styleName);
@@ -406,8 +259,6 @@ bool tryLoadStyle(const QString &styleName) {
   }
 
   QString basedir = it->second;
-  currentStyleName = styleName;
-  currentStyleBaseDir = basedir;
   return tryLoadStyle(basedir, styleName);
 }
 

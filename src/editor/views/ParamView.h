@@ -10,8 +10,6 @@
 #include "editor/StyleEditor.h"
 #include "editor/audio/NotePreview.h"
 
-static QHash<QString, QColor> parametersColorTable;
-
 class ParamView : public QWidget {
   Q_OBJECT
 

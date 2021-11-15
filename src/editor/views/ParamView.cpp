@@ -9,10 +9,6 @@
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
 
-static QColor blue;
-static QColor darkBlue;
-static QColor darkTeal;
-
 ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
     : QWidget(parent),
       m_client(client),
@@ -21,11 +17,6 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       m_audio_note_preview(nullptr),
       m_woice_menu(new QMenu(this)),
       m_last_woice_menu_preview_id(-1) {
-  parametersColorTable = StyleEditor::getParametersPalette();
-  blue = parametersColorTable.find("Blue").value();
-  darkBlue = parametersColorTable.find("DarkBlue").value();
-  darkTeal = parametersColorTable.find("DarkTeal").value();
-
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   updateGeometry();
@@ -164,8 +155,12 @@ std::list<ParamEditInterval> lineEdit(const MouseEditState &state,
 }
 
 constexpr int BACKGROUND_GAPS[] = {-1000, 24, 32, 64, 96, 104, 1000};
-static const QColor *GAP_COLORS[] = {&darkBlue, &darkBlue, &blue,
-                                     &blue,     &darkBlue, &darkBlue};
+static const QColor *GAP_COLORS[] = {&StyleEditor::palette().ParamDarkBlue,
+                                     &StyleEditor::palette().ParamDarkBlue,
+                                     &StyleEditor::palette().ParamBlue,
+                                     &StyleEditor::palette().ParamBlue,
+                                     &StyleEditor::palette().ParamDarkBlue,
+                                     &StyleEditor::palette().ParamDarkBlue};
 
 constexpr int NUM_BACKGROUND_GAPS =
     sizeof(BACKGROUND_GAPS) / sizeof(BACKGROUND_GAPS[0]);
@@ -194,7 +189,7 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
   std::shared_ptr<const pxtnWoice> woice = pxtn->Woice_Get(last.value);
   if (woice != nullptr) {
     int32_t thisX = curr.clock / clockPerPx;
-    QColor font = parametersColorTable.find("Font").value();
+    QColor font = StyleEditor::palette().ParamFont;
     painter.setPen(QColor::fromRgb(font.red(), font.green(), font.blue(),
                                    onColor.alpha()));
     painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
@@ -223,7 +218,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, onColor);
     if (unitOffset == 0) {
       // Highlight at lastX
-      QColor fadedWhite = parametersColorTable.find("FadedWhite").value();
+      QColor fadedWhite = StyleEditor::palette().ParamFadedWhite;
       fadedWhite.setAlpha(onColor.alpha());
       painter.fillRect(lastX, lastY - lineHeight / 2, lineWidth, lineHeight,
                        fadedWhite);
@@ -259,7 +254,7 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
       if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
-      QColor c = parametersColorTable.find("BrightGreen").value();
+      QColor c = StyleEditor::palette().ParamBrightGreen;
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
       if (!Evelist_Kind_IsTail(current_kind) &&
@@ -282,8 +277,8 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
       }
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = StyleEditor::getCommonViewColor("Playhead");
-      color.setAlpha((StyleEditor::getCommonViewColor("Playhead").alpha() / 2) *
+      QColor color = StyleEditor::palette().Playhead;
+      color.setAlpha((StyleEditor::palette().Playhead.alpha() / 2) *
                      alphaMultiplier);
       painter.fillRect(
           state.current_clock / clockPerPx, 0, 1, height,
@@ -312,8 +307,8 @@ void ParamView::paintEvent(QPaintEvent *event) {
 
   // Draw white lines under background
   // TODO: Dedup with keyboardview
-  QBrush beatBrush = parametersColorTable.find("Beat").value();
-  QBrush measureBrush = parametersColorTable.find("Measure").value();
+  QBrush beatBrush = StyleEditor::palette().ParamBeat;
+  QBrush measureBrush = StyleEditor::palette().ParamMeasure;
   const pxtnMaster *master = pxtn->master;
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % master->get_beat_num() == 0);
@@ -438,7 +433,6 @@ void ParamView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 
   // Draw cursors
-  QColor color = StyleEditor::getCommonViewColor("Cursor");
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
@@ -449,9 +443,12 @@ void ParamView::paintEvent(QPaintEvent *event) {
       state.scale =
           m_client->editState().scale;  // Position according to our scale
       int unit_id = state.m_current_unit_id;
+      QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
+      else
+        color = StyleEditor::palette().Cursor;
       drawCursor(state, painter, color, remote_state.user, uid, current_kind,
                  height());
     }
@@ -460,8 +457,8 @@ void ParamView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, color, my_username,
-               m_client->following_uid(), current_kind, height());
+    drawCursor(m_client->editState(), painter, StyleEditor::palette().Cursor,
+               my_username, m_client->following_uid(), current_kind, height());
   }
 }
 
