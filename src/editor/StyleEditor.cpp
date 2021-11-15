@@ -99,21 +99,22 @@ void loadPalette(const QString &path, Palette &p) {
   setPaletteColor(stylePalette, p.KeyboardBlack, "keyboard/Black");
   setPaletteColor(stylePalette, p.KeyboardMeasure, "keyboard/Measure");
 
-  setPaletteColor(stylePalette, p.MeasureSeparator, "measure/Separator");
-  setPaletteColor(stylePalette, p.MeasureIncluded, "measure/Included");
-  setPaletteColor(stylePalette, p.MeasureExcluded, "measure/Excluded");
+  setPaletteColor(stylePalette, p.MeasureSeparator, "measure/MeasureSeparator");
+  setPaletteColor(stylePalette, p.MeasureIncluded, "measure/MeasureIncluded");
+  setPaletteColor(stylePalette, p.MeasureExcluded, "measure/MeasureExcluded");
   setPaletteColor(stylePalette, p.MeasureBeat, "measure/Beat");
   setPaletteColor(stylePalette, p.MeasureUnitEdit, "measure/UnitEdit");
-  setPaletteColor(stylePalette, p.MeasureNumberBlock, "measure/NumberBlock");
+  setPaletteColor(stylePalette, p.MeasureNumberBlock,
+                  "measure/MeasureNumberBlock");
 
-  setPaletteColor(stylePalette, p.ParamBlue, "param/Blue");
-  setPaletteColor(stylePalette, p.ParamDarkBlue, "param/DarkBlue");
-  setPaletteColor(stylePalette, p.ParamDarkTeal, "param/DarkTeal");
-  setPaletteColor(stylePalette, p.ParamBrightGreen, "param/BrightGreen");
-  setPaletteColor(stylePalette, p.ParamFadedWhite, "param/FadedWhite");
-  setPaletteColor(stylePalette, p.ParamFont, "param/Font");
-  setPaletteColor(stylePalette, p.ParamBeat, "param/Beat");
-  setPaletteColor(stylePalette, p.ParamMeasure, "param/Measure");
+  setPaletteColor(stylePalette, p.ParamBlue, "parameters/Blue");
+  setPaletteColor(stylePalette, p.ParamDarkBlue, "parameters/DarkBlue");
+  setPaletteColor(stylePalette, p.ParamDarkTeal, "parameters/DarkTeal");
+  setPaletteColor(stylePalette, p.ParamBrightGreen, "parameters/BrightGreen");
+  setPaletteColor(stylePalette, p.ParamFadedWhite, "parameters/FadedWhite");
+  setPaletteColor(stylePalette, p.ParamFont, "parameters/Font");
+  setPaletteColor(stylePalette, p.ParamBeat, "parameters/Beat");
+  setPaletteColor(stylePalette, p.ParamMeasure, "parameters/Measure");
 
   setPaletteColor(stylePalette, p.Playhead, "views/Playhead");
   setPaletteColor(stylePalette, p.Cursor, "views/Cursor");

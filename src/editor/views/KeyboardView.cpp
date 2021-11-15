@@ -415,23 +415,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush =
-      StyleEditor::palette()
-          .KeyboardRootNote.value();  // QColor::fromRgb(84, 76, 76));
-  QColor whiteNoteBrush =
-      StyleEditor::palette()
-          .KeyboardWhiteNote.value();  //(QColor::fromRgb(64, 64, 64));
-  QColor blackNoteBrush =
-      StyleEditor::palette()
-          .KeyboardBlackNote.value();  // QColor::fromRgb(32, 32, 32));
+  QColor rootNoteBrush = StyleEditor::palette().KeyboardRootNote;
+  QColor whiteNoteBrush = StyleEditor::palette().KeyboardWhiteNote;
+  QColor blackNoteBrush = StyleEditor::palette().KeyboardBlackNote;
 
-  QColor whiteLeftBrush =
-      StyleEditor::palette()
-          .KeyboardWhiteLeft.value();  //(QColor::fromRgb(131, 126, 120, 128));
-  QColor blackLeftBrush =
-      StyleEditor::palette()
-          .KeyboardBlackLeft.value();  //(QColor::fromRgb(78, 75, 97, 128));
-  QColor black = StyleEditor::palette().KeyboardBlack.value();  //(Qt::black);
+  QColor whiteLeftBrush = StyleEditor::palette().KeyboardWhiteLeft;
+  QColor blackLeftBrush = StyleEditor::palette().KeyboardBlackLeft;
+  QColor black = StyleEditor::palette().KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);

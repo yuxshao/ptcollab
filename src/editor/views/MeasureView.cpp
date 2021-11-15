@@ -172,10 +172,9 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   StyleEditor::palette().MeasureIncluded.value());
+                   StyleEditor::palette().MeasureIncluded);
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT,
-                   StyleEditor::palette().MeasureExcluded.value());
+                   RULER_HEIGHT, StyleEditor::palette().MeasureExcluded);
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
                    width(), 1, StyleEditor::palette().MeasureBeat);
