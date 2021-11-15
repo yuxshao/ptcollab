@@ -206,11 +206,14 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   qApp->setStyleSheet(relativizeUrls(styleSheet.readAll(), basedir, styleName));
   styleSheet.close();
 
+  currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
   QPixmap px(styleSheetDir(basedir, styleName) + "/images.png");
   if (!px.isNull() && px.size() == currentMeasureImages->size())
     currentMeasureImages = std::make_shared<QPixmap>(px);
-  else
-    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
+  //  else
+  //    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
+  //
+  // Now redundant because of the way currentMeasureImages is defined
   return true;
 }
 
