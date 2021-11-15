@@ -190,8 +190,8 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
   if (woice != nullptr) {
     int32_t thisX = curr.clock / clockPerPx;
     QColor font = StyleEditor::palette().ParamFont;
-    painter.setPen(QColor::fromRgb(font.red(), font.green(), font.blue(),
-                                   onColor.alpha()));
+    font.setAlpha(onColor.alpha());
+    painter.setPen(font);
     painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
     painter.drawText(
         lastX + s, height / 2, thisX - lastX - s, 10000, Qt::AlignTop,

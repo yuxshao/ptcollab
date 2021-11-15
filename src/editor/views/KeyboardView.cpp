@@ -11,6 +11,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 #include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {

@@ -6,7 +6,6 @@
 #include <QPainterPath>
 
 #include "MooClock.h"
-#include "editor/StyleEditor.h"
 
 extern void drawCursor(const QPoint &position, QPainter &painter,
                        const QColor &color, const QString &username,
@@ -22,8 +21,6 @@ extern void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
                                  qreal clockPerPx, int height);
 extern void handleWheelEventWithModifier(QWheelEvent *event,
                                          PxtoneClient *client);
-
-extern QColor makeTranslucent(const QColor &c, int divisor);
 
 template <typename T>
 T clamp(T x, T lo, T hi) {

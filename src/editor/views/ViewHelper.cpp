@@ -4,6 +4,7 @@
 
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 #include "pxtone/pxtnEvelist.h"
 
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,

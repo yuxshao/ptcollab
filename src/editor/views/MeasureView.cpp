@@ -7,6 +7,7 @@
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
+#include "editor/StyleEditor.h"
 
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
