@@ -210,10 +210,6 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   QPixmap px(styleSheetDir(basedir, styleName) + "/images.png");
   if (!px.isNull() && px.size() == currentMeasureImages->size())
     currentMeasureImages = std::make_shared<QPixmap>(px);
-  //  else
-  //    currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
-  //
-  // Now redundant because of the way currentMeasureImages is defined
   return true;
 }
 
