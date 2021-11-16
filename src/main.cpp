@@ -110,9 +110,6 @@ int main(int argc, char *argv[]) {
     QSettings().clear();
     qWarning("Settings have been cleared.");
     return 0;
-    //  QCoreApplication is not yet in control so
-    //  unfortunately I have to do it the unsupported way (return 0 rather
-    //  than qApp->quit())
   }
 
   bool startServerImmediately = false;
