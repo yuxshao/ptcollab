@@ -48,15 +48,6 @@ int main(int argc, char *argv[]) {
   a.setOrganizationName("ptcollab");
   a.setOrganizationDomain("ptweb.me");
   a.setApplicationName("ptcollab");
-
-  QString style = Settings::StyleName::get();
-  if (!StyleEditor::tryLoadStyle(style)) {
-    QString defaultStyle =
-        Settings::StyleName::default_included_with_distribution;
-    if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
-      qWarning() << "No styles were loaded. Falling back on system style.";
-  }
-
   a.setApplicationVersion(Settings::Version::string());
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
@@ -64,6 +55,7 @@ int main(int argc, char *argv[]) {
   parser.addVersionOption();
 
   QCommandLineOption serverPortOption(
+
       QStringList() << "p"
                     << "port",
       QCoreApplication::translate("main", "Fix the server port to <port>."),
@@ -109,7 +101,20 @@ int main(int argc, char *argv[]) {
       QCoreApplication::translate("main", "file"));
   parser.addOption(logFileOption);
 
+  QCommandLineOption clearSettingsOption(
+      "clear-settings",
+      QCoreApplication::translate("main", "Clear application settings."));
+  parser.addOption(clearSettingsOption);
   parser.process(a);
+
+  if (parser.isSet(clearSettingsOption)) {
+    QSettings().clear();
+    qWarning("Settings have been cleared.");
+    return 0;
+    //  QCoreApplication is not yet in control so
+    //  unfortunately I have to do it the unsupported way (return 0 rather
+    //  than qApp->quit())
+  }
 
   bool startServerImmediately = false;
   std::optional<QString> filename = std::nullopt;
@@ -161,6 +166,14 @@ int main(int argc, char *argv[]) {
       logDestination = file;
   }
   qInstallMessageHandler(messageHandler);
+
+  QString style = Settings::StyleName::get();
+  if (!StyleEditor::tryLoadStyle(style)) {
+    QString defaultStyle =
+        Settings::StyleName::default_included_with_distribution;
+    if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
+      qWarning() << "No styles were loaded. Falling back on system style.";
+  }
 
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
