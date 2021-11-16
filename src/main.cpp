@@ -163,18 +163,17 @@ int main(int argc, char *argv[]) {
   }
   qInstallMessageHandler(messageHandler);
 
-  QString style = Settings::StyleName::get();
-  if (!StyleEditor::tryLoadStyle(style)) {
-    QString defaultStyle =
-        Settings::StyleName::default_included_with_distribution;
-    if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
-      qWarning() << "No styles were loaded. Falling back on system style.";
-  }
-
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
     return a.exec();
   } else {
+    QString style = Settings::StyleName::get();
+    if (!StyleEditor::tryLoadStyle(style)) {
+      QString defaultStyle =
+          Settings::StyleName::default_included_with_distribution;
+      if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
+        qWarning() << "No styles were loaded. Falling back on system style.";
+    }
     EditorWindow w;
     w.show();
     if (startServerImmediately)
