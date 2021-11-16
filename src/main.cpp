@@ -55,7 +55,6 @@ int main(int argc, char *argv[]) {
   parser.addVersionOption();
 
   QCommandLineOption serverPortOption(
-
       QStringList() << "p"
                     << "port",
       QCoreApplication::translate("main", "Fix the server port to <port>."),
