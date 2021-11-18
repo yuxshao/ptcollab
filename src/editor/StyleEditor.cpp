@@ -188,16 +188,15 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
     return false;
   }
 
+  Palette p = defaultPalette(false);
   QString path = palettePath(basedir, styleName);
   if (QFile::exists(path)) {
     QPalette qp(qApp->palette());
     loadQPalette(path, qp);
     qApp->setPalette(qp);
-
-    Palette p = defaultPalette(false);
     loadPalette(path, p);
-    currentPalette = p;
   }
+  currentPalette = p;
 
   loadFonts(styleSheetDir(basedir, styleName));
   qApp->setStyle(QStyleFactory::create("Fusion"));
