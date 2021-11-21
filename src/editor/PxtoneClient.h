@@ -34,8 +34,8 @@ class PxtoneClient : public QObject {
   std::optional<qint64> m_following_user;
   mooState m_moo_state;
   EditState m_edit_state;
-  QAudioOutput *m_audio;
   PxtoneIODevice *m_pxtn_device;
+  QAudioOutput *m_audio;
   std::optional<quint64> m_last_ping;
   QTimer *m_ping_timer;
   qint32 m_last_seek;

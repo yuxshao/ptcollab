@@ -18,7 +18,7 @@ int PxtoneUnitIODevice::addUnit(pxtnUnitTone *unit) {
 }
 
 qint64 PxtoneUnitIODevice::readData(char *data, qint64 maxlen) {
-  memset(data, 0, maxlen);
+  // memset(data, 0, maxlen);
   maxlen = maxlen * sizeof(char) / sizeof(int32_t);
   int filled = 0;
 

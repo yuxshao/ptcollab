@@ -7,19 +7,25 @@
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput,
                    ma_uint32 frameCount) {
   AudioOutput *o = (AudioOutput *)pDevice->pUserData;
-  ma_waveform *pSineWave = &o->sineWave;
-  ma_waveform_read_pcm_frames(pSineWave, pOutput, frameCount);
+  // ma_waveform *pSineWave = &o->sineWave;
+  int num_bytes = 16 / 8 * 2 * frameCount;
+  // qDebug() << frameCount;
+  // ma_waveform_read_pcm_frames(pSineWave, pOutput, frameCount);
+  memset(pOutput, 0, num_bytes);
+  for (auto [id, d] : o->m_devices) {
+    d->read((char *)pOutput, num_bytes);
+  }
 
   (void)pInput;
 }
 
 AudioOutput::AudioOutput() : m_next_id(0) {
-  sineWaveConfig = ma_waveform_config_init(ma_format_f32, 2, 48000,
+  sineWaveConfig = ma_waveform_config_init(ma_format_f32, 2, 44100,
                                            ma_waveform_type_sine, 0.2, 220);
   ma_waveform_init(&sineWaveConfig, &sineWave);
 
   deviceConfig = ma_device_config_init(ma_device_type_playback);
-  deviceConfig.playback.format = ma_format_f32;
+  deviceConfig.playback.format = ma_format_s16;
   deviceConfig.playback.channels = 2;
   deviceConfig.sampleRate = 44100;
   deviceConfig.dataCallback = data_callback;

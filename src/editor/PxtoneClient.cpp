@@ -7,6 +7,7 @@
 #include "ComboOptions.h"
 #include "Settings.h"
 #include "audio/AudioFormat.h"
+#include "audio/AudioOutput.h"
 
 QList<UserListEntry> getUserList(
     const std::map<qint64, RemoteEditState> &users) {
@@ -30,18 +31,17 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
       m_last_seek(0),
       m_clipboard(new Clipboard(this)) {
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
+
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
     qWarning()
         << "Raw audio format not supported by backend, cannot play audio.";
     return;
   }
   m_pxtn_device = new PxtoneIODevice(this, m_controller->pxtn(), &m_moo_state);
-  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
 
   // Apparently this reduces latency in pulseaudio, but also makes
   // some sounds choppier
-  // m_audio->setCategory("game");
-  m_audio->setVolume(1.0);
   connect(m_pxtn_device, &PxtoneIODevice::playingChanged, this,
           &PxtoneClient::playStateChanged);
 
@@ -110,11 +110,13 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
     if (ok) setBufferSize(v);
   }
   m_pxtn_device->setPlaying(false);
-  m_audio->start(m_pxtn_device);
+  AudioOutput::output().addDevice(m_pxtn_device);
+  // m_audio->start(m_pxtn_device);
   qDebug() << "Actual" << m_audio->bufferSize();
 }
 
-void PxtoneClient::setBufferSize(double secs) {
+void PxtoneClient::setBufferSize(double) {
+  /*
   bool started = (m_audio->state() != QAudio::StoppedState &&
                   m_audio->state() != QAudio::IdleState);
   QAudioFormat fmt = pxtoneAudioFormat();
@@ -129,7 +131,7 @@ void PxtoneClient::setBufferSize(double secs) {
   qDebug() << "Setting buffer size: " << secs;
   m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
 
-  if (started) m_audio->start(m_pxtn_device);
+  if (started) m_audio->start(m_pxtn_device);*/
 }
 
 bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }

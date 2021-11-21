@@ -33,7 +33,7 @@ qint64 PxtoneIODevice::readData(char *data, qint64 maxlen) {
     if (!pxtn->Moo(*moo_state, data, int32_t(maxlen), &filled_len, meters))
       emit MooError();
   } else {
-    memset(data, 0, maxlen);
+    // memset(data, 0, maxlen);
 
     int byte_per_smp;
     if (pxtn->get_byte_per_smp(&byte_per_smp)) {
