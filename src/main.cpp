@@ -5,6 +5,7 @@
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
+#include "editor/audio/AudioOutput.h"
 #include "network/BroadcastServer.h"
 
 static FILE *logDestination = stderr;
@@ -161,8 +162,8 @@ int main(int argc, char *argv[]) {
     } else
       logDestination = file;
   }
+  AudioOutput::output();
   qInstallMessageHandler(messageHandler);
-
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
     return a.exec();

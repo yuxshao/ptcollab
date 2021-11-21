@@ -22,9 +22,14 @@ pkgconfig_required = false
 include("../qmake/findLibrary.pri")
 
 message("Building editor")
+# Can maybe get rid of with miniaudio?
 win32 {
     message("[default] Adding Windows Multimedia")
     LIBS += -lwinmm
+}
+
+unix {
+    LIBS += -ldl -lpthread -lm
 }
 
 tests_ogg = ogg_pkgconfig ogg_lib libogg_static
@@ -96,7 +101,9 @@ HEADERS += \
            editor/ShortcutsDialog.h \
            editor/StyleEditor.h \
            editor/WelcomeDialog.h \
+           editor/audio/AudioOutput.h \
            editor/audio/VolumeMeter.h \
+           editor/audio/miniaudio.h \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
@@ -184,7 +191,9 @@ SOURCES += main.cpp \
            editor/ShortcutsDialog.cpp \
            editor/StyleEditor.cpp \
            editor/WelcomeDialog.cpp \
+           editor/audio/AudioOutput.cpp \
            editor/audio/VolumeMeter.cpp \
+           editor/audio/miniaudio.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \

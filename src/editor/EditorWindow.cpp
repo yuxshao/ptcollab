@@ -23,6 +23,7 @@
 #include "InputEvent.h"
 #include "Settings.h"
 #include "WelcomeDialog.h"
+#include "audio/miniaudio.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
