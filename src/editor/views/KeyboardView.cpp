@@ -517,7 +517,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QPainter activePainter(&activeLayer);
   activePainter.translate(-event->rect().topLeft());
 
-  if (m_client->editState().mouse_edit_state.selection.has_value())
+  if (m_client->editState().mouse_edit_state.selection.has_value() &&
+      m_client->clipboard()->kindIsCopied(EVENTKIND_VELOCITY))
     selection = m_client->editState().mouse_edit_state.selection.value();
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
        e = e->next) {
@@ -631,9 +632,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                         selectionAlphaMultiplier, displayEdo);
     }
   }
+  double mySelectionAlphaMultiplier =
+      m_client->clipboard()->kindIsCopied(EVENTKIND_VELOCITY) ? 1 : 0.7;
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, size().height(),
-                        1);
+                        mySelectionAlphaMultiplier);
   drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
                     height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
                     displayEdo);

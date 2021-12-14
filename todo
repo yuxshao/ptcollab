@@ -509,6 +509,9 @@ playback
 11/07
 1. fix pass wrong voice id map
 
+12/13
+1. if vel isnt selected for copy show visual indicator. also change copy option label to include (Note)
+
 Todo by priority
 ----------------
  - test to see if the midi noodling is causing the lag. delete voice previews if so

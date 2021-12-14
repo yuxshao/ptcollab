@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>265</width>
-    <height>155</height>
+    <width>281</width>
+    <height>152</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
    <item row="0" column="0">
     <widget class="QCheckBox" name="checkVelocity">
      <property name="text">
-      <string>Velocity</string>
+      <string>Velocity (Notes)</string>
      </property>
     </widget>
    </item>
