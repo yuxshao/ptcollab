@@ -12,7 +12,6 @@ DESTDIR=../build
 # others it's in a subdir
 INCLUDEPATH += . /usr/include/rtmidi
 win32|macx:INCLUDEPATH += ../deps/include
-QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 
 win32:LIBS += -L"$$PWD/../deps/lib" -L"$$PWD/deps/lib"
 macx:LIBS += -L/usr/local/lib
