@@ -123,7 +123,10 @@ CopyState::CopyState(const std::set<int> &unit_nos, const Interval &range,
         v = woiceIdMap.noToId(v);
       else if (is_tail) {
         clock = std::max(e->clock, range.start);
-        v = std::min(v, e->clock + e->value - range.start);
+        // the following is range.end - clock so that you only copy the stuff in
+        // your selection. it leads to some weird behaviour if you nudge a note
+        // left / right though.
+        v = std::min(v, range.end - clock);
       }
 
       uint8_t unit_no = e->unit_no - first_unit_no;
