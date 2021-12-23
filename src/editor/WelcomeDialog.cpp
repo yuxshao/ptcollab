@@ -26,6 +26,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
   connect(ui->showAgainCheck, &QCheckBox::stateChanged, [](int state) {
     Settings::ShowWelcomeDialog::set(state == Qt::Checked);
   });
+  setFixedSize(this->minimumSizeHint());
 }
 
 void WelcomeDialog::buttonNewPressed() {
