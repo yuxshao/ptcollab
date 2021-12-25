@@ -159,6 +159,9 @@ jobs:
               "-appimage"
             )
             export PACKAGE_EXT="tar.gz"
+
+            # We don't need the examples inside the appimage
+            mv -v target/appdir/usr/share/ptcollab ./PACKAGE_examples
           fi
 
           export artifact_name="ptcollab-${PLATFORM_ABBR}.${PACKAGE_EXT}"
@@ -200,6 +203,8 @@ jobs:
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           else
             pushd "${PACKAGE}"
+
+            mv -v ../PACKAGE_examples/* ./
 
             # Inherits verbose name from desktop file
             mv pxtone_collab*.AppImage "${PACKAGE}".AppImage
