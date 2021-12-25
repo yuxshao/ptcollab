@@ -36,14 +36,14 @@ if(findLibrary("libogg(_static)", tests_ogg, true)) {
     config_libogg_static: LIBS += -llibogg_static
 }
 
-tests_vorbisfile = vorbisfile_pkgconfig vorbisfile_lib libvorbisfile
+tests_vorbisfile = vorbisfile_pkgconfig vorbisfile_lib libvorbisfile_static
 if(findLibrary("libvorbisfile", tests_vorbisfile, true)) {
     config_vorbisfile_pkgconfig {
         pkgconfig_required = true
         PKGCONFIG += vorbisfile
     }
     config_vorbisfile_lib: LIBS += -lvorbisfile
-    config_libvorbisfile: LIBS += -llibvorbisfile
+    config_libvorbisfile_static: LIBS += -llibvorbis_static -llibvorbisfile_static
 }
 
 tests_rtmidi = rtmidi_pkgconfig rtmidi_lib
