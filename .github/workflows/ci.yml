@@ -1,0 +1,224 @@
+name: Build
+
+on:
+  push:
+    branches: master
+    tags: 'v*'
+  pull_request:
+    branches: master
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  QT_VERSION: 5.15.2
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        config:
+          - { name: "Windows", os: windows-latest, make: nmake }
+          - { name: "macOS", os: macos-latest, make: "make -j2" }
+          - { name: "Ubuntu", os: ubuntu-18.04, make: "make -j2" }
+      fail-fast: false
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - name: Identify build type
+        id: identify-build
+        run: |
+          case ${GITHUB_REF} in
+            refs/tags/* )
+              TAG=${GITHUB_REF#refs/tags/}
+              echo "Release ${TAG}"
+              echo "::set-output name=build-tag::${TAG}"
+              echo "::set-output name=release::true"
+              ;;
+            refs/pull/*)
+              PR=$(echo ${GITHUB_REF} | cut -d/ -f3)
+              echo "Test PR #${PR}"
+              echo "::set-output name=build-tag::pr-${PR}-${GITHUB_SHA}"
+              echo "::set-output name=release::false"
+              ;;
+            refs/heads/* )
+              BRANCH=${GITHUB_REF#refs/heads/}
+              echo "Test ${BRANCH}"
+              echo "::set-output name=build-tag::${BRANCH}-${GITHUB_SHA}"
+              echo "::set-output name=release::false"
+              ;;
+            * )
+              echo "Test (unknown)"
+              echo "::set-output name=build-tag::unknown-${GITHUB_SHA}"
+              echo "::set-output name=release::false"
+              ;;
+          esac
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Qt5
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qttools qtmultimedia'
+
+      - name: Setup MSVC Toolchain [Windows]
+        if: ${{ runner.os == 'Windows' }}
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+
+      - name: Install Dependencies [macOS]
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew update
+          brew install libvorbis rtmidi
+          brew upgrade libogg
+
+      - name: Install Dependencies [Linux]
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt update
+          # Building
+          sudo apt install libogg-dev libvorbis-dev librtmidi-dev
+          # Packaging
+          sudo apt install libgstreamer-plugins-base1.0-0
+
+          wget -c -nv \
+            "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod +x linuxdeployqt-continuous-x86_64.AppImage
+
+      - name: Configure
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            # Needed for appimage building
+            export BUILD_PREFIX=/usr
+          else
+            export BUILD_PREFIX="${PWD}/target"
+          fi
+
+          qmake ptcollab.pro \
+            PREFIX=${BUILD_PREFIX} \
+            CONFIG+=release CONFIG-=debug
+
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            # /usr/bin/link interferes with MSVC link binary
+            rm -f /usr/bin/link
+          fi
+
+          ${{ matrix.config.make }} qmake_all
+
+      - name: Build
+        run: |
+          ${{ matrix.config.make }}
+
+      - name: Install
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            export INSTALL_ARGS="INSTALL_ROOT=${PWD}/target/appdir"
+          else
+            export INSTALL_ARGS=""
+          fi
+
+          ${{ matrix.config.make }} ${INSTALL_ARGS} install
+
+      - name: Package
+        id: package
+        run: |
+          # Deployment prep
+          export VERSION="${{ steps.identify-build.outputs.build-tag }}-${{ runner.os }}"
+          export PACKAGE="ptcollab-${VERSION}-x86_64"
+
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            export PLATFORM_ABBR="win"
+            export DEPLOY_TOOL="windeployqt"
+            export DEPLOY_TARGET="ptcollab.exe"
+            export DEPLOY_OPTS=(
+              "--no-quick-import"
+              "--no-system-d3d-compiler"
+              "--no-webkit2"
+              "--no-opengl-sw"
+              "--no-virtualkeyboard"
+              "--no-angle"
+            )
+            export PACKAGE_EXT="zip"
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            export PLATFORM_ABBR="mac"
+            export DEPLOY_TOOL="macdeployqt"
+            export DEPLOY_TARGET="bin/ptcollab.app"
+            export DEPLOY_OPTS=("")
+            export PACKAGE_EXT="tar.gz"
+          else
+            export PLATFORM_ABBR="lin"
+            export DEPLOY_TOOL="${PWD}/linuxdeployqt-continuous-x86_64.AppImage"
+            export DEPLOY_TARGET="appdir/usr/share/applications/ptcollab.desktop"
+            export DEPLOY_OPTS=(
+              "-appimage"
+            )
+            export PACKAGE_EXT="tar.gz"
+          fi
+
+          export artifact_name="ptcollab-${PLATFORM_ABBR}.${PACKAGE_EXT}"
+          echo "::set-output name=artifact-name::${artifact_name}"
+
+          # Deployment of binary
+          pushd target
+          ${DEPLOY_TOOL} "${DEPLOY_TARGET}" ${DEPLOY_OPTS[@]} -verbose=2
+          popd
+          mv target "${PACKAGE}"
+
+          # Deployment finalizing
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            pushd "${PACKAGE}"
+
+            # These should really be handled by an install rule instead
+            cp -v -a ../res/sample_* ./
+            cp -v -a ../LICENSE ./LICENSE-ptcollab
+            cp -v -a ../src/pxtone/LICENSE ./LICENSE-pxtone
+            cp -v -a ../deps/lib/{COPYING,LICENSE}-* ./
+
+            popd
+            7z a -tzip "${artifact_name}" "${PACKAGE}"
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            pushd "${PACKAGE}"
+
+            # macOS rmdir doesn't have -v flag
+            mv -v {bin,.}/ptcollab.app
+            rmdir bin
+
+            mv -v share/ptcollab/* ./
+            for proj in pxtone ptcollab; do
+              mv -v share/doc/${proj}/LICENSE ./LICENSE-${proj}
+            done
+
+            rm -v -rf share/
+
+            popd
+            tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
+          else
+            pushd "${PACKAGE}"
+
+            # Inherits verbose name from desktop file
+            mv pxtone_collab*.AppImage "${PACKAGE}".AppImage
+
+            for proj in pxtone ptcollab; do
+              mv -v appdir/usr/share/doc/${proj}/LICENSE ./LICENSE-${proj}
+            done
+
+            rm -v -rf appdir/
+
+            popd
+            tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
+          fi
+
+      - name: Release
+        if: steps.identify-build.outputs.release == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.package.outputs.artifact-name }}
+          asset_name: ${{ steps.package.outputs.artifact-name }}
+          tag: ${{ github.ref }}
