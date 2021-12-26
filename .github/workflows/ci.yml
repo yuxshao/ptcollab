@@ -104,13 +104,8 @@ jobs:
             export BUILD_PREFIX="${PWD}/target"
           fi
 
-          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
-            export EXTRA_LIBS="-L${PWD}/deps/lib/x86"
-          fi
-
           qmake ptcollab.pro \
             PREFIX=${BUILD_PREFIX} \
-            LIBS+="${EXTRA_LIBS}" \
             CONFIG+=release CONFIG-=debug
 
           if [ "${{ runner.os }}" == "Windows" ]; then
