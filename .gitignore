@@ -78,3 +78,4 @@ qmake/config.tests/*/test
 # build folder in case others are building
 /bin/
 /build/
+/build32/
