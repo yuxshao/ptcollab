@@ -19,9 +19,10 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: "Windows", os: windows-latest, make: nmake }
-          - { name: "macOS", os: macos-latest, make: "make -j2" }
-          - { name: "Ubuntu", os: ubuntu-18.04, make: "make -j2" }
+          - { name: "Windows", os: windows-latest, make: nmake, qt_arch: win64_msvc2019_64 }
+          - { name: "Windows 32-bit", os: windows-latest, make: nmake, qt_arch: win32_msvc2019, target_arch: x86 }
+          - { name: "macOS", os: macos-latest, make: "make -j2", qt_arch: clang_64 }
+          - { name: "Ubuntu", os: ubuntu-18.04, make: "make -j2", qt_arch: gcc_64 }
       fail-fast: false
 
     name: ${{ matrix.config.name }}
@@ -64,11 +65,14 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           version: ${{ env.QT_VERSION }}
+          arch: ${{ matrix.config.qt_arch }}
           modules: 'qttools qtmultimedia'
 
       - name: Setup MSVC Toolchain [Windows]
         if: ${{ runner.os == 'Windows' }}
         uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        with:
+          arch: ${{ matrix.config.target_arch }}
 
       - name: Install Dependencies [macOS]
         if: ${{ runner.os == 'macOS' }}
@@ -100,8 +104,13 @@ jobs:
             export BUILD_PREFIX="${PWD}/target"
           fi
 
+          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
+            export EXTRA_LIBS="-L${PWD}/deps/lib/x86"
+          fi
+
           qmake ptcollab.pro \
             PREFIX=${BUILD_PREFIX} \
+            LIBS+="${EXTRA_LIBS}" \
             CONFIG+=release CONFIG-=debug
 
           if [ "${{ runner.os }}" == "Windows" ]; then
@@ -130,7 +139,6 @@ jobs:
         run: |
           # Deployment prep
           export VERSION="${{ steps.identify-build.outputs.build-tag }}-${{ runner.os }}"
-          export PACKAGE="ptcollab-${VERSION}-x86_64"
 
           if [ "${{ runner.os }}" == "Windows" ]; then
             export PLATFORM_ABBR="win"
@@ -164,6 +172,14 @@ jobs:
             mv -v target/appdir/usr/share/ptcollab ./PACKAGE_examples
           fi
 
+          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
+            export ARCH="x86"
+            export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
+          else
+            export ARCH="x86_64"
+          fi
+
+          export PACKAGE="ptcollab-${VERSION}-${ARCH}"
           export artifact_name="ptcollab-${PLATFORM_ABBR}.${PACKAGE_EXT}"
           echo "::set-output name=artifact-name::${artifact_name}"
 
