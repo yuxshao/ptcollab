@@ -13,7 +13,17 @@ DESTDIR=../build
 INCLUDEPATH += . /usr/include/rtmidi
 win32|macx:INCLUDEPATH += ../deps/include
 
-win32:LIBS += -L"$$PWD/../deps/lib/x64" -L"$$PWD/deps/lib/x64"
+win32 {
+    contains(QMAKE_TARGET.arch, x86_64) {
+        message("64-bit windows target")
+        libdeps_dir="x64"
+    }
+    else {
+        message("32-bit windows target")
+        libdeps_dir="x86"
+    }
+    LIBS += -L"$$PWD/../deps/lib/$${libdeps_dir}" -L"$$PWD/deps/lib/$${libdeps_dir}"
+}
 macx:LIBS += -L/usr/local/lib
 
 pkgconfig_required = false
