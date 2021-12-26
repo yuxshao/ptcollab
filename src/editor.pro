@@ -33,7 +33,7 @@ if(findLibrary("libogg(_static)", tests_ogg, true)) {
         PKGCONFIG += ogg
     }
     config_ogg_lib: LIBS += -logg
-    config_libogg_static: LIBS += -llibogg_static
+    config_libogg_static: LIBS += -llibogg_static32
 }
 
 tests_vorbisfile = vorbisfile_pkgconfig vorbisfile_lib libvorbisfile_static
@@ -43,7 +43,7 @@ if(findLibrary("libvorbisfile", tests_vorbisfile, true)) {
         PKGCONFIG += vorbisfile
     }
     config_vorbisfile_lib: LIBS += -lvorbisfile
-    config_libvorbisfile_static: LIBS += -llibvorbis_static -llibvorbisfile_static
+    config_libvorbisfile_static: LIBS += -llibvorbis_static32 -llibvorbisfile_static32
 }
 
 tests_rtmidi = rtmidi_pkgconfig rtmidi_lib
@@ -52,7 +52,7 @@ if(findLibrary("RtMidi", tests_rtmidi, false)) {
         pkgconfig_required = true
         PKGCONFIG += rtmidi
     }
-    config_rtmidi_lib: LIBS += -lrtmidi
+    config_rtmidi_lib: LIBS += -lrtmidi32
     DEFINES += RTMIDI_SUPPORTED
 }
 

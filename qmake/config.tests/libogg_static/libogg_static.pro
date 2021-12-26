@@ -7,4 +7,4 @@ win32:LIBS += -L"$$PWD/../../../deps/lib" -L"$$PWD/../../deps/lib"
 macx:LIBS += -L/usr/local/lib
 
 DEFINES += OGG
-LIBS += -llibogg_static
+LIBS += -llibogg_static32
