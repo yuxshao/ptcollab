@@ -514,16 +514,18 @@ playback
 
 Todo by priority
 ----------------
- - test to see if the midi noodling is causing the lag. delete voice previews if so
- - way to elongate notes (ctrl click in unit row)
-
- - show other's midi inputs if you're either following the or they're not playing
- - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
  - Unit view, at least for drums
    - how many views do you want? the fewer, the easier it is to be 'present'
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
+ - bug: other ppls preview quant shows up as yours (at least one time in automation)
+
+ - test to see if the midi noodling is causing the lag. delete voice previews if so
+ - way to elongate notes (ctrl click in unit row)
+
+ - show other's midi inputs if you're either following the or they're not playing
+ - midi input: mute the unit regularly if you're recording, also record silence? Maybe idk
 - extend upper limit piano roll
 - when following and someone does midi it can mess you up
 - save dialog state instead of just last dir <- not that easy since you gotta save the state at diff places and the ptrec key is useful for the host dialog prefill
@@ -531,15 +533,12 @@ Todo by priority
 Misc todo by categories
 -----------------------
 Aesthetics:
-  - The units view is not pretty right now. Unit should have mute icon, visible
-    icon, copyable icon. One unit should be selected at a time.
   - customizable piano roll colours
   - qwerty midi input
   - tab system to edit multiple files at once / switch between sessions
   - arcofdream's icon designs for the connect / disconnect menus
   - write / read shiftJIS in unit, woice names.
- - coarse tune
- - piano roll on the left
+ - some note taking functionality?
 
 Technical stuff:
  - server keeps its own state (e.g., active users) + running history (currently
