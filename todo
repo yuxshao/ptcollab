@@ -520,6 +520,7 @@ Todo by priority
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
  - bug: other ppls preview quant shows up as yours (at least one time in automation)
+ - webpage with all keybindings
 
  - test to see if the midi noodling is causing the lag. delete voice previews if so
  - way to elongate notes (ctrl click in unit row)
