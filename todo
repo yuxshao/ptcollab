@@ -512,6 +512,9 @@ playback
 12/13
 1. if vel isnt selected for copy show visual indicator. also change copy option label to include (Note)
 
+2022/1/13
+1. bug: other ppls preview quant shows up properly in param view
+
 Todo by priority
 ----------------
  - Unit view, at least for drums
@@ -519,7 +522,7 @@ Todo by priority
      with others.
    - something like ptweb
      - can pin instruments to be drums. (list of pinned is global)
- - bug: other ppls preview quant shows up as yours (at least one time in automation)
+ - 
  - webpage with all keybindings
 
  - test to see if the midi noodling is causing the lag. delete voice previews if so

@@ -155,12 +155,10 @@ std::list<ParamEditInterval> lineEdit(const MouseEditState &state,
 }
 
 constexpr int BACKGROUND_GAPS[] = {-1000, 24, 32, 64, 96, 104, 1000};
-static const QColor *GAP_COLORS[] = {&StyleEditor::palette.ParamDarkBlue,
-                                     &StyleEditor::palette.ParamDarkBlue,
-                                     &StyleEditor::palette.ParamBlue,
-                                     &StyleEditor::palette.ParamBlue,
-                                     &StyleEditor::palette.ParamDarkBlue,
-                                     &StyleEditor::palette.ParamDarkBlue};
+static const QColor *GAP_COLORS[] = {
+    &StyleEditor::palette.ParamDarkBlue, &StyleEditor::palette.ParamDarkBlue,
+    &StyleEditor::palette.ParamBlue,     &StyleEditor::palette.ParamBlue,
+    &StyleEditor::palette.ParamDarkBlue, &StyleEditor::palette.ParamDarkBlue};
 
 constexpr int NUM_BACKGROUND_GAPS =
     sizeof(BACKGROUND_GAPS) / sizeof(BACKGROUND_GAPS[0]);
@@ -414,10 +412,12 @@ void ParamView::paintEvent(QPaintEvent *event) {
                         .idToNo(state.m_current_unit_id)
                         .value_or(current_unit_no);
       // TODO: be able to see others' param selections too.
-      drawOngoingEdit(*this_painter, state.mouse_edit_state, current_kind,
-                      m_client->quantizeClock(), clockPerPx, height(),
-                      alphaMultiplier, selectionAlphaMultiplier,
-                      unit_no - current_unit_no);
+      drawOngoingEdit(
+          *this_painter, state.mouse_edit_state, current_kind,
+          m_client->quantizeClock(
+              quantizeXOptions()[state.m_quantize_clock_idx].second),
+          clockPerPx, height(), alphaMultiplier, selectionAlphaMultiplier,
+          unit_no - current_unit_no);
     }
   }
   painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
