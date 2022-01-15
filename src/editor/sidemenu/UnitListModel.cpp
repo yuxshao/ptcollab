@@ -236,7 +236,9 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                 m_last_index = indexAtRow;
                 m_selection->select(indexAtRow,
                                     selection_flag_of_bool(m_last_set_checked));
-              }
+              } else
+                m_selection->setCurrentIndex(index,
+                                             QItemSelectionModel::NoUpdate);
             } break;
           }
         }
