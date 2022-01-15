@@ -7,13 +7,7 @@
 #include "editor/PxtoneClient.h"
 #include "protocol/NoIdMap.h"
 
-enum struct UnitListColumn : qint8 {
-  Visible,
-  Played,
-  Select,
-  Name,
-  MAX = Name
-};
+enum struct UnitListColumn : qint8 { Visible, Played, Name, MAX = Name };
 
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT

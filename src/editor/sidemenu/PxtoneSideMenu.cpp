@@ -126,6 +126,16 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   });
   connect(this, &SideMenu::removeUnit, m_client,
           &PxtoneClient::removeCurrentUnit);
+  connect(this, &SideMenu::selectedUnitsChanged,
+          [this](auto &sel, const QItemSelection &des) {
+            std::map<int, bool> changes_by_row;
+            for (const auto &i : sel.indexes()) changes_by_row[i.row()] = true;
+            for (const auto &i : des.indexes()) changes_by_row[i.row()] = false;
+            for (const auto &[row, change] : changes_by_row)
+              m_client->setUnitOperated(row, change);
+          });
+  connect(m_client->controller(), &PxtoneController::operatedToggled, this,
+          &SideMenu::setUnitSelected);
 
   connect(this, &SideMenu::playButtonPressed, m_client,
           &PxtoneClient::togglePlayState);

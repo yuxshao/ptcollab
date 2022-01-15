@@ -46,11 +46,6 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
     QModelIndex i = index(unit_no, int(UnitListColumn::Played));
     emit dataChanged(i, i);
   });
-  connect(controller, &PxtoneController::operatedToggled, [this](int unit_no) {
-    QModelIndex i = index(unit_no, int(UnitListColumn::Select));
-    emit dataChanged(i.siblingAtColumn(0),
-                     i.siblingAtColumn(columnCount() - 1));
-  });
   connect(controller, &PxtoneController::soloToggled, [this]() {
     int col = int(UnitListColumn::Played);
     emit dataChanged(index(0, col), index(rowCount() - 1, col));
@@ -68,10 +63,6 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
     case UnitListColumn::Played:
       if (role == Qt::CheckStateRole)
         return checked_of_bool(unit->get_played());
-      break;
-    case UnitListColumn::Select:
-      if (role == Qt::CheckStateRole)
-        return checked_of_bool(unit->get_operated());
       break;
     case UnitListColumn::Name:
       if (role == Qt::DisplayRole || role == Qt::EditRole)
@@ -97,12 +88,6 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
         return true;
       }
       return false;
-    case UnitListColumn::Select:
-      if (role == Qt::CheckStateRole) {
-        m_client->setUnitOperated(index.row(), value.toInt() == Qt::Checked);
-        return true;
-      }
-      return false;
     case UnitListColumn::Name:
       int unit_id = m_client->unitIdMap().noToId(index.row());
       m_client->sendAction(SetUnitName{unit_id, value.toString()});
@@ -117,7 +102,6 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
     case UnitListColumn::Played:
-    case UnitListColumn::Select:
       f |= Qt::ItemIsUserCheckable;
       f &= ~Qt::ItemIsSelectable;
       break;
@@ -137,8 +121,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           break;
         case UnitListColumn::Played:
           break;
-        case UnitListColumn::Select:
-          break;
         case UnitListColumn::Name:
           return "Name";
       }
@@ -149,8 +131,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return getIcon("visible");
         case UnitListColumn::Played:
           return getIcon("audio-on");
-        case UnitListColumn::Select:
-          return getIcon("select");
         default:
           break;
       }
@@ -161,8 +141,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return tr("Visible");
         case UnitListColumn::Played:
           return tr("Played");
-        case UnitListColumn::Select:
-          return tr("Selected");
         case UnitListColumn::Name:
           return tr("Name");
       }
@@ -202,7 +180,6 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
     case UnitListColumn::Played:
-    case UnitListColumn::Select:
       switch (event->type()) {
         case QEvent::MouseButtonPress: {
           Qt::CheckState state =

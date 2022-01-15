@@ -76,6 +76,9 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             (void)previous;
             if (current.isValid()) emit currentUnitChanged(current.row());
           });
+  connect(ui->unitList->selectionModel(),
+          &QItemSelectionModel::selectionChanged, this,
+          &SideMenu::selectedUnitsChanged);
   connect(ui->unitList, &QTableView::clicked,
           [this](const QModelIndex& index) { emit unitClicked(index.row()); });
   connect(ui->saveBtn, &QPushButton::clicked, this,
@@ -328,6 +331,12 @@ void SideMenu::setCurrentUnit(int u) {
 }
 
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
+
+void SideMenu::setUnitSelected(int u, bool selected) {
+  ui->unitList->selectionModel()->select(
+      ui->unitList->model()->index(u, int(UnitListColumn::Name)),
+      (selected ? QItemSelectionModel::Select : QItemSelectionModel::Deselect));
+}
 void SideMenu::setPlay(bool playing) {
   if (playing) {
     ui->playBtn->setIcon(QIcon(":/icons/color/pause"));
