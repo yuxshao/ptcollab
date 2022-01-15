@@ -98,7 +98,7 @@ QTableView::item {
 }
 
 QTableView::item:hover {
-  background-color: #69656D;
+  background-color: #8869656D;
 }
 
 QTableView QTableCornerButton::section {
