@@ -179,7 +179,6 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                                    const QStyleOptionViewItem &option,
                                    const QModelIndex &index) {
   if (!index.isValid()) return false;
-  qDebug() << event->type();
   switch (event->type()) {
     case QEvent::MouseButtonPress: {
       m_last_index = index;
@@ -209,33 +208,35 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
     }
 
     case QEvent::MouseMove: {
-      // TODO: Handle if the mouse moves too fast by doing all the rows in
-      // between
-      const QModelIndex indexAtColumn =
-          index.siblingAtColumn(m_last_index.column());
+      std::set<int> rowsInBetweenMove;
+      int row = index.row();
+      while (row != m_last_index.row()) {
+        rowsInBetweenMove.insert(row);
+        row += (row > m_last_index.row() ? -1 : 1);
+      }
       // 2021-09-19: We check again that LeftButton is down because this
       // move event tends to trigger in ptCollage style even when we aren't
       // currently pressing anything (we never receive a release event
       // either).
-      if (indexAtColumn.row() != m_last_index.row() &&
-          QApplication::mouseButtons() & Qt::LeftButton)
-        switch (UnitListColumn(m_last_index.column())) {
-          case UnitListColumn::Visible:
-          case UnitListColumn::Played: {
-            m_last_index = indexAtColumn;
-            model->setData(indexAtColumn, checked_of_bool(m_last_set_checked),
-                           Qt::CheckStateRole);
-          } break;
+      if (QApplication::mouseButtons() & Qt::LeftButton)
+        for (int row : rowsInBetweenMove) {
+          const QModelIndex indexAtRow = m_last_index.siblingAtRow(row);
+          switch (UnitListColumn(m_last_index.column())) {
+            case UnitListColumn::Visible:
+            case UnitListColumn::Played: {
+              m_last_index = indexAtRow;
+              model->setData(indexAtRow, checked_of_bool(m_last_set_checked),
+                             Qt::CheckStateRole);
+            } break;
 
-          case UnitListColumn::Name: {
-            if (indexAtColumn.row() != m_last_index.row() &&
-                QApplication::mouseButtons() & Qt::LeftButton &&
-                m_last_click_had_ctrl) {
-              m_last_index = indexAtColumn;
-              m_selection->select(index,
-                                  selection_flag_of_bool(m_last_set_checked));
-            }
-          } break;
+            case UnitListColumn::Name: {
+              if (m_last_click_had_ctrl) {
+                m_last_index = indexAtRow;
+                m_selection->select(indexAtRow,
+                                    selection_flag_of_bool(m_last_set_checked));
+              }
+            } break;
+          }
         }
       return true;
     }
