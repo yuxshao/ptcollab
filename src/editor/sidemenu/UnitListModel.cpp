@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 
 #include "IconHelper.h"
@@ -9,8 +10,9 @@
 inline Qt::CheckState checked_of_bool(bool b) {
   return b ? Qt::Checked : Qt::Unchecked;
 }
-inline Qt::CheckState flip_checked(Qt::CheckState c) {
-  return (c == Qt::Checked ? Qt::Unchecked : Qt::Checked);
+
+inline QItemSelectionModel::SelectionFlag selection_flag_of_bool(bool b) {
+  return b ? QItemSelectionModel::Select : QItemSelectionModel::Deselect;
 }
 
 UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
@@ -167,7 +169,7 @@ void UnitListDelegate::paint(QPainter *painter,
   }*/
   QStyleOptionViewItem o = option;
   if (m_selection->currentIndex() == index) {
-    painter->fillRect(o.rect, o.palette.highlight().color());
+    // painter->fillRect(o.rect, o.palette.highlight().color());
     o.font.setBold(true);
   }
 
@@ -177,41 +179,69 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                                    const QStyleOptionViewItem &option,
                                    const QModelIndex &index) {
   if (!index.isValid()) return false;
-  switch (UnitListColumn(index.column())) {
-    case UnitListColumn::Visible:
-    case UnitListColumn::Played:
-      switch (event->type()) {
-        case QEvent::MouseButtonPress: {
-          Qt::CheckState state =
-              qvariant_cast<Qt::CheckState>(index.data(Qt::CheckStateRole));
-          m_last_index = index;
-          m_last_set_checked = flip_checked(state);
-          model->setData(index, m_last_set_checked, Qt::CheckStateRole);
-          return true;
-        }
+  qDebug() << event->type();
+  switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+      m_last_index = index;
+      switch (UnitListColumn(index.column())) {
+        case UnitListColumn::Visible:
+        case UnitListColumn::Played: {
+          bool state = qvariant_cast<Qt::CheckState>(
+                           index.data(Qt::CheckStateRole)) == Qt::Checked;
+          m_last_set_checked = !state;
+          model->setData(index, checked_of_bool(m_last_set_checked),
+                         Qt::CheckStateRole);
+        } break;
+        case UnitListColumn::Name:
+          m_last_click_had_ctrl =
+              ((QMouseEvent *)event)->modifiers() & Qt::ControlModifier;
+          if (m_last_click_had_ctrl) {
+            bool state = m_selection->isRowSelected(index.row());
+            m_last_set_checked = !state;
+            m_selection->select(index,
+                                selection_flag_of_bool(m_last_set_checked));
+          } else
+            m_selection->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
 
-        case QEvent::MouseMove: {
-          const QModelIndex indexAtColumn =
-              index.siblingAtColumn(m_last_index.column());
-          // 2021-09-19: We check again that LeftButton is down because this
-          // move event tends to trigger in ptCollage style even when we aren't
-          // currently pressing anything (we never receive a release event
-          // either).
-          if (indexAtColumn.row() != m_last_index.row() &&
-              QApplication::mouseButtons() & Qt::LeftButton) {
-            m_last_index = indexAtColumn;
-            model->setData(indexAtColumn, m_last_set_checked,
-                           Qt::CheckStateRole);
-          }
-          break;
-        }
-
-        default:
           break;
       }
+      return true;
+    }
+
+    case QEvent::MouseMove: {
+      // TODO: Handle if the mouse moves too fast by doing all the rows in
+      // between
+      const QModelIndex indexAtColumn =
+          index.siblingAtColumn(m_last_index.column());
+      // 2021-09-19: We check again that LeftButton is down because this
+      // move event tends to trigger in ptCollage style even when we aren't
+      // currently pressing anything (we never receive a release event
+      // either).
+      if (indexAtColumn.row() != m_last_index.row() &&
+          QApplication::mouseButtons() & Qt::LeftButton)
+        switch (UnitListColumn(m_last_index.column())) {
+          case UnitListColumn::Visible:
+          case UnitListColumn::Played: {
+            m_last_index = indexAtColumn;
+            model->setData(indexAtColumn, checked_of_bool(m_last_set_checked),
+                           Qt::CheckStateRole);
+          } break;
+
+          case UnitListColumn::Name: {
+            if (indexAtColumn.row() != m_last_index.row() &&
+                QApplication::mouseButtons() & Qt::LeftButton &&
+                m_last_click_had_ctrl) {
+              m_last_index = indexAtColumn;
+              m_selection->select(index,
+                                  selection_flag_of_bool(m_last_set_checked));
+            }
+          } break;
+        }
+      return true;
+    }
+
+    default:
       return false;
-    case UnitListColumn::Name:
-      break;
   }
   return QStyledItemDelegate::editorEvent(event, model, option, index);
 };

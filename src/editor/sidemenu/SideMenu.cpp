@@ -311,7 +311,8 @@ void SideMenu::setCurrentUnit(int u) {
   // mess up the workflow. So [i_am_single_selected_row] detects that.
   // Selection is changed minimally otherwise because it messes with the
   // automatic selection that comes with mouse click.
-  bool i_am_single_selected_row = true;
+  // actually disable it
+  bool i_am_single_selected_row = false;
   int prev_current = ui->unitList->currentIndex().row();
   for (const auto& i : ui->unitList->selectionModel()->selectedIndexes()) {
     if (i.row() != prev_current) {
