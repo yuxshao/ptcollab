@@ -299,7 +299,22 @@ void SideMenu::setParamKindIndex(int index) {
     ui->paramSelection->setCurrentIndex(index);
 }
 
-void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
+void SideMenu::setCurrentUnit(int u) {
+  // There's some finickiness with this function being called either from a
+  // mouse click or a key press, because the former already updates the
+  // selection state.
+  auto maybeSelect =
+      ui->unitList->currentIndex().row() == u
+          ? QItemSelectionModel::NoUpdate
+          // This setCurrentUnit was from a mouse click and the unit's already
+          // selected. Don't select again or else it shows up as 'deselected'
+          : QItemSelectionModel::SelectCurrent
+      // This was from a keypress. You need to have the selection model change.
+      ;
+  ui->unitList->selectionModel()->setCurrentIndex(
+      ui->unitList->model()->index(u, 0),
+      maybeSelect | QItemSelectionModel::Rows);
+}
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing) {

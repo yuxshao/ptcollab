@@ -187,14 +187,18 @@ void UnitListDelegate::paint(QPainter *painter,
     case UnitListColumn::Name:
       break;
   }*/
+  QColor c = option.palette.highlight().color();
+  c.setAlphaF(0.3);
   if (index.siblingAtColumn(int(UnitListColumn::Select))
           .data(Qt::CheckStateRole) == Qt::Checked) {
     // A bit jank for a light highlight
-    QColor c = option.palette.highlight().color();
-    c.setAlphaF(0.3);
     painter->fillRect(option.rect, c);
   }
 
+  /*QStyleOptionViewItem itemOption(option);
+  initStyleOption(&itemOption, index);
+  if ((itemOption.state & QStyle::State_Selected))
+    itemOption.palette.setColor(QPalette::Highlight, Qt::red);*/
   QStyledItemDelegate::paint(painter, option, index);
 }
 bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
@@ -207,7 +211,6 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
     case UnitListColumn::Select:
       switch (event->type()) {
         case QEvent::MouseButtonPress: {
-          qDebug() << "PRESS";
           Qt::CheckState state =
               qvariant_cast<Qt::CheckState>(index.data(Qt::CheckStateRole));
           m_last_index = index;
