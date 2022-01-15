@@ -169,7 +169,9 @@ void UnitListDelegate::paint(QPainter *painter,
   }*/
   QStyleOptionViewItem o = option;
   if (m_selection->currentIndex() == index) {
-    // painter->fillRect(o.rect, o.palette.highlight().color());
+    QColor c = o.palette.highlight().color();
+    c.setAlphaF(0.5);
+    painter->fillRect(option.rect, c);
     o.font.setBold(true);
   }
 
