@@ -1,6 +1,7 @@
 #ifndef UNITLISTMODEL_H
 #define UNITLISTMODEL_H
 #include <QAbstractTableModel>
+#include <QItemSelectionModel>
 #include <QStyledItemDelegate>
 
 #include "editor/PxtoneClient.h"
@@ -43,8 +44,11 @@ class UnitListDelegate : public QStyledItemDelegate {
   Q_OBJECT
   QModelIndex m_last_index;
   Qt::CheckState m_last_set_checked;
+  const QItemSelectionModel *m_selection;
 
  public:
+  UnitListDelegate(const QItemSelectionModel *selection)
+      : m_selection(selection){};
   void paint(QPainter *painter, const QStyleOptionViewItem &option,
              const QModelIndex &index) const override;
   bool editorEvent(QEvent *event, QAbstractItemModel *model,

@@ -187,19 +187,13 @@ void UnitListDelegate::paint(QPainter *painter,
     case UnitListColumn::Name:
       break;
   }*/
-  QColor c = option.palette.highlight().color();
-  c.setAlphaF(0.3);
-  if (index.siblingAtColumn(int(UnitListColumn::Select))
-          .data(Qt::CheckStateRole) == Qt::Checked) {
-    // A bit jank for a light highlight
-    painter->fillRect(option.rect, c);
+  QStyleOptionViewItem o = option;
+  if (m_selection->currentIndex() == index) {
+    painter->fillRect(o.rect, o.palette.highlight().color());
+    o.font.setBold(true);
   }
 
-  /*QStyleOptionViewItem itemOption(option);
-  initStyleOption(&itemOption, index);
-  if ((itemOption.state & QStyle::State_Selected))
-    itemOption.palette.setColor(QPalette::Highlight, Qt::red);*/
-  QStyledItemDelegate::paint(painter, option, index);
+  QStyledItemDelegate::paint(painter, o, index);
 }
 bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
                                    const QStyleOptionViewItem &option,

@@ -47,7 +47,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
-  ui->unitList->setItemDelegate(new UnitListDelegate);
+  ui->unitList->setItemDelegate(
+      new UnitListDelegate(ui->unitList->selectionModel()));
   setPlay(false);
   for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
                      ui->overdriveList, ui->usersList}) {
@@ -300,21 +301,32 @@ void SideMenu::setParamKindIndex(int index) {
 }
 
 void SideMenu::setCurrentUnit(int u) {
-  // There's some finickiness with this function being called either from a
-  // mouse click or a key press, because the former already updates the
-  // selection state.
-  auto maybeSelect =
-      ui->unitList->currentIndex().row() == u
-          ? QItemSelectionModel::NoUpdate
-          // This setCurrentUnit was from a mouse click and the unit's already
-          // selected. Don't select again or else it shows up as 'deselected'
-          : QItemSelectionModel::SelectCurrent
-      // This was from a keypress. You need to have the selection model change.
-      ;
-  ui->unitList->selectionModel()->setCurrentIndex(
-      ui->unitList->model()->index(u, 0),
-      maybeSelect | QItemSelectionModel::Rows);
+  // The app doesn't have a lot of control over how selection / current
+  // index works. Clicking necessarily selects and sets the current index.
+  // W/S has some more flexibility. If I click, then use W/S, I want the
+  // selection to follow me because a lingering selection I think would
+  // mess up the workflow. So [i_am_single_selected_row] detects that.
+  // Selection is changed minimally otherwise because it messes with the
+  // automatic selection that comes with mouse click.
+  bool i_am_single_selected_row = true;
+  int prev_current = ui->unitList->currentIndex().row();
+  for (const auto& i : ui->unitList->selectionModel()->selectedIndexes()) {
+    if (i.row() != prev_current) {
+      i_am_single_selected_row = false;
+      break;
+    }
+  }
+  QModelIndex index =
+      ui->unitList->model()->index(u, int(UnitListColumn::Name));
+  QItemSelectionModel* selection = ui->unitList->selectionModel();
+  selection->setCurrentIndex(
+      index, QItemSelectionModel::Current | QItemSelectionModel::Rows);
+  if (i_am_single_selected_row) {
+    selection->clearSelection();
+    selection->select(index, QItemSelectionModel::Select);
+  }
 }
+
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setPlay(bool playing) {
   if (playing) {
