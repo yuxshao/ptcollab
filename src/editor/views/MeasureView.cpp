@@ -28,6 +28,9 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           });
   connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
           &QWidget::updateGeometry);
+
+  connect(m_client, &PxtoneClient::editStateChanged, this,
+          &MeasureView::handleNewEditState);
 }
 
 void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
@@ -80,6 +83,7 @@ constexpr int UNIT_EDIT_OFFSET = 2;
 constexpr int RIBBON_HEIGHT =
     MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
 constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
+constexpr int UNIT_EDIT_MARGIN = 1;
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                        int quantizeClock, int clockPerMeas,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -151,8 +155,20 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 QSize MeasureView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
-               1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET + UNIT_EDIT_HEIGHT);
+               1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET +
+                   (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) *
+                       (1 + m_client->editState().m_pinned_unit_ids.size()));
 }
+
+void MeasureView::handleNewEditState(const EditState &) {
+  // TODO: seems like it doesn't update actual window size
+  if (size() != sizeHint()) updateGeometry();
+}
+
+struct UnitDrawParams {
+  int y;
+  const Brush *brush;
+};
 
 void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
@@ -212,51 +228,77 @@ void MeasureView::paintEvent(QPaintEvent *e) {
 
   // Draw on events
 
-  painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT,
-                   StyleEditor::palette.MeasureUnitEdit);
   double scaleX = m_client->editState().scale.clockPerPx;
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
       qint32(e->rect().right() * scaleX) + WINDOW_BOUND_SLACK};
-  int unit_id = m_client->editState().m_current_unit_id;
-  const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
-  std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
-  if (maybe_unit_no.has_value()) {
-    int unit_no = maybe_unit_no.value();
+  std::map<int, UnitDrawParams> unitNoToDrawParams;
+  int i = 0;
 
-    std::optional<Interval> last_on = std::nullopt;
-    int last_vel = EVENTDEFAULT_VELOCITY;
-    int y = UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2;
+  auto unit_y = [&](int unit_no) {
+    return (UNIT_EDIT_Y + (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) * unit_no +
+            UNIT_EDIT_HEIGHT / 2);
+  };
+  // Compute where to draw / what params to draw with, for each pinned unit no
+  for (int unit_id : m_client->editState().m_pinned_unit_ids) {
+    std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
+    if (maybe_unit_no.has_value()) {
+      unitNoToDrawParams[maybe_unit_no.value()] = {
+          unit_y(i), &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)]};
+    }
+    painter.fillRect(0, UNIT_EDIT_Y + (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) * i,
+                     width(), UNIT_EDIT_HEIGHT,
+                     StyleEditor::palette.MeasureUnitEdit);
+    ++i;
+  }
+  int current_unit_no_y = unit_y(i);
+  painter.fillRect(0, UNIT_EDIT_Y + (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) * i,
+                   width(), UNIT_EDIT_HEIGHT,
+                   StyleEditor::palette.MeasureUnitEdit);
 
-    auto drawLastOn = [&]() {
-      if (last_on.has_value()) {
-        const Interval &i = last_on.value();
-        drawUnitBullet(
-            painter, i.start / scaleX, y,
-            int(i.end / scaleX) - int(i.start / scaleX),
-            brush.toQColor(last_vel, i.contains(m_moo_clock->now()), 255));
+  std::optional<int> current_unit_no =
+      m_client->unitIdMap().idToNo(m_client->editState().m_current_unit_id);
+
+  std::map<int, Interval> last_on_by_no;
+  std::map<int, int> last_vel_by_no;
+
+  auto drawLastOn = [&](int no) {
+    if (last_on_by_no.count(no) > 0) {
+      const Interval &i = last_on_by_no[no];
+      int vel = (last_vel_by_no.count(no) > 0 ? last_vel_by_no[no]
+                                              : EVENTDEFAULT_VELOCITY);
+      int x = i.start / scaleX;
+      int w = int(i.end / scaleX) - x;
+      QColor c = unitNoToDrawParams[no].brush->toQColor(
+          vel, i.contains(m_moo_clock->now()), 255);
+      drawUnitBullet(painter, x, unitNoToDrawParams[no].y, w, c);
+      if (current_unit_no == std::optional{no})
+        drawUnitBullet(painter, x, current_unit_no_y, w, c);
+    }
+    last_on_by_no.erase(no);
+  };
+
+  for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
+       e = e->next) {
+    if (e->clock > clockBounds.end) break;
+    if (unitNoToDrawParams.count(e->unit_no) > 0) {
+      if (e->kind == EVENTKIND_ON) {
+        drawLastOn(e->unit_no);
+        last_on_by_no[e->unit_no] = Interval{e->clock, e->clock + e->value};
       }
-      last_on = std::nullopt;
-    };
-
-    for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
-         e = e->next) {
-      if (e->clock > clockBounds.end) break;
-      if (e->unit_no == unit_no) {
-        if (e->kind == EVENTKIND_ON) {
-          drawLastOn();
-          last_on = Interval{e->clock, e->clock + e->value};
-        }
-        if (e->kind == EVENTKIND_VELOCITY) {
-          if (last_on.has_value() && last_on.value().start < e->clock)
-            drawLastOn();
-          last_vel = e->value;
-        }
+      if (e->kind == EVENTKIND_VELOCITY) {
+        if (last_on_by_no.count(e->unit_no) > 0 &&
+            last_on_by_no[e->unit_no].start < e->clock)
+          drawLastOn(e->unit_no);
+        last_vel_by_no[e->unit_no] = e->value;
       }
     }
-    drawLastOn();
   }
+  // TODO: for some reason thsi crashes
+  // for (auto it = last_on_by_no.begin(); it != last_on_by_no.end(); ++it)
+  //  drawLastOn(it->first);
 
+  // TODO: draw correct cursors over other things
   drawLastSeek(painter, m_client, height(), true);
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, true);

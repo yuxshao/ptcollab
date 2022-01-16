@@ -25,6 +25,8 @@ class MeasureView : public QWidget {
   void wheelEvent(QWheelEvent *event) override;
   QSize sizeHint() const override;
 
+  void handleNewEditState(const EditState &e);
+
  public:
   explicit MeasureView(PxtoneClient *client, MooClock *moo_clock,
                        QWidget *parent = nullptr);
