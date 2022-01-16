@@ -5,9 +5,11 @@
 #include <QObject>
 #include <QRect>
 #include <optional>
+#include <set>
 #include <variant>
 
 #include "Interval.h"
+#include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnMaster.h"
 
 struct MouseKeyboardEdit {
@@ -38,14 +40,15 @@ inline QDataStream &operator>>(QDataStream &in, MouseParamEdit &a) {
 }
 
 struct MouseMeasureEdit {
+  std::optional<qint32> pinned_unit;
   qint32 y;
 };
 inline QDataStream &operator<<(QDataStream &out, const MouseMeasureEdit &a) {
-  out << a.y;
+  out << a.pinned_unit << a.y;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, MouseMeasureEdit &a) {
-  in >> a.y;
+  in >> a.pinned_unit >> a.y;
   return in;
 }
 struct MouseEditState {
@@ -127,6 +130,7 @@ struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
   QRect viewport;
+  std::set<int> m_pinned_unit_ids;
   int m_current_unit_id;
   int m_current_woice_id;
   int m_current_param_kind_idx;

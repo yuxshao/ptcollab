@@ -330,7 +330,7 @@ static void updateStatePositions(EditState &edit_state,
     state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
   }
 
-  state.kind = MouseMeasureEdit{event->y()};
+  state.kind = MouseMeasureEdit{std::nullopt, event->y()};
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
