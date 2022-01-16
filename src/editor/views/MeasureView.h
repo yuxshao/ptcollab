@@ -32,6 +32,7 @@ class MeasureView : public QWidget {
                        QWidget *parent = nullptr);
 
  signals:
+  void heightChanged(int h);
 };
 
 #endif  // MEASUREVIEW_H
