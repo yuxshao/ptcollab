@@ -517,6 +517,7 @@ playback
 
 1/15
 1. remove selection column, instead ctrl+click does it
+2. ctrl+shift+V to paste at end of selection
 
 Todo by priority
 ----------------

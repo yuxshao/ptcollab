@@ -1134,16 +1134,17 @@ void KeyboardView::quantizeSelectionY() {
   m_client->applyAction(actions);
 }
 
-void KeyboardView::paste(bool preserveFollow) {
+void KeyboardView::paste(bool useSelectionEnd, bool preserveFollow) {
   if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   m_client->changeEditState(
       [&](auto &s) {
         Interval &selection = s.mouse_edit_state.selection.value();
+        qint32 paste_point = useSelectionEnd ? selection.end : selection.start;
         PasteResult paste_result = m_client->clipboard()->makePaste(
-            m_client->selectedUnitNos(), selection.start,
-            m_client->unitIdMap());
+            m_client->selectedUnitNos(), paste_point, m_client->unitIdMap());
         if (paste_result.actions.size() > 0)
           m_client->applyAction(paste_result.actions);
+        selection.start = paste_point;
         selection.end = selection.start + paste_result.length;
       },
       preserveFollow);

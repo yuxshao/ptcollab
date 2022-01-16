@@ -457,7 +457,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key_V:
       if (event->modifiers() & Qt::ControlModifier)
-        m_keyboard_view->paste(false);
+        m_keyboard_view->paste((event->modifiers() & Qt::ShiftModifier), false);
       break;
     case Qt::Key_X:
       if (event->modifiers() & Qt::ControlModifier)
