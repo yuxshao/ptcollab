@@ -54,6 +54,8 @@ class SideMenu : public QWidget {
   void removeWoice(int idx);
   void changeWoice(int idx, const AddWoice &w);
   void selectWoice(int idx);
+  void selectedUnitsChanged(const QItemSelection &selected,
+                            const QItemSelection &deselected);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
   void followPlayheadClicked(FollowPlayhead);
@@ -70,6 +72,7 @@ class SideMenu : public QWidget {
   // void setSelectedUnits(QList<qint32> idx);
   void setCurrentUnit(int unit_no);
   void setCurrentWoice(int unit_no);
+  void setUnitSelected(int unit_no, bool selected);
   void setPlay(bool);
   void setModified(bool);
   void setTempo(int tempo);

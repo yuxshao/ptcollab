@@ -47,7 +47,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
-  ui->unitList->setItemDelegate(new UnitListDelegate);
+  ui->unitList->setItemDelegate(
+      new UnitListDelegate(ui->unitList->selectionModel()));
   setPlay(false);
   for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
                      ui->overdriveList, ui->usersList}) {
@@ -73,8 +74,15 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex& current, const QModelIndex& previous) {
             (void)previous;
+            for (int i = 0; i <= int(UnitListColumn::MAX); ++i) {
+              ui->unitList->update(previous.siblingAtColumn(i));
+              ui->unitList->update(current.siblingAtColumn(i));
+            }
             if (current.isValid()) emit currentUnitChanged(current.row());
           });
+  connect(ui->unitList->selectionModel(),
+          &QItemSelectionModel::selectionChanged, this,
+          &SideMenu::selectedUnitsChanged);
   connect(ui->unitList, &QTableView::clicked,
           [this](const QModelIndex& index) { emit unitClicked(index.row()); });
   connect(ui->saveBtn, &QPushButton::clicked, this,
@@ -299,8 +307,22 @@ void SideMenu::setParamKindIndex(int index) {
     ui->paramSelection->setCurrentIndex(index);
 }
 
-void SideMenu::setCurrentUnit(int u) { ui->unitList->selectRow(u); }
+void SideMenu::setCurrentUnit(int u) {
+  QModelIndex index =
+      ui->unitList->model()->index(u, int(UnitListColumn::Name));
+
+  QItemSelectionModel* selection = ui->unitList->selectionModel();
+  selection->setCurrentIndex(
+      index, QItemSelectionModel::Current | QItemSelectionModel::Rows);
+}
+
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
+
+void SideMenu::setUnitSelected(int u, bool selected) {
+  ui->unitList->selectionModel()->select(
+      ui->unitList->model()->index(u, int(UnitListColumn::Name)),
+      (selected ? QItemSelectionModel::Select : QItemSelectionModel::Deselect));
+}
 void SideMenu::setPlay(bool playing) {
   if (playing) {
     ui->playBtn->setIcon(QIcon(":/icons/color/pause"));

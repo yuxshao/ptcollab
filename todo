@@ -515,6 +515,9 @@ playback
 2022/1/13
 1. bug: other ppls preview quant shows up properly in param view
 
+1/15
+1. remove selection column, instead ctrl+click does it
+
 Todo by priority
 ----------------
  - Unit view, at least for drums

@@ -1,18 +1,13 @@
 #ifndef UNITLISTMODEL_H
 #define UNITLISTMODEL_H
 #include <QAbstractTableModel>
+#include <QItemSelectionModel>
 #include <QStyledItemDelegate>
 
 #include "editor/PxtoneClient.h"
 #include "protocol/NoIdMap.h"
 
-enum struct UnitListColumn : qint8 {
-  Visible,
-  Played,
-  Select,
-  Name,
-  MAX = Name
-};
+enum struct UnitListColumn : qint8 { Visible, Played, Name, MAX = Name };
 
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
@@ -42,9 +37,12 @@ class UnitListModel : public QAbstractTableModel {
 class UnitListDelegate : public QStyledItemDelegate {
   Q_OBJECT
   QModelIndex m_last_index;
-  Qt::CheckState m_last_set_checked;
+  QItemSelectionModel *m_selection;
+  bool m_last_set_checked, m_last_click_had_ctrl;
 
  public:
+  UnitListDelegate(QItemSelectionModel *selection)
+      : m_selection(selection), m_last_click_had_ctrl(false){};
   void paint(QPainter *painter, const QStyleOptionViewItem &option,
              const QModelIndex &index) const override;
   bool editorEvent(QEvent *event, QAbstractItemModel *model,
