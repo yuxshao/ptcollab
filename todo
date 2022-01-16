@@ -522,10 +522,9 @@ playback
 Todo by priority
 ----------------
  - Unit view, at least for drums
-   - how many views do you want? the fewer, the easier it is to be 'present'
-     with others.
-   - something like ptweb
-     - can pin instruments to be drums. (list of pinned is global)
+   - can pin instruments to be drums. (list of pinned is global?)
+   - highlight pinned row on left unit hover
+   - highlight left unit on pinned row hover
  - 
  - webpage with all keybindings
 
