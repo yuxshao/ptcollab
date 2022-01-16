@@ -74,6 +74,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex& current, const QModelIndex& previous) {
             (void)previous;
+            for (int i = 0; i <= int(UnitListColumn::MAX); ++i) {
+              ui->unitList->update(previous.siblingAtColumn(i));
+              ui->unitList->update(current.siblingAtColumn(i));
+            }
             if (current.isValid()) emit currentUnitChanged(current.row());
           });
   connect(ui->unitList->selectionModel(),
@@ -304,31 +308,12 @@ void SideMenu::setParamKindIndex(int index) {
 }
 
 void SideMenu::setCurrentUnit(int u) {
-  // The app doesn't have a lot of control over how selection / current
-  // index works. Clicking necessarily selects and sets the current index.
-  // W/S has some more flexibility. If I click, then use W/S, I want the
-  // selection to follow me because a lingering selection I think would
-  // mess up the workflow. So [i_am_single_selected_row] detects that.
-  // Selection is changed minimally otherwise because it messes with the
-  // automatic selection that comes with mouse click.
-  // actually disable it
-  bool i_am_single_selected_row = false;
-  int prev_current = ui->unitList->currentIndex().row();
-  for (const auto& i : ui->unitList->selectionModel()->selectedIndexes()) {
-    if (i.row() != prev_current) {
-      i_am_single_selected_row = false;
-      break;
-    }
-  }
   QModelIndex index =
       ui->unitList->model()->index(u, int(UnitListColumn::Name));
+
   QItemSelectionModel* selection = ui->unitList->selectionModel();
   selection->setCurrentIndex(
       index, QItemSelectionModel::Current | QItemSelectionModel::Rows);
-  if (i_am_single_selected_row) {
-    selection->clearSelection();
-    selection->select(index, QItemSelectionModel::Select);
-  }
 }
 
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }

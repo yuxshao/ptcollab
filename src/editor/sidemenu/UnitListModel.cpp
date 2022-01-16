@@ -11,8 +11,10 @@ inline Qt::CheckState checked_of_bool(bool b) {
   return b ? Qt::Checked : Qt::Unchecked;
 }
 
-inline QItemSelectionModel::SelectionFlag selection_flag_of_bool(bool b) {
-  return b ? QItemSelectionModel::Select : QItemSelectionModel::Deselect;
+inline QFlags<QItemSelectionModel::SelectionFlag> selection_flag_of_bool(
+    bool b) {
+  return ((b ? QItemSelectionModel::Select : QItemSelectionModel::Deselect) |
+          QItemSelectionModel::Rows);
 }
 
 UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
@@ -105,7 +107,6 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
     case UnitListColumn::Visible:
     case UnitListColumn::Played:
       f |= Qt::ItemIsUserCheckable;
-      f &= ~Qt::ItemIsSelectable;
       break;
     case UnitListColumn::Name:
       f |= Qt::ItemIsEditable;
@@ -168,7 +169,7 @@ void UnitListDelegate::paint(QPainter *painter,
       break;
   }*/
   QStyleOptionViewItem o = option;
-  if (m_selection->currentIndex() == index) {
+  if (m_selection->currentIndex().row() == index.row()) {
     QColor c = o.palette.highlight().color();
     c.setAlphaF(0.5);
     painter->fillRect(option.rect, c);
