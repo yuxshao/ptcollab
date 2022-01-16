@@ -321,7 +321,8 @@ void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }
 void SideMenu::setUnitSelected(int u, bool selected) {
   ui->unitList->selectionModel()->select(
       ui->unitList->model()->index(u, int(UnitListColumn::Name)),
-      (selected ? QItemSelectionModel::Select : QItemSelectionModel::Deselect));
+      (selected ? QItemSelectionModel::Select : QItemSelectionModel::Deselect) |
+          QItemSelectionModel::Rows);
 }
 void SideMenu::setPlay(bool playing) {
   if (playing) {
