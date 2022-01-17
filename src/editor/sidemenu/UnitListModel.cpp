@@ -26,8 +26,14 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
   });
   connect(controller, &PxtoneController::endAddUnit, this,
           &UnitListModel::endInsertRows);
-  connect(controller, &PxtoneController::beginRemoveUnit,
-          [this](int index) { beginRemoveRows(QModelIndex(), index, index); });
+  connect(controller, &PxtoneController::beginRemoveUnit, [this](int index) {
+    m_client->changeEditState(
+        [&](EditState &e) {
+          e.m_pinned_unit_ids.erase(m_client->unitIdMap().noToId(index));
+        },
+        true);
+    beginRemoveRows(QModelIndex(), index, index);
+  });
   connect(controller, &PxtoneController::endRemoveUnit, this,
           &UnitListModel::endRemoveRows);
   connect(controller, &PxtoneController::beginRefresh, this,
