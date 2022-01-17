@@ -103,7 +103,7 @@ UnitDrawParamsMap make_draw_params_map(const EditState &e, const NoIdMap &m) {
   int row = 0;
   for (auto &[unit_no, p] : no_to_params) {
     p.ys.push_back(unit_edit_y(row) + UNIT_EDIT_HEIGHT / 2);
-    rows.push_back(MeasureUnitEdit{m.noToId(row)});
+    rows.push_back(MeasureUnitEdit{m.noToId(unit_no)});
     ++row;
   }
 
