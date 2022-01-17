@@ -324,6 +324,10 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                      StyleEditor::palette.MeasureUnitEdit);
   std::map<int, Interval> last_on_by_no;
   std::map<int, int> last_vel_by_no;
+  std::optional<Interval> selection(
+      m_client->editState().mouse_edit_state.selection);
+
+  std::set<int> selected_unit_nos = m_client->selectedUnitNos();
 
   auto drawLastOn = [&](int no, bool erase) {
     if (last_on_by_no.count(no) > 0) {
@@ -332,10 +336,20 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                                               : EVENTDEFAULT_VELOCITY);
       int x = i.start / scaleX;
       int w = int(i.end / scaleX) - x;
-      QColor c = unit_draw_params_map.no_to_params[no].brush->toQColor(
-          vel, i.contains(m_moo_clock->now()), 255);
+      const Brush *brush = unit_draw_params_map.no_to_params[no].brush;
+      QColor c = brush->toQColor(vel, i.contains(m_moo_clock->now()), 255);
       for (int y : unit_draw_params_map.no_to_params[no].ys)
-        drawUnitBullet(painter, x, y, w, c);
+        fillUnitBullet(painter, x, y, w, c);
+      if (selected_unit_nos.count(no) > 0 && selection.has_value()) {
+        Interval selection_segment = interval_intersect(selection.value(), i);
+        if (!selection_segment.empty()) {
+          painter.setPen(brush->toQColor(EVENTDEFAULT_VELOCITY, true, 255));
+          int x = selection_segment.start / scaleX;
+          int w = int(selection_segment.end / scaleX) - x;
+          for (int y : unit_draw_params_map.no_to_params[no].ys)
+            drawUnitBullet(painter, x, y, w);
+        }
+      }
       if (erase) last_on_by_no.erase(no);
     }
   };

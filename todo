@@ -522,12 +522,16 @@ playback
 1/16
 1. unit view, individuals
 
+1/17
+1. highlight unit bullets that are selected
+
 Todo by priority
 ----------------
  - Unit view
    - highlight pinned row on left unit hover
    - highlight left unit on pinned row hover
    - add label on left of all the unit bars?
+   - update the icon to a 'pin' icon
  - colour legend on left menu
 
  - webpage with all keybindings

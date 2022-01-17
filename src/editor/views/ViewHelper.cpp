@@ -148,7 +148,7 @@ void drawExistingSelection(QPainter &painter, const MouseEditState &state,
 }
 
 constexpr int32_t tailLineHeight = 4;
-void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
+void fillUnitBullet(QPainter &painter, int thisX, int y, int w,
                     const QColor &color) {
   painter.fillRect(thisX, y - (tailLineHeight + 6) / 2, 1, (tailLineHeight + 6),
                    color);
@@ -158,6 +158,13 @@ void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
                    tailLineHeight, color);
   painter.fillRect(thisX + std::max(0, w - 1), y - (tailLineHeight - 2) / 2, 1,
                    tailLineHeight - 2, color);
+}
+
+void drawUnitBullet(QPainter &painter, int thisX, int y, int w) {
+  // Drawing a rectangle outline since outlining the full bullet is complicated
+  // + doesn't actually look that great
+  painter.drawRect(thisX, y - (tailLineHeight + 2) / 2, std::max(0, w - 1),
+                   (tailLineHeight + 1));
 }
 
 constexpr int NUM_WIDTH = 8;
