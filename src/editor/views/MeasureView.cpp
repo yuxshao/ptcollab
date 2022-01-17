@@ -33,16 +33,6 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           &MeasureView::handleNewEditState);
 }
 
-void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
-                const QString &username, qint64 uid) {
-  if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
-    return;
-  int y = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y;
-  QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
-                  y);
-  drawCursor(position, painter, color, username, uid);
-}
-
 enum struct FlagType : qint8 { Top, Repeat, Last };
 constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
@@ -87,6 +77,47 @@ constexpr int UNIT_EDIT_MARGIN = 1;
 constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
 inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
 
+struct UnitDrawParams {
+  std::vector<int> ys;
+  const Brush *brush;
+};
+
+// TODO: Need to handle if thing is removed
+void drawCursor(const EditState &state,
+                const std::map<int, UnitDrawParams> &unitNoToDrawParams,
+                const NoIdMap &unit_id_map, QPainter &painter,
+                const QColor &color, const QString &username, qint64 uid) {
+  if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
+    return;
+  MouseMeasureEdit m = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
+  int offset_y = m.offset_y;
+  std::optional<int> y;
+  std::visit(overloaded{[&](MeasureRibbonEdit &) { y = m.offset_y; },
+                        [&](MeasureUnitEdit &m) {
+                          std::optional<int> no;
+                          bool pinned = m.pinned_unit_id.has_value();
+                          if (pinned)
+                            no = unit_id_map.idToNo(m.pinned_unit_id.value());
+                          else
+                            no = unit_id_map.idToNo(state.m_current_unit_id);
+                          if (no.has_value() &&
+                              unitNoToDrawParams.count(no.value()) > 0) {
+                            auto &ys = unitNoToDrawParams.at(no.value()).ys;
+                            // There are multiple places you could draw the
+                            // cursor. If it's pinned on their end draw it in
+                            // the pinned slot on yours if you can (front).
+                            y = (pinned ? ys.front() : ys.back()) + offset_y;
+                          }
+                        }},
+             m.kind);
+
+  if (y.has_value()) {
+    QPoint p(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
+             y.value());
+    drawCursor(p, painter, color, username, uid);
+  }
+}
+
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                        int quantizeClock, int clockPerMeas,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -119,8 +150,9 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
       case MouseEditState::Type::Nothing: {
         if (std::holds_alternative<MouseMeasureEdit>(
                 state.mouse_edit_state.kind)) {
-          if (std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y <
-              RIBBON_HEIGHT) {
+          auto &[kind, _] =
+              std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
+          if (std::holds_alternative<MeasureRibbonEdit>(kind)) {
             int half_meas =
                 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
             int meas = half_meas / 2;
@@ -171,10 +203,24 @@ void MeasureView::handleNewEditState(const EditState &) {
   }
 }
 
-struct UnitDrawParams {
-  std::vector<int> ys;
-  const Brush *brush;
-};
+std::map<int, UnitDrawParams> make_draw_params_map(const EditState &e,
+                                                   const NoIdMap &m) {
+  std::map<int, UnitDrawParams> unitNoToDrawParams;
+  int i = 0;
+
+  auto add_unit = [&](int unit_id) {
+    std::optional<int> maybe_unit_no = m.idToNo(unit_id);
+    if (maybe_unit_no.has_value()) {
+      UnitDrawParams &p = unitNoToDrawParams[maybe_unit_no.value()];
+      p.brush = &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+      p.ys.push_back(unit_edit_y(i) + UNIT_EDIT_HEIGHT / 2);
+    }
+    ++i;
+  };
+  // Compute where to draw / what params to draw with, for each pinned unit no
+  for (int unit_id : e.m_pinned_unit_ids) add_unit(unit_id);
+  add_unit(e.m_current_unit_id);
+}
 
 void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
@@ -238,25 +284,11 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
       qint32(e->rect().right() * scaleX) + WINDOW_BOUND_SLACK};
-  std::map<int, UnitDrawParams> unitNoToDrawParams;
-  int i = 0;
-
-  auto add_unit = [&](int unit_id) {
-    std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
-    if (maybe_unit_no.has_value()) {
-      UnitDrawParams &p = unitNoToDrawParams[maybe_unit_no.value()];
-      p.brush = &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
-      p.ys.push_back(unit_edit_y(i) + UNIT_EDIT_HEIGHT / 2);
-    }
+  std::map<int, UnitDrawParams> unitNoToDrawParams(
+      make_draw_params_map(m_client->editState(), m_client->unitIdMap()));
+  for (uint i = 0; i < unitNoToDrawParams.size() + 1; ++i)
     painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                      StyleEditor::palette.MeasureUnitEdit);
-    ++i;
-  };
-  // Compute where to draw / what params to draw with, for each pinned unit no
-  for (int unit_id : m_client->editState().m_pinned_unit_ids) {
-    add_unit(unit_id);
-  }
-  add_unit(m_client->editState().m_current_unit_id);
   std::map<int, Interval> last_on_by_no;
   std::map<int, int> last_vel_by_no;
 
@@ -342,7 +374,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                                                         false, 128);
       else
         color = StyleEditor::palette.Cursor;
-      drawCursor(state, painter, color, remote_state.user, uid);
+      drawCursor(state, unitNoToDrawParams, m_client->unitIdMap(), painter,
+                 color, remote_state.user, uid);
     }
   }
 
@@ -350,8 +383,9 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
-               my_username, m_client->following_uid());
+    drawCursor(m_client->editState(), unitNoToDrawParams, m_client->unitIdMap(),
+               painter, StyleEditor::palette.Cursor, my_username,
+               m_client->following_uid());
   }
 }
 
@@ -368,7 +402,17 @@ static void updateStatePositions(EditState &edit_state,
     state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
   }
 
-  state.kind = MouseMeasureEdit{std::nullopt, event->y()};
+  int y = event->y();
+  if (y < UNIT_EDIT_Y)
+    state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
+  else {
+    int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+    int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
+
+    std::map<int, UnitDrawParams> unitNoToDrawParams(
+        make_draw_params_map(m_client->editState(), m_client->unitIdMap()));
+    int unit_no = edit_state.m_pinned_unit_nos[row];
+  }
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {

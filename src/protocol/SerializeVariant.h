@@ -110,6 +110,11 @@ QDataStream &operator>>(QDataStream &in, std::set<T> &a) {
   return in;
 }
 
+inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
+
 #include <QTextStream>
 
 template <typename... Args>
