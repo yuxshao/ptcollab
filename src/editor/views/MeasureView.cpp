@@ -432,35 +432,36 @@ static void updateStatePositions(EditState &edit_state,
 
   state.current_clock =
       std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
-  if (state.type == MouseEditState::Nothing ||
-      state.type == MouseEditState::Seek) {
-    state.start_clock = state.current_clock;
-    bool shift = event->modifiers() & Qt::ShiftModifier;
-    state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
-  }
+  switch (state.type) {
+    case MouseEditState::Nothing:
+    case MouseEditState::Seek:
+    case MouseEditState::Select: {
+      if (state.type != MouseEditState::Select) {
+        state.start_clock = state.current_clock;
+        bool shift = event->modifiers() & Qt::ShiftModifier;
+        state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
+      }
 
-  if (state.type == MouseEditState::Nothing ||
-      state.type == MouseEditState::Seek ||
-      state.type == MouseEditState::Select) {
-    int y = event->y();
-    if (y < UNIT_EDIT_Y)
-      state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
-    else {
-      int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
-      int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
-      const auto &rows = unit_draw_params_map.rows;
-      state.kind = MouseMeasureEdit{
-          (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
-    }
-  }
+      int y = event->y();
+      if (y < UNIT_EDIT_Y)
+        state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
+      else {
+        int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+        int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
+        const auto &rows = unit_draw_params_map.rows;
+        // if (rows.size() > 0) qDebug() << rows[0].pinned_unit_id.value_or(-1);
+        state.kind = MouseMeasureEdit{
+            (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
+      }
+    } break;
 
-  if (state.type == MouseEditState::SetNote ||
-      state.type == MouseEditState::SetOn ||
-      state.type == MouseEditState::DeleteNote ||
-      state.type == MouseEditState::DeleteOn) {
-    if (std::holds_alternative<MouseMeasureEdit>(state.kind)) {
-      std::get<MouseMeasureEdit>(state.kind).offset_y = UNIT_EDIT_HEIGHT / 2;
-    }
+    case MouseEditState::SetNote:
+    case MouseEditState::SetOn:
+    case MouseEditState::DeleteNote:
+    case MouseEditState::DeleteOn:
+      if (std::holds_alternative<MouseMeasureEdit>(state.kind))
+        std::get<MouseMeasureEdit>(state.kind).offset_y = UNIT_EDIT_HEIGHT / 2;
+      break;
   }
 }
 
