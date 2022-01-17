@@ -449,7 +449,6 @@ static void updateStatePositions(EditState &edit_state,
         int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
         int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
         const auto &rows = unit_draw_params_map.rows;
-        // if (rows.size() > 0) qDebug() << rows[0].pinned_unit_id.value_or(-1);
         state.kind = MouseMeasureEdit{
             (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
       }
