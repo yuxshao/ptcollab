@@ -519,13 +519,17 @@ playback
 1. remove selection column, instead ctrl+click does it
 2. ctrl+shift+V to paste at end of selection
 
+1/16
+1. unit view, individuals
+
 Todo by priority
 ----------------
- - Unit view, at least for drums
-   - can pin instruments to be drums. (list of pinned is global?)
+ - Unit view
    - highlight pinned row on left unit hover
    - highlight left unit on pinned row hover
- - 
+   - add label on left of all the unit bars?
+ - colour legend on left menu
+
  - webpage with all keybindings
 
  - test to see if the midi noodling is causing the lag. delete voice previews if so

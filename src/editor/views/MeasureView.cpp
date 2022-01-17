@@ -530,7 +530,9 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               m_client->quantizeClock()));
           switch (s.mouse_edit_state.type) {
             case MouseEditState::SetOn:
-            case MouseEditState::SetNote: {
+            case MouseEditState::SetNote:
+            case MouseEditState::DeleteOn:
+            case MouseEditState::DeleteNote: {
               if (!std::holds_alternative<MouseMeasureEdit>(
                       s.mouse_edit_state.kind))
                 break;
@@ -544,24 +546,25 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               std::optional<int> maybe_unit_no =
                   m_client->unitIdMap().idToNo(unit_id);
               if (maybe_unit_no.has_value()) {
-                actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
-                                   Delete{clock_int.end}});
-                actions.push_back({EVENTKIND_VELOCITY, unit_id, clock_int.start,
-                                   Delete{clock_int.end}});
-                actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
-                                   Add{clock_int.length()}});
-                actions.push_back(
-                    {EVENTKIND_VELOCITY, unit_id, clock_int.start,
-                     Add{qint32(round(s.mouse_edit_state.base_velocity))}});
+                if (s.mouse_edit_state.type == MouseEditState::SetOn ||
+                    s.mouse_edit_state.type == MouseEditState::SetNote) {
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_VELOCITY, unit_id,
+                                     clock_int.start, Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Add{clock_int.length()}});
+                  actions.push_back(
+                      {EVENTKIND_VELOCITY, unit_id, clock_int.start,
+                       Add{qint32(round(s.mouse_edit_state.base_velocity))}});
+                } else {
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_VELOCITY, unit_id,
+                                     clock_int.start, Delete{clock_int.end}});
+                }
               }
             } break;
-            case MouseEditState::DeleteOn:
-            case MouseEditState::DeleteNote:
-              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                 clock_int.start, Delete{clock_int.end}});
-              actions.push_back({EVENTKIND_VELOCITY, s.m_current_unit_id,
-                                 clock_int.start, Delete{clock_int.end}});
-              break;
               // TODO: Dedup w/ the other seek / select responses
             case MouseEditState::Seek:
               if (event->button() & Qt::LeftButton)
