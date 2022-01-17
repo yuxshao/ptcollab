@@ -171,6 +171,11 @@ bool get();
 void set(bool);
 }  // namespace OctaveDisplayA
 
+namespace PinnedUnitLabels {
+bool get();
+void set(bool);
+}  // namespace PinnedUnitLabels
+
 namespace DisplayEdo {
 QList<int> get();
 void set(const QList<int> &);

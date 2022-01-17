@@ -247,6 +247,12 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace OctaveDisplayA
 
+namespace PinnedUnitLabels {
+const char *KEY = "pinned_unit_labels";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace PinnedUnitLabels
+
 namespace DisplayEdo {
 const char *KEY = "display_edo";
 QList<int> get() {
