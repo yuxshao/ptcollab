@@ -242,10 +242,9 @@ void drawOngoingAction(const EditState &state,
 }
 
 QSize MeasureView::sizeHint() const {
-  return QSize(
-      one_over_last_clock(m_client->pxtn()) /
-          m_client->editState().scale.clockPerPx,
-      1 + unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
+  return QSize(one_over_last_clock(m_client->pxtn()) /
+                   m_client->editState().scale.clockPerPx,
+               unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
 }
 
 void MeasureView::handleNewEditState(const EditState &) {
