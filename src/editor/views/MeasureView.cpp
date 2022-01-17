@@ -181,7 +181,7 @@ void drawOngoingAction(const EditState &state,
         unit_draw_params_map.no_to_params.count(no.value()) == 0)
       return;
     auto &ys = unit_draw_params_map.no_to_params.at(no.value()).ys;
-    int y = (pinned ? ys.back() : ys.front());
+    int y = (pinned ? ys.front() : ys.back());
     const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
     painter.fillRect(interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2,
                      interval.length(), UNIT_EDIT_HEIGHT - 6,
@@ -439,16 +439,29 @@ static void updateStatePositions(EditState &edit_state,
     state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
   }
 
-  int y = event->y();
-  if (y < UNIT_EDIT_Y)
-    state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
-  else {
-    int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
-    int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
-    const auto &rows = unit_draw_params_map.rows;
-    state.kind = MouseMeasureEdit{
-        (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
-  };
+  if (state.type == MouseEditState::Nothing ||
+      state.type == MouseEditState::Seek ||
+      state.type == MouseEditState::Select) {
+    int y = event->y();
+    if (y < UNIT_EDIT_Y)
+      state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
+    else {
+      int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+      int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
+      const auto &rows = unit_draw_params_map.rows;
+      state.kind = MouseMeasureEdit{
+          (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
+    }
+  }
+
+  if (state.type == MouseEditState::SetNote ||
+      state.type == MouseEditState::SetOn ||
+      state.type == MouseEditState::DeleteNote ||
+      state.type == MouseEditState::DeleteOn) {
+    if (std::holds_alternative<MouseMeasureEdit>(state.kind)) {
+      std::get<MouseMeasureEdit>(state.kind).offset_y = UNIT_EDIT_HEIGHT / 2;
+    }
+  }
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
