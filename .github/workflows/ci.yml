@@ -202,7 +202,6 @@ jobs:
 
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
-            tar -tvf "${artifact_name}"
           else
             pushd "${PACKAGE}"
 
@@ -218,7 +217,6 @@ jobs:
 
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
-            tar -tvf "${artifact_name}"
           fi
 
       - name: Release
