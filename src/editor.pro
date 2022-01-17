@@ -292,16 +292,25 @@ unix {
   svgicon.files = $$PWD/../res/app_icons/scalable/ptcollab.svg
   svgicon.path = $$PREFIX/share/icons/hicolor/scalable/apps/
   INSTALLS += svgicon
+}
 
-  distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs
-  distfiles.path = $$PREFIX/share/ptcollab/
-  INSTALLS += distfiles
+distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs
+unix:distfiles.path = $$PREFIX/share/ptcollab/
+win32:distfiles.path = $$PREFIX
+INSTALLS += distfiles
 
-  license.files = $$PWD/../LICENSE
-  license.path = $$PREFIX/share/doc/ptcollab
-  INSTALLS += license
+license.files = $$PWD/../LICENSE
+unix:license.path = $$PREFIX/share/doc/ptcollab
+win32:license.path = $$PREFIX
+INSTALLS += license
 
-  pxtone_license.files = $$PWD/pxtone/LICENSE
-  pxtone_license.path = $$PREFIX/share/doc/pxtone
-  INSTALLS += pxtone_license
+pxtone_license.files = $$PWD/pxtone/LICENSE-pxtone
+unix:pxtone_license.path = $$PREFIX/share/doc/pxtone
+win32:pxtone_license.path = $$PREFIX
+INSTALLS += pxtone_license
+
+win32 {
+  deps_licenses.files = ../deps/license/*
+  deps_licenses.path = $$PREFIX
+  INSTALLS += deps_licenses
 }
