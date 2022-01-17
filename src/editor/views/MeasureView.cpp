@@ -84,6 +84,9 @@ constexpr int RIBBON_HEIGHT =
     MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
 constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
 constexpr int UNIT_EDIT_MARGIN = 1;
+constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
+inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
+
 void drawOngoingAction(const EditState &state, QPainter &painter, int height,
                        int quantizeClock, int clockPerMeas,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -153,11 +156,10 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 }
 
 QSize MeasureView::sizeHint() const {
-  return QSize(one_over_last_clock(m_client->pxtn()) /
-                   m_client->editState().scale.clockPerPx,
-               1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET +
-                   (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) *
-                       (1 + m_client->editState().m_pinned_unit_ids.size()));
+  return QSize(
+      one_over_last_clock(m_client->pxtn()) /
+          m_client->editState().scale.clockPerPx,
+      1 + unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
 }
 
 void MeasureView::handleNewEditState(const EditState &) {
@@ -239,19 +241,14 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   std::map<int, UnitDrawParams> unitNoToDrawParams;
   int i = 0;
 
-  auto unit_y = [&](int unit_no) {
-    return (UNIT_EDIT_Y + (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) * unit_no +
-            UNIT_EDIT_HEIGHT / 2);
-  };
   auto add_unit = [&](int unit_id) {
     std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
     if (maybe_unit_no.has_value()) {
       UnitDrawParams &p = unitNoToDrawParams[maybe_unit_no.value()];
       p.brush = &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
-      p.ys.push_back(unit_y(i));
+      p.ys.push_back(unit_edit_y(i) + UNIT_EDIT_HEIGHT / 2);
     }
-    painter.fillRect(0, UNIT_EDIT_Y + (UNIT_EDIT_HEIGHT + UNIT_EDIT_MARGIN) * i,
-                     width(), UNIT_EDIT_HEIGHT,
+    painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                      StyleEditor::palette.MeasureUnitEdit);
     ++i;
   };
