@@ -173,19 +173,19 @@ void drawOngoingAction(const EditState &state,
     const auto &m = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
     if (!std::holds_alternative<MeasureUnitEdit>(m.kind)) return;
     const auto &measure_unit_edit = std::get<MeasureUnitEdit>(m.kind);
-    bool pinned = measure_unit_edit.pinned_unit_id.has_value();
     int unit_id =
         measure_unit_edit.pinned_unit_id.value_or(state.m_current_unit_id);
     auto no = unit_id_map.idToNo(unit_id);
     if (!no.has_value() ||
         unit_draw_params_map.no_to_params.count(no.value()) == 0)
       return;
-    auto &ys = unit_draw_params_map.no_to_params.at(no.value()).ys;
-    int y = (pinned ? ys.front() : ys.back());
     const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
-    painter.fillRect(interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2,
-                     interval.length(), UNIT_EDIT_HEIGHT - 6,
-                     brush.toQColor(velocity, false, alpha * alphaMultiplier));
+    for (int y : unit_draw_params_map.no_to_params.at(no.value()).ys) {
+      painter.fillRect(
+          interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2, interval.length(),
+          UNIT_EDIT_HEIGHT - 6,
+          brush.toQColor(velocity, false, alpha * alphaMultiplier));
+    }
   };
 
   {
