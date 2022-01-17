@@ -524,6 +524,7 @@ playback
 
 1/17
 1. highlight unit bullets that are selected
+2. draw text labels for unit bullets
 
 Todo by priority
 ----------------
@@ -532,6 +533,7 @@ Todo by priority
    - highlight left unit on pinned row hover
    - add label on left of all the unit bars?
    - update the icon to a 'pin' icon
+   - toggle to disable text
  - colour legend on left menu
 
  - webpage with all keybindings

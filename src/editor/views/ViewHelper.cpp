@@ -218,3 +218,4 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
 }
 
 const int WINDOW_BOUND_SLACK = 32;
+const int LEFT_LEGEND_WIDTH = 28;

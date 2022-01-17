@@ -22,6 +22,7 @@ class MeasureView : public QWidget {
   void mousePressEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
+  void moveEvent(QMoveEvent *e) override;
   void wheelEvent(QWheelEvent *event) override;
   QSize sizeHint() const override;
 
