@@ -163,7 +163,7 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
         case UnitListColumn::Played:
           return getIcon("audio-on");
         case UnitListColumn::Pinned:
-          return getIcon("select");  // TODO update
+          return getIcon("pin");
         default:
           break;
       }

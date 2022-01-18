@@ -184,22 +184,6 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
     std::advance(it, user_no);
     m_client->setFollowing(it->first);
   });
-  connect(
-      m_client, &PxtoneClient::editStateChanged, [this](const EditState &e) {
-        auto &m = e.mouse_edit_state.kind;
-        std::optional<int> hovered_pinned_unit_no;
-        if (std::holds_alternative<MouseMeasureEdit>(m)) {
-          auto &mm = std::get<MouseMeasureEdit>(m);
-          if (std::holds_alternative<MeasureUnitEdit>(mm.kind)) {
-            auto unit_id = std::get<MeasureUnitEdit>(mm.kind).pinned_unit_id;
-            if (unit_id.has_value() &&
-                m_client->unitIdMap().idToNo(unit_id.value()))
-              hovered_pinned_unit_no =
-                  m_client->unitIdMap().idToNo(unit_id.value());
-          }
-          setHoverUnit(hovered_pinned_unit_no);
-        }
-      });
   refreshCopyCheckbox();
 }
 

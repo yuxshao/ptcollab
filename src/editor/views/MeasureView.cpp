@@ -699,6 +699,7 @@ void MeasureView::moveEvent(QMoveEvent *e) {
 
 void MeasureView::leaveEvent(QEvent *e) {
   m_mouse_x = std::nullopt;
+  emit hoverUnitNoChanged(std::nullopt);
   QWidget::leaveEvent(e);
 }
 
@@ -725,11 +726,20 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
   m_mouse_x = event->localPos().x() + pos().x();
+  UnitDrawParamsMap draw_params_map = make_draw_params_map(m_client);
+
+  int hovered_row = (event->localPos().y() - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+  std::optional<int> hovered_pinned_unit_no = std::nullopt;
+  if (int(draw_params_map.rows.size()) > hovered_row && hovered_row >= 0) {
+    auto unit_id = draw_params_map.rows[hovered_row].pinned_unit_id;
+    if (unit_id.has_value())
+      hovered_pinned_unit_no = m_client->unitIdMap().idToNo(unit_id.value());
+  }
+  emit hoverUnitNoChanged(hovered_pinned_unit_no);
+
   if (!m_client->isFollowing())
     m_client->changeEditState(
-        [&](auto &s) {
-          updateStatePositions(s, make_draw_params_map(m_client), event);
-        },
+        [&](auto &s) { updateStatePositions(s, draw_params_map, event); },
         true);
   if (m_audio_note_preview != nullptr)
     m_audio_note_preview->processEvent(

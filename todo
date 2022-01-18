@@ -523,15 +523,15 @@ playback
 1. unit view, individuals
 
 1/17
-1. highlight unit bullets that are selected
-2. draw text labels for unit bullets
-3. highlight pinned row on left unit hover
+unit view:
+  1. highlight unit bullets that are selected
+  2. draw text labels for unit bullets
+  3. highlight pinned row on left unit hover
+  4. highlight left unit on pinned row hover
+  5. update icon to pin icon
 
 Todo by priority
 ----------------
- - Unit view
-   - highlight left unit on pinned row hover
-   - update the icon to a 'pin' icon
  - colour legend on left menu
 
  - webpage with all keybindings
