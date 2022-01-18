@@ -14,6 +14,7 @@ class TableView : public QTableView {
   TableView(QWidget *parent = nullptr) : QTableView(parent){};
   void mouseMoveEvent(QMouseEvent *e) override;
   void leaveEvent(QEvent *e) override;
+  void updateRow(int);
  signals:
   void hoveredRowChanged(std::optional<int>);
 };

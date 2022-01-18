@@ -47,8 +47,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
   ui->overdriveList->setModel(m_ovdrvs);
-  ui->unitList->setItemDelegate(
-      new UnitListDelegate(ui->unitList->selectionModel()));
+  m_unit_list_delegate = new UnitListDelegate(ui->unitList->selectionModel());
+  ui->unitList->setItemDelegate(m_unit_list_delegate);
   connect(ui->unitList, &TableView::hoveredRowChanged, this,
           &SideMenu::hoveredUnitChanged);
   setPlay(false);
@@ -76,10 +76,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           &QItemSelectionModel::currentRowChanged,
           [this](const QModelIndex& current, const QModelIndex& previous) {
             (void)previous;
-            for (int i = 0; i <= int(UnitListColumn::MAX); ++i) {
-              ui->unitList->update(previous.siblingAtColumn(i));
-              ui->unitList->update(current.siblingAtColumn(i));
-            }
+            ui->unitList->updateRow(previous.row());
+            ui->unitList->updateRow(current.row());
             if (current.isValid()) emit currentUnitChanged(current.row());
           });
   connect(ui->unitList->selectionModel(),
@@ -316,6 +314,15 @@ void SideMenu::setCurrentUnit(int u) {
   QItemSelectionModel* selection = ui->unitList->selectionModel();
   selection->setCurrentIndex(
       index, QItemSelectionModel::Current | QItemSelectionModel::Rows);
+}
+
+void SideMenu::setHoverUnit(std::optional<int> unit_no) {
+  std::optional<int> old_unit_no = m_unit_list_delegate->hover_unit_no;
+  m_unit_list_delegate->hover_unit_no = unit_no;
+  if (old_unit_no != unit_no) {
+    if (old_unit_no.has_value()) ui->unitList->updateRow(old_unit_no.value());
+    if (unit_no.has_value()) ui->unitList->updateRow(unit_no.value());
+  }
 }
 
 void SideMenu::setCurrentWoice(int u) { ui->woiceList->selectRow(u); }

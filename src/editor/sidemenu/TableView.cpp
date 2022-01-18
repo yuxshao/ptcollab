@@ -21,3 +21,7 @@ void TableView::leaveEvent(QEvent *e) {
   set_hovered_row(std::nullopt);
   QTableView::leaveEvent(e);
 }
+
+void TableView::updateRow(int r) {
+  for (int c = 0; c < model()->columnCount(); ++c) update(model()->index(r, c));
+}

@@ -207,6 +207,11 @@ void UnitListDelegate::paint(QPainter *painter,
     painter->fillRect(option.rect, c);
     o.font.setBold(true);
   }
+  if (hover_unit_no == index.row()) {
+    QColor c = o.palette.highlight().color();
+    c.setAlphaF(0.5);
+    painter->fillRect(option.rect, c);
+  }
 
   QStyledItemDelegate::paint(painter, o, index);
 }

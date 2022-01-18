@@ -70,8 +70,8 @@ class SideMenu : public QWidget {
   void setQuantXIndex(int);
   void setQuantYDenom(int);
   void setParamKindIndex(int);
-  // void setSelectedUnits(QList<qint32> idx);
   void setCurrentUnit(int unit_no);
+  void setHoverUnit(std::optional<int> unit_no);
   void setCurrentWoice(int unit_no);
   void setUnitSelected(int unit_no, bool selected);
   void setPlay(bool);
@@ -93,6 +93,7 @@ class SideMenu : public QWidget {
   DelayEffectModel *m_delays;
   OverdriveEffectModel *m_ovdrvs;
   VolumeMeterWidget *m_volume_meter_widget;
+  UnitListDelegate *m_unit_list_delegate;
 };
 
 #endif  // SIDEMENU_H

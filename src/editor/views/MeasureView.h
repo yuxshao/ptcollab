@@ -37,10 +37,11 @@ class MeasureView : public QWidget {
  public:
   explicit MeasureView(PxtoneClient *client, MooClock *moo_clock,
                        QWidget *parent = nullptr);
-  void hoveredUnitChanged(std::optional<int> unit_no);
+  void setFocusedUnit(std::optional<int> unit_no);
 
  signals:
   void heightChanged(int h);
+  void hoveredUnitIdChanged(std::optional<int>);
 };
 
 #endif  // MEASUREVIEW_H

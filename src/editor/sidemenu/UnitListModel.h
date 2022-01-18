@@ -54,6 +54,7 @@ class UnitListDelegate : public QStyledItemDelegate {
   bool editorEvent(QEvent *event, QAbstractItemModel *model,
                    const QStyleOptionViewItem &option,
                    const QModelIndex &index) override;
+  std::optional<int> hover_unit_no;
 };
 
 #endif  // UNITLISTMODEL_H

@@ -33,7 +33,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           &MeasureView::handleNewEditState);
 }
 
-void MeasureView::hoveredUnitChanged(std::optional<int> unit_no) {
+void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
   m_hovered_unit_no = unit_no;
 }
 
@@ -332,6 +332,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                        QColor::fromRgb(255, 255, 255, 32));
   }
+
   std::map<int, Interval> last_on_by_no;
   std::map<int, int> last_vel_by_no;
   std::optional<Interval> selection(
