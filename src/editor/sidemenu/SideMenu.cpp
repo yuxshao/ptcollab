@@ -43,7 +43,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);
-  ui->unitList->setColumnWidth(int(UnitListColumn::Colour), 7);
+  // ui->unitList->setColumnWidth(int(UnitListColumn::Colour), 0);
   ui->unitList->horizontalHeader()->setMinimumSectionSize(0);
   // tried the below to get the colours in the last column without crazy
   // stretch, but didn't seem to work

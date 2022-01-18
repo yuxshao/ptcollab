@@ -67,14 +67,6 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
 
   const pxtnUnit *unit = m_client->pxtn()->Unit_Get(index.row());
   switch (UnitListColumn(index.column())) {
-    case UnitListColumn::Colour:
-      if (role == Qt::UserRole) {
-        return brushes[nonnegative_modulo(
-                           m_client->unitIdMap().noToId(index.row()),
-                           NUM_BRUSHES)]
-            .toQColor(EVENTDEFAULT_VELOCITY, false, 255);
-      }
-      break;
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole)
         return checked_of_bool(unit->get_visible());
@@ -92,6 +84,12 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
     case UnitListColumn::Name:
       if (role == Qt::DisplayRole || role == Qt::EditRole)
         return shift_jis_codec->toUnicode(unit->get_name_buf_jis(nullptr));
+      if (role == Qt::UserRole) {
+        return brushes[nonnegative_modulo(
+                           m_client->unitIdMap().noToId(index.row()),
+                           NUM_BRUSHES)]
+            .toQColor(EVENTDEFAULT_VELOCITY, false, 255);
+      }
       break;
   }
   return QVariant();
@@ -101,8 +99,6 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
                             int role) {
   if (!checkIndex(index)) return false;
   switch (UnitListColumn(index.column())) {
-    case UnitListColumn::Colour:
-      return false;
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole) {
         m_client->setUnitVisible(index.row(), value.toInt() == Qt::Checked);
@@ -142,8 +138,6 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
   Qt::ItemFlags f = QAbstractTableModel::flags(index);
   if (!checkIndex(index)) return f;
   switch (UnitListColumn(index.column())) {
-    case UnitListColumn::Colour:
-      break;
     case UnitListColumn::Visible:
     case UnitListColumn::Played:
     case UnitListColumn::Pinned:
@@ -161,7 +155,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
   if (orientation == Qt::Horizontal) {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
       switch (UnitListColumn(section)) {
-        case UnitListColumn::Colour:
         case UnitListColumn::Visible:
         case UnitListColumn::Played:
         case UnitListColumn::Pinned:
@@ -178,7 +171,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return getIcon("audio-on");
         case UnitListColumn::Pinned:
           return getIcon("pin");
-        case UnitListColumn::Colour:
         case UnitListColumn::Name:
           break;
       }
@@ -193,8 +185,6 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return tr("Pinned");
         case UnitListColumn::Name:
           return tr("Name");
-        case UnitListColumn::Colour:
-          return tr("Colour");
       }
     }
   }
@@ -230,8 +220,10 @@ void UnitListDelegate::paint(QPainter *painter,
     painter->fillRect(option.rect, c);
   }
 
-  if (index.column() == int(UnitListColumn::Colour)) {
-    painter->fillRect(option.rect.adjusted(1, 7, 0, -6),
+  if (index.column() == int(UnitListColumn::Name)) {
+    QPoint topLeft = option.rect.topRight() - QPoint(3, 0);
+    QPoint bottomRight = option.rect.bottomRight();
+    painter->fillRect(QRect(topLeft, bottomRight),
                       index.data(Qt::UserRole).value<QColor>());
   }
 
@@ -266,8 +258,6 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
           } else
             m_selection->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
           return true;
-        case UnitListColumn::Colour:
-          return false;
       }
     } break;
 
@@ -286,8 +276,6 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
         for (int row : rowsInBetweenMove) {
           const QModelIndex indexAtRow = m_last_index.siblingAtRow(row);
           switch (UnitListColumn(m_last_index.column())) {
-            case UnitListColumn::Colour:
-              return false;
             case UnitListColumn::Visible:
             case UnitListColumn::Played:
             case UnitListColumn::Pinned: {
