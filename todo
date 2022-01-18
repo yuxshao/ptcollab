@@ -525,13 +525,12 @@ playback
 1/17
 1. highlight unit bullets that are selected
 2. draw text labels for unit bullets
+3. highlight pinned row on left unit hover
 
 Todo by priority
 ----------------
  - Unit view
-   - highlight pinned row on left unit hover
    - highlight left unit on pinned row hover
-   - add label on left of all the unit bars?
    - update the icon to a 'pin' icon
  - colour legend on left menu
 
