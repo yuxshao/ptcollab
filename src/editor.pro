@@ -110,6 +110,7 @@ HEADERS += \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
            editor/sidemenu/OverdriveEffectModel.h \
+           editor/sidemenu/TableView.h \
            editor/sidemenu/UserListModel.h \
            editor/sidemenu/VolumeMeterWidget.h \
            editor/sidemenu/WoiceListModel.h \
@@ -198,6 +199,7 @@ SOURCES += main.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
+           editor/sidemenu/TableView.cpp \
            editor/sidemenu/UserListModel.cpp \
            editor/sidemenu/VolumeMeterWidget.cpp \
            editor/sidemenu/WoiceListModel.cpp \

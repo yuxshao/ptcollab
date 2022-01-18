@@ -33,6 +33,10 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           &MeasureView::handleNewEditState);
 }
 
+void MeasureView::hoveredUnitChanged(std::optional<int> unit_no) {
+  m_hovered_unit_no = unit_no;
+}
+
 enum struct FlagType : qint8 { Top, Repeat, Last };
 constexpr int FLAG_HEIGHT = 8;
 constexpr int FLAG_WIDTH = 40;
@@ -312,16 +316,22 @@ void MeasureView::paintEvent(QPaintEvent *e) {
              FLAG_Y);
   }
 
-  // Draw on events
-
   double scaleX = m_client->editState().scale.clockPerPx;
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
       qint32(e->rect().right() * scaleX) + WINDOW_BOUND_SLACK};
+
   UnitDrawParamsMap unit_draw_params_map(make_draw_params_map(m_client));
-  for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i)
+
+  // Draw the unit edit rows
+  for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
     painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                      StyleEditor::palette.MeasureUnitEdit);
+    if (m_hovered_unit_no.has_value() &&
+        unit_draw_params_map.rows[i].pinned_unit_id == m_hovered_unit_no)
+      painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
+                       QColor::fromRgb(255, 255, 255, 32));
+  }
   std::map<int, Interval> last_on_by_no;
   std::map<int, int> last_vel_by_no;
   std::optional<Interval> selection(
@@ -329,6 +339,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
 
   std::set<int> selected_unit_nos = m_client->selectedUnitNos();
 
+  // Draw on events
   auto drawLastOn = [&](int no, bool erase) {
     if (last_on_by_no.count(no) > 0) {
       const Interval &i = last_on_by_no[no];

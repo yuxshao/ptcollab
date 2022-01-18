@@ -49,8 +49,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->overdriveList->setModel(m_ovdrvs);
   ui->unitList->setItemDelegate(
       new UnitListDelegate(ui->unitList->selectionModel()));
+  connect(ui->unitList, &TableView::hoveredRowChanged, this,
+          &SideMenu::hoveredUnitChanged);
   setPlay(false);
-  for (auto* list : {ui->unitList, ui->woiceList, ui->delayList,
+  for (auto* list : {(QTableView*)ui->unitList, ui->woiceList, ui->delayList,
                      ui->overdriveList, ui->usersList}) {
     list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     list->horizontalHeader()->setSectionResizeMode(

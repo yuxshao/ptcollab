@@ -56,6 +56,7 @@ class SideMenu : public QWidget {
   void selectWoice(int idx);
   void selectedUnitsChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
+  void hoveredUnitChanged(std::optional<int>);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
   void followPlayheadClicked(FollowPlayhead);

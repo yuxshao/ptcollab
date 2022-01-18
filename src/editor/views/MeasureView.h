@@ -17,6 +17,7 @@ class MeasureView : public QWidget {
   Scale m_last_scale;
   MooClock *m_moo_clock;
   std::unique_ptr<NotePreview> m_audio_note_preview;
+  std::optional<int> m_hovered_unit_no;
 
   void paintEvent(QPaintEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
@@ -31,6 +32,7 @@ class MeasureView : public QWidget {
  public:
   explicit MeasureView(PxtoneClient *client, MooClock *moo_clock,
                        QWidget *parent = nullptr);
+  void hoveredUnitChanged(std::optional<int> unit_no);
 
  signals:
   void heightChanged(int h);
