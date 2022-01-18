@@ -9,6 +9,22 @@
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
 
+constexpr int FLAG_HEIGHT = 8;
+constexpr int FLAG_WIDTH = 40;
+constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
+constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
+constexpr int RULER_HEIGHT = 15;
+constexpr int SEPARATOR_OFFSET = 6;
+constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
+constexpr int UNIT_EDIT_HEIGHT = 15;
+constexpr int UNIT_EDIT_OFFSET = 2;
+constexpr int RIBBON_HEIGHT =
+    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
+constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
+constexpr int UNIT_EDIT_MARGIN = 1;
+constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
+inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
+
 MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
                          QWidget *parent)
     : QWidget(parent),
@@ -31,6 +47,13 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 
   connect(m_client, &PxtoneClient::editStateChanged, this,
           &MeasureView::handleNewEditState);
+
+  // Pick biggest font that'll fit vs. font size in the picker, just since
+  // this font makes sense to constrain to a size
+  for (int i = 4; i <= 18; ++i) {
+    QFont f = QFont("Sans serif", i);
+    if (QFontMetrics(f).height() <= UNIT_EDIT_HEIGHT) m_label_font = f;
+  }
 }
 
 void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
@@ -38,8 +61,6 @@ void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
 }
 
 enum struct FlagType : qint8 { Top, Repeat, Last };
-constexpr int FLAG_HEIGHT = 8;
-constexpr int FLAG_WIDTH = 40;
 static void drawFlag(QPainter *painter, FlagType type, bool outline,
                      int measure_x, int y) {
   int sx, sy;
@@ -66,20 +87,6 @@ static void drawFlag(QPainter *painter, FlagType type, bool outline,
   painter->drawPixmap(x, y, *StyleEditor::measureImages(), sx, sy, FLAG_WIDTH,
                       FLAG_HEIGHT);
 }
-
-constexpr int MEASURE_NUM_BLOCK_WIDTH = 27;
-constexpr int MEASURE_NUM_BLOCK_HEIGHT = 10;
-constexpr int RULER_HEIGHT = 15;
-constexpr int SEPARATOR_OFFSET = 6;
-constexpr int FLAG_Y = MEASURE_NUM_BLOCK_HEIGHT;
-constexpr int UNIT_EDIT_HEIGHT = 15;
-constexpr int UNIT_EDIT_OFFSET = 2;
-constexpr int RIBBON_HEIGHT =
-    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
-constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
-constexpr int UNIT_EDIT_MARGIN = 1;
-constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
-inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
 
 struct UnitDrawParams {
   std::vector<int> ys;
@@ -391,14 +398,14 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     textLabelLayer.fill(Qt::transparent);
     QPainter textLabelPainter(&textLabelLayer);
     textLabelPainter.translate(-e->rect().topLeft());
-    textLabelPainter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+    textLabelPainter.setFont(m_label_font);
     int maxTextLabelWidth = 0;
     QColor bg = StyleEditor::palette.MeasureUnitEdit;
     bg.setAlphaF(0.25);
     auto drawText = [&](QPainter &p, int unit_no, int y_base) {
       QString unit_name = shift_jis_codec->toUnicode(
           m_client->pxtn()->Unit_Get(unit_no)->get_name_buf_jis(nullptr));
-      painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+      painter.setFont(m_label_font);
       p.setPen(bg);
       constexpr int x_padding = 5;
       for (int x = -2; x <= 2; ++x)
