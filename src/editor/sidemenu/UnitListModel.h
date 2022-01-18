@@ -8,6 +8,7 @@
 #include "protocol/NoIdMap.h"
 
 enum struct UnitListColumn : qint8 {
+  Colour,
   Visible,
   Played,
   Pinned,

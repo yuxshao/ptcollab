@@ -43,6 +43,14 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     ui->paramSelection->addItem(label, value);
 
   ui->unitList->setModel(m_units);
+  ui->unitList->setColumnWidth(int(UnitListColumn::Colour), 7);
+  ui->unitList->horizontalHeader()->setMinimumSectionSize(0);
+  // tried the below to get the colours in the last column without crazy
+  // stretch, but didn't seem to work
+  /*ui->unitList->horizontalHeader()->setStretchLastSection(false);
+  ui->unitList->horizontalHeader()->setSectionResizeMode(
+      int(UnitListColumn::Name), QHeaderView::Stretch);*/
+
   ui->woiceList->setModel(m_woices);
   ui->usersList->setModel(m_users);
   ui->delayList->setModel(m_delays);
