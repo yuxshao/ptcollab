@@ -424,12 +424,10 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         drawText(textLabelPainter, unit_no.value(), unit_edit_y(i));
     }
     double textLabelAlpha = 1;
-    const MouseEditState &mouse = m_client->editState().mouse_edit_state;
     if (hovered_unit_highlighted)
       textLabelAlpha = 0.3;
-    else if (std::holds_alternative<MouseMeasureEdit>(mouse.kind)) {
-      int dx = (mouse.start_clock - clockBounds.start) /
-               m_client->editState().scale.clockPerPx;
+    else if (m_mouse_x.has_value()) {
+      int dx = m_mouse_x.value();
       textLabelAlpha =
           0.1 + 0.9 * clamp(dx - maxTextLabelWidth - 20, 0, 100) / 100;
     }
@@ -698,6 +696,11 @@ void MeasureView::moveEvent(QMoveEvent *e) {
   QWidget::moveEvent(e);
 }
 
+void MeasureView::leaveEvent(QEvent *e) {
+  m_mouse_x = std::nullopt;
+  QWidget::leaveEvent(e);
+}
+
 void MeasureView::wheelEvent(QWheelEvent *event) {
   handleWheelEventWithModifier(event, m_client);
   if (event->isAccepted()) return;
@@ -720,6 +723,7 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 }
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
+  m_mouse_x = event->localPos().x() + pos().x();
   if (!m_client->isFollowing())
     m_client->changeEditState(
         [&](auto &s) {
