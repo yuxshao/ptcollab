@@ -16,6 +16,7 @@ class MeasureView : public QWidget {
   Animation *m_anim;
   Scale m_last_scale;
   MooClock *m_moo_clock;
+  QFont m_label_font;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   std::optional<int> m_hovered_unit_no;
 
