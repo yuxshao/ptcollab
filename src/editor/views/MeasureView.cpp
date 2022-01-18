@@ -391,36 +391,43 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QPainter textLabelPainter(&textLabelLayer);
     textLabelPainter.translate(-e->rect().topLeft());
     textLabelPainter.setFont(QFont("Sans serif", Settings::TextSize::get()));
-    textLabelPainter.setPen(Qt::white);
     int maxTextLabelWidth = 0;
+    QColor bg = StyleEditor::palette.MeasureUnitEdit;
+    bg.setAlphaF(0.25);
+    auto drawText = [&](QPainter &p, int unit_no, int y_base) {
+      QString unit_name = shift_jis_codec->toUnicode(
+          m_client->pxtn()->Unit_Get(unit_no)->get_name_buf_jis(nullptr));
+      painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+      p.setPen(bg);
+      constexpr int x_padding = 5;
+      for (int x = -2; x <= 2; ++x)
+        for (int y = -1; y <= 1; ++y)
+          p.drawText(-pos().x() + x_padding + x, y_base + y, 10000000,
+                     UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
+      p.setPen(Qt::white);
+      QRect bbox;
+      p.drawText(-pos().x() + x_padding, y_base, 10000000, UNIT_EDIT_HEIGHT,
+                 Qt::AlignVCenter, unit_name, &bbox);
+      if (bbox.width() > maxTextLabelWidth) maxTextLabelWidth = bbox.width();
+    };
+
+    bool hovered_unit_highlighted = false;
     for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
       if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
       int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
       std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
       if (!unit_no.has_value()) continue;
-      QString unit_name =
-          shift_jis_codec->toUnicode(m_client->pxtn()
-                                         ->Unit_Get(unit_no.value())
-                                         ->get_name_buf_jis(nullptr));
-      QColor bg = StyleEditor::palette.MeasureUnitEdit;
-      bg.setAlphaF(0.25);
-      textLabelPainter.setPen(bg);
-      constexpr int x_padding = 5;
-      for (int x = -2; x <= 2; ++x)
-        for (int y = -1; y <= 1; ++y)
-          textLabelPainter.drawText(
-              -pos().x() + x_padding + x, unit_edit_y(i) + y, 10000000,
-              UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
-      textLabelPainter.setPen(Qt::white);
-      QRect bbox;
-      textLabelPainter.drawText(-pos().x() + x_padding, unit_edit_y(i),
-                                10000000, UNIT_EDIT_HEIGHT, Qt::AlignVCenter,
-                                unit_name, &bbox);
-      if (bbox.width() > maxTextLabelWidth) maxTextLabelWidth = bbox.width();
+      if (unit_no == m_hovered_unit_no) {
+        drawText(painter, unit_no.value(), unit_edit_y(i));
+        hovered_unit_highlighted = true;
+      } else
+        drawText(textLabelPainter, unit_no.value(), unit_edit_y(i));
     }
     double textLabelAlpha = 1;
     const MouseEditState &mouse = m_client->editState().mouse_edit_state;
-    if (std::holds_alternative<MouseMeasureEdit>(mouse.kind)) {
+    if (hovered_unit_highlighted)
+      textLabelAlpha = 0.3;
+    else if (std::holds_alternative<MouseMeasureEdit>(mouse.kind)) {
       int dx = (mouse.start_clock - clockBounds.start) /
                m_client->editState().scale.clockPerPx;
       textLabelAlpha =
