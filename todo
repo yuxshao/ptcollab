@@ -529,11 +529,10 @@ unit view:
   3. highlight pinned row on left unit hover
   4. highlight left unit on pinned row hover
   5. update icon to pin icon
+6. colour legend in left menu
 
 Todo by priority
 ----------------
- - colour legend on left menu
-
  - webpage with all keybindings
 
  - test to see if the midi noodling is causing the lag. delete voice previews if so
