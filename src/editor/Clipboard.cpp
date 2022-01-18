@@ -34,43 +34,6 @@ QDataStream &operator>>(QDataStream &in, Item &a) {
   return in;
 }
 
-template <typename T>
-QDataStream &operator<<(QDataStream &out, const std::list<T> &a) {
-  out << quint64(a.size());
-  for (const auto &i : a) out << i;
-  return out;
-}
-template <typename T>
-QDataStream &operator<<(QDataStream &out, const std::set<T> &a) {
-  out << quint64(a.size());
-  for (const auto &i : a) out << i;
-  return out;
-}
-
-template <typename T>
-QDataStream &operator>>(QDataStream &in, std::list<T> &a) {
-  quint64 size;
-  in >> size;
-  for (quint64 i = 0; i < size; ++i) {
-    T v;
-    in >> v;
-    a.push_back(v);
-  }
-  return in;
-}
-
-template <typename T>
-QDataStream &operator>>(QDataStream &in, std::set<T> &a) {
-  quint64 size;
-  in >> size;
-  for (quint64 i = 0; i < size; ++i) {
-    T v;
-    in >> v;
-    a.insert(v);
-  }
-  return in;
-}
-
 QDataStream &operator<<(QDataStream &out, const CopyState &a) {
   out << a.m_items << a.m_unit_nos << a.m_copy_length;
   return out;

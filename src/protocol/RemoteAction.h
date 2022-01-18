@@ -12,11 +12,6 @@
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/SerializeVariant.h"
 
-inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
-  return out;
-}
-inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
-
 struct EditAction {
   qint64 idx;
   std::list<Action::Primitive> action;
@@ -203,7 +198,7 @@ inline QTextStream &operator<<(QTextStream &out, const ChangeWoice &a) {
 }
 
 inline QTextStream &operator<<(QTextStream &out, const MouseMeasureEdit &a) {
-  out << "Measure(" << a.y << ")";
+  out << "Measure(" << a.offset_y << ")";
   return out;
 }
 

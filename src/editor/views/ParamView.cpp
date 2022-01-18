@@ -236,7 +236,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
       color.setAlpha(color.alpha() * (num_layer + 1 - abs(i)) /
                      (num_layer + 1));
       int32_t y = height / 2 + (unitOffset + i * numUnits) * tailRowHeight;
-      drawUnitBullet(painter, thisX, y, w, color);
+      fillUnitBullet(painter, thisX, y, w, color);
     }
   }
 }

@@ -77,7 +77,7 @@ class PxtoneClient : public QObject {
   const mooState *moo() const { return m_controller->moo(); }
   const QAudioOutput *audioState() const { return m_audio; }
 
-  const NoIdMap &unitIdMap() { return m_controller->unitIdMap(); }
+  const NoIdMap &unitIdMap() const { return m_controller->unitIdMap(); }
   const std::map<qint64, RemoteEditState> &remoteEditStates() {
     return m_remote_edit_states;
   }

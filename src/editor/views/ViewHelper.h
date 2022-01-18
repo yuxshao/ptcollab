@@ -71,10 +71,12 @@ extern void drawExistingSelection(QPainter &painter,
                                   const MouseEditState &state, qreal clockPerPx,
                                   qint32 height, double alphaMultiplier);
 extern const int WINDOW_BOUND_SLACK;
-extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w,
+extern void fillUnitBullet(QPainter &painter, int thisX, int y, int w,
                            const QColor &color);
+extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w);
 
 extern void drawNumAlignTopRight(QPainter *painter, int x, int y, int num);
 extern void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y,
                                          int num, int height, bool a);
+extern const int LEFT_LEGEND_WIDTH;
 #endif  // VIEWHELPER_H

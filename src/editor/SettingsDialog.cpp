@@ -40,6 +40,7 @@ void SettingsDialog::apply() {
       ui->showVolumeMeterLabelsCheck->isChecked());
   Settings::AutoConnectMidi::set(ui->autoConnectMidiCheck->isChecked());
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
+  Settings::PinnedUnitLabels::set(ui->pinnedUnitLabelCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   if (ui->alternateTuningCheck->isChecked()) {
     QList<int> rowDisplayPattern;
@@ -85,6 +86,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->alternateTuningSystemContainer->setVisible(
       ui->alternateTuningCheck->isChecked());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
+  ui->pinnedUnitLabelCheck->setChecked(Settings::PinnedUnitLabels::get());
 
   QString rowDisplay = "";
   for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");

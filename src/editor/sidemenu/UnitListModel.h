@@ -7,7 +7,13 @@
 #include "editor/PxtoneClient.h"
 #include "protocol/NoIdMap.h"
 
-enum struct UnitListColumn : qint8 { Visible, Played, Name, MAX = Name };
+enum struct UnitListColumn : qint8 {
+  Visible,
+  Played,
+  Pinned,
+  Name,
+  MAX = Name
+};
 
 class UnitListModel : public QAbstractTableModel {
   Q_OBJECT
@@ -48,6 +54,7 @@ class UnitListDelegate : public QStyledItemDelegate {
   bool editorEvent(QEvent *event, QAbstractItemModel *model,
                    const QStyleOptionViewItem &option,
                    const QModelIndex &index) override;
+  std::optional<int> hover_unit_no;
 };
 
 #endif  // UNITLISTMODEL_H

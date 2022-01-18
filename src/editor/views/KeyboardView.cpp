@@ -319,10 +319,9 @@ static void drawCursor(const EditState &state, QPainter &painter,
   drawCursor(position, painter, color, username, uid);
 }
 
-constexpr int LEFT_PIANO_WIDTH = 28;
 void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
-  painter.fillRect(x, y, LEFT_PIANO_WIDTH, h, b);
-  painter.fillRect(x + LEFT_PIANO_WIDTH, y + 1, 1, h - 2, b);
+  painter.fillRect(x, y, LEFT_LEGEND_WIDTH, h, b);
+  painter.fillRect(x + LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
 }
 
 double smoothDistance(double dy, double dx) {

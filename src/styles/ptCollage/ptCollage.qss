@@ -81,7 +81,7 @@ QTableView,
 QListWidget,
 QListView {
   gridline-color: #4E4B61;
-  selection-background-color: #69656D;
+  selection-background-color: #8869656D;
   selection-color: #00F080;
   border: 1px transparent;
   border-image: url("image/generic-frame.png"), 1px 1px 1px 1px, stretch stretch;

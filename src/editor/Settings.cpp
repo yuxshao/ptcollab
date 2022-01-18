@@ -19,7 +19,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 
 namespace Settings {
 namespace Version {
-static QString v("0.5.0.3");
+static QString v("0.6.0");
 const QString &string() { return v; }
 }  // namespace Version
 
@@ -246,6 +246,12 @@ const char *KEY = "octave_display_a";
 bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace OctaveDisplayA
+
+namespace PinnedUnitLabels {
+const char *KEY = "pinned_unit_labels";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace PinnedUnitLabels
 
 namespace DisplayEdo {
 const char *KEY = "display_edo";

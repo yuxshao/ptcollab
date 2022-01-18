@@ -5,9 +5,11 @@
 #include <QObject>
 #include <QRect>
 #include <optional>
+#include <set>
 #include <variant>
 
 #include "Interval.h"
+#include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnMaster.h"
 
 struct MouseKeyboardEdit {
@@ -37,17 +39,31 @@ inline QDataStream &operator>>(QDataStream &in, MouseParamEdit &a) {
   return in;
 }
 
+struct MeasureRibbonEdit : std::monostate {};
+struct MeasureUnitEdit {
+  std::optional<int> pinned_unit_id;
+};
+inline QDataStream &operator<<(QDataStream &out, const MeasureUnitEdit &a) {
+  out << a.pinned_unit_id;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MeasureUnitEdit &a) {
+  in >> a.pinned_unit_id;
+  return in;
+}
 struct MouseMeasureEdit {
-  qint32 y;
+  std::variant<MeasureRibbonEdit, MeasureUnitEdit> kind;
+  qint32 offset_y;
 };
 inline QDataStream &operator<<(QDataStream &out, const MouseMeasureEdit &a) {
-  out << a.y;
+  out << a.kind << a.offset_y;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, MouseMeasureEdit &a) {
-  in >> a.y;
+  in >> a.kind >> a.offset_y;
   return in;
 }
+
 struct MouseEditState {
   enum Type : qint8 {
     Nothing,
@@ -127,6 +143,12 @@ struct EditState {
   MouseEditState mouse_edit_state;
   Scale scale;
   QRect viewport;
+
+  // Using [no]s instead of IDs because the latter adds an extra seemingly
+  // unnecesary indirection. Also I accidentally made the display in order
+  // of IDs instead of Nos with this.
+  std::set<int> m_pinned_unit_ids;
+
   int m_current_unit_id;
   int m_current_woice_id;
   int m_current_param_kind_idx;

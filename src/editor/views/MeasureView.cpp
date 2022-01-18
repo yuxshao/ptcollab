@@ -28,16 +28,13 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
           });
   connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
           &QWidget::updateGeometry);
+
+  connect(m_client, &PxtoneClient::editStateChanged, this,
+          &MeasureView::handleNewEditState);
 }
 
-void drawCursor(const EditState &state, QPainter &painter, const QColor &color,
-                const QString &username, qint64 uid) {
-  if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
-    return;
-  int y = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y;
-  QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
-                  y);
-  drawCursor(position, painter, color, username, uid);
+void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
+  m_hovered_unit_no = unit_no;
 }
 
 enum struct FlagType : qint8 { Top, Repeat, Last };
@@ -80,8 +77,96 @@ constexpr int UNIT_EDIT_OFFSET = 2;
 constexpr int RIBBON_HEIGHT =
     MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET;
 constexpr int UNIT_EDIT_Y = RIBBON_HEIGHT + UNIT_EDIT_OFFSET;
-void drawOngoingAction(const EditState &state, QPainter &painter, int height,
-                       int quantizeClock, int clockPerMeas,
+constexpr int UNIT_EDIT_MARGIN = 1;
+constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
+inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
+
+struct UnitDrawParams {
+  std::vector<int> ys;
+  const Brush *brush;
+};
+struct UnitDrawParamsMap {
+  std::map<int, UnitDrawParams> no_to_params;
+  std::vector<MeasureUnitEdit> rows;
+};
+
+// TODO: Cache this on edit state change only
+// Helper index for going from pinned no / id -> draw location / brush, and back
+UnitDrawParamsMap make_draw_params_map(const EditState &e, const NoIdMap &m) {
+  std::map<int, UnitDrawParams> no_to_params;
+  std::vector<MeasureUnitEdit> rows;
+
+  for (int unit_id : e.m_pinned_unit_ids) {
+    std::optional<int> maybe_unit_no = m.idToNo(unit_id);
+    if (maybe_unit_no.has_value()) {
+      UnitDrawParams &p = no_to_params[maybe_unit_no.value()];
+      p.brush = &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+    }
+  }
+
+  int row = 0;
+  for (auto &[unit_no, p] : no_to_params) {
+    p.ys.push_back(unit_edit_y(row) + UNIT_EDIT_HEIGHT / 2);
+    rows.push_back(MeasureUnitEdit{m.noToId(unit_no)});
+    ++row;
+  }
+
+  rows.push_back(MeasureUnitEdit{std::nullopt});
+  std::optional<int> maybe_unit_no = m.idToNo(e.m_current_unit_id);
+  if (maybe_unit_no.has_value()) {
+    UnitDrawParams &p = no_to_params[maybe_unit_no.value()];
+    p.brush = &brushes[nonnegative_modulo(e.m_current_unit_id, NUM_BRUSHES)];
+    p.ys.push_back(unit_edit_y(row) + UNIT_EDIT_HEIGHT / 2);
+  }
+
+  return UnitDrawParamsMap{no_to_params, rows};
+}
+
+UnitDrawParamsMap make_draw_params_map(const PxtoneClient *c) {
+  return make_draw_params_map(c->editState(), c->unitIdMap());
+}
+
+void drawCursor(const EditState &state,
+                const UnitDrawParamsMap &draw_params_map,
+                const NoIdMap &unit_id_map, QPainter &painter,
+                const QColor &color, const QString &username, qint64 uid) {
+  if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
+    return;
+  MouseMeasureEdit m = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
+  int offset_y = m.offset_y;
+  std::optional<int> y;
+  std::visit(
+      overloaded{[&](MeasureRibbonEdit &) { y = m.offset_y; },
+                 [&](MeasureUnitEdit &m) {
+                   std::optional<int> no;
+                   bool pinned = m.pinned_unit_id.has_value();
+                   if (pinned)
+                     no = unit_id_map.idToNo(m.pinned_unit_id.value());
+                   else
+                     no = unit_id_map.idToNo(state.m_current_unit_id);
+                   if (no.has_value() &&
+                       draw_params_map.no_to_params.count(no.value()) > 0) {
+                     auto &ys = draw_params_map.no_to_params.at(no.value()).ys;
+                     // There are multiple places you could draw the
+                     // cursor. If it's pinned on their end draw it in
+                     // the pinned slot on yours if you can (front).
+                     y = (pinned ? ys.front() : ys.back()) + offset_y -
+                         UNIT_EDIT_HEIGHT / 2;
+                   }
+                 }},
+      m.kind);
+
+  if (y.has_value()) {
+    QPoint p(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
+             y.value());
+    drawCursor(p, painter, color, username, uid);
+  }
+}
+
+void drawOngoingAction(const EditState &state,
+                       const UnitDrawParamsMap &unit_draw_params_map,
+                       const NoIdMap &unit_id_map, QPainter &painter,
+                       int height, int quantizeClock, int clockPerMeas,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
                        double alphaMultiplier,
                        double selectionAlphaMultiplier) {
@@ -89,11 +174,22 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 
   auto drawVelAction = [&](const Interval &interval, qint32 velocity,
                            int alpha) {
-    const Brush &brush =
-        brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
-    painter.fillRect(interval.start, UNIT_EDIT_Y + 3, interval.length(),
-                     UNIT_EDIT_HEIGHT - 6,
-                     brush.toQColor(velocity, false, alpha * alphaMultiplier));
+    const auto &m = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
+    if (!std::holds_alternative<MeasureUnitEdit>(m.kind)) return;
+    const auto &measure_unit_edit = std::get<MeasureUnitEdit>(m.kind);
+    int unit_id =
+        measure_unit_edit.pinned_unit_id.value_or(state.m_current_unit_id);
+    auto no = unit_id_map.idToNo(unit_id);
+    if (!no.has_value() ||
+        unit_draw_params_map.no_to_params.count(no.value()) == 0)
+      return;
+    const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+    for (int y : unit_draw_params_map.no_to_params.at(no.value()).ys) {
+      painter.fillRect(
+          interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2, interval.length(),
+          UNIT_EDIT_HEIGHT - 6,
+          brush.toQColor(velocity, false, alpha * alphaMultiplier));
+    }
   };
 
   {
@@ -112,8 +208,9 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
       case MouseEditState::Type::Nothing: {
         if (std::holds_alternative<MouseMeasureEdit>(
                 state.mouse_edit_state.kind)) {
-          if (std::get<MouseMeasureEdit>(state.mouse_edit_state.kind).y <
-              RIBBON_HEIGHT) {
+          auto &[kind, _] =
+              std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
+          if (std::holds_alternative<MeasureRibbonEdit>(kind)) {
             int half_meas =
                 2 * mouse_edit_state.current_clock / clockPerMeas + 1;
             int meas = half_meas / 2;
@@ -151,7 +248,16 @@ void drawOngoingAction(const EditState &state, QPainter &painter, int height,
 QSize MeasureView::sizeHint() const {
   return QSize(one_over_last_clock(m_client->pxtn()) /
                    m_client->editState().scale.clockPerPx,
-               1 + RIBBON_HEIGHT + UNIT_EDIT_OFFSET + UNIT_EDIT_HEIGHT);
+               unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
+}
+
+void MeasureView::handleNewEditState(const EditState &) {
+  if (size() != sizeHint()) {
+    updateGeometry();
+
+    // Used to change the actual scrollarea size...
+    emit heightChanged(sizeHint().height());
+  }
 }
 
 void MeasureView::paintEvent(QPaintEvent *e) {
@@ -210,51 +316,125 @@ void MeasureView::paintEvent(QPaintEvent *e) {
              FLAG_Y);
   }
 
-  // Draw on events
-
-  painter.fillRect(0, UNIT_EDIT_Y, width(), UNIT_EDIT_HEIGHT,
-                   StyleEditor::palette.MeasureUnitEdit);
   double scaleX = m_client->editState().scale.clockPerPx;
   Interval clockBounds = {
       qint32(e->rect().left() * scaleX) - WINDOW_BOUND_SLACK,
       qint32(e->rect().right() * scaleX) + WINDOW_BOUND_SLACK};
-  int unit_id = m_client->editState().m_current_unit_id;
-  const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
-  std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
-  if (maybe_unit_no.has_value()) {
-    int unit_no = maybe_unit_no.value();
 
-    std::optional<Interval> last_on = std::nullopt;
-    int last_vel = EVENTDEFAULT_VELOCITY;
-    int y = UNIT_EDIT_Y + UNIT_EDIT_HEIGHT / 2;
+  UnitDrawParamsMap unit_draw_params_map(make_draw_params_map(m_client));
 
-    auto drawLastOn = [&]() {
-      if (last_on.has_value()) {
-        const Interval &i = last_on.value();
-        drawUnitBullet(
-            painter, i.start / scaleX, y,
-            int(i.end / scaleX) - int(i.start / scaleX),
-            brush.toQColor(last_vel, i.contains(m_moo_clock->now()), 255));
+  // Draw the unit edit rows
+  for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
+    painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
+                     StyleEditor::palette.MeasureUnitEdit);
+    if (m_hovered_unit_no.has_value() &&
+        unit_draw_params_map.rows[i].pinned_unit_id == m_hovered_unit_no)
+      painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
+                       QColor::fromRgb(255, 255, 255, 32));
+  }
+
+  std::map<int, Interval> last_on_by_no;
+  std::map<int, int> last_vel_by_no;
+  std::optional<Interval> selection(
+      m_client->editState().mouse_edit_state.selection);
+
+  std::set<int> selected_unit_nos = m_client->selectedUnitNos();
+
+  // Draw on events
+  auto drawLastOn = [&](int no, bool erase) {
+    if (last_on_by_no.count(no) > 0) {
+      const Interval &i = last_on_by_no[no];
+      int vel = (last_vel_by_no.count(no) > 0 ? last_vel_by_no[no]
+                                              : EVENTDEFAULT_VELOCITY);
+      int x = i.start / scaleX;
+      int w = int(i.end / scaleX) - x;
+      const Brush *brush = unit_draw_params_map.no_to_params[no].brush;
+      QColor c = brush->toQColor(vel, i.contains(m_moo_clock->now()), 255);
+      for (int y : unit_draw_params_map.no_to_params[no].ys)
+        fillUnitBullet(painter, x, y, w, c);
+      if (selected_unit_nos.count(no) > 0 && selection.has_value()) {
+        Interval selection_segment = interval_intersect(selection.value(), i);
+        if (!selection_segment.empty()) {
+          painter.setPen(brush->toQColor(EVENTDEFAULT_VELOCITY, true, 255));
+          int x = selection_segment.start / scaleX;
+          int w = int(selection_segment.end / scaleX) - x;
+          for (int y : unit_draw_params_map.no_to_params[no].ys)
+            drawUnitBullet(painter, x, y, w);
+        }
       }
-      last_on = std::nullopt;
-    };
+      if (erase) last_on_by_no.erase(no);
+    }
+  };
 
-    for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
-         e = e->next) {
-      if (e->clock > clockBounds.end) break;
-      if (e->unit_no == unit_no) {
-        if (e->kind == EVENTKIND_ON) {
-          drawLastOn();
-          last_on = Interval{e->clock, e->clock + e->value};
-        }
-        if (e->kind == EVENTKIND_VELOCITY) {
-          if (last_on.has_value() && last_on.value().start < e->clock)
-            drawLastOn();
-          last_vel = e->value;
-        }
+  for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
+       e = e->next) {
+    if (e->clock > clockBounds.end) break;
+    if (unit_draw_params_map.no_to_params.count(e->unit_no) > 0) {
+      if (e->kind == EVENTKIND_ON) {
+        drawLastOn(e->unit_no, true);
+        last_on_by_no[e->unit_no] = Interval{e->clock, e->clock + e->value};
+      }
+      if (e->kind == EVENTKIND_VELOCITY) {
+        if (last_on_by_no.count(e->unit_no) > 0 &&
+            last_on_by_no[e->unit_no].start < e->clock)
+          drawLastOn(e->unit_no, true);
+        last_vel_by_no[e->unit_no] = e->value;
       }
     }
-    drawLastOn();
+  }
+  for (auto it = last_on_by_no.begin(); it != last_on_by_no.end(); ++it)
+    drawLastOn(it->first, false);
+
+  // Draw text labels
+  if (Settings::PinnedUnitLabels::get()) {
+    QPixmap textLabelLayer(e->rect().size());
+    textLabelLayer.fill(Qt::transparent);
+    QPainter textLabelPainter(&textLabelLayer);
+    textLabelPainter.translate(-e->rect().topLeft());
+    textLabelPainter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+    int maxTextLabelWidth = 0;
+    QColor bg = StyleEditor::palette.MeasureUnitEdit;
+    bg.setAlphaF(0.25);
+    auto drawText = [&](QPainter &p, int unit_no, int y_base) {
+      QString unit_name = shift_jis_codec->toUnicode(
+          m_client->pxtn()->Unit_Get(unit_no)->get_name_buf_jis(nullptr));
+      painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+      p.setPen(bg);
+      constexpr int x_padding = 5;
+      for (int x = -2; x <= 2; ++x)
+        for (int y = -1; y <= 1; ++y)
+          p.drawText(-pos().x() + x_padding + x, y_base + y, 10000000,
+                     UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
+      p.setPen(Qt::white);
+      QRect bbox;
+      p.drawText(-pos().x() + x_padding, y_base, 10000000, UNIT_EDIT_HEIGHT,
+                 Qt::AlignVCenter, unit_name, &bbox);
+      if (bbox.width() > maxTextLabelWidth) maxTextLabelWidth = bbox.width();
+    };
+
+    bool hovered_unit_highlighted = false;
+    for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
+      if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
+      int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
+      std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
+      if (!unit_no.has_value()) continue;
+      if (unit_no == m_hovered_unit_no) {
+        drawText(painter, unit_no.value(), unit_edit_y(i));
+        hovered_unit_highlighted = true;
+      } else
+        drawText(textLabelPainter, unit_no.value(), unit_edit_y(i));
+    }
+    double textLabelAlpha = 1;
+    if (hovered_unit_highlighted)
+      textLabelAlpha = 0.3;
+    else if (m_mouse_x.has_value()) {
+      int dx = m_mouse_x.value();
+      textLabelAlpha =
+          0.1 + 0.9 * clamp(dx - maxTextLabelWidth - 20, 0, 100) / 100;
+    }
+    painter.setOpacity(textLabelAlpha);
+    painter.drawPixmap(e->rect(), textLabelLayer, textLabelLayer.rect());
+    painter.setOpacity(1);
   }
 
   drawLastSeek(painter, m_client, height(), true);
@@ -264,26 +444,28 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
       EditState adjusted_state(remote_state.state.value());
-      bool same_unit = adjusted_state.m_current_unit_id ==
-                       m_client->editState().m_current_unit_id;
-      double alphaMultiplier = (same_unit ? 0.7 : 0.3);
-      double selectionAlphaMultiplier = (same_unit ? 0.5 : 0.3);
       adjusted_state.scale = m_client->editState().scale;
 
+      bool same_unit = adjusted_state.m_current_unit_id ==
+                       m_client->editState().m_current_unit_id;
+      double selectionAlphaMultiplier = (same_unit ? 0.5 : 0.3);
       drawExistingSelection(painter, adjusted_state.mouse_edit_state,
                             adjusted_state.scale.clockPerPx, height(),
                             selectionAlphaMultiplier);
+
       drawOngoingAction(
-          adjusted_state, painter, height(),
+          adjusted_state, unit_draw_params_map, m_client->unitIdMap(), painter,
+          height(),
           m_client->quantizeClock(
               quantizeXOptions()[adjusted_state.m_quantize_clock_idx].second),
-          clockPerMeas, std::nullopt, m_client->pxtn()->master, alphaMultiplier,
+          clockPerMeas, std::nullopt, m_client->pxtn()->master, 0.7,
           selectionAlphaMultiplier);
     }
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, height(), 1);
-  drawOngoingAction(m_client->editState(), painter, height(),
+  drawOngoingAction(m_client->editState(), unit_draw_params_map,
+                    m_client->unitIdMap(), painter, height(),
                     m_client->quantizeClock(), clockPerMeas,
                     m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
 
@@ -304,7 +486,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
                                                         false, 128);
       else
         color = StyleEditor::palette.Cursor;
-      drawCursor(state, painter, color, remote_state.user, uid);
+      drawCursor(state, unit_draw_params_map, m_client->unitIdMap(), painter,
+                 color, remote_state.user, uid);
     }
   }
 
@@ -312,25 +495,49 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
+    drawCursor(m_client->editState(), unit_draw_params_map,
+               m_client->unitIdMap(), painter, StyleEditor::palette.Cursor,
                my_username, m_client->following_uid());
   }
 }
 
 static void updateStatePositions(EditState &edit_state,
+                                 const UnitDrawParamsMap &unit_draw_params_map,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
 
   state.current_clock =
       std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
-  if (state.type == MouseEditState::Nothing ||
-      state.type == MouseEditState::Seek) {
-    state.start_clock = state.current_clock;
-    bool shift = event->modifiers() & Qt::ShiftModifier;
-    state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
-  }
+  switch (state.type) {
+    case MouseEditState::Nothing:
+    case MouseEditState::Seek:
+    case MouseEditState::Select: {
+      if (state.type != MouseEditState::Select) {
+        state.start_clock = state.current_clock;
+        bool shift = event->modifiers() & Qt::ShiftModifier;
+        state.type = (shift ? MouseEditState::Seek : MouseEditState::Nothing);
+      }
 
-  state.kind = MouseMeasureEdit{event->y()};
+      int y = event->y();
+      if (y < UNIT_EDIT_Y)
+        state.kind = MouseMeasureEdit{MeasureRibbonEdit{}, y};
+      else {
+        int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+        int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
+        const auto &rows = unit_draw_params_map.rows;
+        state.kind = MouseMeasureEdit{
+            (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
+      }
+    } break;
+
+    case MouseEditState::SetNote:
+    case MouseEditState::SetOn:
+    case MouseEditState::DeleteNote:
+    case MouseEditState::DeleteOn:
+      if (std::holds_alternative<MouseMeasureEdit>(state.kind))
+        std::get<MouseMeasureEdit>(state.kind).offset_y = UNIT_EDIT_HEIGHT / 2;
+      break;
+  }
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
@@ -341,7 +548,7 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
 
   m_client->changeEditState(
       [&](EditState &s) {
-        updateStatePositions(s, event);
+        updateStatePositions(s, make_draw_params_map(m_client), event);
         MouseEditState::Type &type = s.mouse_edit_state.type;
         if (event->modifiers() & Qt::ShiftModifier) {
           if (event->modifiers() & Qt::ControlModifier &&
@@ -352,26 +559,30 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               s.mouse_edit_state.selection.reset();
             type = MouseEditState::Type::Seek;
           }
-        } else if (std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).y >
-                   RIBBON_HEIGHT) {
-          if (event->button() == Qt::LeftButton) {
-            type = MouseEditState::Type::SetOn;
-            qint32 clock = quantize(s.mouse_edit_state.current_clock,
-                                    m_client->quantizeClock());
-            std::optional<int> unit_no =
-                m_client->unitIdMap().idToNo(s.m_current_unit_id);
-            if (unit_no.has_value()) {
-              m_audio_note_preview = std::make_unique<NotePreview>(
-                  m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
-                  clock, std::list<EVERECORD>(),
-                  m_client->audioState()->bufferSize(),
-                  Settings::ChordPreview::get(), this);
-              s.mouse_edit_state.base_velocity =
-                  m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
-                                                     EVENTKIND_VELOCITY);
-            }
-          } else
-            type = MouseEditState::Type::DeleteOn;
+        } else {
+          auto &[kind, offset_y] =
+              std::get<MouseMeasureEdit>(s.mouse_edit_state.kind);
+          if (std::holds_alternative<MeasureUnitEdit>(kind)) {
+            if (event->button() == Qt::LeftButton) {
+              type = MouseEditState::Type::SetOn;
+              qint32 clock = quantize(s.mouse_edit_state.current_clock,
+                                      m_client->quantizeClock());
+              std::optional<int> unit_no = m_client->unitIdMap().idToNo(
+                  std::get<MeasureUnitEdit>(kind).pinned_unit_id.value_or(
+                      s.m_current_unit_id));
+              if (unit_no.has_value()) {
+                m_audio_note_preview = std::make_unique<NotePreview>(
+                    m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
+                    clock, std::list<EVERECORD>(),
+                    m_client->audioState()->bufferSize(),
+                    Settings::ChordPreview::get(), this);
+                s.mouse_edit_state.base_velocity =
+                    m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
+                                                       EVENTKIND_VELOCITY);
+              }
+            } else
+              type = MouseEditState::Type::DeleteOn;
+          }
         }
       },
       false);
@@ -396,28 +607,41 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               m_client->quantizeClock()));
           switch (s.mouse_edit_state.type) {
             case MouseEditState::SetOn:
-            case MouseEditState::SetNote: {
+            case MouseEditState::SetNote:
+            case MouseEditState::DeleteOn:
+            case MouseEditState::DeleteNote: {
+              if (!std::holds_alternative<MouseMeasureEdit>(
+                      s.mouse_edit_state.kind))
+                break;
+              auto mouse_measure_edit =
+                  std::get<MouseMeasureEdit>(s.mouse_edit_state.kind);
+              if (!std::holds_alternative<MeasureUnitEdit>(
+                      mouse_measure_edit.kind))
+                break;
+              int unit_id = std::get<MeasureUnitEdit>(mouse_measure_edit.kind)
+                                .pinned_unit_id.value_or(s.m_current_unit_id);
               std::optional<int> maybe_unit_no =
-                  m_client->unitIdMap().idToNo(s.m_current_unit_id);
+                  m_client->unitIdMap().idToNo(unit_id);
               if (maybe_unit_no.has_value()) {
-                actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                   clock_int.start, Delete{clock_int.end}});
-                actions.push_back({EVENTKIND_VELOCITY, s.m_current_unit_id,
-                                   clock_int.start, Delete{clock_int.end}});
-                actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                   clock_int.start, Add{clock_int.length()}});
-                actions.push_back(
-                    {EVENTKIND_VELOCITY, s.m_current_unit_id, clock_int.start,
-                     Add{qint32(round(s.mouse_edit_state.base_velocity))}});
+                if (s.mouse_edit_state.type == MouseEditState::SetOn ||
+                    s.mouse_edit_state.type == MouseEditState::SetNote) {
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_VELOCITY, unit_id,
+                                     clock_int.start, Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Add{clock_int.length()}});
+                  actions.push_back(
+                      {EVENTKIND_VELOCITY, unit_id, clock_int.start,
+                       Add{qint32(round(s.mouse_edit_state.base_velocity))}});
+                } else {
+                  actions.push_back({EVENTKIND_ON, unit_id, clock_int.start,
+                                     Delete{clock_int.end}});
+                  actions.push_back({EVENTKIND_VELOCITY, unit_id,
+                                     clock_int.start, Delete{clock_int.end}});
+                }
               }
             } break;
-            case MouseEditState::DeleteOn:
-            case MouseEditState::DeleteNote:
-              actions.push_back({EVENTKIND_ON, s.m_current_unit_id,
-                                 clock_int.start, Delete{clock_int.end}});
-              actions.push_back({EVENTKIND_VELOCITY, s.m_current_unit_id,
-                                 clock_int.start, Delete{clock_int.end}});
-              break;
               // TODO: Dedup w/ the other seek / select responses
             case MouseEditState::Seek:
               if (event->button() & Qt::LeftButton)
@@ -433,8 +657,9 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
             case MouseEditState::Nothing:
               if (std::holds_alternative<MouseMeasureEdit>(
                       s.mouse_edit_state.kind)) {
-                if (std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).y >=
-                    RIBBON_HEIGHT)
+                if (std::holds_alternative<MeasureRibbonEdit>(
+                        std::get<MouseMeasureEdit>(s.mouse_edit_state.kind)
+                            .kind))
                   break;
                 int half_meas = 2 * current_clock /
                                     m_client->pxtn()->master->get_beat_clock() /
@@ -462,9 +687,20 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
         }
         m_audio_note_preview.reset();
         s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-        updateStatePositions(s, event);
+        updateStatePositions(s, make_draw_params_map(m_client), event);
       },
       false);
+}
+
+void MeasureView::moveEvent(QMoveEvent *e) {
+  update();
+  QWidget::moveEvent(e);
+}
+
+void MeasureView::leaveEvent(QEvent *e) {
+  m_mouse_x = std::nullopt;
+  emit hoverUnitNoChanged(std::nullopt);
+  QWidget::leaveEvent(e);
 }
 
 void MeasureView::wheelEvent(QWheelEvent *event) {
@@ -489,9 +725,22 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 }
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
+  m_mouse_x = event->localPos().x() + pos().x();
+  UnitDrawParamsMap draw_params_map = make_draw_params_map(m_client);
+
+  int hovered_row = (event->localPos().y() - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+  std::optional<int> hovered_pinned_unit_no = std::nullopt;
+  if (int(draw_params_map.rows.size()) > hovered_row && hovered_row >= 0) {
+    auto unit_id = draw_params_map.rows[hovered_row].pinned_unit_id;
+    if (unit_id.has_value())
+      hovered_pinned_unit_no = m_client->unitIdMap().idToNo(unit_id.value());
+  }
+  emit hoverUnitNoChanged(hovered_pinned_unit_no);
+
   if (!m_client->isFollowing())
-    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
-                              true);
+    m_client->changeEditState(
+        [&](auto &s) { updateStatePositions(s, draw_params_map, event); },
+        true);
   if (m_audio_note_preview != nullptr)
     m_audio_note_preview->processEvent(
         EVENTKIND_VELOCITY,

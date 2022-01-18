@@ -2,6 +2,8 @@
 #define SERIALIZEVARIANT_H
 
 #include <QDataStream>
+#include <optional>
+#include <set>
 #include <stdexcept>
 #include <variant>
 
@@ -70,6 +72,48 @@ QDataStream &operator>>(QDataStream &in, std::optional<T> &a) {
     a.reset();
   return in;
 }
+
+template <typename T>
+QDataStream &operator<<(QDataStream &out, const std::list<T> &a) {
+  out << quint64(a.size());
+  for (const auto &i : a) out << i;
+  return out;
+}
+template <typename T>
+QDataStream &operator<<(QDataStream &out, const std::set<T> &a) {
+  out << quint64(a.size());
+  for (const auto &i : a) out << i;
+  return out;
+}
+
+template <typename T>
+QDataStream &operator>>(QDataStream &in, std::list<T> &a) {
+  quint64 size;
+  in >> size;
+  for (quint64 i = 0; i < size; ++i) {
+    T v;
+    in >> v;
+    a.push_back(v);
+  }
+  return in;
+}
+
+template <typename T>
+QDataStream &operator>>(QDataStream &in, std::set<T> &a) {
+  quint64 size;
+  in >> size;
+  for (quint64 i = 0; i < size; ++i) {
+    T v;
+    in >> v;
+    a.insert(v);
+  }
+  return in;
+}
+
+inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
 
 #include <QTextStream>
 

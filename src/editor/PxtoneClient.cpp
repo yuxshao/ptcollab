@@ -91,7 +91,12 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
-  changeEditState([](EditState &e) { e.m_current_unit_id = 0; }, false);
+  changeEditState(
+      [](EditState &e) {
+        e.m_current_unit_id = 0;
+        e.m_pinned_unit_ids.clear();
+      },
+      false);
   m_following_user.reset();
   m_pxtn_device->setPlaying(false);
   seekMoo(0);

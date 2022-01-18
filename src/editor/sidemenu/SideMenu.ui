@@ -199,7 +199,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QTableView" name="unitList">
+        <widget class="TableView" name="unitList">
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
@@ -659,6 +659,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>editor/sidemenu/TableView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../icons.qrc"/>
  </resources>

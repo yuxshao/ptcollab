@@ -26,8 +26,14 @@ UnitListModel::UnitListModel(PxtoneClient *client, QObject *parent)
   });
   connect(controller, &PxtoneController::endAddUnit, this,
           &UnitListModel::endInsertRows);
-  connect(controller, &PxtoneController::beginRemoveUnit,
-          [this](int index) { beginRemoveRows(QModelIndex(), index, index); });
+  connect(controller, &PxtoneController::beginRemoveUnit, [this](int index) {
+    m_client->changeEditState(
+        [&](EditState &e) {
+          e.m_pinned_unit_ids.erase(m_client->unitIdMap().noToId(index));
+        },
+        true);
+    beginRemoveRows(QModelIndex(), index, index);
+  });
   connect(controller, &PxtoneController::endRemoveUnit, this,
           &UnitListModel::endRemoveRows);
   connect(controller, &PxtoneController::beginRefresh, this,
@@ -68,6 +74,12 @@ QVariant UnitListModel::data(const QModelIndex &index, int role) const {
       if (role == Qt::CheckStateRole)
         return checked_of_bool(unit->get_played());
       break;
+    case UnitListColumn::Pinned:
+      if (role == Qt::CheckStateRole)
+        return checked_of_bool(m_client->editState().m_pinned_unit_ids.count(
+                                   m_client->unitIdMap().noToId(index.row())) >
+                               0);
+      break;
     case UnitListColumn::Name:
       if (role == Qt::DisplayRole || role == Qt::EditRole)
         return shift_jis_codec->toUnicode(unit->get_name_buf_jis(nullptr));
@@ -92,6 +104,21 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
         return true;
       }
       return false;
+    case UnitListColumn::Pinned:
+      if (role == Qt::CheckStateRole) {
+        int id = m_client->unitIdMap().noToId(index.row());
+        m_client->changeEditState(
+            [&](EditState &e) {
+              if (value.toInt() == Qt::Checked)
+                e.m_pinned_unit_ids.insert(id);
+              else
+                e.m_pinned_unit_ids.erase(id);
+            },
+            false);
+        return true;
+      }
+      return false;
+      break;
     case UnitListColumn::Name:
       int unit_id = m_client->unitIdMap().noToId(index.row());
       m_client->sendAction(SetUnitName{unit_id, value.toString()});
@@ -106,6 +133,7 @@ Qt::ItemFlags UnitListModel::flags(const QModelIndex &index) const {
   switch (UnitListColumn(index.column())) {
     case UnitListColumn::Visible:
     case UnitListColumn::Played:
+    case UnitListColumn::Pinned:
       f |= Qt::ItemIsUserCheckable;
       break;
     case UnitListColumn::Name:
@@ -121,8 +149,8 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
       switch (UnitListColumn(section)) {
         case UnitListColumn::Visible:
-          break;
         case UnitListColumn::Played:
+        case UnitListColumn::Pinned:
           break;
         case UnitListColumn::Name:
           return "Name";
@@ -134,6 +162,8 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return getIcon("visible");
         case UnitListColumn::Played:
           return getIcon("audio-on");
+        case UnitListColumn::Pinned:
+          return getIcon("pin");
         default:
           break;
       }
@@ -144,6 +174,8 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
           return tr("Visible");
         case UnitListColumn::Played:
           return tr("Played");
+        case UnitListColumn::Pinned:
+          return tr("Pinned");
         case UnitListColumn::Name:
           return tr("Name");
       }
@@ -175,6 +207,11 @@ void UnitListDelegate::paint(QPainter *painter,
     painter->fillRect(option.rect, c);
     o.font.setBold(true);
   }
+  if (hover_unit_no == index.row()) {
+    QColor c = o.palette.highlight().color();
+    c.setAlphaF(0.5);
+    painter->fillRect(option.rect, c);
+  }
 
   QStyledItemDelegate::paint(painter, o, index);
 }
@@ -187,7 +224,8 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
       m_last_index = index;
       switch (UnitListColumn(index.column())) {
         case UnitListColumn::Visible:
-        case UnitListColumn::Played: {
+        case UnitListColumn::Played:
+        case UnitListColumn::Pinned: {
           bool state = qvariant_cast<Qt::CheckState>(
                            index.data(Qt::CheckStateRole)) == Qt::Checked;
           m_last_set_checked = !state;
@@ -226,7 +264,8 @@ bool UnitListDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
           const QModelIndex indexAtRow = m_last_index.siblingAtRow(row);
           switch (UnitListColumn(m_last_index.column())) {
             case UnitListColumn::Visible:
-            case UnitListColumn::Played: {
+            case UnitListColumn::Played:
+            case UnitListColumn::Pinned: {
               m_last_index = indexAtRow;
               model->setData(indexAtRow, checked_of_bool(m_last_set_checked),
                              Qt::CheckStateRole);

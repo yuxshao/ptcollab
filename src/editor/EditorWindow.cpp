@@ -176,10 +176,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  m_measure_scroll_area->setWidget(
-      new MeasureView(m_client, m_moo_clock, m_measure_scroll_area));
+  MeasureView *measure_view =
+      new MeasureView(m_client, m_moo_clock, m_measure_scroll_area);
+  m_measure_scroll_area->setWidget(measure_view);
+  m_measure_scroll_area->setSizePolicy(
+      QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+  connect(measure_view, &MeasureView::heightChanged, this, [this](int h) {
+    // This is a bit jank, but it seems like changing the inner content material
+    // isn't enough for changing how high this widget is in the scrollarea.
+    m_measure_scroll_area->setMinimumHeight(h);
+    m_measure_scroll_area->setMaximumHeight(h);
+  });
   m_measure_scroll_area->setMaximumHeight(
       m_measure_scroll_area->widget()->sizeHint().height());
+  connect(m_side_menu, &SideMenu::hoveredUnitChanged, measure_view,
+          &MeasureView::setFocusedUnit);
+  connect(measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
+          &SideMenu::setHoverUnit);
 
   measure_layout->addWidget(m_measure_scroll_area);
   measure_layout->addWidget(m_key_splitter);
