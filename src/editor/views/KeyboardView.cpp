@@ -572,6 +572,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         selected_unit_nos.find(unit_no) != selected_unit_nos.end())
       thisSelection = selection;
     int alpha;
+    bool visible = m_pxtn->Unit_Get(unit_no)->get_visible();
     if (hoveredUnit) {
       if (matchingUnit)
         alpha = 255;
@@ -580,7 +581,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     } else {
       if (matchingUnit)
         alpha = 255;
-      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+      else if (visible)
         alpha = 64;
       else
         alpha = 0;
@@ -597,7 +598,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
       // Determine distance to mouse
       if (m_hover_select &&
-          std::holds_alternative<MouseKeyboardEdit>(mouse.kind)) {
+          std::holds_alternative<MouseKeyboardEdit>(mouse.kind) && visible) {
         Interval on = state.ongoingOnEvent.value();
         Interval interval = interval_intersect(on, segment);
         double d = distance_to_mouse(mouse, interval, state.pitch.value,
