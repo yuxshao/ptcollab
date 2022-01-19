@@ -186,15 +186,6 @@ jobs:
 
           # Deployment finalizing
           if [ "${{ runner.os }}" == "Windows" ]; then
-            pushd "${PACKAGE}"
-
-            # These should really be handled by an install rule instead
-            cp -v -a ../res/sample_* ./
-            cp -v -a ../LICENSE ./LICENSE-ptcollab
-            cp -v -a ../src/pxtone/LICENSE ./LICENSE-pxtone
-            cp -v -a ../deps/lib/{COPYING,LICENSE}-* ./
-
-            popd
             7z a -tzip "${artifact_name}" "${PACKAGE}"
           elif [ "${{ runner.os }}" == "macOS" ]; then
             pushd "${PACKAGE}"
@@ -204,9 +195,8 @@ jobs:
             rmdir bin
 
             mv -v share/ptcollab/* ./
-            for proj in pxtone ptcollab; do
-              mv -v share/doc/${proj}/LICENSE ./LICENSE-${proj}
-            done
+            mv -v share/doc/pxtone/LICENSE-pxtone ./LICENSE-pxtone
+            mv -v share/doc/ptcollab/LICENSE ./LICENSE-ptcollab
 
             rm -v -rf share/
 
@@ -220,9 +210,8 @@ jobs:
             # Inherits verbose name from desktop file
             mv pxtone_collab*.AppImage "${PACKAGE}".AppImage
 
-            for proj in pxtone ptcollab; do
-              mv -v appdir/usr/share/doc/${proj}/LICENSE ./LICENSE-${proj}
-            done
+            mv -v appdir/usr/share/doc/pxtone/LICENSE-pxtone ./LICENSE-pxtone
+            mv -v appdir/usr/share/doc/ptcollab/LICENSE ./LICENSE-ptcollab
 
             rm -v -rf appdir/
 
