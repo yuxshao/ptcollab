@@ -160,6 +160,7 @@ jobs:
             export DEPLOY_TARGET="appdir/usr/share/applications/ptcollab.desktop"
             export DEPLOY_OPTS=(
               "-appimage"
+              "-extra-plugins=platforms/libqminimal.so" # So headless doesn't need xcb
             )
             export PACKAGE_EXT="tar.gz"
 
