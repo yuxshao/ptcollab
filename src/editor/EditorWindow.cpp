@@ -167,6 +167,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_view, &KeyboardView::fpsUpdated, [this](qreal fps) {
     m_fps_status->setText(QString("%1 FPS").arg(fps, 0, 'f', 0));
   });
+  connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
+          &KeyboardView::setFocusedUnit);
 
   m_param_scroll_area = new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
