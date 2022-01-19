@@ -530,6 +530,9 @@ unit view:
   4. highlight left unit on pinned row hover
   5. update icon to pin icon
 
+1/19
+1. don't startup qapplication if headless
+
 Todo by priority
 ----------------
  - colour legend on left menu

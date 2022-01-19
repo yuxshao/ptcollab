@@ -41,14 +41,20 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context,
   fflush(logDestination);
 }
 
-int main(int argc, char *argv[]) {
-  QApplication a(argc, argv);
+QCoreApplication *createApplication(int &argc, char *argv[]) {
+  QStringList args(argv, argv + argc);
+  if (args.contains("-headless") || args.contains("--headless"))
+    return new QCoreApplication(argc, argv);
+  return new QApplication(argc, argv);
+}
 
-  // For QSettings
-  a.setOrganizationName("ptcollab");
-  a.setOrganizationDomain("ptweb.me");
-  a.setApplicationName("ptcollab");
-  a.setApplicationVersion(Settings::Version::string());
+int main(int argc, char *argv[]) {
+  QScopedPointer<QCoreApplication> a(createApplication(argc, argv));
+  a->setOrganizationName("ptcollab");
+  a->setOrganizationDomain("ptweb.me");
+  a->setApplicationName("ptcollab");
+  a->setApplicationVersion(Settings::Version::string());
+
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
   parser.addHelpOption();
@@ -104,7 +110,7 @@ int main(int argc, char *argv[]) {
       "clear-settings",
       QCoreApplication::translate("main", "Clear application settings."));
   parser.addOption(clearSettingsOption);
-  parser.process(a);
+  parser.process(*a);
 
   if (parser.isSet(clearSettingsOption)) {
     QSettings().clear();
@@ -165,7 +171,7 @@ int main(int argc, char *argv[]) {
 
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
-    return a.exec();
+    return a->exec();
   } else {
     QString style = Settings::StyleName::get();
     if (!StyleEditor::tryLoadStyle(style)) {
@@ -178,6 +184,6 @@ int main(int argc, char *argv[]) {
     w.show();
     if (startServerImmediately)
       w.hostDirectly(filename, host, port, recording_file, username);
-    return a.exec();
+    return a->exec();
   }
 }
