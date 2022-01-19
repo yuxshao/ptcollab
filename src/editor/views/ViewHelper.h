@@ -29,6 +29,13 @@ T clamp(T x, T lo, T hi) {
   return x;
 }
 
+template <typename T>
+T distance_to_range(T x, T lo, T hi) {
+  if (x < lo) return lo - x;
+  if (x > hi) return x - hi;
+  return 0;
+}
+
 extern int lerp(double r, int a, int b);
 
 constexpr int EVENTMAX_VELOCITY = 128;
