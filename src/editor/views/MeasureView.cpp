@@ -50,7 +50,8 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 
   // Pick biggest font that'll fit vs. font size in the picker, just since
   // this font makes sense to constrain to a size
-  for (int i = 4; i <= 18; ++i) {
+  m_label_font = QFont("Sans serif", 4);
+  for (int i = 5; i <= 18; ++i) {
     QFont f = QFont("Sans serif", i);
     if (QFontMetrics(f).height() <= UNIT_EDIT_HEIGHT) m_label_font = f;
   }
