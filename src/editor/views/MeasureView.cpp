@@ -268,6 +268,13 @@ void MeasureView::handleNewEditState(const EditState &) {
   }
 }
 
+void MeasureView::setHoveredUnitNo(std::optional<int> new_unit_no) {
+  if (m_hovered_unit_no != new_unit_no) {
+    m_hovered_unit_no = new_unit_no;
+    emit hoverUnitNoChanged(m_hovered_unit_no);
+  }
+}
+
 void MeasureView::paintEvent(QPaintEvent *e) {
   const pxtnService *pxtn = m_client->pxtn();
 
@@ -549,6 +556,16 @@ static void updateStatePositions(EditState &edit_state,
 }
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
+  // TODO: dedup with mouse press in kbdview
+  if (event->button() & Qt::MiddleButton &&
+      event->modifiers() & Qt::AltModifier && m_hovered_unit_no.has_value()) {
+    std::optional<int> unit_id =
+        m_client->unitIdMap().idToNo(m_hovered_unit_no.value());
+    if (unit_id.has_value())
+      m_client->changeEditState(
+          [&](EditState &s) { s.m_current_unit_id = unit_id.value(); }, false);
+  }
+
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
@@ -707,7 +724,7 @@ void MeasureView::moveEvent(QMoveEvent *e) {
 
 void MeasureView::leaveEvent(QEvent *e) {
   m_mouse_x = std::nullopt;
-  emit hoverUnitNoChanged(std::nullopt);
+  setHoveredUnitNo(std::nullopt);
   QWidget::leaveEvent(e);
 }
 
@@ -743,7 +760,7 @@ void MeasureView::mouseMoveEvent(QMouseEvent *event) {
     if (unit_id.has_value())
       hovered_pinned_unit_no = m_client->unitIdMap().idToNo(unit_id.value());
   }
-  emit hoverUnitNoChanged(hovered_pinned_unit_no);
+  setHoveredUnitNo(hovered_pinned_unit_no);
 
   if (!m_client->isFollowing())
     m_client->changeEditState(
