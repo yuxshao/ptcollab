@@ -795,20 +795,24 @@ static void updateStatePositions(EditState &edit_state,
 
 void KeyboardView::updateHoverSelect(QMouseEvent *event) {
   m_hover_select = (event->modifiers() & Qt::AltModifier &&
-                    event->modifiers() & Qt::ShiftModifier &&
                     (m_client->editState().mouse_edit_state.type ==
-                         MouseEditState::Type::Nothing ||
-                     m_client->editState().mouse_edit_state.type ==
-                         MouseEditState::Type::Seek));
+                     MouseEditState::Type::Nothing));
 }
 
 void KeyboardView::mousePressEvent(QMouseEvent *event) {
+  if (m_hover_select && event->button() & Qt::MiddleButton &&
+      m_hovered_unit_no.has_value()) {
+    std::optional<int> unit_id =
+        m_client->unitIdMap().idToNo(m_hovered_unit_no.value());
+    if (unit_id.has_value())
+      m_client->changeEditState(
+          [&](EditState &s) { s.m_current_unit_id = unit_id.value(); }, false);
+  }
+
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
   }
-  updateHoverSelect(event);
-  if (m_hover_select) return;
 
   if (m_pxtn->Unit_Num() == 0) return;
   m_client->changeEditState(
@@ -872,6 +876,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
         }
       },
       true);
+  updateHoverSelect(event);
 }
 
 void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
