@@ -399,14 +399,13 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     textLabelLayer.fill(Qt::transparent);
     QPainter textLabelPainter(&textLabelLayer);
     textLabelPainter.translate(-e->rect().topLeft());
-    textLabelPainter.setFont(m_label_font);
     int maxTextLabelWidth = 0;
     QColor bg = StyleEditor::palette.MeasureUnitEdit;
     bg.setAlphaF(0.25);
     auto drawText = [&](QPainter &p, int unit_no, int y_base) {
       QString unit_name = shift_jis_codec->toUnicode(
           m_client->pxtn()->Unit_Get(unit_no)->get_name_buf_jis(nullptr));
-      painter.setFont(m_label_font);
+      p.setFont(m_label_font);
       p.setPen(bg);
       constexpr int x_padding = 5;
       for (int x = -2; x <= 2; ++x)
