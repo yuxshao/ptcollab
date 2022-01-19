@@ -603,12 +603,21 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
       QPainter &thisPainter = matchingUnit ? activePainter : painter;
       int alpha;
-      if (matchingUnit)
-        alpha = 255;
-      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
-        alpha = 64;
-      else
-        alpha = 0;
+      bool hoveredUnit = unit_no == m_focused_unit_no;
+      if (hoveredUnit) {
+        if (matchingUnit)
+          alpha = 255;
+        else
+          alpha = 192;
+      } else {
+        if (matchingUnit)
+          alpha = 255;
+        else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+          alpha = 64;
+        else
+          alpha = 0;
+        if (m_focused_unit_no.has_value()) alpha /= 2;
+      }
       bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
       std::optional<Interval> thisSelection = std::nullopt;
       if (selection.has_value() &&
