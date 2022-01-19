@@ -79,7 +79,7 @@ void KeyboardView::ensurePlayheadFollowed() {
 }
 
 void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
-  m_hovered_unit_no = unit_no;
+  m_focused_unit_no = unit_no;
 }
 
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
@@ -537,7 +537,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-    bool hoveredUnit = unit_no == m_hovered_unit_no;
+    bool hoveredUnit = unit_no == m_focused_unit_no;
     QPainter &thisPainter =
         matchingUnit ? activePainter : (hoveredUnit ? hoverPainter : painter);
     std::optional<Interval> thisSelection = std::nullopt;
@@ -557,7 +557,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         alpha = 64;
       else
         alpha = 0;
-      if (m_hovered_unit_no.has_value()) alpha /= 2;
+      if (m_focused_unit_no.has_value()) alpha /= 2;
     }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
     switch (e->kind) {

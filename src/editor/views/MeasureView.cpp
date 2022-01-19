@@ -58,7 +58,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 }
 
 void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
-  m_hovered_unit_no = unit_no;
+  m_focused_unit_no = unit_no;
 }
 
 enum struct FlagType : qint8 { Top, Repeat, Last };
@@ -335,8 +335,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
     painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                      StyleEditor::palette.MeasureUnitEdit);
-    if (m_hovered_unit_no.has_value() &&
-        unit_draw_params_map.rows[i].pinned_unit_id == m_hovered_unit_no)
+    if (m_focused_unit_no.has_value() &&
+        unit_draw_params_map.rows[i].pinned_unit_id == m_focused_unit_no)
       painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                        QColor::fromRgb(255, 255, 255, 32));
   }
@@ -426,7 +426,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
       std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
       if (!unit_no.has_value()) continue;
-      if (unit_no == m_hovered_unit_no) {
+      if (unit_no == m_focused_unit_no) {
         drawText(painter, unit_no.value(), unit_edit_y(i));
         hovered_unit_highlighted = true;
       } else

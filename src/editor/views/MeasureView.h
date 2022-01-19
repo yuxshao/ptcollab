@@ -18,7 +18,7 @@ class MeasureView : public QWidget {
   MooClock *m_moo_clock;
   QFont m_label_font;
   std::unique_ptr<NotePreview> m_audio_note_preview;
-  std::optional<int> m_hovered_unit_no;
+  std::optional<int> m_focused_unit_no;
 
   // Tracked separately from editState since that one doesn't track leaves +
   // this one is relative to window position

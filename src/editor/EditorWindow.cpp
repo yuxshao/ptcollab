@@ -194,7 +194,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
   connect(measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
-          &SideMenu::setHoverUnit);
+          &SideMenu::setFocusedUnit);
   connect(measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
 

@@ -71,7 +71,7 @@ class KeyboardView : public QWidget {
   Animation *m_anim;
   PxtoneClient *m_client;
   MooClock *m_moo_clock;
-  std::optional<int> m_hovered_unit_no;
+  std::optional<int> m_focused_unit_no;
 
   bool m_test_activity;
 };
