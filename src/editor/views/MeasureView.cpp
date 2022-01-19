@@ -662,32 +662,32 @@ void MeasureView::mouseReleaseEvent(QMouseEvent *event) {
               s.mouse_edit_state.selection.emplace(clock_int);
               break;
             }
-            case MouseEditState::Nothing:
-              if (std::holds_alternative<MouseMeasureEdit>(
-                      s.mouse_edit_state.kind)) {
-                if (std::holds_alternative<MeasureRibbonEdit>(
-                        std::get<MouseMeasureEdit>(s.mouse_edit_state.kind)
-                            .kind))
-                  break;
-                int half_meas = 2 * current_clock /
-                                    m_client->pxtn()->master->get_beat_clock() /
-                                    m_client->pxtn()->master->get_beat_num() +
-                                1;
-                int meas = half_meas / 2;
-                bool left_half = half_meas % 2 == 1;
-                if (left_half) {
-                  if (m_client->pxtn()->master->get_repeat_meas() == meas)
-                    m_client->sendAction(SetRepeatMeas{});
-                  else
-                    m_client->sendAction(SetRepeatMeas{meas});
-                } else {
-                  if (m_client->pxtn()->master->get_last_meas() == meas)
-                    m_client->sendAction(SetLastMeas{});
-                  else
-                    m_client->sendAction(SetLastMeas{meas});
-                }
+            case MouseEditState::Nothing: {
+              if (!std::holds_alternative<MouseMeasureEdit>(
+                      s.mouse_edit_state.kind))
                 break;
+              if (!std::holds_alternative<MeasureRibbonEdit>(
+                      std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).kind))
+                break;
+              int half_meas = 2 * current_clock /
+                                  m_client->pxtn()->master->get_beat_clock() /
+                                  m_client->pxtn()->master->get_beat_num() +
+                              1;
+              int meas = half_meas / 2;
+              bool left_half = half_meas % 2 == 1;
+              if (left_half) {
+                if (m_client->pxtn()->master->get_repeat_meas() == meas)
+                  m_client->sendAction(SetRepeatMeas{});
+                else
+                  m_client->sendAction(SetRepeatMeas{meas});
+              } else {
+                if (m_client->pxtn()->master->get_last_meas() == meas)
+                  m_client->sendAction(SetLastMeas{});
+                else
+                  m_client->sendAction(SetLastMeas{meas});
               }
+              break;
+            }
           }
           if (actions.size() > 0) {
             m_client->applyAction(actions);
