@@ -191,8 +191,12 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_measure_scroll_area->widget()->sizeHint().height());
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, measure_view,
           &MeasureView::setFocusedUnit);
+  connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
+          &KeyboardView::setFocusedUnit);
   connect(measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
           &SideMenu::setHoverUnit);
+  connect(measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
+          &KeyboardView::setFocusedUnit);
 
   measure_layout->addWidget(m_measure_scroll_area);
   measure_layout->addWidget(m_key_splitter);

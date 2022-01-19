@@ -78,6 +78,10 @@ void KeyboardView::ensurePlayheadFollowed() {
       m_client->editState().m_follow_playhead == FollowPlayhead::Follow);
 }
 
+void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
+  m_hovered_unit_no = unit_no;
+}
+
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
 
 struct LastEvent {
@@ -516,6 +520,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QPainter activePainter(&activeLayer);
   activePainter.translate(-event->rect().topLeft());
 
+  // Similarly for a potential hovered instrument.
+  QPixmap hoverLayer(event->rect().size());
+  hoverLayer.fill(Qt::transparent);
+  QPainter hoverPainter(&hoverLayer);
+  hoverPainter.translate(-event->rect().topLeft());
+
   if (m_client->editState().mouse_edit_state.selection.has_value() &&
       m_client->clipboard()->kindIsCopied(EVENTKIND_VELOCITY))
     selection = m_client->editState().mouse_edit_state.selection.value();
@@ -527,18 +537,28 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-    QPainter &thisPainter = matchingUnit ? activePainter : painter;
+    bool hoveredUnit = unit_no == m_hovered_unit_no;
+    QPainter &thisPainter =
+        matchingUnit ? activePainter : (hoveredUnit ? hoverPainter : painter);
     std::optional<Interval> thisSelection = std::nullopt;
     if (selection.has_value() &&
         selected_unit_nos.find(unit_no) != selected_unit_nos.end())
       thisSelection = selection;
     int alpha;
-    if (matchingUnit)
-      alpha = 255;
-    else if (m_pxtn->Unit_Get(unit_no)->get_visible())
-      alpha = 64;
-    else
-      alpha = 0;
+    if (hoveredUnit) {
+      if (matchingUnit)
+        alpha = 255;
+      else
+        alpha = 192;
+    } else {
+      if (matchingUnit)
+        alpha = 255;
+      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+        alpha = 64;
+      else
+        alpha = 0;
+      if (m_hovered_unit_no.has_value()) alpha /= 2;
+    }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
     switch (e->kind) {
       case EVENTKIND_ON:
@@ -605,6 +625,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     }
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
+  painter.drawPixmap(event->rect(), hoverLayer, hoverLayer.rect());
 
   painter.drawPixmap(event->rect(), octaveDisplayLayer,
                      octaveDisplayLayer.rect());

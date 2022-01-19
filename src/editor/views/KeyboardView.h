@@ -34,6 +34,7 @@ class KeyboardView : public QWidget {
   void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
   void ensurePlayheadFollowed();
+  void setFocusedUnit(std::optional<int> unit_no);
  signals:
   void ensureVisibleX(int x, bool strict);
   void fpsUpdated(qreal fps);
@@ -70,6 +71,7 @@ class KeyboardView : public QWidget {
   Animation *m_anim;
   PxtoneClient *m_client;
   MooClock *m_moo_clock;
+  std::optional<int> m_hovered_unit_no;
 
   bool m_test_activity;
 };
