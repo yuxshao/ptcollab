@@ -167,8 +167,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_keyboard_view, &KeyboardView::fpsUpdated, [this](qreal fps) {
     m_fps_status->setText(QString("%1 FPS").arg(fps, 0, 'f', 0));
   });
-  connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
-          &KeyboardView::setFocusedUnit);
 
   m_param_scroll_area = new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -193,8 +191,12 @@ EditorWindow::EditorWindow(QWidget *parent)
       m_measure_scroll_area->widget()->sizeHint().height());
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, measure_view,
           &MeasureView::setFocusedUnit);
+  connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
+          &KeyboardView::setFocusedUnit);
   connect(measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
           &SideMenu::setHoverUnit);
+  connect(measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
+          &KeyboardView::setFocusedUnit);
 
   measure_layout->addWidget(m_measure_scroll_area);
   measure_layout->addWidget(m_key_splitter);
