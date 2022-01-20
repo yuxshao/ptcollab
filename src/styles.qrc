@@ -35,7 +35,6 @@
         <file>styles/ptCollage/config.ini</file>
         <file>styles/ptCollage/images.png</file>
         <file>styles/ptCollage/ptCollage.qss</file>
-        <file>styles/config.ini.md</file>
         <file>styles/README.md</file>
     </qresource>
 </RCC>
