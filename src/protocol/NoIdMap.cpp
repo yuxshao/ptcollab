@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-NoIdMap::NoIdMap(int start) : m_next_id(0) {
+NoIdMap::NoIdMap(int start) : m_next_id(100) {
   for (int32_t i = 0; i < start; ++i) add();
 }
 

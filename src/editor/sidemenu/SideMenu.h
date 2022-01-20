@@ -71,7 +71,7 @@ class SideMenu : public QWidget {
   void setQuantYDenom(int);
   void setParamKindIndex(int);
   void setCurrentUnit(int unit_no);
-  void setHoverUnit(std::optional<int> unit_no);
+  void setFocusedUnit(std::optional<int> unit_no);
   void setCurrentWoice(int unit_no);
   void setUnitSelected(int unit_no, bool selected);
   void setPlay(bool);
