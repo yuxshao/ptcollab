@@ -1,7 +1,6 @@
 #ifndef STYLEEDITOR_H
 #define STYLEEDITOR_H
 
-#include <QApplication>
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>

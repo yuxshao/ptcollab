@@ -26,16 +26,8 @@ QString styleSheetPath(const QString &basedir, const QString &styleName) {
   return styleSheetDir(basedir, styleName) + "/" + styleName + ".qss";
 }
 QString configPath(const QString &basedir, const QString &styleName) {
-  QString configIniPath = styleSheetDir(basedir, styleName) + "/config.ini";
-  if (QFile::exists(configIniPath))
-    return configIniPath;
-  else
-    ;
-  return styleSheetDir(basedir, styleName) + "/palette.ini";
-}  // Implemented limited error handling here, as palette.ini or config.ini
-   // could exist depending on when the style was created. However, there is no
-   // sensible default value to return when neither exist, so it will return
-   // palette.ini if there's no file.
+  return styleSheetDir(basedir, styleName) + "/config.ini";
+}
 
 struct InvalidColorError {
   QString settingsKey;
@@ -58,18 +50,18 @@ void withSettingsColor(const QSettings &settings, const QString &key,
 
 void setConfigFont(const QSettings &settings, QString &dst,
                    const QString &key) {
-  QString str = settings.value(key).toString();
-  QFontDatabase db;
-  QStringList dbg = db.families();
-  if (db.families().contains(str, Qt::CaseInsensitive) && !str.isEmpty())
-    dst = str;
-  else
-    dst = "Sans serif";
-  if (!settings.contains(key)) {
-    qWarning() << QString(
-                      "Invalid font (%1) for "
-                      "setting (%2) in config")
-                      .arg(str, key);
+  static QStringList valid_families = QFontDatabase().families();
+  if (settings.contains(key)) {
+    QString str = settings.value(key).toString();
+    if (!str.isEmpty() && valid_families.contains(str, Qt::CaseInsensitive)) {
+      dst = str;
+    } else {
+      dst = "Sans serif";
+      qWarning() << QString(
+                        "Invalid font (%1) for "
+                        "setting (%2) in config")
+                        .arg(str, key);
+    }
   }
 }
 
@@ -151,8 +143,6 @@ void loadConfig(const QString &path, Config &c) {
 
   setConfigFont(styleConfig, c.font.EditorFont, "fonts/Editor");
   setConfigFont(styleConfig, c.font.MeterFont, "fonts/Meter");
-
-  qDebug();
 }
 
 Config defaultConfig(bool is_system_theme) {

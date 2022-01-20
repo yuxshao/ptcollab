@@ -102,7 +102,6 @@ constexpr int SMALL_TICK_HEIGHT = 2;
 void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   QPainter p(this);
   p.setFont(QFont(StyleEditor::config.font.MeterFont, 6));
-  qDebug() << StyleEditor::config.font.MeterFont;
   p.setPen(StyleEditor::config.color.MeterLabel);
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
