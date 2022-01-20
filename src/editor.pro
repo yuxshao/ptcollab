@@ -97,6 +97,7 @@ HEADERS += \
            editor/CopyOptionsDialog.h \
            editor/HostDialog.h \
            editor/InputEvent.h \
+           editor/KeySpinBox.h \
            editor/MidiWrapper.h \
            editor/NewWoiceDialog.h \
            editor/RenderDialog.h \
@@ -186,6 +187,7 @@ SOURCES += main.cpp \
            editor/CopyOptionsDialog.cpp \
            editor/HostDialog.cpp \
            editor/InputEvent.cpp \
+           editor/KeySpinBox.cpp \
            editor/MidiWrapper.cpp \
            editor/NewWoiceDialog.cpp \
            editor/RenderDialog.cpp \
