@@ -46,7 +46,7 @@ class SideMenu : public QWidget {
   void playButtonPressed();
   void stopButtonPressed();
   void saveButtonPressed();
-  void addUnit(int woice_idx, QString unit_name);
+  void addUnit(int woice_no, QString unit_name);
   void removeUnit();
   void addOverdrive();
   void removeOverdrive(int no);

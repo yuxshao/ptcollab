@@ -53,11 +53,11 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           [this](int tempo) { m_client->sendAction(TempoChange{tempo}); });
   connect(this, &SideMenu::beatsChanged,
           [this](int beat) { m_client->sendAction(BeatChange{beat}); });
-  connect(this, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
+  connect(this, &SideMenu::addUnit, [this](int woice_no, QString unit_name) {
     m_client->sendAction(AddUnit{
-        woice_id, Settings::NewUnitDefaultVolume::get(),
+        woice_no, Settings::NewUnitDefaultVolume::get(),
         shift_jis_codec->toUnicode(
-            m_client->pxtn()->Woice_Get(woice_id)->get_name_buf_jis(nullptr)),
+            m_client->pxtn()->Woice_Get(woice_no)->get_name_buf_jis(nullptr)),
         unit_name});
   });
   connect(this, &SideMenu::addWoices, [this](const std::vector<AddWoice> &ws) {

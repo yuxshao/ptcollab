@@ -213,13 +213,12 @@ bool auxSetUnitName(pxtnUnit *unit, QString name) {
 // to include the notes that were deleted with it.
 bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
-  /// WTF WOICE ID??
-  if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
+  if (m_pxtn->Woice_Num() <= a.woice_no || a.woice_no < 0) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
     return false;
   }
   QString woice_name = shift_jis_codec->toUnicode(
-      m_pxtn->Woice_Get(a.woice_id)->get_name_buf_jis(nullptr));
+      m_pxtn->Woice_Get(a.woice_no)->get_name_buf_jis(nullptr));
   if (woice_name != a.woice_name) {
     qWarning("Voice doesn't exist. (Name doesn't match)");
     return false;
@@ -229,12 +228,12 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
     qWarning("Could not add another unit.");
     return false;
   }
-  m_moo_state->addUnit(m_pxtn->Woice_Get(a.woice_id));
+  m_moo_state->addUnit(m_pxtn->Woice_Get(a.woice_no));
 
   m_unit_id_map.add();
   int unit_no = m_pxtn->Unit_Num() - 1;
   auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
-  m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
+  m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_no);
   if (a.starting_volume != EVENTDEFAULT_VOLUME)
     m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOLUME,
                                 a.starting_volume);

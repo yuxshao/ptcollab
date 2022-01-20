@@ -163,9 +163,9 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           });
   connect(m_add_unit_dialog, &QDialog::accepted, [this]() {
     QString name = m_add_unit_dialog->getUnitNameSelection();
-    int idx = m_add_unit_dialog->getSelectedWoiceIndex();
-    if (idx >= 0 && name != "")
-      emit addUnit(idx, name);
+    int no = m_add_unit_dialog->getSelectedWoiceIndex();
+    if (no >= 0 && name != "")
+      emit addUnit(no, name);
     else
       QMessageBox::warning(this, "Invalid unit options",
                            "Name or selected instrument invalid");
