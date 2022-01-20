@@ -55,7 +55,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           [this](int beat) { m_client->sendAction(BeatChange{beat}); });
   connect(this, &SideMenu::addUnit, [this](int woice_id, QString unit_name) {
     m_client->sendAction(AddUnit{
-        woice_id,
+        woice_id, Settings::NewUnitDefaultVolume::get(),
         shift_jis_codec->toUnicode(
             m_client->pxtn()->Woice_Get(woice_id)->get_name_buf_jis(nullptr)),
         unit_name});

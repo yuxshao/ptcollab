@@ -65,15 +65,16 @@ inline QDataStream &operator>>(QDataStream &in, UndoRedo &a) {
 }
 struct AddUnit {
   qint32 woice_id;
+  qint32 starting_volume;
   QString woice_name;
   QString unit_name;
 };
 inline QDataStream &operator<<(QDataStream &out, const AddUnit &a) {
-  out << a.woice_id << a.woice_name << a.unit_name;
+  out << a.woice_id << a.starting_volume << a.woice_name << a.unit_name;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, AddUnit &a) {
-  in >> a.woice_id >> a.woice_name >> a.unit_name;
+  in >> a.woice_id >> a.starting_volume >> a.woice_name >> a.unit_name;
   return in;
 }
 inline QTextStream &operator<<(QTextStream &out, const AddUnit &a) {
