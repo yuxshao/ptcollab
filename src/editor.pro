@@ -109,6 +109,7 @@ HEADERS += \
            editor/sidemenu/BasicWoiceListModel.h \
            editor/sidemenu/DelayEffectModel.h \
            editor/sidemenu/IconHelper.h \
+           editor/sidemenu/KeySpinBox.h \
            editor/sidemenu/OverdriveEffectModel.h \
            editor/sidemenu/TableView.h \
            editor/sidemenu/UserListModel.h \
@@ -198,6 +199,7 @@ SOURCES += main.cpp \
            editor/sidemenu/BasicWoiceListModel.cpp \
            editor/sidemenu/DelayEffectModel.cpp \
            editor/sidemenu/IconHelper.cpp \
+           editor/sidemenu/KeySpinBox.cpp \
            editor/sidemenu/OverdriveEffectModel.cpp \
            editor/sidemenu/TableView.cpp \
            editor/sidemenu/UserListModel.cpp \
