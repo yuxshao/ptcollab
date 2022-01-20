@@ -128,29 +128,10 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             emit addWoices(new_woice_dialog->selectedWoices());
           });
 
-  connect(ui->tempoField, &QLineEdit::editingFinished, [this]() {
-    bool ok;
-    int tempo = ui->tempoField->text().toInt(&ok);
-    if (!ok || tempo < 20 || tempo > 600)
-      QMessageBox::critical(this, tr("Invalid tempo"),
-                            tr("Tempo must be number between 20 and 600"));
-    else {
-      ui->tempoField->setText(QString(tempo));
-      emit tempoChanged(tempo);
-    }
-  });
-
-  connect(ui->beatsField, &QLineEdit::editingFinished, [this]() {
-    bool ok;
-    int beats = ui->beatsField->text().toInt(&ok);
-    if (!ok || beats < 1 || beats > 16)
-      QMessageBox::critical(this, tr("Invalid beats"),
-                            tr("Beats must be number between 1 and 16"));
-    else {
-      setBeats(beats);
-      emit beatsChanged(beats);
-    }
-  });
+  connect(ui->tempoSpin, &QSpinBox::editingFinished,
+          [this]() { emit tempoChanged(ui->tempoSpin->value()); });
+  connect(ui->beatsSpin, &QSpinBox::editingFinished,
+          [this]() { emit beatsChanged(ui->beatsSpin->value()); });
 
   connect(ui->removeWoiceBtn, &QPushButton::clicked, [this]() {
     int idx = ui->woiceList->currentIndex().row();
@@ -245,8 +226,8 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->removeWoiceBtn->setEnabled(b);
   ui->addUnitBtn->setEnabled(b);
   ui->removeUnitBtn->setEnabled(b);
-  ui->tempoField->setEnabled(b);
-  ui->beatsField->setEnabled(b);
+  ui->tempoSpin->setEnabled(b);
+  ui->beatsSpin->setEnabled(b);
   ui->upUnitBtn->setEnabled(b);
   ui->downUnitBtn->setEnabled(b);
 }
@@ -270,12 +251,8 @@ void SideMenu::setModified(bool modified) {
     ui->saveBtn->setText("");
 }
 
-void SideMenu::setTempo(int tempo) {
-  ui->tempoField->setText(QString("%1").arg(tempo));
-}
-void SideMenu::setBeats(int beats) {
-  ui->beatsField->setText(QString("%1").arg(beats));
-}
+void SideMenu::setTempo(int tempo) { ui->tempoSpin->setValue(tempo); }
+void SideMenu::setBeats(int beats) { ui->beatsSpin->setValue(beats); }
 
 void SideMenu::setFollowPlayhead(FollowPlayhead follow) {
   ui->followCheckbox->setCheckState(follow == FollowPlayhead::None

@@ -231,8 +231,6 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
   ui->previewKeySpin->setValue(EVENTDEFAULT_KEY / PITCH_PER_KEY);
-  ui->previewKeySpin->setRange(0, 150);
-  ui->previewKeySpin->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
   // If we don't unset the directory, then it'll stay as the cwd. But we want to
   // use cwd if this is a first open, hence the if.
