@@ -20,6 +20,7 @@ class MeasureView : public QWidget {
   std::unique_ptr<NotePreview> m_audio_note_preview;
   std::optional<int> m_focused_unit_no;
   std::optional<int> m_hovered_unit_no;
+  bool m_select_unit_enabled;
 
   // Tracked separately from editState since that one doesn't track leaves +
   // this one is relative to window position
@@ -41,6 +42,7 @@ class MeasureView : public QWidget {
   explicit MeasureView(PxtoneClient *client, MooClock *moo_clock,
                        QWidget *parent = nullptr);
   void setFocusedUnit(std::optional<int> unit_no);
+  void setSelectUnitEnabled(bool);
 
  signals:
   void heightChanged(int h);

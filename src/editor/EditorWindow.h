@@ -26,6 +26,7 @@
 #include "sidemenu/PxtoneSideMenu.h"
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
+#include "views/MeasureView.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -55,6 +56,7 @@ class EditorWindow : public QMainWindow {
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   KeyboardView* m_keyboard_view;
+  MeasureView* m_measure_view;
   pxtnService m_pxtn;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
@@ -95,5 +97,6 @@ class EditorWindow : public QMainWindow {
   void setCurrentFilename(std::optional<QString> filename);
   void tweakSelectionRange(bool shift_right, bool grow);
   void setNewAutosaveFile();
+  void rKeyStateChanged(bool);
 };
 #endif  // MAINWINDOW_H

@@ -48,7 +48,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_client(client),
       m_moo_clock(moo_clock),
-      m_hover_select(false),
+      m_select_unit_enabled(false),
       m_test_activity(false) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -88,6 +88,11 @@ void KeyboardView::ensurePlayheadFollowed() {
 
 void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
   m_focused_unit_no = unit_no;
+}
+
+void KeyboardView::setSelectUnitEnabled(bool b) {
+  m_select_unit_enabled = b && (m_client->editState().mouse_edit_state.type ==
+                                MouseEditState::Type::Nothing);
 }
 
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
@@ -597,7 +602,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       const Scale &scale = m_client->editState().scale;
 
       // Determine distance to mouse
-      if (m_hover_select &&
+      if (m_select_unit_enabled &&
           std::holds_alternative<MouseKeyboardEdit>(mouse.kind) && visible) {
         Interval on = state.ongoingOnEvent.value();
         Interval interval = interval_intersect(on, segment);
@@ -691,7 +696,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, size().height(),
                         mySelectionAlphaMultiplier);
-  if (!m_hover_select || true)
+  if (!m_select_unit_enabled)
     drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
                       height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
                       displayEdo);
@@ -794,20 +799,16 @@ static void updateStatePositions(EditState &edit_state,
   }
 }
 
-void KeyboardView::updateHoverSelect(QMouseEvent *event) {
-  m_hover_select = (event->modifiers() & Qt::AltModifier &&
-                    (m_client->editState().mouse_edit_state.type ==
-                     MouseEditState::Type::Nothing));
-}
-
 void KeyboardView::mousePressEvent(QMouseEvent *event) {
-  if (m_hover_select && event->button() & Qt::MiddleButton &&
+  if (m_select_unit_enabled && event->button() & Qt::LeftButton &&
       m_hovered_unit_no.has_value()) {
-    std::optional<int> unit_id =
-        m_client->unitIdMap().idToNo(m_hovered_unit_no.value());
-    if (unit_id.has_value())
-      m_client->changeEditState(
-          [&](EditState &s) { s.m_current_unit_id = unit_id.value(); }, false);
+    m_client->changeEditState(
+        [&](EditState &s) {
+          s.m_current_unit_id =
+              m_client->unitIdMap().noToId(m_hovered_unit_no.value());
+        },
+        false);
+    return;
   }
 
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
@@ -877,7 +878,6 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
         }
       },
       true);
-  updateHoverSelect(event);
 }
 
 void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
@@ -888,11 +888,9 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
                         m_client->editState().scale));
 
   if (!m_client->isFollowing()) {
-    updateHoverSelect(event);
     m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
                               true);
-  } else
-    m_hover_select = false;
+  }
   event->ignore();
 }
 

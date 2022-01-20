@@ -31,7 +31,8 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
-      m_audio_note_preview(nullptr) {
+      m_audio_note_preview(nullptr),
+      m_select_unit_enabled(false) {
   setFocusPolicy(Qt::NoFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
   updateGeometry();
@@ -59,6 +60,11 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 
 void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
   m_focused_unit_no = unit_no;
+}
+
+void MeasureView::setSelectUnitEnabled(bool b) {
+  m_select_unit_enabled = b && (m_client->editState().mouse_edit_state.type ==
+                                MouseEditState::Type::Nothing);
 }
 
 enum struct FlagType : qint8 { Top, Repeat, Last };
@@ -342,8 +348,16 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
     painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                      StyleEditor::palette.MeasureUnitEdit);
-    if (m_focused_unit_no.has_value() &&
-        unit_draw_params_map.rows[i].pinned_unit_id == m_focused_unit_no)
+    if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
+    bool is_focused =
+        m_focused_unit_no.has_value() &&
+        unit_draw_params_map.rows[i].pinned_unit_id ==
+            m_client->unitIdMap().noToId(m_focused_unit_no.value());
+    bool is_selected =
+        m_select_unit_enabled && m_hovered_unit_no.has_value() &&
+        unit_draw_params_map.rows[i].pinned_unit_id ==
+            m_client->unitIdMap().noToId(m_hovered_unit_no.value());
+    if (is_focused || is_selected)
       painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
                        QColor::fromRgb(255, 255, 255, 32));
   }
@@ -479,10 +493,11 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, height(), 1);
-  drawOngoingAction(m_client->editState(), unit_draw_params_map,
-                    m_client->unitIdMap(), painter, height(),
-                    m_client->quantizeClock(), clockPerMeas,
-                    m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
+  if (!m_select_unit_enabled)
+    drawOngoingAction(m_client->editState(), unit_draw_params_map,
+                      m_client->unitIdMap(), painter, height(),
+                      m_client->quantizeClock(), clockPerMeas,
+                      m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -557,13 +572,15 @@ static void updateStatePositions(EditState &edit_state,
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
   // TODO: dedup with mouse press in kbdview
-  if (event->button() & Qt::MiddleButton &&
-      event->modifiers() & Qt::AltModifier && m_hovered_unit_no.has_value()) {
+  if (event->button() & Qt::LeftButton && m_hovered_unit_no.has_value() &&
+      m_select_unit_enabled) {
     std::optional<int> unit_id =
         m_client->unitIdMap().idToNo(m_hovered_unit_no.value());
-    if (unit_id.has_value())
+    if (unit_id.has_value()) {
       m_client->changeEditState(
           [&](EditState &s) { s.m_current_unit_id = unit_id.value(); }, false);
+      return;
+    }
   }
 
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
