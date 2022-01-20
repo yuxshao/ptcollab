@@ -572,15 +572,15 @@ static void updateStatePositions(EditState &edit_state,
 
 void MeasureView::mousePressEvent(QMouseEvent *event) {
   // TODO: dedup with mouse press in kbdview
-  if (event->button() & Qt::LeftButton && m_hovered_unit_no.has_value() &&
-      m_select_unit_enabled) {
-    std::optional<int> unit_id =
-        m_client->unitIdMap().idToNo(m_hovered_unit_no.value());
-    if (unit_id.has_value()) {
-      m_client->changeEditState(
-          [&](EditState &s) { s.m_current_unit_id = unit_id.value(); }, false);
-      return;
-    }
+  if (m_select_unit_enabled && event->button() & Qt::LeftButton &&
+      m_hovered_unit_no.has_value()) {
+    m_client->changeEditState(
+        [&](EditState &s) {
+          s.m_current_unit_id =
+              m_client->unitIdMap().noToId(m_hovered_unit_no.value());
+        },
+        false);
+    return;
   }
 
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
