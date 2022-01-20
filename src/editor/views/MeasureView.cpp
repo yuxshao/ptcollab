@@ -50,9 +50,9 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
 
   // Pick biggest font that'll fit vs. font size in the picker, just since
   // this font makes sense to constrain to a size
-  m_label_font = QFont("Sans serif", 4);
+  m_label_font = QFont(StyleEditor::config.font.EditorFont, 4);
   for (int i = 5; i <= 18; ++i) {
-    QFont f = QFont("Sans serif", i);
+    QFont f = QFont(StyleEditor::config.font.EditorFont, i);
     if (QFontMetrics(f).height() <= UNIT_EDIT_HEIGHT) m_label_font = f;
   }
 }
@@ -232,7 +232,7 @@ void drawOngoingAction(const EditState &state,
         break;
       }
       case MouseEditState::Type::Seek: {
-        QColor color = StyleEditor::palette.Playhead;
+        QColor color = StyleEditor::config.color.Playhead;
         color.setAlpha(color.alpha() * alphaMultiplier / 2);
         drawPlayhead(painter,
                      mouse_edit_state.current_clock / state.scale.clockPerPx,
@@ -283,12 +283,12 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
-                   StyleEditor::palette.MeasureIncluded);
+                   StyleEditor::config.color.MeasureIncluded);
   painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, StyleEditor::palette.MeasureExcluded);
+                   RULER_HEIGHT, StyleEditor::config.color.MeasureExcluded);
   painter.fillRect(0,
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
-                   width(), 1, StyleEditor::palette.MeasureBeat);
+                   width(), 1, StyleEditor::config.color.MeasureBeat);
   for (int beat = 0; true; ++beat) {
     int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
@@ -296,20 +296,20 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     if (beat % master->get_beat_num() == 0) {
       int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
-                       StyleEditor::palette.MeasureSeparator);
+                       StyleEditor::config.color.MeasureSeparator);
       if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
       lastMeasureDraw = x;
       painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT,
-                       StyleEditor::palette.MeasureSeparator);
+                       StyleEditor::config.color.MeasureSeparator);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT,
-                       StyleEditor::palette.MeasureNumberBlock);
+                       StyleEditor::config.color.MeasureNumberBlock);
       if (measure < activeMeas)
         drawNumAlignTopRight(&painter, x + MEASURE_NUM_BLOCK_WIDTH, 1,
                              beat / master->get_beat_num());
     } else
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT, 1, height(),
-                       StyleEditor::palette.MeasureBeat);
+                       StyleEditor::config.color.MeasureBeat);
   }
   drawFlag(&painter, FlagType::Top, false, 0, FLAG_Y);
   if (m_moo_clock->repeat_clock() > 0) {
@@ -334,7 +334,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   // Draw the unit edit rows
   for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
     painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
-                     StyleEditor::palette.MeasureUnitEdit);
+                     StyleEditor::config.color.MeasureUnitEdit);
     if (m_hovered_unit_no.has_value() &&
         unit_draw_params_map.rows[i].pinned_unit_id == m_hovered_unit_no)
       painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
@@ -400,7 +400,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     QPainter textLabelPainter(&textLabelLayer);
     textLabelPainter.translate(-e->rect().topLeft());
     int maxTextLabelWidth = 0;
-    QColor bg = StyleEditor::palette.MeasureUnitEdit;
+    QColor bg = StyleEditor::config.color.MeasureUnitEdit;
     bg.setAlphaF(0.25);
     auto drawText = [&](QPainter &p, int unit_no, int y_base) {
       QString unit_name = shift_jis_codec->toUnicode(
@@ -492,7 +492,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
       else
-        color = StyleEditor::palette.Cursor;
+        color = StyleEditor::config.color.Cursor;
       drawCursor(state, unit_draw_params_map, m_client->unitIdMap(), painter,
                  color, remote_state.user, uid);
     }
@@ -503,7 +503,7 @@ void MeasureView::paintEvent(QPaintEvent *e) {
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), unit_draw_params_map,
-               m_client->unitIdMap(), painter, StyleEditor::palette.Cursor,
+               m_client->unitIdMap(), painter, StyleEditor::config.color.Cursor,
                my_username, m_client->following_uid());
   }
 }

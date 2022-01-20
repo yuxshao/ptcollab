@@ -18,20 +18,20 @@ static QLinearGradient barGradient() {
   static QLinearGradient g = []() {
     QLinearGradient g(0, 0, 1, 0);
     g.setCoordinateMode(QGradient::ObjectMode);
-    g.setColorAt(0, StyleEditor::palette.MeterBar);
+    g.setColorAt(0, StyleEditor::config.color.MeterBar);
     g.setColorAt((MID_DB - MIN_DB) / (MAX_DB - MIN_DB),
-                 StyleEditor::palette.MeterBarMid);
+                 StyleEditor::config.color.MeterBarMid);
     g.setColorAt((HIGH_DB - MIN_DB) / (MAX_DB - MIN_DB),
-                 StyleEditor::palette.MeterBarHigh);
+                 StyleEditor::config.color.MeterBarHigh);
     return g;
   }();
   return g;
 }
 
 static const QColor &colAtDb(double db) {
-  return (db > MID_DB ? (db > HIGH_DB ? StyleEditor::palette.MeterBarHigh
-                                      : StyleEditor::palette.MeterBarMid)
-                      : StyleEditor::palette.MeterBar);
+  return (db > MID_DB ? (db > HIGH_DB ? StyleEditor::config.color.MeterBarHigh
+                                      : StyleEditor::config.color.MeterBarMid)
+                      : StyleEditor::config.color.MeterBar);
 }
 
 VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
@@ -44,7 +44,7 @@ VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
 
 void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
   QPainter p(this);
-  p.fillRect(e->rect(), StyleEditor::palette.MeterBackground);
+  p.fillRect(e->rect(), StyleEditor::config.color.MeterBackground);
   // int w_limit = dbToX(-3);
 
   const auto &levels = m_client->volumeLevels();
@@ -56,13 +56,15 @@ void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
     p.fillRect(QRect(0, y, width(), h), barGradient());
 
     p.fillRect(QRect(w, y, width() - w, h),
-               StyleEditor::palette.MeterBackground);
+               StyleEditor::config.color.MeterBackground);
 
     for (int db = MIN_DB; db < MAX_DB; db += 3)
       p.fillRect(dbToX(db), y, 1, h,
-                 StyleEditor::palette.MeterBackgroundSoft);
-    p.fillRect(dbToX(-3), y, 1, h, StyleEditor::palette.MeterBackgroundSoft);
-    p.fillRect(dbToX(-3), y, 1, h, StyleEditor::palette.MeterBackgroundSoft);
+                 StyleEditor::config.color.MeterBackgroundSoft);
+    p.fillRect(dbToX(-3), y, 1, h,
+               StyleEditor::config.color.MeterBackgroundSoft);
+    p.fillRect(dbToX(-3), y, 1, h,
+               StyleEditor::config.color.MeterBackgroundSoft);
 
     double peak = levels[i].last_peak_dbfs();
     p.fillRect(QRect(dbToX(peak) - 1, y, 2, h), colAtDb(peak));
@@ -99,8 +101,9 @@ constexpr int SMALL_TICK_HEIGHT = 2;
 
 void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   QPainter p(this);
-  p.setFont(QFont("Sans serif", 6));
-  p.setPen(StyleEditor::palette.MeterLabel);
+  p.setFont(QFont(StyleEditor::config.font.MeterFont, 6));
+  qDebug() << StyleEditor::config.font.MeterFont;
+  p.setPen(StyleEditor::config.color.MeterLabel);
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
              (Qt::AlignRight | Qt::AlignBottom), "dB");
@@ -112,7 +115,7 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   for (int db = MIN_DB; db < MAX_DB; db += 1) {
     int x = m_frame->dbToX(db);
     int h = (db % 6 == 0 ? TICK_HEIGHT : SMALL_TICK_HEIGHT);
-    p.fillRect(x, height() - h, 1, h, StyleEditor::palette.MeterTick);
+    p.fillRect(x, height() - h, 1, h, StyleEditor::config.color.MeterTick);
   }
   QWidget::paintEvent(e);
 }

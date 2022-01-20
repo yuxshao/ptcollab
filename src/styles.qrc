@@ -1,10 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>styles/ptcollab/palette.ini</file>
-        <file>styles/ptcollab/ptcollab.qss</file>
-        <file>styles/ptCollage/palette.ini</file>
-        <file>styles/ptCollage/ptCollage.qss</file>
-        <file>styles/README.md</file>
+        <file>styles/ptcollab-classic/config.ini</file>
+        <file>styles/ptcollab-classic/ptcollab-classic.qss</file>
         <file>styles/ptCollage/image/awesome.png</file>
         <file>styles/ptCollage/image/button-border-idle.png</file>
         <file>styles/ptCollage/image/button-border-pressed.png</file>
@@ -35,5 +32,10 @@
         <file>styles/ptCollage/image/slider-handle.png</file>
         <file>styles/ptCollage/image/tab-border-active.png</file>
         <file>styles/ptCollage/image/tab-border-inactive.png</file>
+        <file>styles/ptCollage/config.ini</file>
+        <file>styles/ptCollage/images.png</file>
+        <file>styles/ptCollage/ptCollage.qss</file>
+        <file>styles/palette.ini.md</file>
+        <file>styles/README.md</file>
     </qresource>
 </RCC>
