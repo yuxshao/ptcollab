@@ -63,7 +63,7 @@
          <property name="title">
           <string>Preview</string>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,1,100">
+         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,1,100">
           <item>
            <widget class="QLabel" name="label_7">
             <property name="text">
@@ -72,7 +72,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="previewKeyLine"/>
+           <widget class="QSpinBox" name="previewKeySpin"/>
           </item>
           <item>
            <widget class="QLabel" name="label_6">

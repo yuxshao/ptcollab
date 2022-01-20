@@ -210,7 +210,7 @@ void NewWoiceDialog::previewWoice(const QString &path) {
   if (m_preview_woice == nullptr) return;
 
   bool ok;
-  int key = ui->previewKeyLine->text().toInt(&ok) * PITCH_PER_KEY;
+  int key = ui->previewKeySpin->text().toInt(&ok) * PITCH_PER_KEY;
   if (!ok) key = EVENTDEFAULT_KEY;
 
   int vel =
@@ -230,9 +230,9 @@ NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
       m_last_search_dir_it(nullptr),
       ui(new Ui::NewWoiceDialog) {
   ui->setupUi(this);
-  ui->previewKeyLine->setText(
-      QString("%1").arg(EVENTDEFAULT_KEY / PITCH_PER_KEY));
-  ui->previewKeyLine->setValidator(new QIntValidator(0, 150, this));
+  ui->previewKeySpin->setValue(EVENTDEFAULT_KEY / PITCH_PER_KEY);
+  ui->previewKeySpin->setRange(0, 150);
+  ui->previewKeySpin->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
   // If we don't unset the directory, then it'll stay as the cwd. But we want to
   // use cwd if this is a first open, hence the if.
