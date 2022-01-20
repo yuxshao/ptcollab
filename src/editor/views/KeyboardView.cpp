@@ -189,7 +189,8 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
   painter.setPen(brush.toQColor(draw_vel, true, alpha));
-  painter.setFont(QFont("Sans serif", Settings::TextSize::get()));
+  painter.setFont(
+      QFont(StyleEditor::config.font.EditorFont, Settings::TextSize::get()));
   painter.drawText(
       clock / scale.clockPerPx,
       scale.pitchToY(pitch + PITCH_PER_OCTAVE / displayEdo * 2 / 5) -
@@ -301,7 +302,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
     } break;
     case MouseEditState::Type::Seek: {
-      QColor color = StyleEditor::palette.Playhead;
+      QColor color = StyleEditor::config.color.Playhead;
       color.setAlpha(color.alpha() * alphaMultiplier / 2);
       painter.fillRect(mouse_edit_state.current_clock / state.scale.clockPerPx,
                        0, 1, height, color);
@@ -434,8 +435,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
-  QBrush beatBrush(StyleEditor::palette.KeyboardBeat);
-  QBrush measureBrush(StyleEditor::palette.KeyboardMeasure);
+  QBrush beatBrush(StyleEditor::config.color.KeyboardBeat);
+  QBrush measureBrush(StyleEditor::config.color.KeyboardMeasure);
   for (int beat = 0; true; ++beat) {
     bool isMeasureLine = (beat % m_pxtn->master->get_beat_num() == 0);
     int x = m_pxtn->master->get_beat_clock() * beat /
@@ -445,13 +446,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush = StyleEditor::palette.KeyboardRootNote;
-  QColor whiteNoteBrush = StyleEditor::palette.KeyboardWhiteNote;
-  QColor blackNoteBrush = StyleEditor::palette.KeyboardBlackNote;
+  QColor rootNoteBrush = StyleEditor::config.color.KeyboardRootNote;
+  QColor whiteNoteBrush = StyleEditor::config.color.KeyboardWhiteNote;
+  QColor blackNoteBrush = StyleEditor::config.color.KeyboardBlackNote;
 
-  QColor whiteLeftBrush = StyleEditor::palette.KeyboardWhiteLeft;
-  QColor blackLeftBrush = StyleEditor::palette.KeyboardBlackLeft;
-  QColor black = StyleEditor::palette.KeyboardBlack;
+  QColor whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
+  QColor blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
+  QColor black = StyleEditor::config.color.KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
   gradient.setColorAt(0.5, rootNoteBrush);
@@ -716,7 +717,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
                                                         false, 128);
       else
-        color = StyleEditor::palette.Cursor;
+        color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
     }
   }
@@ -724,7 +725,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     QString my_username = "";
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
-    drawCursor(m_client->editState(), painter, StyleEditor::palette.Cursor,
+    drawCursor(m_client->editState(), painter, StyleEditor::config.color.Cursor,
                my_username, m_client->following_uid());
   }
 

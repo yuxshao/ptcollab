@@ -275,7 +275,7 @@ macx:ICON = icon.icns
 DISTFILES +=
 
 RESOURCES += icons.qrc \
-    styles.qrc
+	styles.qrc
 
 unix {
   desktopfile.files = $$PWD/../res/ptcollab.desktop

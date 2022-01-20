@@ -29,7 +29,7 @@ ptcollab styles are created using Qt Stylesheets. Any custom objects you would w
 
 This is the bare minimum you need for a functioning style:
 - `StyleName/StyleName.qss`
-- `StyleName/palette.ini`
+- `StyleName/config.ini`
 
 The name of the containing directory & the name of the stylesheet file (`.qss`) have to match.
 

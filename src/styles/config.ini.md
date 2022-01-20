@@ -1,5 +1,5 @@
-### palette.ini
-This is an example of a complete palette.ini file.
+### config.ini
+This is an example of a complete config.ini file.
 
 ```ini
 [palette]
@@ -58,6 +58,9 @@ WhiteLeft=#80837E78
 BlackLeft=#804E4B61
 Black=#000000
 
+[fonts]
+Editor="Sans serif"
+Meter="Sans serif"
 ```
 Notes:
 - The alpha channels for colors `FadedWhite` and `Font` in `[parameters]` are discarded.
