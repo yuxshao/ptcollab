@@ -58,20 +58,18 @@ void withSettingsColor(const QSettings &settings, const QString &key,
 
 void setConfigFont(const QSettings &settings, QString &dst,
                    const QString &key) {
-  if (!dst.isEmpty()) {
-    QString str = settings.value(key).toString();
-    QFontDatabase db;
-    QStringList dbg = db.families();
-    if (db.families().contains(str, Qt::CaseInsensitive) && !str.isEmpty())
-      dst = str;
-    else
-      dst = "Sans serif";
-    if (!settings.contains(key)) {
-      qWarning() << QString(
-                        "Invalid font (%1) for "
-                        "setting (%2) in config")
-                        .arg(str, key);
-    }
+  QString str = settings.value(key).toString();
+  QFontDatabase db;
+  QStringList dbg = db.families();
+  if (db.families().contains(str, Qt::CaseInsensitive) && !str.isEmpty())
+    dst = str;
+  else
+    dst = "Sans serif";
+  if (!settings.contains(key)) {
+    qWarning() << QString(
+                      "Invalid font (%1) for "
+                      "setting (%2) in config")
+                      .arg(str, key);
   }
 }
 
