@@ -41,6 +41,7 @@ qmake/config.tests/*/test
 
 # qtcreator generated files
 *.pro.user*
+/.qtc-clangd/
 
 # xemacs temporary files
 *.flc
