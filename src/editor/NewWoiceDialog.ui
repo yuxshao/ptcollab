@@ -72,7 +72,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="previewKeySpin">
+           <widget class="KeySpinBox" name="previewKeySpin">
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::NoButtons</enum>
             </property>
@@ -225,6 +225,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeySpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>editor/KeySpinBox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

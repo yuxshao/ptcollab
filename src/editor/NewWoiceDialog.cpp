@@ -208,10 +208,7 @@ void NewWoiceDialog::setPreviewWoice(const QString &path) {
 void NewWoiceDialog::previewWoice(const QString &path) {
   setPreviewWoice(path);
   if (m_preview_woice == nullptr) return;
-
-  bool ok;
-  int key = ui->previewKeySpin->text().toInt(&ok) * PITCH_PER_KEY;
-  if (!ok) key = EVENTDEFAULT_KEY;
+  int key = ui->previewKeySpin->value() * PITCH_PER_KEY;
 
   int vel =
       ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
