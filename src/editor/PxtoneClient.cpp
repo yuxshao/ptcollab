@@ -352,8 +352,9 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         QString name = shift_jis_codec->toUnicode(
                             pxtn()->Woice_Get(woice_id)->get_name_buf_jis(
                                 nullptr));
-                        sendAction(
-                            AddUnit{woice_id, name, QString("u-%1").arg(name)});
+                        sendAction(AddUnit{
+                            woice_id, Settings::NewUnitDefaultVolume::get(),
+                            name, QString("u-%1").arg(name)});
                       }
                     },
                     [this, uid](const RemoveWoice &s) {

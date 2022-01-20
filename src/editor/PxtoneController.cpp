@@ -213,6 +213,7 @@ bool auxSetUnitName(pxtnUnit *unit, QString name) {
 // to include the notes that were deleted with it.
 bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   (void)uid;
+  /// WTF WOICE ID??
   if (m_pxtn->Woice_Num() <= a.woice_id || a.woice_id < 0) {
     qWarning("Voice doesn't exist. (ID out of bounds)");
     return false;
@@ -234,6 +235,9 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   int unit_no = m_pxtn->Unit_Num() - 1;
   auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
   m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_id);
+  if (a.starting_volume != EVENTDEFAULT_VOLUME)
+    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOLUME,
+                                a.starting_volume);
   emit endAddUnit();
 
   emit edited();

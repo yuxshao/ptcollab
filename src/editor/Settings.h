@@ -176,6 +176,11 @@ bool get();
 void set(bool);
 }  // namespace PinnedUnitLabels
 
+namespace NewUnitDefaultVolume {
+int get();
+void set(int);
+}  // namespace NewUnitDefaultVolume
+
 namespace DisplayEdo {
 QList<int> get();
 void set(const QList<int> &);

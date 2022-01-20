@@ -253,6 +253,12 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace PinnedUnitLabels
 
+namespace NewUnitDefaultVolume {
+const char *KEY = "new_unit_default_volume";
+int get() { return QSettings().value(KEY, EVENTDEFAULT_VOLUME).toInt(); }
+void set(int value) { return QSettings().setValue(KEY, value); }
+}  // namespace NewUnitDefaultVolume
+
 namespace DisplayEdo {
 const char *KEY = "display_edo";
 QList<int> get() {
