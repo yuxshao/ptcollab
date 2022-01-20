@@ -316,7 +316,7 @@ void SideMenu::setCurrentUnit(int u) {
       index, QItemSelectionModel::Current | QItemSelectionModel::Rows);
 }
 
-void SideMenu::setHoverUnit(std::optional<int> unit_no) {
+void SideMenu::setFocusedUnit(std::optional<int> unit_no) {
   std::optional<int> old_unit_no = m_unit_list_delegate->hover_unit_no;
   m_unit_list_delegate->hover_unit_no = unit_no;
   if (old_unit_no != unit_no) {

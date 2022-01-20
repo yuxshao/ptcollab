@@ -28,6 +28,13 @@ QSize KeyboardView::sizeHint() const {
       m_client->editState().scale.pitchToY(EVENTMIN_KEY));
 }
 
+void KeyboardView::setHoveredUnitNo(std::optional<int> new_unit_no) {
+  if (m_hovered_unit_no != new_unit_no) {
+    m_hovered_unit_no = new_unit_no;
+    emit hoverUnitNoChanged(m_hovered_unit_no);
+  }
+}
+
 KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
                            QScrollArea *parent)
     : QWidget(parent),
@@ -41,6 +48,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_anim(new Animation(this)),
       m_client(client),
       m_moo_clock(moo_clock),
+      m_select_unit_enabled(false),
       m_test_activity(false) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -79,7 +87,12 @@ void KeyboardView::ensurePlayheadFollowed() {
 }
 
 void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
-  m_hovered_unit_no = unit_no;
+  m_focused_unit_no = unit_no;
+}
+
+void KeyboardView::setSelectUnitEnabled(bool b) {
+  m_select_unit_enabled = b && (m_client->editState().mouse_edit_state.type ==
+                                MouseEditState::Type::Nothing);
 }
 
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
@@ -396,6 +409,19 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
   }
 }
 
+double distance_to_mouse(const MouseEditState &mouse, const Interval &clock_int,
+                         int pitch, int displayEdo, const Scale &scale) {
+  double dx =
+      distance_to_range(mouse.current_clock, clock_int.start, clock_int.end) /
+      scale.clockPerPx;
+  int pitch_per_key = PITCH_PER_OCTAVE / displayEdo;
+  double dy =
+      distance_to_range(std::get<MouseKeyboardEdit>(mouse.kind).current_pitch,
+                        pitch - pitch_per_key / 2, pitch + pitch_per_key / 2) /
+      scale.pitchPerPx;
+  return dx * dx + dy * dy;
+}
+
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
@@ -529,22 +555,29 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   if (m_client->editState().mouse_edit_state.selection.has_value() &&
       m_client->clipboard()->kindIsCopied(EVENTKIND_VELOCITY))
     selection = m_client->editState().mouse_edit_state.selection.value();
-  for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
-       e = e->next) {
-    // if (e->clock > clockBounds.end) break;
-    int unit_no = e->unit_no;
+
+  // This lambda is hellish but there's so many parameters.
+  std::vector<std::function<void(const DrawState &state, int end)>>
+      drawStateSegments;
+
+  constexpr double DISTANCE_THRESHOLD_SQ = 12 * 12;
+  double min_segment_distance_to_mouse = DISTANCE_THRESHOLD_SQ;
+  int min_segment_unit_no = -1;
+
+  for (int unit_no = 0; unit_no < m_pxtn->Unit_Num(); ++unit_no) {
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
-    DrawState &state = drawStates[unit_no];
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
     bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-    bool hoveredUnit = unit_no == m_hovered_unit_no;
-    QPainter &thisPainter =
-        matchingUnit ? activePainter : (hoveredUnit ? hoverPainter : painter);
+    bool hoveredUnit =
+        unit_no == m_focused_unit_no || unit_no == m_hovered_unit_no;
+    QPainter *thisPainter = &(
+        matchingUnit ? activePainter : (hoveredUnit ? hoverPainter : painter));
     std::optional<Interval> thisSelection = std::nullopt;
     if (selection.has_value() &&
         selected_unit_nos.find(unit_no) != selected_unit_nos.end())
       thisSelection = selection;
     int alpha;
+    bool visible = m_pxtn->Unit_Get(unit_no)->get_visible();
     if (hoveredUnit) {
       if (matchingUnit)
         alpha = 255;
@@ -553,24 +586,50 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     } else {
       if (matchingUnit)
         alpha = 255;
-      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
+      else if (visible)
         alpha = 64;
       else
         alpha = 0;
-      if (m_hovered_unit_no.has_value()) alpha /= 2;
+      if (m_focused_unit_no.has_value() || m_hovered_unit_no.has_value())
+        alpha /= 2;
     }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
+    drawStateSegments.push_back([=, &min_segment_unit_no,
+                                 &min_segment_distance_to_mouse](
+                                    const DrawState &state, int end) {
+      Interval segment{state.pitch.clock, end};
+      const MouseEditState &mouse = m_client->editState().mouse_edit_state;
+      const Scale &scale = m_client->editState().scale;
+
+      // Determine distance to mouse
+      if (m_select_unit_enabled &&
+          std::holds_alternative<MouseKeyboardEdit>(mouse.kind) && visible) {
+        Interval on = state.ongoingOnEvent.value();
+        Interval interval = interval_intersect(on, segment);
+        double d = distance_to_mouse(mouse, interval, state.pitch.value,
+                                     displayEdo, scale);
+        if (d < min_segment_distance_to_mouse) {
+          min_segment_unit_no = unit_no;
+          min_segment_distance_to_mouse = d;
+        }
+      }
+      drawStateSegment(*thisPainter, state, segment, thisSelection, clockBounds,
+                       brush, alpha, scale, clock, mouse, matchingUnit, muted,
+                       width(), m_client->isPlaying(), -pos().x(), displayEdo);
+    });
+  };
+
+  for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
+       e = e->next) {
+    // if (e->clock > clockBounds.end) break;
+    int unit_no = e->unit_no;
+    DrawState &state = drawStates[unit_no];
     switch (e->kind) {
       case EVENTKIND_ON:
         // Draw the last block of the previous on event if there's one to
         // draw.
         if (state.ongoingOnEvent.has_value())
-          drawStateSegment(
-              thisPainter, state, {state.pitch.clock, e->clock}, thisSelection,
-              clockBounds, brush, alpha, m_client->editState().scale, clock,
-              m_client->editState().mouse_edit_state, matchingUnit, muted,
-              width(), m_client->isPlaying(), -pos().x(), displayEdo);
-
+          drawStateSegments[unit_no](state, e->clock);
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
       case EVENTKIND_VELOCITY:
@@ -579,11 +638,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       case EVENTKIND_KEY:
         // Maybe draw the previous segment of the current on event.
         if (state.ongoingOnEvent.has_value()) {
-          drawStateSegment(
-              thisPainter, state, {state.pitch.clock, e->clock}, thisSelection,
-              clockBounds, brush, alpha, m_client->editState().scale, clock,
-              m_client->editState().mouse_edit_state, matchingUnit, muted,
-              width(), m_client->isPlaying(), -pos().x(), displayEdo);
+          drawStateSegments[unit_no](state, e->clock);
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
@@ -597,30 +652,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   // After all the events there might be some blocks that are pending a draw.
   for (uint unit_no = 0; unit_no < drawStates.size(); ++unit_no) {
     if (drawStates[unit_no].ongoingOnEvent.has_value()) {
-      qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
       DrawState &state = drawStates[unit_no];
-      const Brush &brush = brushes[unit_id % NUM_BRUSHES];
-      bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-      QPainter &thisPainter = matchingUnit ? activePainter : painter;
-      int alpha;
-      if (matchingUnit)
-        alpha = 255;
-      else if (m_pxtn->Unit_Get(unit_no)->get_visible())
-        alpha = 64;
-      else
-        alpha = 0;
-      bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-      std::optional<Interval> thisSelection = std::nullopt;
-      if (selection.has_value() &&
-          selected_unit_nos.find(unit_no) != selected_unit_nos.end())
-        thisSelection = selection;
-      drawStateSegment(
-          thisPainter, state,
-          {state.pitch.clock, state.ongoingOnEvent.value().end}, thisSelection,
-          clockBounds, brush, alpha, m_client->editState().scale, clock,
-          m_client->editState().mouse_edit_state, matchingUnit, muted, width(),
-          m_client->isPlaying(), -pos().x(), displayEdo);
-
+      drawStateSegments[unit_no](state, state.ongoingOnEvent.value().end);
       state.ongoingOnEvent.reset();
     }
   }
@@ -629,6 +662,12 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
 
   painter.drawPixmap(event->rect(), octaveDisplayLayer,
                      octaveDisplayLayer.rect());
+
+  if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
+      min_segment_unit_no >= 0)
+    setHoveredUnitNo(min_segment_unit_no);
+  else
+    setHoveredUnitNo(std::nullopt);
 
   // Draw selections & ongoing edits / selections / seeks
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -657,9 +696,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, size().height(),
                         mySelectionAlphaMultiplier);
-  drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
-                    height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
-                    displayEdo);
+  if (!m_select_unit_enabled)
+    drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
+                      height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
+                      displayEdo);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   // Draw cursors
@@ -760,6 +800,17 @@ static void updateStatePositions(EditState &edit_state,
 }
 
 void KeyboardView::mousePressEvent(QMouseEvent *event) {
+  if (m_select_unit_enabled && event->button() & Qt::LeftButton &&
+      m_hovered_unit_no.has_value()) {
+    m_client->changeEditState(
+        [&](EditState &s) {
+          s.m_current_unit_id =
+              m_client->unitIdMap().noToId(m_hovered_unit_no.value());
+        },
+        false);
+    return;
+  }
+
   if (!(event->button() & (Qt::RightButton | Qt::LeftButton))) {
     event->ignore();
     return;
@@ -836,9 +887,10 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
         impliedVelocity(m_client->editState().mouse_edit_state,
                         m_client->editState().scale));
 
-  if (!m_client->isFollowing())
+  if (!m_client->isFollowing()) {
     m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
                               true);
+  }
   event->ignore();
 }
 

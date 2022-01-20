@@ -176,12 +176,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  MeasureView *measure_view =
+  m_measure_view =
       new MeasureView(m_client, m_moo_clock, m_measure_scroll_area);
-  m_measure_scroll_area->setWidget(measure_view);
+  m_measure_scroll_area->setWidget(m_measure_view);
   m_measure_scroll_area->setSizePolicy(
       QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-  connect(measure_view, &MeasureView::heightChanged, this, [this](int h) {
+  connect(m_measure_view, &MeasureView::heightChanged, this, [this](int h) {
     // This is a bit jank, but it seems like changing the inner content material
     // isn't enough for changing how high this widget is in the scrollarea.
     m_measure_scroll_area->setMinimumHeight(h);
@@ -189,14 +189,18 @@ EditorWindow::EditorWindow(QWidget *parent)
   });
   m_measure_scroll_area->setMaximumHeight(
       m_measure_scroll_area->widget()->sizeHint().height());
-  connect(m_side_menu, &SideMenu::hoveredUnitChanged, measure_view,
+  connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
-  connect(measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
-          &SideMenu::setHoverUnit);
-  connect(measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
+  connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
+          &SideMenu::setFocusedUnit);
+  connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
+  connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_measure_view,
+          &MeasureView::setFocusedUnit);
+  connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_side_menu,
+          &SideMenu::setFocusedUnit);
 
   measure_layout->addWidget(m_measure_scroll_area);
   measure_layout->addWidget(m_key_splitter);
@@ -319,6 +323,9 @@ void EditorWindow::keyReleaseEvent(QKeyEvent *event) {
   if (!event->isAutoRepeat()) {
     int key = event->key();
     switch (key) {
+      case Qt::Key::Key_R:
+        rKeyStateChanged(false);
+        break;
       case Qt::Key::Key_B:
 #ifdef DEBUG_RECORD_INPUT
         recordInput(Input::Event::Off{EVENTDEFAULT_KEY});
@@ -462,6 +469,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
         else
           m_keyboard_view->quantizeSelectionX();
       }
+      break;
+    case Qt::Key::Key_R:
+      rKeyStateChanged(true);
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
@@ -631,6 +641,11 @@ void EditorWindow::tweakSelectionRange(bool shift_right, bool grow) {
               std::max(selection.start, quantize(selection.end - q, q));
       },
       false);
+}
+
+void EditorWindow::rKeyStateChanged(bool state) {
+  m_measure_view->setSelectUnitEnabled(state);
+  m_keyboard_view->setSelectUnitEnabled(state);
 }
 
 void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
