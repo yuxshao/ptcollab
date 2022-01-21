@@ -553,11 +553,8 @@ Todo by priority
 Misc todo by categories
 -----------------------
 Aesthetics:
-  - customizable piano roll colours
   - qwerty midi input
-  - tab system to edit multiple files at once / switch between sessions
   - arcofdream's icon designs for the connect / disconnect menus
-  - write / read shiftJIS in unit, woice names.
  - some note taking functionality?
 
 Technical stuff:
@@ -577,34 +574,13 @@ Technical stuff:
      any expected situation where we don't expect roundtrip. prob. not if like
      drawpile)
    - also if a pxtone action returns false
- - put hello in the protocol.
- - put ping in protocol
- - placing notes is choppy in windows because of note preview lag. how to fix?
-   wasapi? miniaudio?
- - static build
- - scroll sometimes desyncs on ptcop load?
 
 Editor functionality:
- - echo & overdrive
  - moving voices up and down
- - edit voice, unit names
- - set voice - will need map from voice id to no
-   - can drag a time interval and set with that unit / clear unit
- - low-precision key correct param (24 -> 1 octave)
- - some kind of sine wave param or note setting?
 
 Editor QoL:
- - Time bar at the top
- - Don't scroll if last measure changes from some other user
- - v to solo visible. s to solo playing? - overrides checkboxes.
- - follow playhead (seems low pri since no one suggested)
  - ctrl+shift+click is a bit much to do a selection. but ctrl click is note
    tool. Maybe it shouldn't be a modifier but a mode? tools seem reasonable.
- - Better woice previews
-   - idea: the pitch could be determined by the last note pressed in a keyboard
-     (that has yet been added). this can avoid complicating the file dialog.
-   - Add a 'stop all note previews' button
-   - Perhaps you could show a mini keyboard for previews under the woice list.
  - see other user's playhead optionally
    - involves: messages for seeking, starting, stopping with clock at X
    - would be real nice to click on a user and jump to their view
@@ -633,15 +609,6 @@ Editor QoL:
    - Add things between last event and next (before / after now?)
    - Delete things. Don't strand the pointer
    - Adjust the length of ON
- - once you click with shift it should stay in seek mode until release.
- - ctrl+shift+alt+click to select snap to measure? sounds a bit crazy honestly.
- - maybe offer quant option for measure (instead of snap to measure select)
- - note preview vel should not be adjustable if you're editing note instead of on
- - allow zero selection interval, and restrict to selection interval if
-   nonzero? prob not bc ptcollage doesn't
- - copy / paste improvements
-   - maybe slight desync in case haven't seen others' edit? but sort of inevitable.
-   - also copy start vol / pan values / tails of an on event.
 
 Low priority:
  - Editor UI: Piano on the left
