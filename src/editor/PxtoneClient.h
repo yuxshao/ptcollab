@@ -70,6 +70,7 @@ class PxtoneClient : public QObject {
   void togglePlayState();
   void resetAndSuspendAudio();
   void setFollowing(std::optional<qint64> following);
+  void jumpToUser(qint64 user_id);
   bool isFollowing();
   std::set<int> selectedUnitNos();
   const pxtnService *pxtn() const { return m_controller->pxtn(); }

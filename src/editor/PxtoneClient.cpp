@@ -165,6 +165,13 @@ void PxtoneClient::resetAndSuspendAudio() {
     seekMoo(0);
 }
 
+void PxtoneClient::jumpToUser(qint64 user_id) {
+  const auto it = m_remote_edit_states.find(user_id);
+  if (it != m_remote_edit_states.end() && it->second.state.has_value())
+    emit followActivity(it->second.state.value());
+  setFollowing(std::nullopt);
+}
+
 void PxtoneClient::setFollowing(std::optional<qint64> following) {
   m_following_user = following;
 

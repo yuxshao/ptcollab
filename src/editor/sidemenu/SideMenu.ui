@@ -484,7 +484,7 @@
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="text">
-          <string>Watch</string>
+          <string>Follow user</string>
          </property>
         </widget>
        </item>

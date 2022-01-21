@@ -178,11 +178,17 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   connect(this, &SideMenu::volumeChanged, m_client, &PxtoneClient::setVolume);
   connect(this, &SideMenu::bufferLengthChanged, m_client,
           &PxtoneClient::setBufferSize);
-  connect(this, &SideMenu::userSelected, [this](int user_no) {
+  connect(this, &SideMenu::userFollowClicked, [this](int user_no) {
     if (m_client->remoteEditStates().size() <= uint(user_no)) return;
     auto it = m_client->remoteEditStates().begin();
     std::advance(it, user_no);
     m_client->setFollowing(it->first);
+  });
+  connect(this, &SideMenu::userSelected, [this](int user_no) {
+    if (m_client->remoteEditStates().size() <= uint(user_no)) return;
+    auto it = m_client->remoteEditStates().begin();
+    std::advance(it, user_no);
+    m_client->jumpToUser(it->first);
   });
   refreshCopyCheckbox();
 }

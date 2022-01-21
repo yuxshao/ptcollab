@@ -214,7 +214,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
           [this](const QModelIndex& index) { emit userSelected(index.row()); });
   connect(ui->watchBtn, &QPushButton::clicked, [this]() {
     if (ui->usersList->selectionModel()->hasSelection())
-      emit userSelected(ui->usersList->currentIndex().row());
+      emit userFollowClicked(ui->usersList->currentIndex().row());
   });
 }
 
