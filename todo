@@ -541,6 +541,8 @@ Todo by priority
    - update how to copy / paste
    - update legend on unit tab
 
+ - move voices
+ - drag voices / units
  - test to see if the midi noodling is causing the lag. delete voice previews if so
  - way to elongate notes (ctrl click in unit row)
 
