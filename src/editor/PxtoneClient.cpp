@@ -92,8 +92,9 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
   changeEditState(
-      [](EditState &e) {
-        e.m_current_unit_id = 0;
+      [this](EditState &e) {
+        e.m_current_unit_id =
+            (unitIdMap().numUnits() > 0 ? unitIdMap().noToId(0) : 0);
         e.m_pinned_unit_ids.clear();
       },
       false);
