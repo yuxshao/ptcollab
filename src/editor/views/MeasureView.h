@@ -46,7 +46,7 @@ class MeasureView : public QWidget {
 
  signals:
   void heightChanged(int h);
-  void hoverUnitNoChanged(std::optional<int>);
+  void hoverUnitNoChanged(std::optional<int>, bool);
 };
 
 #endif  // MEASUREVIEW_H

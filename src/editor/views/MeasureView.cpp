@@ -63,8 +63,12 @@ void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
 }
 
 void MeasureView::setSelectUnitEnabled(bool b) {
-  m_select_unit_enabled = b && (m_client->editState().mouse_edit_state.type ==
-                                MouseEditState::Type::Nothing);
+  b = b && (m_client->editState().mouse_edit_state.type ==
+            MouseEditState::Type::Nothing);
+  if (b != m_select_unit_enabled) {
+    m_select_unit_enabled = b;
+    emit hoverUnitNoChanged(m_hovered_unit_no, m_select_unit_enabled);
+  }
 }
 
 enum struct FlagType : qint8 { Top, Repeat, Last };
@@ -281,7 +285,7 @@ void MeasureView::handleNewEditState(const EditState &) {
 void MeasureView::setHoveredUnitNo(std::optional<int> new_unit_no) {
   if (m_hovered_unit_no != new_unit_no) {
     m_hovered_unit_no = new_unit_no;
-    emit hoverUnitNoChanged(m_hovered_unit_no);
+    emit hoverUnitNoChanged(m_hovered_unit_no, m_select_unit_enabled);
   }
 }
 

@@ -194,9 +194,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
-          &SideMenu::setFocusedUnit);
+          [this](std::optional<int> unit_no, bool) {
+            m_side_menu->setFocusedUnit(unit_no);
+          });
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
-          &KeyboardView::setFocusedUnit);
+          [this](std::optional<int> unit_no, bool selecting_unit) {
+            m_keyboard_view->setFocusedUnit(selecting_unit ? unit_no
+                                                           : std::nullopt);
+          });
   connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
   connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_side_menu,
