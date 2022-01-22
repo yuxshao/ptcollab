@@ -92,14 +92,14 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, m_new_woice_dialog,
                                    m_change_woice_dialog, this);
-  m_measure_splitter = new QFrame(m_splitter);
-  QVBoxLayout *measure_layout = new QVBoxLayout(m_measure_splitter);
-  m_measure_splitter->setLayout(measure_layout);
-  m_measure_splitter->setFrameStyle(QFrame::StyledPanel);
+  m_pianoroll_frame = new QFrame(m_splitter);
+  QVBoxLayout *measure_layout = new QVBoxLayout(m_pianoroll_frame);
+  m_pianoroll_frame->setLayout(measure_layout);
+  m_pianoroll_frame->setFrameStyle(QFrame::StyledPanel);
   measure_layout->setContentsMargins(0, 0, 0, 0);
   measure_layout->setSpacing(0);
   m_splitter->addWidget(m_side_menu);
-  m_splitter->addWidget(m_measure_splitter);
+  m_splitter->addWidget(m_pianoroll_frame);
   m_splitter->setSizes(Settings::SideMenuWidth::get());
   connect(m_splitter, &QSplitter::splitterMoved, [this](int, int) {
     Settings::SideMenuWidth::set(m_splitter->sizes());
