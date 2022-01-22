@@ -569,8 +569,11 @@ static void updateStatePositions(EditState &edit_state,
         int row = (y - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
         int offset_y = (y - UNIT_EDIT_Y) % UNIT_EDIT_INCREMENT;
         const auto &rows = unit_draw_params_map.rows;
-        state.kind = MouseMeasureEdit{
-            (int(rows.size()) > row ? rows[row] : MeasureUnitEdit{}), offset_y};
+        if (int(rows.size()) > row)
+          state.kind = MouseMeasureEdit{MeasureUnitEdit{rows[row]}, offset_y};
+        else
+          state.kind =
+              MouseMeasureEdit{MeasureUnitEdit{}, UNIT_EDIT_INCREMENT - 1};
       }
     } break;
 
