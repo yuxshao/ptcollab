@@ -361,13 +361,20 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         m_focused_unit_no.has_value() &&
         unit_draw_params_map.rows[i].pinned_unit_id ==
             m_client->unitIdMap().noToId(m_focused_unit_no.value());
-    bool is_selected =
+    bool is_hovered =
         m_jump_to_unit_enabled && m_hovered_unit_no.has_value() &&
         unit_draw_params_map.rows[i].pinned_unit_id ==
             m_client->unitIdMap().noToId(m_hovered_unit_no.value());
-    if (is_focused || is_selected)
-      painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
-                       QColor::fromRgb(255, 255, 255, 32));
+    auto unit_no = m_client->unitIdMap().idToNo(
+        unit_draw_params_map.rows[i].pinned_unit_id.value());
+    bool is_selected =
+        unit_no.has_value() &&
+        m_client->pxtn()->Unit_Get(unit_no.value())->get_operated();
+    for (bool b : {is_hovered, is_selected, is_focused}) {
+      if (b)
+        painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
+                         QColor::fromRgb(255, 255, 255, 32));
+    }
   }
 
   std::map<int, Interval> last_on_by_no;
@@ -613,21 +620,33 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               std::get<MouseMeasureEdit>(s.mouse_edit_state.kind);
           if (std::holds_alternative<MeasureUnitEdit>(kind)) {
             if (event->button() == Qt::LeftButton) {
-              type = MouseEditState::Type::SetOn;
-              qint32 clock = quantize(s.mouse_edit_state.current_clock,
-                                      m_client->quantizeClock());
-              std::optional<int> unit_no = m_client->unitIdMap().idToNo(
+              int unit_id =
                   std::get<MeasureUnitEdit>(kind).pinned_unit_id.value_or(
-                      s.m_current_unit_id));
-              if (unit_no.has_value()) {
-                m_audio_note_preview = std::make_unique<NotePreview>(
-                    m_client->pxtn(), &m_client->moo()->params, unit_no.value(),
-                    clock, std::list<EVERECORD>(),
-                    m_client->audioState()->bufferSize(),
-                    Settings::ChordPreview::get(), this);
-                s.mouse_edit_state.base_velocity =
-                    m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
-                                                       EVENTKIND_VELOCITY);
+                      s.m_current_unit_id);
+              std::optional<int> unit_no =
+                  m_client->unitIdMap().idToNo(unit_id);
+              if (event->modifiers() & Qt::ControlModifier) {
+                if (unit_no.has_value()) {
+                  int no = unit_no.value();
+                  bool operated =
+                      !m_client->pxtn()->Unit_Get(no)->get_operated();
+                  m_client->setUnitOperated(no, operated);
+                  m_selection_mode = operated;
+                }
+              } else {
+                type = MouseEditState::Type::SetOn;
+                qint32 clock = quantize(s.mouse_edit_state.current_clock,
+                                        m_client->quantizeClock());
+                if (unit_no.has_value()) {
+                  m_audio_note_preview = std::make_unique<NotePreview>(
+                      m_client->pxtn(), &m_client->moo()->params,
+                      unit_no.value(), clock, std::list<EVERECORD>(),
+                      m_client->audioState()->bufferSize(),
+                      Settings::ChordPreview::get(), this);
+                  s.mouse_edit_state.base_velocity =
+                      m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
+                                                         EVENTKIND_VELOCITY);
+                }
               }
             } else
               type = MouseEditState::Type::DeleteOn;
@@ -785,6 +804,20 @@ void MeasureView::mouseMoveEvent(QMouseEvent *event) {
       hovered_pinned_unit_no = m_client->unitIdMap().idToNo(unit_id.value());
   }
   setHoveredUnitNo(hovered_pinned_unit_no);
+  if (event->buttons() & Qt::LeftButton &&
+      event->modifiers() & Qt::ControlModifier) {
+    auto &s = m_client->editState();
+    if (std::holds_alternative<MouseMeasureEdit>(s.mouse_edit_state.kind)) {
+      auto &kind = std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).kind;
+      if (std::holds_alternative<MeasureUnitEdit>(kind)) {
+        int unit_id = std::get<MeasureUnitEdit>(kind).pinned_unit_id.value_or(
+            s.m_current_unit_id);
+        std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
+        if (unit_no.has_value())
+          m_client->setUnitOperated(unit_no.value(), m_selection_mode);
+      }
+    }
+  }
 
   if (!m_client->isFollowing())
     m_client->changeEditState(
