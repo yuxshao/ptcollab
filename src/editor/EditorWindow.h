@@ -82,6 +82,7 @@ class EditorWindow : public QMainWindow {
   SettingsDialog* m_settings_dialog;
   CopyOptionsDialog* m_copy_options_dialog;
   NewWoiceDialog *m_new_woice_dialog, *m_change_woice_dialog;
+  QFrame* m_left_piano_upper_corner;
 
   Ui::EditorWindow* ui;
   bool saveToFile(QString filename, bool warnOnError = true);

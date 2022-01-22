@@ -5,10 +5,12 @@
 #include <QDesktopWidget>
 #include <QDir>
 #include <QFileDialog>
+#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProgressDialog>
+#include <QPushButton>
 #include <QSaveFile>
 #include <QScrollBar>
 #include <QSettings>
@@ -20,6 +22,7 @@
 #include <QtMultimedia/QAudioOutput>
 
 #include "ComboOptions.h"
+#include "ControllableSplitter.h"
 #include "InputEvent.h"
 #include "Settings.h"
 #include "WelcomeDialog.h"
@@ -93,8 +96,19 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_side_menu = new PxtoneSideMenu(m_client, m_moo_clock, m_new_woice_dialog,
                                    m_change_woice_dialog, this);
   m_pianoroll_frame = new QFrame(m_splitter);
+  QHBoxLayout *pianoroll_layout = new QHBoxLayout(m_pianoroll_frame);
+  QWidget *left_piano_widget = new QWidget(m_pianoroll_frame);
+  left_piano_widget->setMaximumWidth(40);
+  left_piano_widget->setContentsMargins(0, 0, 0, 0);
+  QVBoxLayout *left_piano_layout = new QVBoxLayout(left_piano_widget);
+  left_piano_layout->setMargin(0);
+  left_piano_layout->setSpacing(0);
   QVBoxLayout *measure_layout = new QVBoxLayout(m_pianoroll_frame);
-  m_pianoroll_frame->setLayout(measure_layout);
+  pianoroll_layout->addWidget(left_piano_widget);
+  pianoroll_layout->addLayout(measure_layout);
+  pianoroll_layout->setSpacing(0);
+  pianoroll_layout->setMargin(0);
+  m_pianoroll_frame->setLayout(pianoroll_layout);
   m_pianoroll_frame->setFrameStyle(QFrame::StyledPanel);
   measure_layout->setContentsMargins(0, 0, 0, 0);
   measure_layout->setSpacing(0);
@@ -173,6 +187,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
 
+  m_left_piano_upper_corner = new QFrame(this);
+  left_piano_layout->addWidget(m_left_piano_upper_corner);
+  m_left_piano_upper_corner->setContentsMargins(0, 0, 0, 0);
+  m_left_piano_upper_corner->setFrameStyle(QFrame::StyledPanel);
+
+  ControllableSplitter *left_piano_splitter =
+      new ControllableSplitter(Qt::Vertical, this);
+  left_piano_splitter->setSizes(Settings::BottomBarHeight::get());
+  QScrollArea *left_piano = new QScrollArea(this);
+  left_piano_splitter->addWidget(left_piano);
+  QFrame *left_piano_lower_corner = new QFrame(this);
+  left_piano_lower_corner->setFrameStyle(QFrame::StyledPanel);
+  left_piano_splitter->addWidget(left_piano_lower_corner);
+  left_piano_layout->addWidget(left_piano_splitter);
+  connect(m_key_splitter, &QSplitter::splitterMoved, left_piano_splitter,
+          &ControllableSplitter::moveSplitter);
+
   m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -181,11 +212,13 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_measure_scroll_area->setWidget(m_measure_view);
   m_measure_scroll_area->setSizePolicy(
       QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-  connect(m_measure_view, &MeasureView::heightChanged, this, [this](int h) {
+  connect(m_measure_view, &MeasureView::heightChanged, this, [&, this](int h) {
     // This is a bit jank, but it seems like changing the inner content material
     // isn't enough for changing how high this widget is in the scrollarea.
     m_measure_scroll_area->setMinimumHeight(h);
     m_measure_scroll_area->setMaximumHeight(h);
+    m_left_piano_upper_corner->setMinimumHeight(h);
+    m_left_piano_upper_corner->setMaximumHeight(h);
   });
   m_measure_scroll_area->setMaximumHeight(
       m_measure_scroll_area->widget()->sizeHint().height());
@@ -206,7 +239,6 @@ EditorWindow::EditorWindow(QWidget *parent)
           &MeasureView::setFocusedUnit);
   connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_side_menu,
           &SideMenu::setFocusedUnit);
-
   measure_layout->addWidget(m_measure_scroll_area);
   measure_layout->addWidget(m_key_splitter);
   m_key_splitter->addWidget(m_scroll_area);
