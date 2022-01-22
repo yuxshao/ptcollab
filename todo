@@ -541,6 +541,7 @@ Todo by priority
    - update how to copy / paste
    - update legend on unit tab
 
+ - ctrl click in the unit area to select
  - move voices
  - drag voices / units
  - test to see if the midi noodling is causing the lag. delete voice previews if so

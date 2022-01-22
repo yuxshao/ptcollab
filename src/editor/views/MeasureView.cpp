@@ -185,14 +185,18 @@ void drawOngoingAction(const EditState &state,
                        double alphaMultiplier,
                        double selectionAlphaMultiplier) {
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
-
   auto drawVelAction = [&](const Interval &interval, qint32 velocity,
                            int alpha) {
+    int unit_id;
+    if (!std::holds_alternative<MouseMeasureEdit>(state.mouse_edit_state.kind))
+      unit_id = state.m_current_unit_id;
     const auto &m = std::get<MouseMeasureEdit>(state.mouse_edit_state.kind);
-    if (!std::holds_alternative<MeasureUnitEdit>(m.kind)) return;
+    if (!std::holds_alternative<MeasureUnitEdit>(m.kind))
+      unit_id = state.m_current_unit_id;
     const auto &measure_unit_edit = std::get<MeasureUnitEdit>(m.kind);
-    int unit_id =
+    unit_id =
         measure_unit_edit.pinned_unit_id.value_or(state.m_current_unit_id);
+
     auto no = unit_id_map.idToNo(unit_id);
     if (!no.has_value() ||
         unit_draw_params_map.no_to_params.count(no.value()) == 0)
