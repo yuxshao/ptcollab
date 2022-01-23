@@ -429,7 +429,8 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
   QPainter painter(this);
-  painter.translate(LEFT_LEGEND_WIDTH, 0);
+
+  painter.setTransform(worldTransform());
   Interval clockBounds = {
       qint32(event->rect().left() * m_client->editState().scale.clockPerPx) -
           WINDOW_BOUND_SLACK,
@@ -670,9 +671,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
   painter.drawPixmap(event->rect(), hoverLayer, hoverLayer.rect());
 
-  painter.drawPixmap(event->rect().translated(-LEFT_LEGEND_WIDTH, 0),
-                     leftPianoLayer, leftPianoLayer.rect());
-
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)
     setHoveredUnitNo(min_segment_unit_no);
@@ -712,6 +710,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                       displayEdo);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
+  drawLastSeek(painter, m_client, height(), false);
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+                            m_client->editState().scale.clockPerPx, false);
+  drawRepeatAndEndBars(painter, m_moo_clock,
+                       m_client->editState().scale.clockPerPx, height());
+
+  painter.drawPixmap(event->rect().translated(-LEFT_LEGEND_WIDTH, 0),
+                     leftPianoLayer, leftPianoLayer.rect());
+
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
@@ -737,12 +744,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     drawCursor(m_client->editState(), painter, StyleEditor::config.color.Cursor,
                my_username, m_client->following_uid());
   }
-
-  drawLastSeek(painter, m_client, height(), false);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
-                            m_client->editState().scale.clockPerPx, false);
-  drawRepeatAndEndBars(painter, m_moo_clock,
-                       m_client->editState().scale.clockPerPx, height());
 
   // Simulate activity on a client
   if (m_test_activity) {
@@ -789,9 +790,10 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
 static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
+  QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
-  qint32 current_pitch = edit_state.scale.pitchOfY(event->localPos().y());
+      std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
+  qint32 current_pitch = edit_state.scale.pitchOfY(mouse_pos.y());
   if (!std::holds_alternative<MouseKeyboardEdit>(state.kind))
     state.kind.emplace<MouseKeyboardEdit>(
         MouseKeyboardEdit{current_pitch, current_pitch});

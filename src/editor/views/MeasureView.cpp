@@ -289,11 +289,15 @@ void MeasureView::setHoveredUnitNo(std::optional<int> new_unit_no) {
   }
 }
 
-void MeasureView::paintEvent(QPaintEvent *e) {
+void MeasureView::paintEvent(QPaintEvent *raw_event) {
   const pxtnService *pxtn = m_client->pxtn();
 
   QPainter painter(this);
-  painter.fillRect(0, 0, width(), height(), Qt::black);
+  painter.setTransform(worldTransform());
+  QPaintEvent event(worldTransform().inverted().mapRect(raw_event->rect()));
+  QPaintEvent *e = &event;
+
+  painter.fillRect(e->rect(), Qt::black);
 
   // Draw white lines under background
   // TODO: Dedup with keyboardview
@@ -303,17 +307,21 @@ void MeasureView::paintEvent(QPaintEvent *e) {
   qreal activeWidth =
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
   int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
+  painter.fillRect(e->rect().left(), MEASURE_NUM_BLOCK_HEIGHT,
+                   e->rect().width(), RULER_HEIGHT,
+                   StyleEditor::config.color.MeasureExcluded);
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
                    StyleEditor::config.color.MeasureIncluded);
-  painter.fillRect(activeWidth, MEASURE_NUM_BLOCK_HEIGHT, width() - activeWidth,
-                   RULER_HEIGHT, StyleEditor::config.color.MeasureExcluded);
-  painter.fillRect(0,
+  painter.fillRect(e->rect().left(),
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
-                   width(), 1, StyleEditor::config.color.MeasureBeat);
-  for (int beat = 0; true; ++beat) {
+                   e->rect().width(), 1, StyleEditor::config.color.MeasureBeat);
+  int first_beat = e->rect().left() * m_client->editState().scale.clockPerPx /
+                       master->get_beat_clock() -
+                   1;
+  for (int beat = first_beat; true; ++beat) {
     int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
-    if (x > width()) break;
+    if (x > event.rect().right()) break;
     if (beat % master->get_beat_num() == 0) {
       int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
@@ -354,7 +362,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
 
   // Draw the unit edit rows
   for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
-    painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
+    painter.fillRect(e->rect().left(), unit_edit_y(i), e->rect().width(),
+                     UNIT_EDIT_HEIGHT,
                      StyleEditor::config.color.MeasureUnitEdit);
     if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
     bool is_focused =
@@ -372,8 +381,8 @@ void MeasureView::paintEvent(QPaintEvent *e) {
         m_client->pxtn()->Unit_Get(unit_no.value())->get_operated();
     for (bool b : {is_hovered, is_selected, is_focused}) {
       if (b)
-        painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_HEIGHT,
-                         QColor::fromRgb(255, 255, 255, 32));
+        painter.fillRect(e->rect().left(), unit_edit_y(i), e->rect().width(),
+                         UNIT_EDIT_HEIGHT, QColor::fromRgb(255, 255, 255, 32));
     }
   }
 
@@ -446,12 +455,12 @@ void MeasureView::paintEvent(QPaintEvent *e) {
       constexpr int x_padding = 5;
       for (int x = -2; x <= 2; ++x)
         for (int y = -1; y <= 1; ++y)
-          p.drawText(-pos().x() + x_padding + x, y_base + y, 10000000,
-                     UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
+          p.drawText(-pos().x() - LEFT_LEGEND_WIDTH + x_padding + x, y_base + y,
+                     10000000, UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
       p.setPen(Qt::white);
       QRect bbox;
-      p.drawText(-pos().x() + x_padding, y_base, 10000000, UNIT_EDIT_HEIGHT,
-                 Qt::AlignVCenter, unit_name, &bbox);
+      p.drawText(-pos().x() - LEFT_LEGEND_WIDTH + x_padding, y_base, 10000000,
+                 UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name, &bbox);
       if (bbox.width() > maxTextLabelWidth) maxTextLabelWidth = bbox.width();
     };
 
@@ -549,9 +558,10 @@ static void updateStatePositions(EditState &edit_state,
                                  const UnitDrawParamsMap &unit_draw_params_map,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
+  QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
 
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
+      std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
   switch (state.type) {
     case MouseEditState::Nothing:
     case MouseEditState::Seek:
@@ -796,10 +806,11 @@ void MeasureView::wheelEvent(QWheelEvent *event) {
 }
 
 void MeasureView::mouseMoveEvent(QMouseEvent *event) {
-  m_mouse_x = event->localPos().x() + pos().x();
+  QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
+  m_mouse_x = mouse_pos.x() + pos().x();
   UnitDrawParamsMap draw_params_map = make_draw_params_map(m_client);
 
-  int hovered_row = (event->localPos().y() - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
+  int hovered_row = (mouse_pos.y() - UNIT_EDIT_Y) / UNIT_EDIT_INCREMENT;
   std::optional<int> hovered_pinned_unit_no = std::nullopt;
   if (int(draw_params_map.rows.size()) > hovered_row && hovered_row >= 0) {
     auto unit_id = draw_params_map.rows[hovered_row].pinned_unit_id;
