@@ -24,9 +24,10 @@ LeftPianoView::LeftPianoView(PxtoneClient *client, MooClock *moo_clock,
 }
 
 void drawLeftPiano(QPainter &painter, int x, int y, int w, int h,
-                   const QColor &b) {
-  painter.fillRect(x, y, w - 1, h, b);
-  painter.fillRect(x + w - 1, y + 1, 1, h - 2, b);
+                   const QColor *b, const QColor *bInner) {
+  painter.fillRect(x, y, w - 1, h, *b);
+  painter.fillRect(x + w - 1, y + 1, 1, h - 2, *b);
+  if (bInner) painter.fillRect(x, y, w * 2 / 3, h, *bInner);
 }
 
 void LeftPianoView::paintEvent(QPaintEvent *event) {
@@ -38,6 +39,7 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
 
   QColor whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
   QColor blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
+  QColor blackInnerLeftBrush = StyleEditor::config.color.KeyboardBlackInnerLeft;
 
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
   const QList<int> &displayEdoList = Settings::DisplayEdo::get();
@@ -50,7 +52,7 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
   QPainter octaveDisplayPainter(&octaveDisplayLayer);
   octaveDisplayPainter.translate(-event->rect().topLeft());
   for (int row = 0; true; ++row) {
-    QColor *brush, *leftBrush;
+    QColor *brush, *leftBrush, *innerLeftBrush = nullptr;
     // Start the backgrounds on an A just so that the key pattern lines up
     int a_above_max_key =
         (EVENTMAX_KEY / PITCH_PER_OCTAVE + 1) * PITCH_PER_OCTAVE;
@@ -65,6 +67,7 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
       if (displayEdoList[nonnegative_modulo(-row, displayEdo)]) {
         brush = &blackNoteBrush;
         leftBrush = &blackLeftBrush;
+        innerLeftBrush = &blackInnerLeftBrush;
       } else {
         brush = &whiteNoteBrush;
         leftBrush = &whiteLeftBrush;
@@ -80,7 +83,8 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
     painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
-    drawLeftPiano(painter, 0, this_y - floor_h / 2, width(), h, *leftBrush);
+    drawLeftPiano(painter, 0, this_y - floor_h / 2, width(), h, leftBrush,
+                  innerLeftBrush);
     // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
     // 50));
 

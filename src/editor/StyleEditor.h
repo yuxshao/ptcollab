@@ -33,6 +33,7 @@ struct Config {
     QColor KeyboardBlackNote;
     QColor KeyboardWhiteLeft;
     QColor KeyboardBlackLeft;
+    QColor KeyboardBlackInnerLeft;
     QColor KeyboardBlack;
     QColor KeyboardMeasure;
 
