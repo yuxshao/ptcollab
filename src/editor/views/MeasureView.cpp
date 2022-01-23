@@ -810,7 +810,8 @@ void MeasureView::mouseMoveEvent(QMouseEvent *event) {
   if (event->buttons() & Qt::LeftButton &&
       event->modifiers() & Qt::ControlModifier) {
     auto &s = m_client->editState();
-    if (std::holds_alternative<MouseMeasureEdit>(s.mouse_edit_state.kind)) {
+    if (std::holds_alternative<MouseMeasureEdit>(s.mouse_edit_state.kind) &&
+        s.mouse_edit_state.type == MouseEditState::Type::Nothing) {
       auto &kind = std::get<MouseMeasureEdit>(s.mouse_edit_state.kind).kind;
       if (std::holds_alternative<MeasureUnitEdit>(kind)) {
         int unit_id = std::get<MeasureUnitEdit>(kind).pinned_unit_id.value_or(
