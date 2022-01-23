@@ -50,4 +50,20 @@ class MeasureView : public QWidget {
   void hoverUnitNoChanged(std::optional<int>, bool);
 };
 
+class LeftMeasureView : public QWidget {
+  Q_OBJECT
+
+  PxtoneClient *m_client;
+  Animation *m_anim;
+  QFont m_label_font;
+  std::optional<int> m_focused_unit_no;
+  std::optional<int> m_hovered_unit_no;
+
+  void paintEvent(QPaintEvent *event) override;
+  QSize sizeHint() const override;
+  void handleNewEditState(const EditState &e);
+
+ public:
+  explicit LeftMeasureView(PxtoneClient *client, QWidget *parent = nullptr);
+};
 #endif  // MEASUREVIEW_H

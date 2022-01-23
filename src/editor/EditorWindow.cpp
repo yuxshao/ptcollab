@@ -99,7 +99,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_pianoroll_frame = new QFrame(m_splitter);
   QHBoxLayout *pianoroll_layout = new QHBoxLayout(m_pianoroll_frame);
   QWidget *left_piano_widget = new QWidget(m_pianoroll_frame);
-  left_piano_widget->setMaximumWidth(60);
+  left_piano_widget->setMaximumWidth(90);
   left_piano_widget->setContentsMargins(0, 0, 0, 0);
   QVBoxLayout *left_piano_layout = new QVBoxLayout(left_piano_widget);
   left_piano_layout->setMargin(0);
@@ -188,10 +188,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_param_scroll_area->setWidget(
       new ParamView(m_client, m_moo_clock, m_param_scroll_area));
 
-  m_left_piano_upper_corner = new QFrame(this);
+  m_left_piano_upper_corner = new LeftMeasureView(m_client, this);
   left_piano_layout->addWidget(m_left_piano_upper_corner);
-  m_left_piano_upper_corner->setContentsMargins(0, 0, 0, 0);
-  m_left_piano_upper_corner->setFrameStyle(QFrame::StyledPanel);
 
   m_left_piano_splitter = new ControllableSplitter(Qt::Vertical, this);
   EditorScrollArea *left_piano_scroll_area =

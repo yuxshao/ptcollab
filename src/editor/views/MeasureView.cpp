@@ -832,3 +832,75 @@ void MeasureView::mouseMoveEvent(QMouseEvent *event) {
         qint32(round(m_client->editState().mouse_edit_state.base_velocity)));
   event->ignore();
 }
+
+LeftMeasureView::LeftMeasureView(PxtoneClient *client, QWidget *parent)
+    : QWidget(parent), m_client(client), m_anim(new Animation(this)) {
+  setFocusPolicy(Qt::NoFocus);
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+  updateGeometry();
+  connect(m_anim, &Animation::nextFrame, [this]() { update(); });
+  connect(m_client->controller(), &PxtoneController::measureNumChanged, this,
+          &QWidget::updateGeometry);
+
+  connect(m_client, &PxtoneClient::editStateChanged, this,
+          &LeftMeasureView::handleNewEditState);
+
+  // Pick biggest font that'll fit vs. font size in the picker, just since
+  // this font makes sense to constrain to a size
+  m_label_font = QFont(StyleEditor::config.font.EditorFont, 4);
+  for (int i = 5; i <= 18; ++i) {
+    QFont f = QFont(StyleEditor::config.font.EditorFont, i);
+    if (QFontMetrics(f).height() <= UNIT_EDIT_HEIGHT) m_label_font = f;
+  }
+}
+
+QSize LeftMeasureView::sizeHint() const {
+  return QSize(10,
+               unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
+}
+
+void LeftMeasureView::handleNewEditState(const EditState &) {
+  if (size() != sizeHint()) updateGeometry();
+}
+
+void LeftMeasureView::paintEvent(QPaintEvent *) {
+  QPainter painter(this);
+  painter.fillRect(0, 0, width(), height(), QColor("#4E4B61"));
+  painter.setFont(m_label_font);
+
+  UnitDrawParamsMap unit_draw_params_map(make_draw_params_map(m_client));
+
+  // Draw the unit edit rows
+  //  QColor barMain("#9D9784");
+  //  QColor barTop("#D2CA9C");
+  //  QColor barBottom("#69656D");
+  QColor barMain("#69656D");
+  QColor barTop("#837E78");
+  QColor barBottom("#4E4B61");
+  for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
+    // TODO: Don't hardcode
+    painter.fillRect(0, unit_edit_y(i), width(), UNIT_EDIT_INCREMENT, barMain);
+    painter.fillRect(0, unit_edit_y(i), width(), 1, barTop);
+    painter.fillRect(0, unit_edit_y(i) + UNIT_EDIT_HEIGHT, width(), 1,
+                     barBottom);
+
+    // Draw the text
+    constexpr int x_padding = 5;
+    if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
+    int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
+    std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
+    if (!unit_no.has_value()) continue;
+    QString unit_name = shift_jis_codec->toUnicode(
+        m_client->pxtn()->Unit_Get(unit_no.value())->get_name_buf_jis(nullptr));
+    QColor bg = Qt::black;
+    bg.setAlphaF(0.2);
+    painter.setPen(bg);
+    for (int x = -1; x <= 1; ++x)
+      for (int y = -1; y <= 1; ++y)
+        painter.drawText(x_padding + x, unit_edit_y(i) + y, 10000000,
+                         UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
+    painter.setPen(Qt::white);
+    painter.drawText(x_padding, unit_edit_y(i), 10000000, UNIT_EDIT_HEIGHT,
+                     Qt::AlignVCenter, unit_name);
+  }
+}

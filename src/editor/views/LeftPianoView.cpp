@@ -20,6 +20,7 @@ LeftPianoView::LeftPianoView(PxtoneClient *client, MooClock *moo_clock,
               m_last_scale = s.scale;
             }
           });
+  setFocusPolicy(Qt::NoFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
