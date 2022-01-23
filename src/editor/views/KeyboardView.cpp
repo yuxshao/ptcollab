@@ -241,15 +241,6 @@ std::list<SetNoteInterval> vibratoIntervals(const Interval &interval,
   return intervals;
 }
 
-int quantize_pitch(long p, long d) {
-  // basically snap p to the nearest PITCH_PER_OCTAVE / d. need to handle neg.
-  bool neg = p < 0;
-  int q =
-      ((2 * (neg ? -p : p) * d + PITCH_PER_OCTAVE) / (2 * PITCH_PER_OCTAVE)) *
-      PITCH_PER_OCTAVE / d;
-  return (neg ? -q : q);
-}
-
 void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        QPainter &painter, int width, int height,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
@@ -335,11 +326,6 @@ static void drawCursor(const EditState &state, QPainter &painter,
   QPoint position(state.mouse_edit_state.current_clock / state.scale.clockPerPx,
                   state.scale.pitchToY(keyboard_edit_state.current_pitch));
   drawCursor(position, painter, color, username, uid);
-}
-
-void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
-  painter.fillRect(x, y, LEFT_LEGEND_WIDTH, h, b);
-  painter.fillRect(x + LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
 }
 
 double smoothDistance(double dy, double dx) {

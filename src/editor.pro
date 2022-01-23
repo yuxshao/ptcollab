@@ -127,6 +127,7 @@ HEADERS += \
            editor/Interval.h \
            editor/views/KeyboardView.h \
            editor/audio/NotePreview.h \
+           editor/views/LeftPianoView.h \
            editor/views/MeasureView.h \
            editor/views/MooClock.h \
            editor/views/ParamView.h \
@@ -218,6 +219,7 @@ SOURCES += main.cpp \
            editor/Interval.cpp \
            editor/views/KeyboardView.cpp \
            editor/audio/NotePreview.cpp \
+           editor/views/LeftPianoView.cpp \
            editor/views/MeasureView.cpp \
            editor/views/MooClock.cpp \
            editor/views/ParamView.cpp \

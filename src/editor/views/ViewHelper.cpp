@@ -199,6 +199,21 @@ static int num_digits(int num) {
   return i;
 }
 
+int quantize_pitch(long p, long d) {
+  // basically snap p to the nearest PITCH_PER_OCTAVE / d. need to handle neg.
+  bool neg = p < 0;
+  int q =
+      ((2 * (neg ? -p : p) * d + PITCH_PER_OCTAVE) / (2 * PITCH_PER_OCTAVE)) *
+      PITCH_PER_OCTAVE / d;
+  return (neg ? -q : q);
+}
+
+const int LEFT_LEGEND_WIDTH = 28;
+void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
+  painter.fillRect(x, y, LEFT_LEGEND_WIDTH, h, b);
+  painter.fillRect(x + LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
+}
+
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
   QPixmap &images = *StyleEditor::measureImages();
@@ -219,4 +234,3 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
 }
 
 const int WINDOW_BOUND_SLACK = 32;
-const int LEFT_LEGEND_WIDTH = 28;

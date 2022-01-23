@@ -28,6 +28,7 @@
 #include "WelcomeDialog.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
+#include "views/LeftPianoView.h"
 #include "views/MeasureView.h"
 #include "views/MooClock.h"
 #include "views/ParamView.h"
@@ -98,7 +99,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_pianoroll_frame = new QFrame(m_splitter);
   QHBoxLayout *pianoroll_layout = new QHBoxLayout(m_pianoroll_frame);
   QWidget *left_piano_widget = new QWidget(m_pianoroll_frame);
-  left_piano_widget->setMaximumWidth(40);
+  left_piano_widget->setMaximumWidth(60);
   left_piano_widget->setContentsMargins(0, 0, 0, 0);
   QVBoxLayout *left_piano_layout = new QVBoxLayout(left_piano_widget);
   left_piano_layout->setMargin(0);
@@ -194,12 +195,18 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   ControllableSplitter *left_piano_splitter =
       new ControllableSplitter(Qt::Vertical, this);
-  left_piano_splitter->setSizes(Settings::BottomBarHeight::get());
-  QScrollArea *left_piano = new QScrollArea(this);
-  left_piano_splitter->addWidget(left_piano);
+  EditorScrollArea *left_piano_scroll_area =
+      new EditorScrollArea(left_piano_splitter, false);
+  left_piano_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  left_piano_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  left_piano_splitter->addWidget(left_piano_scroll_area);
+  LeftPianoView *left_piano =
+      new LeftPianoView(m_client, m_moo_clock, left_piano_scroll_area);
+  left_piano_scroll_area->setWidget(left_piano);
   QFrame *left_piano_lower_corner = new QFrame(this);
   left_piano_lower_corner->setFrameStyle(QFrame::StyledPanel);
   left_piano_splitter->addWidget(left_piano_lower_corner);
+  left_piano_splitter->setSizes(Settings::BottomBarHeight::get());
   left_piano_layout->addWidget(left_piano_splitter);
   connect(m_key_splitter, &QSplitter::splitterMoved, left_piano_splitter,
           &ControllableSplitter::moveSplitter);
@@ -243,6 +250,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   measure_layout->addWidget(m_key_splitter);
   m_key_splitter->addWidget(m_scroll_area);
   m_key_splitter->addWidget(m_param_scroll_area);
+  m_scroll_area->controlScroll(left_piano_scroll_area, Qt::Vertical);
+  left_piano_scroll_area->controlScroll(m_scroll_area, Qt::Vertical);
   m_param_scroll_area->controlScroll(m_scroll_area, Qt::Horizontal);
   m_scroll_area->controlScroll(m_measure_scroll_area, Qt::Horizontal);
   m_measure_scroll_area->controlScroll(m_param_scroll_area, Qt::Horizontal);

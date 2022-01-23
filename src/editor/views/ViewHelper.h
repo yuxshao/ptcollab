@@ -36,6 +36,8 @@ T distance_to_range(T x, T lo, T hi) {
   return 0;
 }
 
+extern int quantize_pitch(long p, long d);
+
 extern int lerp(double r, int a, int b);
 
 constexpr int EVENTMAX_VELOCITY = 128;
@@ -81,6 +83,8 @@ extern const int WINDOW_BOUND_SLACK;
 extern void fillUnitBullet(QPainter &painter, int thisX, int y, int w,
                            const QColor &color);
 extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w);
+extern void drawLeftPiano(QPainter &painter, int x, int y, int h,
+                          const QColor &b);
 
 extern void drawNumAlignTopRight(QPainter *painter, int x, int y, int num);
 extern void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y,
