@@ -438,6 +438,9 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   for (auto it = last_on_by_no.begin(); it != last_on_by_no.end(); ++it)
     drawLastOn(it->first, false);
 
+  drawLastSeek(painter, m_client, height(), true);
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+                            m_client->editState().scale.clockPerPx, true);
   // Draw text labels
   if (Settings::PinnedUnitLabels::get()) {
     QPixmap textLabelLayer(e->rect().size());
@@ -489,9 +492,6 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
     painter.setOpacity(1);
   }
 
-  drawLastSeek(painter, m_client, height(), true);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
-                            m_client->editState().scale.clockPerPx, true);
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
     if (remote_state.state.has_value()) {
