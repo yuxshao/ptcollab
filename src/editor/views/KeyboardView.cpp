@@ -337,25 +337,24 @@ static void drawCursor(const EditState &state, QPainter &painter,
   drawCursor(position, painter, color, username, uid);
 }
 
-void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b,
+void drawLeftPiano(QPainter &painter, int y, int h, const QColor &b,
                    QColor *bInner) {
-  painter.fillRect(x, y, LEFT_LEGEND_WIDTH, h, b);
-  painter.fillRect(x + LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
-  if (bInner) painter.fillRect(x, y, LEFT_LEGEND_WIDTH * 2 / 3, h, *bInner);
+  painter.fillRect(0, y, LEFT_LEGEND_WIDTH, h, b);
+  painter.fillRect(LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
+  if (bInner) painter.fillRect(0, y, LEFT_LEGEND_WIDTH * 2 / 3, h, *bInner);
 }
 
 double smoothDistance(double dy, double dx) {
   double r = dy * dy + dx * dx;
   return std::max(0.0, 1 / (r + 1));
 }
-void drawStateSegment(QPainter &painter, const DrawState &state,
-                      const Interval &segment,
+void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
+                      const DrawState &state, const Interval &segment,
                       const std::optional<Interval> &selection,
                       const Interval &bounds, const Brush &brush, qint32 alpha,
                       const Scale &scale, qint32 current_clock,
                       const MouseEditState &mouse, bool drawTooltip, bool muted,
-                      int width, bool playing, int viewportLeft,
-                      int displayEdo) {
+                      int width, bool playing, int displayEdo) {
   Interval on = state.ongoingOnEvent.value();
   Interval interval = interval_intersect(on, segment);
   playing = playing && on.contains(current_clock);
@@ -365,9 +364,9 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
         128, false, 16 * state.velocity.value / 128 * (alpha / 2 + 128) / 256);
     paintBlock(state.pitch.value, Interval{0, int(scale.clockPerPx * width)},
                painter, c, scale, displayEdo);
-    c.setAlpha((32 + c.alpha() * 2 / 3) *
+    c.setAlpha((64 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPiano(painter, viewportLeft,
+    drawLeftPiano(leftPianoPainter,
                   scale.pitchToY(state.pitch.value) -
                       int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
                   PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c, nullptr);
@@ -429,6 +428,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   // if (painted > 10) return;
   QPainter painter(this);
+  painter.fillRect(event->rect(), Qt::black);
 
   painter.setTransform(worldTransform());
   Interval clockBounds = {
@@ -437,7 +437,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
       qint32(event->rect().right() * m_client->editState().scale.clockPerPx) +
           WINDOW_BOUND_SLACK};
 
-  painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
   // Draw white lines under background
   QBrush beatBrush(StyleEditor::config.color.KeyboardBeat);
   QBrush measureBrush(StyleEditor::config.color.KeyboardMeasure);
@@ -507,10 +506,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     if (this_y > size().height()) break;
     // Because of rounding error, calculate height by subbing next from this
     int h = next_y - this_y - 1;
-    if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
-    drawLeftPiano(leftPianoPainter, 0, this_y - floor_h / 2, h, *leftBrush,
+    drawLeftPiano(leftPianoPainter, this_y - floor_h / 2, h, *leftBrush,
                   leftInnerBrush);
     // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
     // 50));
@@ -605,29 +603,31 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         alpha /= 2;
     }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-    drawStateSegments.push_back([=, &min_segment_unit_no,
-                                 &min_segment_distance_to_mouse](
-                                    const DrawState &state, int end) {
-      Interval segment{state.pitch.clock, end};
-      const MouseEditState &mouse = m_client->editState().mouse_edit_state;
-      const Scale &scale = m_client->editState().scale;
+    drawStateSegments.push_back(
+        [=, &min_segment_unit_no, &min_segment_distance_to_mouse,
+         &leftPianoPainter](const DrawState &state, int end) {
+          Interval segment{state.pitch.clock, end};
+          const MouseEditState &mouse = m_client->editState().mouse_edit_state;
+          const Scale &scale = m_client->editState().scale;
 
-      // Determine distance to mouse
-      if (m_select_unit_enabled &&
-          std::holds_alternative<MouseKeyboardEdit>(mouse.kind) && visible) {
-        Interval on = state.ongoingOnEvent.value();
-        Interval interval = interval_intersect(on, segment);
-        double d = distance_to_mouse(mouse, interval, state.pitch.value,
-                                     displayEdo, scale);
-        if (d < min_segment_distance_to_mouse) {
-          min_segment_unit_no = unit_no;
-          min_segment_distance_to_mouse = d;
-        }
-      }
-      drawStateSegment(*thisPainter, state, segment, thisSelection, clockBounds,
-                       brush, alpha, scale, clock, mouse, matchingUnit, muted,
-                       width(), m_client->isPlaying(), -pos().x(), displayEdo);
-    });
+          // Determine distance to mouse
+          if (m_select_unit_enabled &&
+              std::holds_alternative<MouseKeyboardEdit>(mouse.kind) &&
+              visible) {
+            Interval on = state.ongoingOnEvent.value();
+            Interval interval = interval_intersect(on, segment);
+            double d = distance_to_mouse(mouse, interval, state.pitch.value,
+                                         displayEdo, scale);
+            if (d < min_segment_distance_to_mouse) {
+              min_segment_unit_no = unit_no;
+              min_segment_distance_to_mouse = d;
+            }
+          }
+          drawStateSegment(*thisPainter, leftPianoPainter, state, segment,
+                           thisSelection, clockBounds, brush, alpha, scale,
+                           clock, mouse, matchingUnit, muted, width(),
+                           m_client->isPlaying(), displayEdo);
+        });
   };
 
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
@@ -716,8 +716,10 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
+  painter.setOpacity(m_dark ? 0.7 : 1);
   painter.drawPixmap(event->rect().translated(-LEFT_LEGEND_WIDTH, 0),
                      leftPianoLayer, leftPianoLayer.rect());
+  painter.setOpacity(1);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
