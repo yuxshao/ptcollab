@@ -6,7 +6,12 @@ MooClock::MooClock(PxtoneClient *client)
       m_prev_clock(0),
       m_prev_moo_clock(0),
       m_this_seek(0),
+      m_clock(0),
+      m_animation(new Animation(this)),
       m_this_seek_caught_up(false) {
+  // Ticking is controlled by 1 animation, vs. recomputing [now] every time it's
+  // called, because different views call [now] possibly at different times.
+  connect(m_animation, &Animation::valueChanged, this, &MooClock::tick);
   connect(m_client->controller(), &PxtoneController::seeked, [this](int clock) {
     m_this_seek = clock;
     m_this_seek_caught_up = false;
@@ -14,7 +19,7 @@ MooClock::MooClock(PxtoneClient *client)
   });
 }
 
-int MooClock::nowNoWrap() {
+void MooClock::tick() {
   int clock = m_client->pxtn()->moo_get_now_clock(*m_client->moo());
 
   // Some really hacky magic to get the playhead smoother given that
@@ -64,11 +69,11 @@ int MooClock::nowNoWrap() {
   if (clock >= m_this_seek) m_this_seek_caught_up = true;
   if (!m_this_seek_caught_up) clock = m_this_seek;
 
-  return clock;
+  m_clock = clock;
 }
 
-int MooClock::now() {
-  return MasterExtended::wrapClock(m_client->pxtn()->master, nowNoWrap());
+int MooClock::now() const {
+  return MasterExtended::wrapClock(m_client->pxtn()->master, m_clock);
 
   // 2021-01-18: I'm not actually sure when this case will happen. So I've
   // commented it out.
@@ -78,6 +83,8 @@ int MooClock::now() {
   // if (m_client->moo()->num_loop > 0 && clock < repeat_clock())
   //  clock += last_clock() - repeat_clock();
 }
+
+int MooClock::nowNoWrap() const { return m_clock; }
 
 int MooClock::last_clock() const {
   return MasterExtended::last_clock(m_client->pxtn()->master);
