@@ -306,7 +306,6 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   int activeMeas = std::max(master->get_last_meas(), master->get_meas_num());
   qreal activeWidth =
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
-  int lastMeasureDraw = -MEASURE_NUM_BLOCK_WIDTH - 1;
   painter.fillRect(e->rect().left(), MEASURE_NUM_BLOCK_HEIGHT,
                    e->rect().width(), RULER_HEIGHT,
                    StyleEditor::config.color.MeasureExcluded);
@@ -318,6 +317,7 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   int first_beat = e->rect().left() * m_client->editState().scale.clockPerPx /
                        master->get_beat_clock() -
                    1;
+  std::optional<int> lastMeasureDraw;
   for (int beat = first_beat; true; ++beat) {
     int x = beat * master->get_beat_clock() /
             m_client->editState().scale.clockPerPx;
@@ -326,14 +326,16 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
       int measure = beat / master->get_beat_num();
       painter.fillRect(x, MEASURE_NUM_BLOCK_HEIGHT, 1, size().height(),
                        StyleEditor::config.color.MeasureSeparator);
-      if (x - lastMeasureDraw < MEASURE_NUM_BLOCK_WIDTH) continue;
+      if (lastMeasureDraw.has_value() &&
+          x - lastMeasureDraw.value() < MEASURE_NUM_BLOCK_WIDTH)
+        continue;
       lastMeasureDraw = x;
       painter.fillRect(x, 0, 1, MEASURE_NUM_BLOCK_HEIGHT,
                        StyleEditor::config.color.MeasureSeparator);
       painter.fillRect(x + 1, 0, MEASURE_NUM_BLOCK_WIDTH,
                        MEASURE_NUM_BLOCK_HEIGHT,
                        StyleEditor::config.color.MeasureNumberBlock);
-      if (measure < activeMeas)
+      if (measure < activeMeas && measure >= 0)
         drawNumAlignTopRight(&painter, x + MEASURE_NUM_BLOCK_WIDTH, 1,
                              beat / master->get_beat_num());
     } else

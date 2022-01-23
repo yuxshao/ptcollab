@@ -315,7 +315,11 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   QBrush beatBrush = StyleEditor::config.color.ParamBeat;
   QBrush measureBrush = StyleEditor::config.color.ParamMeasure;
   const pxtnMaster *master = pxtn->master;
-  for (int beat = -4; true; ++beat) {  // TODO
+  int first_beat = (event->rect().left() - 10) *
+                       m_client->editState().scale.clockPerPx /
+                       master->get_beat_clock() -
+                   1;
+  for (int beat = first_beat; true; ++beat) {
     bool isMeasureLine = (beat % master->get_beat_num() == 0);
     int x = master->get_beat_clock() * beat /
             m_client->editState().scale.clockPerPx;
@@ -348,8 +352,10 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     colors.reserve(m_client->pxtn()->Unit_Num());
     painters.reserve(m_client->pxtn()->Unit_Num());
     lastEvents.reserve(m_client->pxtn()->Unit_Num());
+    int first_clock = first_beat * master->get_beat_clock();
     for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-      lastEvents.emplace_back(Event{-1000, DefaultKindValue(current_kind)});
+      lastEvents.emplace_back(
+          Event{first_clock, DefaultKindValue(current_kind)});
       int unit_id = m_client->unitIdMap().noToId(i);
       colors.push_back(
           brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(108, false,
