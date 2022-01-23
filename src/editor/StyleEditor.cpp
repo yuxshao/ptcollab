@@ -114,6 +114,8 @@ void loadConfig(const QString &path, Config &c) {
   setConfigColor(styleConfig, c.color.KeyboardBlackNote, "keyboard/BlackNote");
   setConfigColor(styleConfig, c.color.KeyboardWhiteLeft, "keyboard/WhiteLeft");
   setConfigColor(styleConfig, c.color.KeyboardBlackLeft, "keyboard/BlackLeft");
+  setConfigColor(styleConfig, c.color.KeyboardBlackLeftInner,
+                 "keyboard/BlackLeftInner");
   setConfigColor(styleConfig, c.color.KeyboardBlack, "keyboard/Black");
   setConfigColor(styleConfig, c.color.KeyboardMeasure, "keyboard/Measure");
 
