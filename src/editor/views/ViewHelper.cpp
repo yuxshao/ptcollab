@@ -209,11 +209,6 @@ int quantize_pitch(long p, long d) {
 }
 
 const int LEFT_LEGEND_WIDTH = 28;
-void drawLeftPiano(QPainter &painter, int x, int y, int h, const QColor &b) {
-  painter.fillRect(x, y, LEFT_LEGEND_WIDTH, h, b);
-  painter.fillRect(x + LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
-}
-
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
   QPixmap &images = *StyleEditor::measureImages();

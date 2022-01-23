@@ -120,7 +120,7 @@ EditorWindow::EditorWindow(QWidget *parent)
     Settings::SideMenuWidth::set(m_splitter->sizes());
   });
 
-  m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
+  m_key_splitter = new ControllableSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
   m_keyboard_view = new KeyboardView(m_client, m_moo_clock, m_scroll_area);
   m_scroll_area->setWidget(m_keyboard_view);
@@ -193,23 +193,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_left_piano_upper_corner->setContentsMargins(0, 0, 0, 0);
   m_left_piano_upper_corner->setFrameStyle(QFrame::StyledPanel);
 
-  ControllableSplitter *left_piano_splitter =
-      new ControllableSplitter(Qt::Vertical, this);
+  m_left_piano_splitter = new ControllableSplitter(Qt::Vertical, this);
   EditorScrollArea *left_piano_scroll_area =
-      new EditorScrollArea(left_piano_splitter, false);
+      new EditorScrollArea(m_left_piano_splitter, false);
   left_piano_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   left_piano_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  left_piano_splitter->addWidget(left_piano_scroll_area);
+  m_left_piano_splitter->addWidget(left_piano_scroll_area);
   LeftPianoView *left_piano =
       new LeftPianoView(m_client, m_moo_clock, left_piano_scroll_area);
   left_piano_scroll_area->setWidget(left_piano);
   QFrame *left_piano_lower_corner = new QFrame(this);
   left_piano_lower_corner->setFrameStyle(QFrame::StyledPanel);
-  left_piano_splitter->addWidget(left_piano_lower_corner);
-  left_piano_splitter->setSizes(Settings::BottomBarHeight::get());
-  left_piano_layout->addWidget(left_piano_splitter);
-  connect(m_key_splitter, &QSplitter::splitterMoved, left_piano_splitter,
+  m_left_piano_splitter->addWidget(left_piano_lower_corner);
+  m_left_piano_splitter->setSizes(Settings::BottomBarHeight::get());
+  left_piano_layout->addWidget(m_left_piano_splitter);
+  connect(m_key_splitter, &QSplitter::splitterMoved, m_left_piano_splitter,
           &ControllableSplitter::moveSplitter);
+  m_left_piano_splitter->setEnabled(false);
 
   m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);

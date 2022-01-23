@@ -9,6 +9,7 @@
 
 #include "ConnectDialog.h"
 #include "ConnectionStatusLabel.h"
+#include "ControllableSplitter.h"
 #include "CopyOptionsDialog.h"
 #include "EditState.h"
 #include "EditorScrollArea.h"
@@ -60,7 +61,7 @@ class EditorWindow : public QMainWindow {
   pxtnService m_pxtn;
   EditorScrollArea *m_scroll_area, *m_param_scroll_area, *m_measure_scroll_area;
   QSplitter* m_splitter;
-  QSplitter* m_key_splitter;
+  ControllableSplitter *m_key_splitter, *m_left_piano_splitter;
   QFrame* m_pianoroll_frame;
   PxtoneSideMenu* m_side_menu;
   BroadcastServer* m_server;

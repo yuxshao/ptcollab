@@ -351,10 +351,6 @@ void drawStateSegment(QPainter &painter, const DrawState &state,
                painter, c, scale, displayEdo);
     c.setAlpha((32 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPiano(painter, viewportLeft,
-                  scale.pitchToY(state.pitch.value) -
-                      int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
-                  PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c);
   }
   if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
@@ -436,8 +432,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QColor whiteNoteBrush = StyleEditor::config.color.KeyboardWhiteNote;
   QColor blackNoteBrush = StyleEditor::config.color.KeyboardBlackNote;
 
-  QColor whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
-  QColor blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
   QColor black = StyleEditor::config.color.KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
@@ -448,14 +442,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   const QList<int> &displayEdoList = Settings::DisplayEdo::get();
   int displayEdo = displayEdoList.size();
   const Scale &scale = m_client->editState().scale;
-  bool octave_display_a = Settings::OctaveDisplayA::get();
 
-  QPixmap octaveDisplayLayer(event->rect().size());
-  octaveDisplayLayer.fill(Qt::transparent);
-  QPainter octaveDisplayPainter(&octaveDisplayLayer);
-  octaveDisplayPainter.translate(-event->rect().topLeft());
   for (int row = 0; true; ++row) {
-    QColor *brush, *leftBrush;
+    QColor *brush;
     // Start the backgrounds on an A just so that the key pattern lines up
     int a_above_max_key =
         (EVENTMAX_KEY / PITCH_PER_OCTAVE + 1) * PITCH_PER_OCTAVE;
@@ -465,14 +454,11 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         quantize_pitch(pitch - PITCH_PER_OCTAVE / displayEdo, displayEdo);
     if (pitch == EVENTDEFAULT_KEY) {
       brush = &rootNoteBrush;
-      leftBrush = &whiteLeftBrush;
     } else {
       if (displayEdoList[nonnegative_modulo(-row, displayEdo)]) {
         brush = &blackNoteBrush;
-        leftBrush = &blackLeftBrush;
       } else {
         brush = &whiteNoteBrush;
-        leftBrush = &whiteLeftBrush;
       }
     }
     if (m_dark) brush = &black;
@@ -486,19 +472,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
     if (m_dark && row % 2 == 1) h += 1;
     painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
-
-    drawLeftPiano(painter, -pos().x(), this_y - floor_h / 2, h, *leftBrush);
-    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
-    // 50));
-
-    int pitch_offset = 0;
-    if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
-    if (nonnegative_modulo(pitch - EVENTDEFAULT_KEY, PITCH_PER_OCTAVE) ==
-        pitch_offset)
-      drawOctaveNumAlignBottomLeft(
-          &octaveDisplayPainter, -pos().x() + 4, this_y - floor_h / 2 + h - 2,
-          (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
-          octave_display_a);
   }
 
   {
@@ -646,9 +619,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
   painter.drawPixmap(event->rect(), hoverLayer, hoverLayer.rect());
-
-  painter.drawPixmap(event->rect(), octaveDisplayLayer,
-                     octaveDisplayLayer.rect());
 
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)

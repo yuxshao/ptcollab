@@ -23,6 +23,12 @@ LeftPianoView::LeftPianoView(PxtoneClient *client, MooClock *moo_clock,
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
+void drawLeftPiano(QPainter &painter, int x, int y, int w, int h,
+                   const QColor &b) {
+  painter.fillRect(x, y, w - 1, h, b);
+  painter.fillRect(x + w - 1, y + 1, 1, h - 2, b);
+}
+
 void LeftPianoView::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
@@ -33,10 +39,6 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
   QColor whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
   QColor blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
 
-  QLinearGradient gradient(0, 0, 1, 0);
-  gradient.setColorAt(0.5, rootNoteBrush);
-  gradient.setColorAt(1, Qt::transparent);
-  gradient.setCoordinateMode(QGradient::ObjectMode);
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
   const QList<int> &displayEdoList = Settings::DisplayEdo::get();
   int displayEdo = displayEdoList.size();
@@ -78,7 +80,7 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
     int h = next_y - this_y - 1;
     painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
 
-    drawLeftPiano(painter, -pos().x(), this_y - floor_h / 2, h, *leftBrush);
+    drawLeftPiano(painter, 0, this_y - floor_h / 2, width(), h, *leftBrush);
     // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
     // 50));
 
@@ -87,7 +89,7 @@ void LeftPianoView::paintEvent(QPaintEvent *event) {
     if (nonnegative_modulo(pitch - EVENTDEFAULT_KEY, PITCH_PER_OCTAVE) ==
         pitch_offset)
       drawOctaveNumAlignBottomLeft(
-          &octaveDisplayPainter, -pos().x() + 4, this_y - floor_h / 2 + h - 2,
+          &octaveDisplayPainter, 4, this_y - floor_h / 2 + h - 2,
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
           octave_display_a);
   }
