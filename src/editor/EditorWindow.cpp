@@ -193,6 +193,11 @@ EditorWindow::EditorWindow(QWidget *parent)
           &MeasureView::setFocusedUnit);
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
           &KeyboardView::setFocusedUnit);
+  // Below is just so that if you change units with W/S while hovered, the
+  // highlighted unit isn't hijacked by your current mouse position.
+  connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_view,
+          [this](int) { m_keyboard_view->setFocusedUnit(std::nullopt); });
+
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
           [this](std::optional<int> unit_no, bool) {
             m_side_menu->setFocusedUnit(unit_no);
