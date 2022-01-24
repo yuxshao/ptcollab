@@ -62,8 +62,8 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 }
 
 QSize ParamView::sizeHint() const {
-  return QSize(one_over_last_clock(m_client->pxtn()) /
-                   m_client->editState().scale.clockPerPx,
+  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                                       m_client->editState().scale.clockPerPx,
                0x20);
 }
 
