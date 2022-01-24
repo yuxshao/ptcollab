@@ -45,7 +45,7 @@ MouseEditState::MouseEditState()
       last_pitch(EVENTDEFAULT_KEY),
       start_clock(0),
       current_clock(0),
-      kind(MouseKeyboardEdit({0, 0})),
+      kind(MouseKeyboardEdit({MouseMainKeyboard{0}, 0})),
       selection(std::nullopt) {}
 
 QDataStream &operator<<(QDataStream &out, const MouseEditState &a) {
