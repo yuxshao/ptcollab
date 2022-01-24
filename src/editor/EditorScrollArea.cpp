@@ -27,7 +27,8 @@ EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
       mouseDown(false),
       m_match_scale(match_scale),
       lastPos(),
-      anim(new Animation(this)) {
+      anim(new Animation(this)),
+      m_scroll_with_mouse_x(true) {
   setWidgetResizable(true);
   setMouseTracking(true);
   setFrameStyle(QFrame::NoFrame);
@@ -40,7 +41,7 @@ EditorScrollArea::EditorScrollArea(QWidget *parent, bool match_scale)
     // scrolling.
     if (!(QApplication::mouseButtons() & (Qt::LeftButton | Qt::RightButton)))
       mouseDown = false;
-    if (mouseDown) scrollWithMouseX();
+    if (mouseDown && m_scroll_with_mouse_x) scrollWithMouseX();
   });
 }
 
@@ -193,6 +194,10 @@ void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
     horizontalScrollBar()->setValue(qMin(qint32(logicalX - jumpMinDistFromLeft),
                                          horizontalScrollBar()->maximum()));
   }
+}
+
+void EditorScrollArea::setEnableScrollWithMouseX(bool b) {
+  m_scroll_with_mouse_x = b;
 }
 
 constexpr int JUMP_MAX = 10;

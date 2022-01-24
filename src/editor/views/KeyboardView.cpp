@@ -482,6 +482,14 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   leftPianoPainter.translate(-pos().x(), 0);
   leftPianoPainter.fillRect(0, 0, LEFT_LEGEND_WIDTH, height(),
                             blackLeftInnerBrush);
+
+  std::optional<std::pair<int, int>> left_piano_pitch_and_vel;
+  if (auto *keyboard_edit_state = std::get_if<MouseKeyboardEdit>(
+          &m_client->editState().mouse_edit_state.kind))
+    if (auto *s = std::get_if<MouseLeftKeyboard>(&keyboard_edit_state->kind)) {
+      left_piano_pitch_and_vel = {keyboard_edit_state->current_pitch,
+                                  s->start_vel};
+    }
   for (int row = 0; true; ++row) {
     QColor *brush, *leftBrush, *leftInnerBrush = nullptr;
     // Start the backgrounds on an A just so that the key pattern lines up
@@ -528,6 +536,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           &leftPianoPainter, 4, this_y - floor_h / 2 + h - 2,
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
           octave_display_a);
+    if (left_piano_pitch_and_vel.has_value() && m_audio_note_preview &&
+        quantize_pitch(left_piano_pitch_and_vel.value().first,
+                       m_edit_state.m_quantize_pitch) == pitch) {
+      int vel = left_piano_pitch_and_vel.value().second;
+      drawLeftPiano(
+          leftPianoPainter, this_y - floor_h / 2, h,
+          QColor::fromRgb(255, 255, 255, 32 + 64 * vel / EVENTMAX_VELOCITY),
+          nullptr);
+    }
   }
 
   {
@@ -796,8 +813,8 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
   }
 }
 
-static void updateStatePositions(EditState &edit_state,
-                                 const QMouseEvent *event, int leftPos) {
+void KeyboardView::updateStatePositions(EditState &edit_state,
+                                        const QMouseEvent *event, int leftPos) {
   MouseEditState &state = edit_state.mouse_edit_state;
   QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
   state.current_clock =
@@ -825,6 +842,8 @@ static void updateStatePositions(EditState &edit_state,
   }
   auto &keyboard_edit_state = std::get<MouseKeyboardEdit>(state.kind);
   keyboard_edit_state.current_pitch = current_pitch;
+  emit setScrollOnClick(
+      std::holds_alternative<MouseMainKeyboard>(keyboard_edit_state.kind));
 }
 
 void KeyboardView::mousePressEvent(QMouseEvent *event) {

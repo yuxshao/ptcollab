@@ -111,6 +111,8 @@ EditorWindow::EditorWindow(QWidget *parent)
   m_scroll_area->setWidget(m_keyboard_view);
 
   // TODO: find a better place for this.
+  connect(m_keyboard_view, &KeyboardView::setScrollOnClick, m_scroll_area,
+          &EditorScrollArea::setEnableScrollWithMouseX);
   connect(m_keyboard_view, &KeyboardView::ensureVisibleX,
           [this](int x, bool strict) {
             if (!strict)
