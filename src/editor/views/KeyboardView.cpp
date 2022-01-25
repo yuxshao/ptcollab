@@ -735,8 +735,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   drawLastSeek(painter, m_client, height(), false);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
-                            m_client->editState().scale.clockPerPx, false);
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
@@ -744,6 +742,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.drawPixmap(event->rect().translated(-LEFT_LEGEND_WIDTH, 0),
                      leftPianoLayer, leftPianoLayer.rect());
   painter.setOpacity(1);
+
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+                            m_client->editState().scale.clockPerPx, false);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
