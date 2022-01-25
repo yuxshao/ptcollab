@@ -70,7 +70,7 @@ class EditorWindow : public QMainWindow {
   std::optional<QString> m_filename;
   ConnectionStatusLabel* m_connection_status;
   QLabel *m_fps_status, *m_ping_status;
-  bool m_modified, m_modified_autosave, m_recording;
+  bool m_modified, m_modified_autosave;
   int m_autosave_counter;
   QTimer* m_autosave_timer;
   QString m_autosave_filename;

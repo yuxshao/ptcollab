@@ -44,8 +44,8 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
   QColor color = (moo_clock->this_seek_caught_up() && moo_clock->now() > 0
-                      ? StyleEditor::getPlayheadColor()
-                      : makeTranslucent(StyleEditor::getPlayheadColor(), 2));
+                      ? StyleEditor::getActivePlayheadColor()
+                      : makeTranslucent(StyleEditor::getActivePlayheadColor(), 2));
   const int x = moo_clock->now() / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
