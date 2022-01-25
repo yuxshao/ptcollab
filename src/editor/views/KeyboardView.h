@@ -36,6 +36,7 @@ class KeyboardView : public QWidget {
   void ensurePlayheadFollowed();
   void setFocusedUnit(std::optional<int> unit_no);
   void setSelectUnitEnabled(bool);
+  std::map<int, int> &currentMidiNotes();
 
  signals:
   void ensureVisibleX(int x, bool strict);
@@ -80,6 +81,7 @@ class KeyboardView : public QWidget {
   MooClock *m_moo_clock;
   std::optional<int> m_focused_unit_no;
   std::optional<int> m_hovered_unit_no;
+  std::map<int, int> m_midi_notes;
   // m_select_unit_enabled should prob be folded into edit state. Right now it's
   // just a sore thumb of local state
   bool m_select_unit_enabled;
