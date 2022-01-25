@@ -27,7 +27,6 @@
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 #include "views/MeasureView.h"
-#include "views/ViewHelper.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
