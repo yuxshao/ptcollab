@@ -187,6 +187,10 @@ void set(const QList<int> &);
 void clear();
 }  // namespace DisplayEdo
 
+namespace EditorRecording {
+bool get();
+void set(bool);
+}  // namespace EditorRecording
 }  // namespace Settings
 
 #endif  // SETTINGS_H

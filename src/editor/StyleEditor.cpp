@@ -141,6 +141,8 @@ void loadConfig(const QString &path, Config &c) {
   setConfigColor(styleConfig, c.color.ParamMeasure, "parameters/Measure");
 
   setConfigColor(styleConfig, c.color.Playhead, "views/Playhead");
+  setConfigColor(styleConfig, c.color.PlayheadRecording,
+                 "views/PlayheadRecording");
   setConfigColor(styleConfig, c.color.Cursor, "views/Cursor");
 
   setConfigFont(styleConfig, c.font.EditorFont, "fonts/Editor");
@@ -288,6 +290,11 @@ bool tryLoadStyle(const QString &styleName) {
   QString basedir = it->second;
   return tryLoadStyle(basedir, styleName);
 }
+
+QColor getPlayheadColor() {
+  return Settings::EditorRecording::get() ? config.color.PlayheadRecording
+                                          : config.color.Playhead;
+};
 
 QStringList getStyles() {
   QStringList styles;

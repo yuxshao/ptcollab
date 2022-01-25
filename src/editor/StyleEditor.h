@@ -7,6 +7,8 @@
 #include <QPixmap>
 #include <QStringList>
 
+#include "Settings.h"
+
 namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
@@ -54,6 +56,7 @@ struct Config {
     QColor ParamMeasure;
 
     QColor Playhead;
+    QColor PlayheadRecording;
     QColor Cursor;
   } color;
 
@@ -64,7 +67,9 @@ struct Config {
 
   static Config empty() { return {}; }
 };
+
 extern const Config &config;
+QColor getPlayheadColor();
 QStringList getStyles();
 }  // namespace StyleEditor
 

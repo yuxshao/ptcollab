@@ -27,6 +27,7 @@
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 #include "views/MeasureView.h"
+#include "views/ViewHelper.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -69,7 +70,7 @@ class EditorWindow : public QMainWindow {
   std::optional<QString> m_filename;
   ConnectionStatusLabel* m_connection_status;
   QLabel *m_fps_status, *m_ping_status;
-  bool m_modified, m_modified_autosave;
+  bool m_modified, m_modified_autosave, m_recording;
   int m_autosave_counter;
   QTimer* m_autosave_timer;
   QString m_autosave_filename;
