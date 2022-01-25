@@ -187,10 +187,16 @@ void set(const QList<int> &);
 void clear();
 }  // namespace DisplayEdo
 
+namespace MeasureViewClickToJumpUnit {
+bool get();
+void set(bool);
+}  // namespace MeasureViewClickToJumpUnit
+  
 namespace EditorRecording {
 bool get();
 void set(bool);
 }  // namespace EditorRecording
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

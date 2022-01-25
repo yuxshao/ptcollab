@@ -253,6 +253,12 @@ bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace PinnedUnitLabels
 
+namespace MeasureViewClickToJumpUnit {
+const char *KEY = "measure_view_click_to_jump_unit";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace MeasureViewClickToJumpUnit
+
 namespace NewUnitDefaultVolume {
 const char *KEY = "new_unit_default_volume";
 int get() { return QSettings().value(KEY, EVENTDEFAULT_VOLUME).toInt(); }

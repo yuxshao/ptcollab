@@ -533,6 +533,11 @@ unit view:
 1/19
 1. don't startup qapplication if headless
 
+1/25
+1. left piano
+2. left piano midi highlight
+3. option to make pinned unit click also switch to the unit
+
 Todo by priority
 ----------------
  - update gh-pages

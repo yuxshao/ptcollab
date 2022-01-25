@@ -67,6 +67,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="selectPinnedUnitOnClickCheck">
+         <property name="text">
+          <string>Click on pinned unit to select unit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="unitPreviewClickCheck">
          <property name="text">
           <string>Click on unit to preview voice</string>

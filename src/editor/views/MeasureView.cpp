@@ -373,7 +373,9 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
         unit_draw_params_map.rows[i].pinned_unit_id ==
             m_client->unitIdMap().noToId(m_focused_unit_no.value());
     bool is_hovered =
-        m_jump_to_unit_enabled && m_hovered_unit_no.has_value() &&
+        (m_jump_to_unit_enabled ||
+         Settings::MeasureViewClickToJumpUnit::get()) &&
+        m_hovered_unit_no.has_value() &&
         unit_draw_params_map.rows[i].pinned_unit_id ==
             m_client->unitIdMap().noToId(m_hovered_unit_no.value());
     auto unit_no = m_client->unitIdMap().idToNo(
@@ -665,6 +667,10 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
               }
             } else
               type = MouseEditState::Type::DeleteOn;
+            if (Settings::MeasureViewClickToJumpUnit::get() &&
+                m_hovered_unit_no.has_value())
+              s.m_current_unit_id =
+                  m_client->unitIdMap().noToId(m_hovered_unit_no.value());
           }
         }
       },

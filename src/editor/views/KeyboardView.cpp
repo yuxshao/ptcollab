@@ -96,6 +96,8 @@ void KeyboardView::setSelectUnitEnabled(bool b) {
                                 MouseEditState::Type::Nothing);
 }
 
+std::map<int, int> &KeyboardView::currentMidiNotes() { return m_midi_notes; }
+
 void KeyboardView::toggleTestActivity() { m_test_activity = !m_test_activity; }
 
 struct LastEvent {
@@ -356,6 +358,14 @@ double smoothDistance(double dy, double dx) {
   double r = dy * dy + dx * dx;
   return std::max(0.0, 1 / (r + 1));
 }
+void drawLeftPianoNoteHighlight(QPainter &leftPianoPainter, int pitch,
+                                const Scale &scale, int displayEdo,
+                                const QColor &c) {
+  drawLeftPiano(leftPianoPainter,
+                scale.pitchToY(pitch) -
+                    int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
+                PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c, nullptr);
+}
 void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
                       const DrawState &state, const Interval &segment,
                       const std::optional<Interval> &selection,
@@ -374,10 +384,8 @@ void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
                painter, c, scale, displayEdo);
     c.setAlpha((64 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPiano(leftPianoPainter,
-                  scale.pitchToY(state.pitch.value) -
-                      int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
-                  PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c, nullptr);
+    drawLeftPianoNoteHighlight(leftPianoPainter, state.pitch.value, scale,
+                               displayEdo, c);
   }
   if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
@@ -695,6 +703,15 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   }
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
   painter.drawPixmap(event->rect(), hoverLayer, hoverLayer.rect());
+
+  // Draw left piano highlights from MIDI pitches
+  for (auto &[pitch, vel] : m_midi_notes) {
+    const Brush &brush =
+        brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
+    drawLeftPianoNoteHighlight(leftPianoPainter, pitch,
+                               m_client->editState().scale, displayEdo,
+                               brush.toQColor(vel, true, 200));
+  }
 
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)

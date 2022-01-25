@@ -43,6 +43,8 @@ void SettingsDialog::apply() {
   Settings::PinnedUnitLabels::set(ui->pinnedUnitLabelCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
   Settings::NewUnitDefaultVolume::set(ui->defaultVolumeSpin->value());
+  Settings::MeasureViewClickToJumpUnit::set(
+      ui->selectPinnedUnitOnClickCheck->isChecked());
   if (ui->alternateTuningCheck->isChecked()) {
     QList<int> rowDisplayPattern;
     for (char c : ui->rowDisplayEdit->text().toStdString()) {
@@ -88,6 +90,8 @@ void SettingsDialog::showEvent(QShowEvent *) {
       ui->alternateTuningCheck->isChecked());
   ui->octaveMarkerACheck->setChecked(Settings::OctaveDisplayA::get());
   ui->pinnedUnitLabelCheck->setChecked(Settings::PinnedUnitLabels::get());
+  ui->selectPinnedUnitOnClickCheck->setChecked(
+      Settings::MeasureViewClickToJumpUnit::get());
   ui->defaultVolumeSpin->setValue(Settings::NewUnitDefaultVolume::get());
 
   QString rowDisplay = "";
