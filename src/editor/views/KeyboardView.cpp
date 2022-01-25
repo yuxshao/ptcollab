@@ -49,6 +49,7 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_moo_clock(moo_clock),
       m_select_unit_enabled(false),
+      m_last_left_kb_pitch(0),
       m_test_activity(false) {
   setFocusPolicy(Qt::StrongFocus);
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -933,6 +934,10 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 }
 
 void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
+  if (!m_client->isFollowing()) {
+    m_client->changeEditState(
+        [&](auto &s) { updateStatePositions(s, event, -pos().x()); }, true);
+  }
   if (m_audio_note_preview != nullptr) {
     bool is_left_kb = false;
     const auto *keyboard_edit_state = std::get_if<MouseKeyboardEdit>(
@@ -942,20 +947,20 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
       is_left_kb =
           std::holds_alternative<MouseLeftKeyboard>(keyboard_edit_state->kind);
     if (is_left_kb) {
-      m_audio_note_preview->processEvent(EVENTKIND_PORTAMENT, 0);
-      m_audio_note_preview->processEvent(
-          EVENTKIND_KEY, quantize_pitch(keyboard_edit_state->current_pitch,
-                                        m_edit_state.m_quantize_pitch));
+      int pitch = quantize_pitch(keyboard_edit_state->current_pitch,
+                                 m_edit_state.m_quantize_pitch);
+      if (pitch != m_last_left_kb_pitch) {
+        m_audio_note_preview->processEvent(EVENTKIND_KEY, pitch);
+        m_audio_note_preview->processEvent(EVENTKIND_PORTAMENT, 0);
+        m_audio_note_preview->resetOn(10000000);
+        m_last_left_kb_pitch = pitch;
+      }
     } else {
       m_audio_note_preview->processEvent(
           EVENTKIND_VELOCITY,
           impliedVelocity(m_client->editState().mouse_edit_state,
                           m_client->editState().scale));
     }
-  }
-  if (!m_client->isFollowing()) {
-    m_client->changeEditState(
-        [&](auto &s) { updateStatePositions(s, event, -pos().x()); }, true);
   }
   event->ignore();
 }
