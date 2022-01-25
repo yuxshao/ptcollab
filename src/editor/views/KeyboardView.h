@@ -41,6 +41,7 @@ class KeyboardView : public QWidget {
   void ensureVisibleX(int x, bool strict);
   void fpsUpdated(qreal fps);
   void hoverUnitNoChanged(std::optional<int>);
+  void setScrollOnClick(bool);
 
  public slots:
   void toggleTestActivity();
@@ -66,6 +67,7 @@ class KeyboardView : public QWidget {
   std::set<int> selectedUnitNos();
   void setHoveredUnitNo(std::optional<int>);
   void updateHoverSelect(QMouseEvent *event);
+  void updateStatePositions(EditState &, const QMouseEvent *, int leftPos);
   QScrollArea *m_scrollarea;
   const pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
@@ -81,6 +83,7 @@ class KeyboardView : public QWidget {
   // m_select_unit_enabled should prob be folded into edit state. Right now it's
   // just a sore thumb of local state
   bool m_select_unit_enabled;
+  int m_last_left_kb_pitch;
 
   bool m_test_activity;
 };

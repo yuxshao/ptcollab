@@ -62,8 +62,8 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 }
 
 QSize ParamView::sizeHint() const {
-  return QSize(one_over_last_clock(m_client->pxtn()) /
-                   m_client->editState().scale.clockPerPx,
+  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                                       m_client->editState().scale.clockPerPx,
                0x20);
 }
 
@@ -297,26 +297,33 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
     } break;
   }
 }
-void ParamView::paintEvent(QPaintEvent *event) {
+void ParamView::paintEvent(QPaintEvent *raw_event) {
   const pxtnService *pxtn = m_client->pxtn();
+  QPainter painter(this);
+  painter.fillRect(raw_event->rect(), Qt::black);
+  painter.setTransform(worldTransform());
+  QPaintEvent e(worldTransform().inverted().mapRect(raw_event->rect()));
+  QPaintEvent *event = &e;
   Interval clockBounds = {
       qint32(event->rect().left() * m_client->editState().scale.clockPerPx) -
           WINDOW_BOUND_SLACK,
       qint32(event->rect().right() * m_client->editState().scale.clockPerPx) +
           WINDOW_BOUND_SLACK};
-  QPainter painter(this);
-  painter.fillRect(0, 0, size().width(), size().height(), Qt::black);
 
   // Draw white lines under background
   // TODO: Dedup with keyboardview
   QBrush beatBrush = StyleEditor::config.color.ParamBeat;
   QBrush measureBrush = StyleEditor::config.color.ParamMeasure;
   const pxtnMaster *master = pxtn->master;
-  for (int beat = 0; true; ++beat) {
+  int first_beat = (event->rect().left() - 10) *
+                       m_client->editState().scale.clockPerPx /
+                       master->get_beat_clock() -
+                   1;
+  for (int beat = first_beat; true; ++beat) {
     bool isMeasureLine = (beat % master->get_beat_num() == 0);
     int x = master->get_beat_clock() * beat /
             m_client->editState().scale.clockPerPx;
-    if (x > size().width()) break;
+    if (x > event->rect().right()) break;
     painter.fillRect(x, 0, 1, size().height(),
                      (isMeasureLine ? measureBrush : beatBrush));
   }
@@ -325,7 +332,7 @@ void ParamView::paintEvent(QPaintEvent *event) {
   for (int i = 0; i < NUM_BACKGROUND_GAPS - 1; ++i) {
     int this_y = BACKGROUND_GAPS[i] * size().height() / 0x80;
     int next_y = BACKGROUND_GAPS[i + 1] * size().height() / 0x80;
-    painter.fillRect(0, this_y + 1, size().width(),
+    painter.fillRect(event->rect().left(), this_y + 1, event->rect().width(),
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
 
@@ -345,8 +352,10 @@ void ParamView::paintEvent(QPaintEvent *event) {
     colors.reserve(m_client->pxtn()->Unit_Num());
     painters.reserve(m_client->pxtn()->Unit_Num());
     lastEvents.reserve(m_client->pxtn()->Unit_Num());
+    int first_clock = first_beat * master->get_beat_clock();
     for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-      lastEvents.emplace_back(Event{-1000, DefaultKindValue(current_kind)});
+      lastEvents.emplace_back(
+          Event{first_clock, DefaultKindValue(current_kind)});
       int unit_id = m_client->unitIdMap().noToId(i);
       colors.push_back(
           brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(108, false,
@@ -471,11 +480,11 @@ static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event,
                                  EVENTKIND current_kind, int height) {
   MouseEditState &state = edit_state.mouse_edit_state;
+  QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
   state.current_clock =
-      std::max(0., event->localPos().x() * edit_state.scale.clockPerPx);
+      std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
   bool snap = event->modifiers() & Qt::ControlModifier;
-  qint32 current_param =
-      paramOfY(event->localPos().y(), current_kind, height, snap);
+  qint32 current_param = paramOfY(mouse_pos.y(), current_kind, height, snap);
   if (!std::holds_alternative<MouseParamEdit>(state.kind))
     state.kind = MouseParamEdit{current_param, current_param};
   auto &param_edit_state = std::get<MouseParamEdit>(state.kind);

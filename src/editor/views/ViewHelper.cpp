@@ -218,5 +218,9 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                         6);
 }
 
+const int LEFT_LEGEND_WIDTH = 40;
+QTransform worldTransform() {
+  return QTransform().translate(LEFT_LEGEND_WIDTH, 0);
+}
+
 const int WINDOW_BOUND_SLACK = 32;
-const int LEFT_LEGEND_WIDTH = 28;

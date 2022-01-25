@@ -12,16 +12,39 @@
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnMaster.h"
 
-struct MouseKeyboardEdit {
+struct MouseLeftKeyboard {
+  qint32 start_vel;
+};
+inline QDataStream &operator<<(QDataStream &out, const MouseLeftKeyboard &a) {
+  out << a.start_vel;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MouseLeftKeyboard &a) {
+  in >> a.start_vel;
+  return in;
+}
+
+struct MouseMainKeyboard {
   qint32 start_pitch;
+};
+inline QDataStream &operator<<(QDataStream &out, const MouseMainKeyboard &a) {
+  out << a.start_pitch;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, MouseMainKeyboard &a) {
+  in >> a.start_pitch;
+  return in;
+}
+struct MouseKeyboardEdit {
+  std::variant<MouseLeftKeyboard, MouseMainKeyboard> kind;
   qint32 current_pitch;
 };
 inline QDataStream &operator<<(QDataStream &out, const MouseKeyboardEdit &a) {
-  out << a.start_pitch << a.current_pitch;
+  out << a.kind << a.current_pitch;
   return out;
 }
 inline QDataStream &operator>>(QDataStream &in, MouseKeyboardEdit &a) {
-  in >> a.start_pitch >> a.current_pitch;
+  in >> a.kind >> a.current_pitch;
   return in;
 }
 

@@ -28,6 +28,7 @@ class NotePreview : public QObject {
               int vel, int duration, std::shared_ptr<const pxtnWoice> woice,
               int bufferSize, QObject *parent);
   void processEvent(EVENTKIND kind, int32_t value);
+  void resetOn(int duration);
   ~NotePreview();
 
  private:

@@ -16,6 +16,7 @@ class EditorScrollArea : public QScrollArea {
   void ensureWithinMargin(int x, qreal minDistFromLeft,
                           qreal jumpMinDistFromLeft, qreal jumpMaxDistFromLeft,
                           qreal maxDistFromLeft);
+  void setEnableScrollWithMouseX(bool);
  signals:
   void viewportChanged(const QRect &viewport);
 
@@ -27,6 +28,7 @@ class EditorScrollArea : public QScrollArea {
   bool m_match_scale;
   QPoint lastPos;
   Animation *anim;
+  bool m_scroll_with_mouse_x;
   bool event(QEvent *e) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;

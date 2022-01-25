@@ -63,15 +63,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
 
   // We don't constantly reset because sometimes the audio engine forces
   // [life_count = 0] (say at the end of the sample)
-  if (m_unit != nullptr) {
-    std::shared_ptr<const pxtnWoice> woice = m_this_unit->get_woice();
-    for (int i = 0; i < woice->get_voice_num(); ++i) {
-      // TODO: calculating the life count should be more automatic.
-      auto tone = m_this_unit->get_tone(i);
-      tone->on_count = duration;
-      tone->life_count = duration + woice->get_instance(i)->env_release;
-    }
-  }
+  if (m_unit != nullptr) resetOn(duration);
   if (m_moo_state != nullptr) {
     for (auto &unit : m_moo_state->units) {
       pxtnUnitTone *u = &unit;
@@ -107,6 +99,18 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
 
 void NotePreview::processEvent(EVENTKIND kind, int32_t value) {
   m_moo_params->processNonOnEvent(m_this_unit, kind, value, m_pxtn);
+}
+
+void NotePreview::resetOn(int duration) {
+  std::shared_ptr<const pxtnWoice> woice = m_this_unit->get_woice();
+  for (int i = 0; i < woice->get_voice_num(); ++i) {
+    // TODO: calculating the life count should be more automatic.
+    auto tone = m_this_unit->get_tone(i);
+    *tone = pxtnVOICETONE(tone->env_release_clock, tone->offset_freq,
+                          woice->get_instance(i)->env_size != 0);
+    tone->on_count = duration;
+    tone->life_count = duration + woice->get_instance(i)->env_release;
+  }
 }
 
 static EVERECORD ev(int32_t clock, EVENTKIND kind, int32_t value) {
