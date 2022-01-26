@@ -363,9 +363,9 @@ void drawLeftPianoNoteHighlight(QPainter &leftPianoPainter, int pitch,
                                 const QColor &c) {
   int nextPitch = pitch - PITCH_PER_OCTAVE / displayEdo;
   int floor_h = PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo;
-  int h = scale.pitchToY(nextPitch) - scale.pitchToY(pitch) - 1;
-  drawLeftPiano(leftPianoPainter, scale.pitchToY(pitch) - floor_h / 2, h, c,
-                nullptr);
+  int h = int(scale.pitchToY(nextPitch)) - int(scale.pitchToY(pitch)) - 1;
+  drawLeftPiano(leftPianoPainter, int(scale.pitchToY(pitch)) - floor_h / 2, h,
+                c, nullptr);
 }
 void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
                       const DrawState &state, const Interval &segment,
