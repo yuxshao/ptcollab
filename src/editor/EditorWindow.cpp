@@ -483,7 +483,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     case Qt::Key::Key_R:
-      if (event->modifiers() & Qt::ControlModifier) {
+      if (event->modifiers() & Qt::ControlModifier && !event->isAutoRepeat()) {
         Settings::RecordMidi::set(!Settings::RecordMidi::get());
       } else {
         rKeyStateChanged(true);
