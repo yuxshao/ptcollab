@@ -19,7 +19,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 
 namespace Settings {
 namespace Version {
-static QString v("0.6.0");
+static QString v("0.6.0.1");
 const QString &string() { return v; }
 }  // namespace Version
 
@@ -283,6 +283,6 @@ namespace RecordMidi {
 const char *KEY = "editor_recording";
 bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
-}  // namespace EditorRecording
+}  // namespace RecordMidi
 
 }  // namespace Settings

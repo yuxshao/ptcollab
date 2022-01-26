@@ -6,7 +6,7 @@
 // communicate with each other
 constexpr char CLIENT_HELLO[] = "PTCOLLAB_CLIENT_HELLO";
 constexpr char SERVER_HELLO[] = "PTCOLLAB_SERVER_HELLO";
-const qint64 PROTOCOL_VERSION = 6;
+const qint64 PROTOCOL_VERSION = 7;
 
 ClientHello::ClientHello(const QString &username)
     : hello(CLIENT_HELLO), version(PROTOCOL_VERSION), m_username(username) {}
