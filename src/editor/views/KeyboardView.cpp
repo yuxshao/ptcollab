@@ -361,10 +361,11 @@ double smoothDistance(double dy, double dx) {
 void drawLeftPianoNoteHighlight(QPainter &leftPianoPainter, int pitch,
                                 const Scale &scale, int displayEdo,
                                 const QColor &c) {
-  drawLeftPiano(leftPianoPainter,
-                scale.pitchToY(pitch) -
-                    int(PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo / 2),
-                PITCH_PER_OCTAVE / displayEdo / scale.pitchPerPx, c, nullptr);
+  int nextPitch = pitch - PITCH_PER_OCTAVE / displayEdo;
+  int floor_h = PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo;
+  int h = scale.pitchToY(nextPitch) - scale.pitchToY(pitch) - 1;
+  drawLeftPiano(leftPianoPainter, scale.pitchToY(pitch) - floor_h / 2, h, c,
+                nullptr);
 }
 void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
                       const DrawState &state, const Interval &segment,
@@ -545,15 +546,14 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
           &leftPianoPainter, 4, this_y - floor_h / 2 + h - 2,
           (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
           octave_display_a);
-    if (left_piano_pitch_and_vel.has_value() && m_audio_note_preview &&
-        quantize_pitch(left_piano_pitch_and_vel.value().first,
-                       m_edit_state.m_quantize_pitch) == pitch) {
-      int vel = left_piano_pitch_and_vel.value().second;
-      drawLeftPiano(
-          leftPianoPainter, this_y - floor_h / 2, h,
-          QColor::fromRgb(255, 255, 255, 32 + 64 * vel / EVENTMAX_VELOCITY),
-          nullptr);
-    }
+  }
+  if (left_piano_pitch_and_vel.has_value() && m_audio_note_preview) {
+    int pitch = quantize_pitch(left_piano_pitch_and_vel.value().first,
+                               m_edit_state.m_quantize_pitch);
+    int vel = left_piano_pitch_and_vel.value().second;
+    drawLeftPianoNoteHighlight(
+        leftPianoPainter, pitch, scale, displayEdo,
+        QColor::fromRgb(255, 255, 255, 32 + 64 * vel / EVENTMAX_VELOCITY));
   }
 
   {
