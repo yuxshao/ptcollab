@@ -483,7 +483,11 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       }
       break;
     case Qt::Key::Key_R:
-      rKeyStateChanged(true);
+      if (event->modifiers() & Qt::ControlModifier) {
+        Settings::EditorRecording::set(!Settings::EditorRecording::get());
+      } else {
+        rKeyStateChanged(true);
+      }
       break;
     case Qt::Key_S:
       if (!(event->modifiers() & Qt::ControlModifier))
@@ -698,14 +702,16 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::On &e) {
             // TODO: handle repeat
             int start = m_moo_clock->nowNoWrap();
-            m_client->changeEditState(
-                [&](EditState &state) {
-                  if (state.m_input_state.has_value()) {
-                    applyOn(state.m_input_state.value(), start, m_client);
-                  }
-                  state.m_input_state = Input::State::On{start, e};
-                },
-                false);
+            if (Settings::EditorRecording::get()) {
+              m_client->changeEditState(
+                  [&](EditState &state) {
+                    if (state.m_input_state.has_value()) {
+                      applyOn(state.m_input_state.value(), start, m_client);
+                    }
+                    state.m_input_state = Input::State::On{start, e};
+                  },
+                  false);
+            }
             auto maybe_unit_no = m_client->unitIdMap().idToNo(
                 m_client->editState().m_current_unit_id);
             if (maybe_unit_no != std::nullopt) {
@@ -724,7 +730,8 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
 
               m_keyboard_view->currentMidiNotes()[e.key] = e.vel;
             }
-            if (Settings::AutoAdvance::get() && !m_client->isPlaying())
+            if (Settings::AutoAdvance::get() &&
+                Settings::EditorRecording::get() && !m_client->isPlaying())
               recordInput(Input::Event::Skip{1});
           },
           [this](const Input::Event::Off &e) {

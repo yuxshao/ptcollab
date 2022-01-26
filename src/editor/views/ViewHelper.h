@@ -87,4 +87,5 @@ extern void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y,
                                          int num, int height, bool a);
 extern const int LEFT_LEGEND_WIDTH;
 extern QTransform worldTransform();
+
 #endif  // VIEWHELPER_H

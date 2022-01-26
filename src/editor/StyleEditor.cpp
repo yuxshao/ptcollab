@@ -141,6 +141,8 @@ void loadConfig(const QString &path, Config &c) {
   setConfigColor(styleConfig, c.color.ParamMeasure, "parameters/Measure");
 
   setConfigColor(styleConfig, c.color.Playhead, "views/Playhead");
+  setConfigColor(styleConfig, c.color.PlayheadRecording,
+                 "views/PlayheadRecording");
   setConfigColor(styleConfig, c.color.Cursor, "views/Cursor");
 
   setConfigFont(styleConfig, c.font.EditorFont, "fonts/Editor");
