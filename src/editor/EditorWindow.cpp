@@ -484,7 +484,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key::Key_R:
       if (event->modifiers() & Qt::ControlModifier) {
-        Settings::EditorRecording::set(!Settings::EditorRecording::get());
+        Settings::RecordMidi::set(!Settings::RecordMidi::get());
       } else {
         rKeyStateChanged(true);
       }
@@ -702,7 +702,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
           [this](const Input::Event::On &e) {
             // TODO: handle repeat
             int start = m_moo_clock->nowNoWrap();
-            if (Settings::EditorRecording::get()) {
+            if (Settings::RecordMidi::get()) {
               m_client->changeEditState(
                   [&](EditState &state) {
                     if (state.m_input_state.has_value()) {
@@ -730,8 +730,8 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
 
               m_keyboard_view->currentMidiNotes()[e.key] = e.vel;
             }
-            if (Settings::AutoAdvance::get() &&
-                Settings::EditorRecording::get() && !m_client->isPlaying())
+            if (Settings::AutoAdvance::get() && Settings::RecordMidi::get() &&
+                !m_client->isPlaying())
               recordInput(Input::Event::Skip{1});
           },
           [this](const Input::Event::Off &e) {

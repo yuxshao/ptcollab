@@ -192,7 +192,7 @@ bool get();
 void set(bool);
 }  // namespace MeasureViewClickToJumpUnit
   
-namespace EditorRecording {
+namespace RecordMidi {
 bool get();
 void set(bool);
 }  // namespace EditorRecording

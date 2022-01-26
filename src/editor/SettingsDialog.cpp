@@ -42,7 +42,7 @@ void SettingsDialog::apply() {
   Settings::OctaveDisplayA::set(ui->octaveMarkerACheck->isChecked());
   Settings::PinnedUnitLabels::set(ui->pinnedUnitLabelCheck->isChecked());
   Settings::AdvancedQuantizeY::set(ui->alternateTuningCheck->isChecked());
-  Settings::EditorRecording::set(ui->recordMidiCheck->isChecked());
+  Settings::RecordMidi::set(ui->recordMidiCheck->isChecked());
   Settings::NewUnitDefaultVolume::set(ui->defaultVolumeSpin->value());
   Settings::MeasureViewClickToJumpUnit::set(
       ui->selectPinnedUnitOnClickCheck->isChecked());
@@ -94,7 +94,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->selectPinnedUnitOnClickCheck->setChecked(
       Settings::MeasureViewClickToJumpUnit::get());
   ui->defaultVolumeSpin->setValue(Settings::NewUnitDefaultVolume::get());
-  ui->recordMidiCheck->setChecked(Settings::EditorRecording::get());
+  ui->recordMidiCheck->setChecked(Settings::RecordMidi::get());
 
   QString rowDisplay = "";
   for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");

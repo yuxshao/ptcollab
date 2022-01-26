@@ -43,7 +43,7 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
 
 void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
                                int height, qreal clockPerPx, bool drawHead) {
-  QColor color = Settings::EditorRecording::get()
+  QColor color = Settings::RecordMidi::get()
                      ? StyleEditor::config.color.PlayheadRecording
                      : StyleEditor::config.color.Playhead;
   if (!moo_clock->this_seek_caught_up() || moo_clock->now() <= 0)

@@ -279,7 +279,7 @@ void set(const QList<int> &value) {
 void clear() { return QSettings().remove(KEY); }
 }  // namespace DisplayEdo
 
-namespace EditorRecording {
+namespace RecordMidi {
 const char *KEY = "editor_recording";
 bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
