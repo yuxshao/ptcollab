@@ -69,7 +69,6 @@ struct Config {
 };
 
 extern const Config &config;
-QColor getActivePlayheadColor();
 QStringList getStyles();
 }  // namespace StyleEditor
 

@@ -291,11 +291,6 @@ bool tryLoadStyle(const QString &styleName) {
   return tryLoadStyle(basedir, styleName);
 }
 
-QColor getActivePlayheadColor() {
-  return Settings::EditorRecording::get() ? config.color.PlayheadRecording
-                                          : config.color.Playhead;
-};
-
 QStringList getStyles() {
   QStringList styles;
   for (const auto &[style, dir] : getStyleMap()) styles.push_back(style);
