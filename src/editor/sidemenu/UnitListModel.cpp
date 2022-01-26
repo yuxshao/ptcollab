@@ -95,12 +95,14 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
     case UnitListColumn::Visible:
       if (role == Qt::CheckStateRole) {
         m_client->setUnitVisible(index.row(), value.toInt() == Qt::Checked);
+        emit dataChanged(index, index, {role});
         return true;
       }
       return false;
     case UnitListColumn::Played:
       if (role == Qt::CheckStateRole) {
         m_client->setUnitPlayed(index.row(), value.toInt() == Qt::Checked);
+        emit dataChanged(index, index, {role});
         return true;
       }
       return false;
@@ -115,13 +117,14 @@ bool UnitListModel::setData(const QModelIndex &index, const QVariant &value,
                 e.m_pinned_unit_ids.erase(id);
             },
             false);
+        emit dataChanged(index, index, {role});
         return true;
       }
       return false;
-      break;
     case UnitListColumn::Name:
       int unit_id = m_client->unitIdMap().noToId(index.row());
       m_client->sendAction(SetUnitName{unit_id, value.toString()});
+      emit dataChanged(index, index, {role});
       return false;
   }
   return false;
