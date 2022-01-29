@@ -9,6 +9,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent)
   ui->labelVersion->setText(qApp->applicationName() + " " +
                             qApp->applicationVersion());
   ui->showAgainCheck->setChecked(Settings::ShowWelcomeDialog::get());
+  setWindowFlag(Qt::WindowContextHelpButtonHint, false);
   QString connectToolTip = tr("Connect to an existing server.");
   QString newToolTip = tr("Create a new project without hosting.");
   QString openToolTip = tr("Open an existing project for offline use.");
