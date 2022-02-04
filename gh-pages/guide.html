@@ -152,8 +152,8 @@
             <ol>
               <li>Visible. Toggle if the unit is visible in the background while you’re focused on a different unit.</li>
               <li>Playing. Toggle if the unit is playing or muted.</li>
-              <li>Selected. When making a selection, toggle if the unit is included or not while you’re focused on a different unit. </li>
-              <li>Name. The name of the unit. Double-click to edit.</li>
+              <li>Pinned. Toggle if the unit is pinned to the top of the piano roll, so that you can edit its note timings even while another unit is focused (useful for drums). </li>
+              <li>Name. The name of the unit. Double-click to edit. Ctrl+click to select it for copy / paste. </li>
             </ol>
           </div>
         </div>
@@ -234,7 +234,11 @@
           <p class="text">Press Ctrl + V.</p>
           <img src="resources/cnp-paste.png" class="screenshot" alt="paste for copy and paste" />
           <h4>Advanced copy and paste</h4>
-          <p class="text">You can also copy and paste over multiple units if you check the selection checkbox (the third box) in the Unit tab.</p>
+          <p class="text">You can also copy and paste over multiple units if you Ctrl+Click the unit names to select other units.</p>
+          <h4>Video</h4>
+          <p class="text">The video below shows normal copy-paste, then a copy-paste with multiple units.</p>
+          <video src="resources/copy-paste.mp4" style="width:70%; margin:auto; display:block" controls />
+          <p class="text">You can also copy and paste over multiple units if you Ctrl+Click the unit names to select other units.</p>
           <img src="resources/cnp-multi-unit.png" class="screenshot" alt="multi-unit copy" />
           <p class="text">Additionally, the “Copy” checkbox in the bottom left can be used to set only certain parameters to be copied. If you want to only copy panning, for example, you can untick the checkbox for each other parameter setting, then copy and paste.</p>
           <img src="resources/cnp-certain-params.png" class="screenshot" alt="copy certain params" />
@@ -278,8 +282,7 @@
       <section>
         <a class="h3" href="#" onclick="toggle('glossary-shortcuts');return false">Glossary of shortcuts</a>
         <div class="text" id="glossary-shortcuts" style="display:none">
-          <p>Once you're familiar with the basic workflow, there are a bunch of
-          shortcuts to make certain actions easier:</p>
+          <p>All the shortcuts are in the editor help, but here are some common ones:</p>
           <ul>
             <li>Space to play/pause, Escape to stop, Shift+click to seek</li>
             <li>Ctrl+Z and Ctrl+Y/Ctrl+Shift+Z to undo and redo</li>
