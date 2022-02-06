@@ -82,9 +82,10 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
 }
 
 void KeyboardView::ensurePlayheadFollowed() {
-  emit ensureVisibleX(
-      m_moo_clock->now() / m_client->editState().scale.clockPerPx,
-      m_client->editState().m_follow_playhead == FollowPlayhead::Follow);
+  bool follow_exactly =
+      m_client->editState().m_follow_playhead == FollowPlayhead::Follow;
+  double x = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  emit ensureVisibleX(x, follow_exactly);
 }
 
 void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {

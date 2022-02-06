@@ -416,7 +416,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &s) {
             s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
-                                      ? FollowPlayhead::Jump
+                                      ? FollowPlayhead::Follow
                                       : FollowPlayhead::None;
           },
           false);

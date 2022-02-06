@@ -666,6 +666,9 @@
        <property name="text">
         <string>Follow</string>
        </property>
+       <property name="tristate">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>
