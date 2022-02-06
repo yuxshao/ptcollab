@@ -101,18 +101,11 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
             QMessageBox::Yes)
       emit removeUnit();
   });
-  connect(ui->followCheckbox, &QCheckBox::clicked, [this](bool) {
-    switch (ui->followCheckbox->checkState()) {
-      case Qt::Unchecked:
-        emit followPlayheadClicked(FollowPlayhead::None);
-        break;
-      case Qt::PartiallyChecked:
-        emit followPlayheadClicked(FollowPlayhead::Jump);
-        break;
-      case Qt::Checked:
-        emit followPlayheadClicked(FollowPlayhead::Follow);
-        break;
-    }
+  connect(ui->followCheckbox, &QCheckBox::clicked, [this](bool is_checked) {
+    emit followPlayheadClicked(is_checked ? (Settings::StrictFollowSeek::get()
+                                                 ? FollowPlayhead::Follow
+                                                 : FollowPlayhead::Jump)
+                                          : FollowPlayhead::None);
   });
   connect(ui->copyCheckbox, &QCheckBox::toggled, this, &SideMenu::copyChanged);
 
@@ -264,16 +257,9 @@ void SideMenu::setTempo(int tempo) { ui->tempoSpin->setValue(tempo); }
 void SideMenu::setBeats(int beats) { ui->beatsSpin->setValue(beats); }
 
 void SideMenu::setFollowPlayhead(FollowPlayhead follow) {
-  switch (follow) {
-    case FollowPlayhead::None:
-      ui->followCheckbox->setCheckState(Qt::CheckState::Unchecked);
-      break;
-    case FollowPlayhead::Jump:
-      ui->followCheckbox->setCheckState(Qt::CheckState::PartiallyChecked);
-      break;
-    case FollowPlayhead::Follow:
-      ui->followCheckbox->setCheckState(Qt::CheckState::Checked);
-  };
+  ui->followCheckbox->setCheckState(follow == FollowPlayhead::None
+                                        ? Qt::CheckState::Unchecked
+                                        : Qt::CheckState::Checked);
 }
 
 void SideMenu::setCopy(bool copy) {

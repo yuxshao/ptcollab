@@ -81,6 +81,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="followSeekStrictCheck">
+         <property name="text">
+          <string>Follow seekhead snaps vs. jumping</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

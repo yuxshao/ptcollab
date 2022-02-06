@@ -285,4 +285,10 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace RecordMidi
 
+namespace StrictFollowSeek {
+const char *KEY = "strict_follow_seek";
+bool get() { return QSettings().value(KEY, false).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace StrictFollowSeek
+
 }  // namespace Settings

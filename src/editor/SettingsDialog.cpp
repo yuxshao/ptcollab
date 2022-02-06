@@ -46,6 +46,7 @@ void SettingsDialog::apply() {
   Settings::NewUnitDefaultVolume::set(ui->defaultVolumeSpin->value());
   Settings::MeasureViewClickToJumpUnit::set(
       ui->selectPinnedUnitOnClickCheck->isChecked());
+  Settings::StrictFollowSeek::set(ui->followSeekStrictCheck->isChecked());
   if (ui->alternateTuningCheck->isChecked()) {
     QList<int> rowDisplayPattern;
     for (char c : ui->rowDisplayEdit->text().toStdString()) {
@@ -95,6 +96,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
       Settings::MeasureViewClickToJumpUnit::get());
   ui->defaultVolumeSpin->setValue(Settings::NewUnitDefaultVolume::get());
   ui->recordMidiCheck->setChecked(Settings::RecordMidi::get());
+  ui->followSeekStrictCheck->setChecked(Settings::StrictFollowSeek::get());
 
   QString rowDisplay = "";
   for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");

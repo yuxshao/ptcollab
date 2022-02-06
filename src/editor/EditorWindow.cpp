@@ -118,7 +118,7 @@ EditorWindow::EditorWindow(QWidget *parent)
             if (!strict)
               m_scroll_area->ensureWithinMargin(x, -0.02, 0.15, 0.15, 0.75);
             else
-              m_scroll_area->ensureWithinMargin(x, 0.5, 0.5, 0.5, 0.5);
+              m_scroll_area->ensureWithinMargin(x, 0.45, 0.45, 0.45, 0.45);
           });
   connect(m_scroll_area, &EditorScrollArea::viewportChanged,
           [this](const QRect &viewport) {
@@ -416,7 +416,9 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       m_client->changeEditState(
           [&](EditState &s) {
             s.m_follow_playhead = s.m_follow_playhead == FollowPlayhead::None
-                                      ? FollowPlayhead::Follow
+                                      ? (Settings::StrictFollowSeek::get()
+                                             ? FollowPlayhead::Follow
+                                             : FollowPlayhead::Jump)
                                       : FollowPlayhead::None;
           },
           false);

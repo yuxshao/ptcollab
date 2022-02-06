@@ -191,11 +191,16 @@ namespace MeasureViewClickToJumpUnit {
 bool get();
 void set(bool);
 }  // namespace MeasureViewClickToJumpUnit
-  
+
 namespace RecordMidi {
 bool get();
 void set(bool);
-}  // namespace EditorRecording
+}  // namespace RecordMidi
+
+namespace StrictFollowSeek {
+bool get();
+void set(bool);
+}  // namespace StrictFollowSeek
 
 }  // namespace Settings
 
