@@ -327,7 +327,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   }
 }
 
-EditorWindow::~EditorWindow() { delete ui; }
+EditorWindow::~EditorWindow() {
+  // https://github.com/yuxshao/ptcollab/issues/56
+  // This deletion is so that m_moo_clock is deleted before pxtnService, which
+  // reads as part of an animation tick, is deleted.
+  delete m_moo_clock;
+
+  delete ui;
+}
 
 // #define DEBUG_RECORD_INPUT
 
