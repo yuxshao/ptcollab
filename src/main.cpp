@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QMessageBox>
 #include <QSettings>
 
 #include "editor/EditorWindow.h"
@@ -169,13 +170,6 @@ int main(int argc, char *argv[]) {
   }
   qInstallMessageHandler(messageHandler);
 
-  QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-  if (info.isNull()) {
-    QMessageBox::critical(nullptr, "No audio device",
-                          "You need a working audio device to use ptcollab.");
-    return 1;
-  }
-
   if (parser.isSet(headlessOption)) {
     BroadcastServer s(filename, host, port, recording_file);
     return a->exec();
@@ -186,6 +180,12 @@ int main(int argc, char *argv[]) {
           Settings::StyleName::default_included_with_distribution;
       if (style == defaultStyle || !StyleEditor::tryLoadStyle(defaultStyle))
         qWarning() << "No styles were loaded. Falling back on system style.";
+    }
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (info.isNull()) {
+      QMessageBox::critical(nullptr, "No audio device",
+                            "You need a working audio device to use ptcollab.");
+      return 1;
     }
     EditorWindow w;
     w.show();
