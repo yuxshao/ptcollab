@@ -7,6 +7,7 @@
 
 #include "MooClock.h"
 
+extern int impliedVelocity(MouseEditState state, qreal pitchPerPx);
 extern void drawCursor(const QPoint &position, QPainter &painter,
                        const QColor &color, const QString &username,
                        qint64 uid);

@@ -246,17 +246,30 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
 }
 static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                             EVENTKIND current_kind, int quantizeClock,
-                            qreal clockPerPx, int height,
+                            qreal clockPerPx, qreal pitchPerPx, int height,
                             double alphaMultiplier,
                             double selectionAlphaMultiplier, int unitOffset) {
+  QColor c = StyleEditor::config.color.ParamBrightGreen;
   switch (state.type) {
-    case MouseEditState::Type::Nothing:
     case MouseEditState::Type::SetOn:
+      if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
+          std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+        if (current_kind == EVENTKIND_VELOCITY &&
+            state.type == MouseEditState::Type::SetOn) {
+          c.setAlpha(alphaMultiplier * 255);
+          int velocity = impliedVelocity(state, pitchPerPx);
+          int y = paramToY(velocity, current_kind, height);
+          Interval interval = state.clock_int(quantizeClock);
+          painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
+                           std::max(1.0, interval.length() / clockPerPx),
+                           lineHeight, c);
+        }
+      }
+    case MouseEditState::Type::Nothing:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
       if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
-      QColor c = StyleEditor::config.color.ParamBrightGreen;
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
       if (!Evelist_Kind_IsTail(current_kind) &&
@@ -343,6 +356,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   thisUnit.fill(Qt::transparent);
   int current_unit_no = 0;
   qreal clockPerPx = m_client->editState().scale.clockPerPx;
+  qreal pitchPerPx = m_client->editState().scale.pitchPerPx;
   QPainter thisUnitPainter(&thisUnit);
   {
     thisUnitPainter.translate(-event->rect().topLeft());
@@ -429,8 +443,8 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
           *this_painter, state.mouse_edit_state, current_kind,
           m_client->quantizeClock(
               quantizeXOptions()[state.m_quantize_clock_idx].second),
-          clockPerPx, height(), alphaMultiplier, selectionAlphaMultiplier,
-          unit_no - current_unit_no);
+          clockPerPx, pitchPerPx, height(), alphaMultiplier,
+          selectionAlphaMultiplier, unit_no - current_unit_no);
     }
   }
   painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
@@ -439,7 +453,8 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                           clockPerPx, size().height(), 1);
   drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
-                  m_client->quantizeClock(), clockPerPx, height(), 1, 1, 0);
+                  m_client->quantizeClock(), clockPerPx, pitchPerPx, height(),
+                  1, 1, 0);
 
   drawLastSeek(painter, m_client, height(), false);
   drawCurrentPlayerPosition(painter, m_moo_clock, height(), clockPerPx, false);

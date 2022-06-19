@@ -7,6 +7,27 @@
 #include "editor/StyleEditor.h"
 #include "pxtone/pxtnEvelist.h"
 
+int pixelsPerVelocity = 3;
+static double slack = 50;
+int impliedVelocity(MouseEditState state, qreal pitchPerPx) {
+  double delta = 0;
+  // Using VelocityDrag here instead of the mouse edit state means if someone
+  // has a different setting then during preview it'll incorrectly look like
+  // they have your setting. I think this is fine though
+  if (std::holds_alternative<MouseKeyboardEdit>(state.kind) &&
+      Settings::VelocityDrag::get()) {
+    const auto &s = std::get<MouseKeyboardEdit>(state.kind);
+    if (const auto *main_keyboard = std::get_if<MouseMainKeyboard>(&s.kind)) {
+      delta = (s.current_pitch - main_keyboard->start_pitch) / pitchPerPx;
+      // Apply a sigmoid so that small changes in y hardly do anything
+      delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
+    }
+  }
+
+  return clamp(int(round(state.base_velocity + delta / pixelsPerVelocity)), 0,
+               EVENTMAX_VELOCITY);
+}
+
 void drawCursor(const QPoint &position, QPainter &painter, const QColor &color,
                 const QString &username, qint64 uid) {
   QPainterPath path;

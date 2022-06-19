@@ -167,26 +167,6 @@ static void paintHighlight(int pitch, int clock, QPainter &painter,
   paintAtClockPitch(clock, pitch, 2, painter, brush, scale, displayEdo);
 }
 
-int pixelsPerVelocity = 3;
-static double slack = 50;
-int impliedVelocity(MouseEditState state, const Scale &scale) {
-  double delta = 0;
-  // Using VelocityDrag here instead of the mouse edit state means if someone
-  // has a different setting then during preview it'll incorrectly look like
-  // they have your setting. I think this is fine though
-  if (std::holds_alternative<MouseKeyboardEdit>(state.kind) &&
-      Settings::VelocityDrag::get()) {
-    const auto &s = std::get<MouseKeyboardEdit>(state.kind);
-    if (const auto *main_keyboard = std::get_if<MouseMainKeyboard>(&s.kind)) {
-      delta = (s.current_pitch - main_keyboard->start_pitch) / scale.pitchPerPx;
-      // Apply a sigmoid so that small changes in y hardly do anything
-      delta = 2 * slack / (1 + exp(2 * delta / slack)) + delta - slack;
-    }
-  }
-
-  return clamp(int(round(state.base_velocity + delta / pixelsPerVelocity)), 0,
-               EVENTMAX_VELOCITY);
-}
 static qint32 arbitrarily_tall = 512;
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
@@ -280,7 +260,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       const auto &[start_pitch] =
           std::get<MouseMainKeyboard>(keyboard_edit_state.kind);
 
-      int velocity = impliedVelocity(mouse_edit_state, state.scale);
+      int velocity = impliedVelocity(mouse_edit_state, state.scale.pitchPerPx);
       // TODO: maybe factor out this quantization logic
       Interval interval(
           mouse_edit_state.clock_int(localState.m_quantize_clock));
@@ -826,7 +806,7 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
           if (m_audio_note_preview != nullptr)
             m_audio_note_preview->processEvent(
                 EVENTKIND_VELOCITY,
-                impliedVelocity(e.mouse_edit_state, e.scale));
+                impliedVelocity(e.mouse_edit_state, e.scale.pitchPerPx));
         },
         false);
     event->accept();
@@ -977,7 +957,7 @@ void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
       m_audio_note_preview->processEvent(
           EVENTKIND_VELOCITY,
           impliedVelocity(m_client->editState().mouse_edit_state,
-                          m_client->editState().scale));
+                          m_client->editState().scale.pitchPerPx));
     }
   }
   event->ignore();
@@ -1151,7 +1131,7 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
                                      clock_int.start, Add{clock_int.length()}});
                   qint32 vel =
                       impliedVelocity(m_client->editState().mouse_edit_state,
-                                      m_client->editState().scale);
+                                      m_client->editState().scale.pitchPerPx);
                   s.mouse_edit_state.base_velocity = vel;
                   actions.push_back({EVENTKIND_VELOCITY,
                                      m_client->editState().m_current_unit_id,
