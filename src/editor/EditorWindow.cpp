@@ -830,13 +830,13 @@ void EditorWindow::checkForOldAutoSaves() {
     QFileInfo f(it.next());
     if (QDateTime::currentDateTime() >=
         f.lastModified().addMSecs(3 * AUTOSAVE_CHECK_INTERVAL_MS)) {
-      auto result = QMessageBox::question(
+      auto result = QMessageBox::information(
           this, tr("Found backup files from previous run"),
           tr("Old backup save files found. This usually happens if a "
-             "previous ptcollab session quit unexpxectedly. Would you "
-             "like "
-             "to open the backup directory?"));
-      if (result == QMessageBox::Yes) QDesktopServices::openUrl(autoSaveDir());
+             "previous ptcollab session quit unexpxectedly. Opening backup "
+             "folder. If you want to stop seeing this message, simply "
+             "remove all the files from the folder. "));
+      if (result == QMessageBox::Ok) QDesktopServices::openUrl(autoSaveDir());
       break;
     }
   }
