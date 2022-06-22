@@ -151,7 +151,8 @@ static void drawAtClockPitch(int clock, int pitch, int widthInPx,
 static void paintBlock(int pitch, const Interval &segment, QPainter &painter,
                        const QBrush &brush, const Scale &scale,
                        int displayEdo) {
-  paintAtClockPitch(segment.start, pitch, segment.length() / scale.clockPerPx,
+  paintAtClockPitch(segment.start, pitch,
+                    std::max<int>(1, segment.length() / scale.clockPerPx),
                     painter, brush, scale, displayEdo);
 }
 
