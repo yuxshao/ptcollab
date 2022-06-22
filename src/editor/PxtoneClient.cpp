@@ -134,7 +134,6 @@ void PxtoneClient::setBufferSize(double secs) {
   if (secs > 10) secs = 10;
   qDebug() << "Setting buffer size: " << secs;
   m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
-
   if (started) m_audio->start(m_pxtn_device);
 }
 

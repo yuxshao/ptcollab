@@ -188,7 +188,8 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
 void drawGhostOnNote(QPainter &painter, const Interval &interval,
                      const Scale &scale, int width, const Brush &brush,
                      int velocity, int alpha, double alphaMultiplier,
-                     bool rowHighlight, int pitch, int displayEdo) {
+                     bool rowHighlight, bool noteHighlight, int pitch,
+                     int displayEdo) {
   if (rowHighlight)
     paintBlock(
         pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
@@ -197,10 +198,10 @@ void drawGhostOnNote(QPainter &painter, const Interval &interval,
   paintBlock(pitch, interval, painter,
              brush.toQColor(velocity, false, alpha * alphaMultiplier), scale,
              displayEdo);
-
-  paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                 brush.toQColor(128, true, alpha * alphaMultiplier), scale,
-                 displayEdo);
+  if (noteHighlight)
+    paintHighlight(pitch, std::min(interval.start, interval.end), painter,
+                   brush.toQColor(128, true, alpha * alphaMultiplier), scale,
+                   displayEdo);
 }
 
 struct SetNoteInterval {
@@ -267,6 +268,9 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
       int pitch = quantize_pitch(start_pitch, localState.m_quantize_pitch);
       int alpha =
           (mouse_edit_state.type == MouseEditState::Nothing ? 128 : 255);
+      bool drawNoteHighlight =
+          (mouse_edit_state.type != MouseEditState::Type::SetNote &&
+           mouse_edit_state.type != MouseEditState::DeleteNote);
 
       if (mouse_edit_state.type == MouseEditState::Type::SetNote) {
         int end_pitch = quantize_pitch(keyboard_edit_state.current_pitch,
@@ -275,14 +279,14 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
             interval, localState.m_quantize_clock, pitch, end_pitch);
         for (const auto &[interval, pitch] : intervals) {
           drawGhostOnNote(painter, interval, state.scale, width, brush,
-                          velocity, alpha, alphaMultiplier, false, pitch,
-                          displayEdo);
+                          velocity, alpha, alphaMultiplier, false,
+                          drawNoteHighlight, pitch, displayEdo);
         }
       } else {
         bool rowHighlight = (mouse_edit_state.type != MouseEditState::Nothing);
         drawGhostOnNote(painter, interval, state.scale, width, brush, velocity,
-                        alpha, alphaMultiplier, rowHighlight, pitch,
-                        displayEdo);
+                        alpha, alphaMultiplier, rowHighlight, drawNoteHighlight,
+                        pitch, displayEdo);
       }
 
       if (mouse_edit_state.type == MouseEditState::SetOn)
@@ -310,7 +314,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
 
     for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
-                      255, alphaMultiplier, true, v.on.key, displayEdo);
+                      255, alphaMultiplier, true, true, v.on.key, displayEdo);
   }
 }
 
