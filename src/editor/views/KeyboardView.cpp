@@ -1216,6 +1216,7 @@ void KeyboardView::cutSelection() {
 void KeyboardView::quantizeSelectionX() {
   const static std::set<EVENTKIND> kindsToQuantize(
       {EVENTKIND_VELOCITY, EVENTKIND_KEY, EVENTKIND_ON});
+  if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   const Interval &range =
       m_client->editState().mouse_edit_state.selection.value();
   const std::set<int> &unit_nos(m_client->selectedUnitNos());
@@ -1265,6 +1266,7 @@ void KeyboardView::quantizeSelectionX() {
 }
 
 void KeyboardView::quantizeSelectionY() {
+  if (!m_client->editState().mouse_edit_state.selection.has_value()) return;
   const Interval &range =
       m_client->editState().mouse_edit_state.selection.value();
   const std::set<int> &unit_nos(m_client->selectedUnitNos());
