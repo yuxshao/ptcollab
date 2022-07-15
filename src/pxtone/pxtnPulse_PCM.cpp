@@ -86,12 +86,13 @@ int findWavChunk(pxtnDescriptor *doc, const char *name) {
     if (!doc->seek(pxtnSEEK_cur, size)) return 0;
   }
 }
-
+#include <QDebug>
 pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc, uint32_t *basic_key) {
   pxtnERR res = pxtnERR_VOID;
   char buf[16]{};
   uint32_t size = 0;
   *basic_key = EVENTDEFAULT_BASICKEY;
+  qDebug() << *basic_key;
   uint32_t repeat_start = 0, repeat_end = 0;
   WAVEFORMATCHUNK format{};
 
@@ -133,19 +134,26 @@ pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc, uint32_t *basic_key) {
     goto term;
   }
 
+  // smpl chunk is 36 + 24 * num sample loops, so at least 1 smpl loop is 60
   if (findWavChunk(doc, "smpl") >= 60) {
     doc->seek(pxtnSEEK_cur, 12);
     doc->r(basic_key, sizeof(uint32_t), 1);
     *basic_key *= 256;
-    doc->seek(pxtnSEEK_cur, 20);
-    // beginning of loop point
-    doc->seek(pxtnSEEK_cur, 4);
-    uint32_t type = -1;
-    doc->r(&type, sizeof(uint32_t), 1);
-    if (type == 0) {
-      doc->r(&repeat_start, sizeof(uint32_t), 1);
-      doc->r(&repeat_end, sizeof(uint32_t), 1);
-      ++repeat_end;  // make it exclusive
+    doc->seek(pxtnSEEK_cur, 12);
+    // Double check the num sample loops in case
+    int num_sample_loops;
+    doc->r(&num_sample_loops, sizeof(uint32_t), 1);
+    if (num_sample_loops > 0) {
+      doc->seek(pxtnSEEK_cur, 4);  // skip sampler data
+      // beginning of loop point
+      doc->seek(pxtnSEEK_cur, 4);  // skip cue point ID
+      uint32_t type = -1;
+      doc->r(&type, sizeof(uint32_t), 1);  // get type
+      if (type == 0) {                     // assert type is loop forward
+        doc->r(&repeat_start, sizeof(uint32_t), 1);
+        doc->r(&repeat_end, sizeof(uint32_t), 1);
+        ++repeat_end;  // make it exclusive
+      }
     }
   }
 
