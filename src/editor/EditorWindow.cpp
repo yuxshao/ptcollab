@@ -690,7 +690,7 @@ void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
                        clock_int.start, Add{clock_int.length()}});
     actions.push_back({EVENTKIND_VELOCITY,
                        client->editState().m_current_unit_id, clock_int.start,
-                       Add{v.on.vel}});
+                       Add{v.on.vel()}});
     actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
                        clock_int.start, Add{v.on.key}});
   }
@@ -734,10 +734,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                   Settings::ChordPreview::get() && !m_client->isPlaying();
               m_record_note_preview[e.key] = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
-                  e.vel, m_client->audioState()->bufferSize(), chordPreview,
+                  e.vel(), m_client->audioState()->bufferSize(), chordPreview,
                   this);
 
-              m_keyboard_view->currentMidiNotes()[e.key] = e.vel;
+              m_keyboard_view->currentMidiNotes()[e.key] = e.vel();
             }
             if (Settings::AutoAdvance::get() && Settings::RecordMidi::get() &&
                 !m_client->isPlaying())

@@ -3,15 +3,16 @@
 #include <QDataStream>
 
 #include "ComboOptions.h"
+#include "Settings.h"
 #include "protocol/SerializeVariant.h"
 #include "pxtone/pxtnEvelist.h"
 
 QDataStream &operator>>(QDataStream &in, Input::Event::On &a) {
-  return (in >> a.key >> a.vel);
+  return (in >> a.key >> a.raw_vel);
 }
 
 QDataStream &operator<<(QDataStream &out, const Input::Event::On &a) {
-  return (out << a.key << a.vel);
+  return (out << a.key << a.raw_vel);
 }
 
 QDataStream &operator>>(QDataStream &in, Input::State::On &a) {
@@ -123,3 +124,12 @@ std::vector<Interval> Input::State::On::clock_ints(
   }
   return clock_ints;
 }
+
+namespace Input {
+namespace Event {
+int On::vel() const {
+  if (Settings::VelocitySensitivity::get()) return raw_vel;
+  return EVENTDEFAULT_VELOCITY;
+}
+}  // namespace Event
+}  // namespace Input

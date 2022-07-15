@@ -202,6 +202,11 @@ bool get();
 void set(bool);
 }  // namespace StrictFollowSeek
 
+namespace VelocitySensitivity {
+bool get();
+void set(bool);
+}  // namespace VelocitySensitivity
+
 }  // namespace Settings
 
 #endif  // SETTINGS_H

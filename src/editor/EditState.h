@@ -141,7 +141,8 @@ namespace Input {
 namespace Event {
 struct On {
   int key;
-  int vel;
+  int raw_vel;
+  int vel() const;
 };
 struct Off {
   int key;

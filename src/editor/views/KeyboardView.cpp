@@ -314,7 +314,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
     const Input::State::On &v = state.m_input_state.value();
 
     for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
-      drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel,
+      drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel(),
                       255, alphaMultiplier, true, true, v.on.key, displayEdo);
   }
 }

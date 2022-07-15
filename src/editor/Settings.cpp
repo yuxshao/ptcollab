@@ -291,4 +291,10 @@ bool get() { return QSettings().value(KEY, false).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace StrictFollowSeek
 
+namespace VelocitySensitivity {
+const char *KEY = "velocity_sensitivity";
+bool get() { return QSettings().value(KEY, true).toBool(); }
+void set(bool value) { return QSettings().setValue(KEY, value); }
+}  // namespace VelocitySensitivity
+
 }  // namespace Settings

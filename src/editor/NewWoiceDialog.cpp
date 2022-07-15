@@ -329,8 +329,8 @@ void NewWoiceDialog::inputMidi(const Input::Event::Event &e) {
                  [this](const Input::Event::On &e) {
                    if (m_preview_woice == nullptr) return;
                    m_record_note_preview[e.key] = std::make_unique<NotePreview>(
-                       m_client->pxtn(), &m_client->moo()->params, e.key, e.vel,
-                       100000000, m_preview_woice,
+                       m_client->pxtn(), &m_client->moo()->params, e.key,
+                       e.vel(), 100000000, m_preview_woice,
                        m_client->audioState()->bufferSize(), this);
                  },
                  [this](const Input::Event::Off &e) {
