@@ -86,13 +86,12 @@ int findWavChunk(pxtnDescriptor *doc, const char *name) {
     if (!doc->seek(pxtnSEEK_cur, size)) return 0;
   }
 }
-#include <QDebug>
+
 pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc, uint32_t *basic_key) {
   pxtnERR res = pxtnERR_VOID;
   char buf[16]{};
   uint32_t size = 0;
   *basic_key = EVENTDEFAULT_BASICKEY;
-  qDebug() << *basic_key;
   uint32_t repeat_start = 0, repeat_end = 0;
   WAVEFORMATCHUNK format{};
 
