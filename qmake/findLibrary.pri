@@ -7,13 +7,12 @@ defineTest(findLibrary) {
   # Name of the library when printing QMake messages
   prettyName = $$1
 
-  # List of test names to execute in order
-  # At least one must succeed if library isRequired, all may fail if !isRequired
-  # If none succeed and library isRequired, errors build with appropriate message
+  # List of test names to execute in order. At least one must succeed.
   testNames_var = $$2
   testNames = $$eval($$testNames_var)
 
   # If this library is required by default (i.e. in general or for the target platform)
+  # If isRequired, prints out an additional error message.
   isRequired = $$3
 
   if(!isEmpty(isRequired):$$isRequired): dependency = "required"
@@ -29,6 +28,6 @@ defineTest(findLibrary) {
 
   !equals(dependency, "detected") {
     error("$$prettyName support is $$dependency but all tests failed! Check $$_PRO_FILE_PWD_/config.log for more details!")
-    return(false)
   }
+  return(false)
 }
