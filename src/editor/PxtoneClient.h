@@ -73,6 +73,7 @@ class PxtoneClient : public QObject {
   void jumpToUser(qint64 user_id);
   bool isFollowing();
   std::set<int> selectedUnitNos();
+  std::set<int> selectedUnitIds();
   const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
   const mooState *moo() const { return m_controller->moo(); }

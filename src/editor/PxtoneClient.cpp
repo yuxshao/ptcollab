@@ -201,6 +201,16 @@ std::set<int> PxtoneClient::selectedUnitNos() {
   return unit_nos;
 }
 
+std::set<int> PxtoneClient::selectedUnitIds() {
+  std::set<int> unit_ids;
+  unit_ids.insert(editState().m_current_unit_id);
+
+  for (int i = 0; i < pxtn()->Unit_Num(); ++i)
+    if (pxtn()->Unit_Get(i)->get_operated())
+      unit_ids.insert(unitIdMap().noToId(i));
+  return unit_ids;
+}
+
 qint64 PxtoneClient::uid() const { return m_controller->uid(); }
 qint64 PxtoneClient::following_uid() const {
   if (m_following_user.has_value()) return m_following_user.value();

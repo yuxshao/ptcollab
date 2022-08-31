@@ -673,28 +673,46 @@ void EditorWindow::rKeyStateChanged(bool state) {
   m_keyboard_view->setSelectUnitEnabled(state);
 }
 
-void applyOn(const Input::State::On &v, int end, PxtoneClient *client) {
+void applyOn(const Input::State::On &v, int unit_id, int end,
+             PxtoneClient *client) {
   std::vector<Interval> clock_ints = v.clock_ints(end, client->pxtn()->master);
   // TODO: Dedup
   using namespace Action;
   std::list<Primitive> actions;
   for (const auto &clock_int : clock_ints) {
-    actions.push_back({EVENTKIND_ON, client->editState().m_current_unit_id,
-                       clock_int.start, Delete{clock_int.end}});
-    actions.push_back({EVENTKIND_VELOCITY,
-                       client->editState().m_current_unit_id, clock_int.start,
-                       Delete{clock_int.end}});
-    actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
-                       clock_int.start, Delete{clock_int.end}});
-    actions.push_back({EVENTKIND_ON, client->editState().m_current_unit_id,
-                       clock_int.start, Add{clock_int.length()}});
-    actions.push_back({EVENTKIND_VELOCITY,
-                       client->editState().m_current_unit_id, clock_int.start,
-                       Add{v.on.vel()}});
-    actions.push_back({EVENTKIND_KEY, client->editState().m_current_unit_id,
-                       clock_int.start, Add{v.on.key}});
+    actions.push_back(
+        {EVENTKIND_ON, unit_id, clock_int.start, Delete{clock_int.end}});
+    actions.push_back(
+        {EVENTKIND_VELOCITY, unit_id, clock_int.start, Delete{clock_int.end}});
+    actions.push_back(
+        {EVENTKIND_KEY, unit_id, clock_int.start, Delete{clock_int.end}});
+    actions.push_back(
+        {EVENTKIND_ON, unit_id, clock_int.start, Add{clock_int.length()}});
+    actions.push_back(
+        {EVENTKIND_VELOCITY, unit_id, clock_int.start, Add{v.on.vel()}});
+    actions.push_back({EVENTKIND_KEY, unit_id, clock_int.start, Add{v.on.key}});
   }
   if (actions.size() > 0) client->applyAction(actions);
+}
+
+struct FinalizedMidiNote {
+  Input::State::On details;
+  int unit_id;
+};
+
+std::vector<FinalizedMidiNote> receiveOnEvent(
+    const Input::Event::On &e, int now, Input::State::State &state,
+    const std::set<int> &selected_unit_ids) {
+  // take out all things not currently selected
+  // if it's full take out the first input note
+  // if there's more than 1 empty space put it in the lowest one (or the one
+  // whose last note was closest?)
+}
+std::vector<FinalizedMidiNote> receiveOffEvent(
+    const Input::Event::Off &e, Input::State::State &state,
+    const std::set<int> &selected_unit_ids) {
+  // take out all things not currently selected
+  // take out the thing that was just turned off
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {
@@ -714,10 +732,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
             if (Settings::RecordMidi::get()) {
               m_client->changeEditState(
                   [&](EditState &state) {
-                    if (state.m_input_state.has_value()) {
-                      applyOn(state.m_input_state.value(), start, m_client);
-                    }
-                    state.m_input_state = Input::State::On{start, e};
+                    for (const FinalizedMidiNote &a :
+                         receiveOnEvent(e, start, state.m_input_state,
+                                        m_client->selectedUnitIds()))
+                      applyOn(a.details, a.unit_id, start, m_client);
                   },
                   false);
             }
@@ -749,13 +767,10 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                   m_record_note_preview[e.key].reset();
                   m_keyboard_view->currentMidiNotes().erase(e.key);
 
-                  if (state.m_input_state.has_value()) {
-                    Input::State::On &v = state.m_input_state.value();
-                    if (v.on.key == e.key) {
-                      applyOn(v, m_moo_clock->nowNoWrap(), m_client);
-                      state.m_input_state.reset();
-                    }
-                  }
+                  for (const FinalizedMidiNote &a : receiveOffEvent(
+                           e, state.m_input_state, m_client->selectedUnitIds()))
+                    applyOn(a.details, a.unit_id, m_moo_clock->nowNoWrap(),
+                            m_client);
                 },
                 false);
           },
