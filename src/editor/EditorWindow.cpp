@@ -835,8 +835,15 @@ void EditorWindow::checkForOldAutoSaves() {
           tr("Old backup save files found. This usually happens if a "
              "previous ptcollab session quit unexpxectedly. Opening backup "
              "folder. If you want to stop seeing this message, simply "
-             "remove all the files from the folder. "));
-      if (result == QMessageBox::Ok) QDesktopServices::openUrl(autoSaveDir());
+             "remove all the files from the folder (%1). ")
+              .arg(autoSaveDir()));
+      if (result == QMessageBox::Ok) {
+        if (!QDesktopServices::openUrl(autoSaveDir()))
+          QMessageBox::information(this, tr("Unable to open backup folder"),
+                                   tr("Unable to open backup folder. You can "
+                                      "access your backups at %1")
+                                       .arg(autoSaveDir()));
+      }
       break;
     }
   }
