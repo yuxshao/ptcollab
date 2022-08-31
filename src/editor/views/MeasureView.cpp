@@ -659,7 +659,8 @@ void MeasureView::mousePressEvent(QMouseEvent *event) {
                       m_client->pxtn(), &m_client->moo()->params,
                       unit_no.value(), clock, std::list<EVERECORD>(),
                       m_client->audioState()->bufferSize(),
-                      Settings::ChordPreview::get(), this);
+                      Settings::ChordPreview::get() && !m_client->isPlaying(),
+                      this);
                   s.mouse_edit_state.base_velocity =
                       m_client->pxtn()->evels->get_Value(clock, unit_no.value(),
                                                          EVENTKIND_VELOCITY);
