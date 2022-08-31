@@ -199,6 +199,14 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
         shift_jis_codec->toUnicode(woice->get_name_buf_jis(nullptr)));
   }
 }
+
+QString format_with_sign(int s) {
+  if (s > 0)
+    return QString("+%1").arg(s);
+  else
+    return QString("%1").arg(s);
+}
+
 static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                           const Event &last, const Event &curr,
                           qreal clockPerPx, const QColor &onColor,
@@ -231,6 +239,29 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                          arbitrarily_tall, Qt::AlignTop,
                          QString("%1").arg(last.value));
       }
+    }
+    if (current_kind == EVENTKIND_TUNING) {
+      QColor font = StyleEditor::config.color.ParamFont;
+      font.setAlpha(onColor.alpha());
+      painter.setPen(font);
+      painter.setFont(QFont(StyleEditor::config.font.EditorFont,
+                            Settings::TextSize::get()));
+      int s = 4;
+      Qt::AlignmentFlag alignment;
+      int y;
+      if (lastY < height / 2) {
+        y = std::max(lastY, 0) + lineHeight / 2 + 1;
+        alignment = Qt::AlignTop;
+      } else {
+        y = std::min(lastY, height) - lineHeight / 2 - 1 - height;
+        alignment = Qt::AlignBottom;
+      }
+      float tuning = *((float *)&last.value);
+      int cents = log2(tuning) * 100 * 12;
+      painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
+                       QString("%1 (%2c)")
+                           .arg(tuning, 0, 'f', 3)
+                           .arg(format_with_sign(cents)));
     }
   } else {
     int32_t w = curr.value / clockPerPx;
@@ -265,6 +296,7 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
                            lineHeight, c);
         }
       }
+      // explicitly don't break;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
@@ -300,8 +332,8 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
           QColor::fromRgb(
               color.red(), color.green(), color.blue(),
               128 * alphaMultiplier));  // I can't find where this is used. It
-                                        // was white originally, so I will have
-                                        // it use FadedWhite
+                                        // was white originally, so I will
+                                        // have it use FadedWhite
       break;
     }
     case MouseEditState::Type::Select: {
