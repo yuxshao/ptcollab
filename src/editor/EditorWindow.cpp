@@ -703,16 +703,52 @@ struct FinalizedMidiNote {
 std::vector<FinalizedMidiNote> receiveOnEvent(
     const Input::Event::On &e, int now, Input::State::State &state,
     const std::set<int> &selected_unit_ids) {
+  std::vector<FinalizedMidiNote> finalized;
   // take out all things not currently selected
+  for (auto it = state.notes_by_id.begin(); it != state.notes_by_id.end();) {
+    if (selected_unit_ids.count(it->first) == 0) {
+      finalized.push_back({it->second, it->first});
+      it = state.notes_by_id.erase(it);
+    } else
+      ++it;
+  }
   // if it's full take out the first input note
+  if (state.notes_by_id.size() == selected_unit_ids.size()) {
+    auto it = state.notes_by_id.begin();
+    auto min = state.notes_by_id.begin();
+    while (it != state.notes_by_id.end()) {
+      if (it->second.start_clock < min->second.start_clock) min = it;
+      ++it;
+    }
+    if (min != state.notes_by_id.end()) {
+      finalized.push_back({min->second, min->first});
+      state.notes_by_id.erase(min);
+    }
+  }
   // if there's more than 1 empty space put it in the lowest one (or the one
   // whose last note was closest?)
+  for (auto i : selected_unit_ids) {
+    if (state.notes_by_id.count(i) == 0) {
+      state.notes_by_id[i] = Input::State::On{now, e};
+      break;
+    }
+  }
+  return finalized;
 }
 std::vector<FinalizedMidiNote> receiveOffEvent(
     const Input::Event::Off &e, Input::State::State &state,
     const std::set<int> &selected_unit_ids) {
-  // take out all things not currently selected
-  // take out the thing that was just turned off
+  std::vector<FinalizedMidiNote> finalized;
+  // take out all things not currently selected + the thing that was just turned
+  // off
+  for (auto it = state.notes_by_id.begin(); it != state.notes_by_id.end();) {
+    if (selected_unit_ids.count(it->first) == 0 || it->second.on.key == e.key) {
+      finalized.push_back({it->second, it->first});
+      it = state.notes_by_id.erase(it);
+    } else
+      ++it;
+  }
+  return finalized;
 }
 
 void EditorWindow::recordInput(const Input::Event::Event &e) {

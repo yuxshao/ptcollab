@@ -259,8 +259,11 @@ void drawOngoingAction(const EditState &state,
     }
   }
 
-  if (state.m_input_state.has_value() && nowNoWrap.has_value()) {
-    const Input::State::On &v = state.m_input_state.value();
+  if (state.m_input_state.notes_by_id.count(state.m_current_unit_id) &&
+      nowNoWrap.has_value()) {
+    // TODO: show for other units too if pinned
+    const Input::State::On &v =
+        state.m_input_state.notes_by_id.at(state.m_current_unit_id);
 
     for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawVelAction(interval / state.scale.clockPerPx, v.on.vel(), 255);

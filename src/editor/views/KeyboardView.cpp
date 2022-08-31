@@ -310,8 +310,11 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
     } break;
   }
 
-  if (state.m_input_state.has_value() && nowNoWrap.has_value()) {
-    const Input::State::On &v = state.m_input_state.value();
+  // TODO: show other inputs
+  if (state.m_input_state.notes_by_id.count(state.m_current_unit_id) &&
+      nowNoWrap.has_value()) {
+    const Input::State::On &v =
+        state.m_input_state.notes_by_id.at(state.m_current_unit_id);
 
     for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
       drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel(),
