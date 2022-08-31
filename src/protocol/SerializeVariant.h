@@ -115,6 +115,26 @@ inline QDataStream &operator<<(QDataStream &out, const std::monostate &) {
 }
 inline QDataStream &operator>>(QDataStream &in, std::monostate &) { return in; }
 
+template <typename T, typename U>
+QDataStream &operator>>(QDataStream &in, std::map<T, U> &a) {
+  quint64 size;
+  in >> size;
+  for (quint64 i = 0; i < size; ++i) {
+    T k;
+    U v;
+    in >> k >> v;
+    a.insert({k, v});
+  }
+  return in;
+}
+
+template <typename T, typename U>
+QDataStream &operator<<(QDataStream &out, const std::map<T, U> &a) {
+  out << quint64(a.size());
+  for (const auto &[k, v] : a) out << k << v;
+  return out;
+}
+
 #include <QTextStream>
 
 template <typename... Args>

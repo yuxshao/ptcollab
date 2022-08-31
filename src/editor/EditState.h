@@ -159,9 +159,13 @@ struct On {
   Event::On on;
   std::vector<Interval> clock_ints(int now, const pxtnMaster *master) const;
 };
-using State = std::optional<On>;
+struct State {
+  std::map<int, On> notes_by_id;
+};
+QDataStream &operator<<(QDataStream &out, const State &a);
+QDataStream &operator>>(QDataStream &in, State &a);
 }  // namespace State
-};  // namespace Input
+}  // namespace Input
 
 struct EditState {
   MouseEditState mouse_edit_state;

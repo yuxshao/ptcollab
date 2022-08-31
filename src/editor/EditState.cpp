@@ -126,6 +126,15 @@ std::vector<Interval> Input::State::On::clock_ints(
 }
 
 namespace Input {
+namespace State {
+
+QDataStream &operator<<(QDataStream &out, const State &a) {
+  return (out << a.notes_by_id);
+}
+QDataStream &operator>>(QDataStream &in, State &a) {
+  return (in >> a.notes_by_id);
+}
+}  // namespace State
 namespace Event {
 int On::vel() const {
   if (Settings::VelocitySensitivity::get()) return raw_vel;
