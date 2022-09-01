@@ -310,15 +310,15 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
     } break;
   }
 
-  // TODO: show other inputs
-  if (state.m_input_state.notes_by_id.count(state.m_current_unit_id) &&
-      nowNoWrap.has_value()) {
-    const Input::State::On &v =
-        state.m_input_state.notes_by_id.at(state.m_current_unit_id);
-
-    for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master))
-      drawGhostOnNote(painter, interval, state.scale, width, brush, v.on.vel(),
-                      255, alphaMultiplier, true, true, v.on.key, displayEdo);
+  if (nowNoWrap.has_value()) {
+    for (const auto &[unit_id, v] : state.m_input_state.notes_by_id) {
+      for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master)) {
+        const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+        drawGhostOnNote(painter, interval, state.scale, width, brush,
+                        v.on.vel(), 255, alphaMultiplier, true, true, v.on.key,
+                        displayEdo);
+      }
+    }
   }
 }
 
