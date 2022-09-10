@@ -146,7 +146,7 @@ HEADERS += \
            protocol/SerializeVariant.h \
            pxtone/pxtn.h \
            pxtone/pxtnDelay.h \
-           pxtone/pxtnDescriptor.h \
+           pxtone/pxtnData.h \
            pxtone/pxtnError.h \
            pxtone/pxtnEvelist.h \
            pxtone/pxtnMaster.h \
@@ -234,7 +234,7 @@ SOURCES += main.cpp \
            protocol/PxtoneEditAction.cpp \
            protocol/RemoteAction.cpp \
            pxtone/pxtnDelay.cpp \
-           pxtone/pxtnDescriptor.cpp \
+           pxtone/pxtnData.cpp \
            pxtone/pxtnError.cpp \
            pxtone/pxtnEvelist.cpp \
            pxtone/pxtnMaster.cpp \

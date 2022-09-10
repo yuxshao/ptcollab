@@ -5,7 +5,7 @@
 
 #include "BroadcastServer.h"
 #include "protocol/RemoteAction.h"
-#include "pxtone/pxtnDescriptor.h"
+//#include "pxtone/pxtnDescriptor.h"
 
 class Client : public QObject {
   Q_OBJECT

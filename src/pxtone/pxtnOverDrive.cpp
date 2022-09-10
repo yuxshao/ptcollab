@@ -1,10 +1,13 @@
-// '12/03/03
+﻿// '12/03/03
 
 #include "./pxtnOverDrive.h"
 
-#include "./pxtn.h"
+pxtnOverDrive::pxtnOverDrive(pxtnIO_r io_read, pxtnIO_w io_write,
+                             pxtnIO_seek io_seek, pxtnIO_pos io_pos) {
+  _set_io_funcs(io_read, io_write, io_seek, io_pos);
 
-pxtnOverDrive::pxtnOverDrive() { _b_played = true; }
+  _b_played = true;
+}
 
 pxtnOverDrive::~pxtnOverDrive() {}
 
@@ -33,7 +36,11 @@ bool pxtnOverDrive::switch_played() {
   return _b_played;
 }
 
-void pxtnOverDrive::Tone_Supple(int32_t *group_smps) const {
+void pxtnOverDrive::Tone_Ready() {
+  _cut_16bit_top = (int32_t)(32767 * (100 - _cut_f) / 100);
+}
+
+void pxtnOverDrive::Tone_Supple(int32_t* group_smps) const {
   if (!_b_played) return;
   int32_t work = group_smps[_group];
   if (work > _cut_16bit_top)
@@ -52,7 +59,7 @@ typedef struct {
   float yyy;
 } _OVERDRIVESTRUCT;
 
-bool pxtnOverDrive::Write(pxtnDescriptor *p_doc) const {
+bool pxtnOverDrive::Write(void* desc) const {
   _OVERDRIVESTRUCT over;
   int32_t size;
 
@@ -63,24 +70,31 @@ bool pxtnOverDrive::Write(pxtnDescriptor *p_doc) const {
 
   // dela ----------
   size = sizeof(_OVERDRIVESTRUCT);
-  if (!p_doc->w_asfile(&size, sizeof(uint32_t), 1)) return false;
-  if (!p_doc->w_asfile(&over, size, 1)) return false;
+  if (!_io_write(desc, &size, sizeof(uint32_t), 1)) return false;
+  if (!_io_write(desc, &over, size, 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnOverDrive::Read(pxtnDescriptor *p_doc) {
-  _OVERDRIVESTRUCT over{};
+pxtnERR pxtnOverDrive::Read(void* desc) {
+  _OVERDRIVESTRUCT over = {0};
   int32_t size = 0;
 
   memset(&over, 0, sizeof(_OVERDRIVESTRUCT));
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&over, sizeof(_OVERDRIVESTRUCT), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &over, sizeof(_OVERDRIVESTRUCT), 1))
+    return pxtnERR_desc_r;
 
   if (over.xxx) return pxtnERR_fmt_unknown;
   if (over.yyy) return pxtnERR_fmt_unknown;
+  if (over.cut > TUNEOVERDRIVE_CUT_MAX || over.cut < TUNEOVERDRIVE_CUT_MIN)
+    return pxtnERR_fmt_unknown;
+  if (over.amp > TUNEOVERDRIVE_AMP_MAX || over.amp < TUNEOVERDRIVE_AMP_MIN)
+    return pxtnERR_fmt_unknown;
 
-  if (!Set(over.cut, over.amp, over.group, false)) return pxtnERR_fmt_unknown;
+  _cut_f = over.cut;
+  _amp_f = over.amp;
+  _group = over.group;
 
   return pxtnOK;
 }

@@ -1,11 +1,15 @@
-// '12/03/03
+﻿// '12/03/03
 
 #include "./pxtnMaster.h"
 
-#include "./pxtn.h"
+#include "./pxtnData.h"
 #include "./pxtnEvelist.h"
 
-pxtnMaster::pxtnMaster() { Reset(); }
+pxtnMaster::pxtnMaster(pxtnIO_r io_read, pxtnIO_w io_write, pxtnIO_seek io_seek,
+                       pxtnIO_pos io_pos) {
+  _set_io_funcs(io_read, io_write, io_seek, io_pos);
+  Reset();
+}
 
 pxtnMaster::~pxtnMaster() {}
 
@@ -24,8 +28,8 @@ void pxtnMaster::Set(int32_t beat_num, float beat_tempo, int32_t beat_clock) {
   _beat_clock = beat_clock;
 }
 
-void pxtnMaster::Get(int32_t *p_beat_num, float *p_beat_tempo,
-                     int32_t *p_beat_clock, int32_t *p_meas_num) const {
+void pxtnMaster::Get(int32_t* p_beat_num, float* p_beat_tempo,
+                     int32_t* p_beat_clock, int32_t* p_meas_num) const {
   if (p_beat_num) *p_beat_num = _beat_num;
   if (p_beat_tempo) *p_beat_tempo = _beat_tempo;
   if (p_beat_clock) *p_beat_clock = _beat_clock;
@@ -36,16 +40,11 @@ int32_t pxtnMaster::get_beat_num() const { return _beat_num; }
 float pxtnMaster::get_beat_tempo() const { return _beat_tempo; }
 int32_t pxtnMaster::get_beat_clock() const { return _beat_clock; }
 int32_t pxtnMaster::get_meas_num() const { return _meas_num; }
-
 int32_t pxtnMaster::get_repeat_meas() const { return _repeat_meas; }
 int32_t pxtnMaster::get_last_meas() const { return _last_meas; }
 
 int32_t pxtnMaster::get_last_clock() const {
   return _last_meas * _beat_clock * _beat_num;
-}
-
-int32_t pxtnMaster::get_clock_num() const {
-  return _meas_num * _beat_clock * _beat_num;
 }
 
 int32_t pxtnMaster::get_play_meas() const {
@@ -62,9 +61,6 @@ void pxtnMaster::AdjustMeasNum(int32_t clock) {
   int32_t m_num;
   int32_t b_num;
 
-  /// looks like beat_clock represents # ticks in a beat. clock represents how
-  /// many ticks have passed. it's an argument. i guess if the clock goes beyond
-  /// the current # of measures it increases to fit.
   b_num = (clock + _beat_clock - 1) / _beat_clock;
   m_num = (b_num + _beat_num - 1) / _beat_num;
   if (_meas_num <= m_num) _meas_num = m_num;
@@ -93,24 +89,25 @@ void pxtnMaster::set_beat_clock(int32_t beat_clock) {
   _beat_clock = beat_clock;
 }
 
-bool pxtnMaster::io_w_v5(pxtnDescriptor *p_doc, int32_t rough) const {
+bool pxtnMaster::io_w_v5(void* desc, int32_t rough) const {
   uint32_t size = 15;
   int16_t bclock = _beat_clock / rough;
   int32_t clock_repeat = bclock * _beat_num * get_repeat_meas();
   int32_t clock_last = bclock * _beat_num * get_last_meas();
   int8_t bnum = _beat_num;
   float btempo = _beat_tempo;
-  if (!p_doc->w_asfile(&size, sizeof(uint32_t), 1)) return false;
-  if (!p_doc->w_asfile(&bclock, sizeof(int16_t), 1)) return false;
-  if (!p_doc->w_asfile(&bnum, sizeof(int8_t), 1)) return false;
-  if (!p_doc->w_asfile(&btempo, sizeof(float), 1)) return false;
-  if (!p_doc->w_asfile(&clock_repeat, sizeof(int32_t), 1)) return false;
-  if (!p_doc->w_asfile(&clock_last, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &size, sizeof(uint32_t), 1)) return false;
+  if (!_io_write(desc, &bclock, sizeof(int16_t), 1)) return false;
+  if (!_io_write(desc, &bnum, sizeof(int8_t), 1)) return false;
+  if (!_io_write(desc, &btempo, sizeof(float), 1)) return false;
+  if (!_io_write(desc, &clock_repeat, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &clock_last, sizeof(int32_t), 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnMaster::io_r_v5(pxtnDescriptor *p_doc) {
+pxtnERR pxtnMaster::io_r_v5(void* desc) {
+  pxtnERR res = pxtnERR_VOID;
   int16_t beat_clock = 0;
   int8_t beat_num = 0;
   float beat_tempo = 0;
@@ -119,14 +116,14 @@ pxtnERR pxtnMaster::io_r_v5(pxtnDescriptor *p_doc) {
 
   uint32_t size = 0;
 
-  if (!p_doc->r(&size, sizeof(uint32_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, sizeof(uint32_t), 1)) return pxtnERR_desc_r;
   if (size != 15) return pxtnERR_fmt_unknown;
 
-  if (!p_doc->r(&beat_clock, sizeof(int16_t), 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&beat_num, sizeof(int8_t), 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&beat_tempo, sizeof(float), 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&clock_repeat, sizeof(int32_t), 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&clock_last, sizeof(int32_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &beat_clock, sizeof(int16_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &beat_num, sizeof(int8_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &beat_tempo, sizeof(float), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &clock_repeat, sizeof(int32_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &clock_last, sizeof(int32_t), 1)) return pxtnERR_desc_r;
 
   _beat_clock = beat_clock;
   _beat_num = beat_num;
@@ -138,13 +135,12 @@ pxtnERR pxtnMaster::io_r_v5(pxtnDescriptor *p_doc) {
   return pxtnOK;
 }
 
-/// A MasterV5 event contains 5 pieces of data (returns such if successful)
-int32_t pxtnMaster::io_r_v5_EventNum(pxtnDescriptor *p_doc) {
+int32_t pxtnMaster::io_r_v5_EventNum(void* desc) {
   uint32_t size;
-  if (!p_doc->r(&size, sizeof(uint32_t), 1)) return 0;
+  if (!_io_read(desc, &size, sizeof(uint32_t), 1)) return 0;
   if (size != 15) return 0;
   int8_t buf[15];
-  if (!p_doc->r(buf, sizeof(int8_t), 15)) return 0;
+  if (!_io_read(desc, buf, sizeof(int8_t), 15)) return 0;
   return 5;
 }
 
@@ -160,10 +156,10 @@ typedef struct {
 } _x4x_MASTER;
 
 // read( project )
-pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
-  _x4x_MASTER mast{};
+pxtnERR pxtnMaster::io_r_x4x(void* desc) {
+  _x4x_MASTER mast = {0};
   int32_t size = 0;
-  uint32_t e = 0;
+  int32_t e = 0;
   int32_t status = 0;
   int32_t clock = 0;
   int32_t volume = 0;
@@ -172,8 +168,8 @@ pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
   int32_t beat_clock, beat_num, repeat_clock, last_clock;
   float beat_tempo = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&mast, sizeof(_x4x_MASTER), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &mast, sizeof(_x4x_MASTER), 1)) return pxtnERR_desc_r;
 
   // unknown format
   if (mast.data_num != 3) return pxtnERR_fmt_unknown;
@@ -187,10 +183,10 @@ pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
 
   absolute = 0;
 
-  for (e = 0; e < mast.event_num; e++) {
-    if (!p_doc->v_r(&status)) break;
-    if (!p_doc->v_r(&clock)) break;
-    if (!p_doc->v_r(&volume)) break;
+  for (e = 0; e < (int32_t)mast.event_num; e++) {
+    if (!_data_r_v(desc, &status)) break;
+    if (!_data_r_v(desc, &clock)) break;
+    if (!_data_r_v(desc, &volume)) break;
     absolute += clock;
     clock = absolute;
 
@@ -232,22 +228,22 @@ pxtnERR pxtnMaster::io_r_x4x(pxtnDescriptor *p_doc) {
   return pxtnOK;
 }
 
-int32_t pxtnMaster::io_r_x4x_EventNum(pxtnDescriptor *p_doc) {
+int32_t pxtnMaster::io_r_x4x_EventNum(void* desc) {
   _x4x_MASTER mast;
   int32_t size;
   int32_t work;
   int32_t e;
 
   memset(&mast, 0, sizeof(_x4x_MASTER));
-  if (!p_doc->r(&size, 4, 1)) return 0;
-  if (!p_doc->r(&mast, sizeof(_x4x_MASTER), 1)) return 0;
+  if (!_io_read(desc, &size, 4, 1)) return 0;
+  if (!_io_read(desc, &mast, sizeof(_x4x_MASTER), 1)) return 0;
 
   if (mast.data_num != 3) return 0;
 
   for (e = 0; e < (int32_t)mast.event_num; e++) {
-    if (!p_doc->v_r(&work)) return 0;
-    if (!p_doc->v_r(&work)) return 0;
-    if (!p_doc->v_r(&work)) return 0;
+    if (!_data_r_v(desc, &work)) return 0;
+    if (!_data_r_v(desc, &work)) return 0;
+    if (!_data_r_v(desc, &work)) return 0;
   }
 
   return mast.event_num;
@@ -255,16 +251,16 @@ int32_t pxtnMaster::io_r_x4x_EventNum(pxtnDescriptor *p_doc) {
 
 namespace MasterExtended {
 
-int last_clock(const pxtnMaster *master) {
+int last_clock(const pxtnMaster* master) {
   return master->get_beat_clock() * master->get_play_meas() *
          master->get_beat_num();
 }
 
-int repeat_clock(const pxtnMaster *master) {
+int repeat_clock(const pxtnMaster* master) {
   return master->get_repeat_meas() * master->get_beat_num() *
          master->get_beat_clock();
 }
-int wrapClock(const pxtnMaster *master, int clock) {
+int wrapClock(const pxtnMaster* master, int clock) {
   if (clock >= last_clock(master))
     clock = (clock - repeat_clock(master)) %
                 (last_clock(master) - repeat_clock(master)) +

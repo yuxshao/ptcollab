@@ -1,32 +1,29 @@
-#ifndef pxtnEvelist_H
+﻿#ifndef pxtnEvelist_H
 #define pxtnEvelist_H
 
-#include "./pxtn.h"
-#include "./pxtnDescriptor.h"
+#include "./pxtnData.h"
 
 typedef enum : int8_t {
   EVENTKIND_NULL = 0,  //  0
 
-  EVENTKIND_ON,          //  1 - indicates a block of time a note is on
-  EVENTKIND_KEY,         //  2 - indicates a change of key
+  EVENTKIND_ON,          //  1
+  EVENTKIND_KEY,         //  2
   EVENTKIND_PAN_VOLUME,  //  3
-  EVENTKIND_VELOCITY,    //  4 - indicates a change of velocity
-  EVENTKIND_VOLUME,      //  5 - indicates a change in volume
+  EVENTKIND_VELOCITY,    //  4
+  EVENTKIND_VOLUME,      //  5
   EVENTKIND_PORTAMENT,   //  6
-  EVENTKIND_BEATCLOCK,   //  7 - old
-  EVENTKIND_BEATTEMPO,   //  8 - old
-  EVENTKIND_BEATNUM,     //  9 - old
-  EVENTKIND_REPEAT,      // 10 - old
-  EVENTKIND_LAST,        // 11 - old
+  EVENTKIND_BEATCLOCK,   //  7
+  EVENTKIND_BEATTEMPO,   //  8
+  EVENTKIND_BEATNUM,     //  9
+  EVENTKIND_REPEAT,      // 10
+  EVENTKIND_LAST,        // 11
   EVENTKIND_VOICENO,     // 12
   EVENTKIND_GROUPNO,     // 13
   EVENTKIND_TUNING,      // 14
   EVENTKIND_PAN_TIME,    // 15
 
   EVENTKIND_NUM,  // 16
-} EVENTKIND;
-
-extern const char *EVENTKIND_names[EVENTKIND_NUM];
+} EVENTKIND;      // Struct name is needed in CopyOptionsDialog
 
 #define EVENTDEFAULT_VOLUME 104
 #define EVENTDEFAULT_VELOCITY 104
@@ -43,6 +40,8 @@ extern const char *EVENTKIND_names[EVENTKIND_NUM];
 #define EVENTDEFAULT_BEATTEMPO 120
 #define EVENTDEFAULT_BEATCLOCK 480
 
+extern const char* EVENTKIND_names[];
+
 typedef struct EVERECORD {
   uint8_t kind;
   uint8_t unit_no;
@@ -50,33 +49,36 @@ typedef struct EVERECORD {
   uint8_t reserve2;
   int32_t value;
   int32_t clock;
-  EVERECORD *prev;
-  EVERECORD *next;
+  EVERECORD* prev;
+  EVERECORD* next;
 } EVERECORD;
 
 //--------------------------------
 
-class pxtnEvelist {
+class pxtnEvelist : public pxtnData {
  private:
-  pxtnEvelist(const pxtnEvelist &src) = delete;               // copy
-  pxtnEvelist &operator=(const pxtnEvelist &right) = delete;  // substitution
+  pxtnEvelist(const pxtnEvelist& src) {}  // copy
+  pxtnEvelist& operator=(const pxtnEvelist& right) {
+    return *this;
+  }  // substitution
 
   int32_t _eve_allocated_num;
-  EVERECORD *_eves;
-  EVERECORD *_start;
+  EVERECORD* _eves;
+  EVERECORD* _start;
   int32_t _linear;
 
-  EVERECORD *_p_x4x_rec;
+  EVERECORD* _p_x4x_rec;
 
-  void _rec_set(EVERECORD *p_rec, EVERECORD *prev, EVERECORD *next,
+  void _rec_set(EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next,
                 int32_t clock, uint8_t unit_no, uint8_t kind, int32_t value);
-  void _rec_cut(EVERECORD *p_rec);
+  void _rec_cut(EVERECORD* p_rec);
 
  public:
   void Release();
   void Clear();
 
-  pxtnEvelist();
+  pxtnEvelist(pxtnIO_r io_read, pxtnIO_w io_write, pxtnIO_seek io_seek,
+              pxtnIO_pos io_pos);
   ~pxtnEvelist();
 
   bool Allocate(int32_t max_event_num);
@@ -90,7 +92,7 @@ class pxtnEvelist {
   int32_t get_Count(int32_t clock1, int32_t clock2, uint8_t unit_no) const;
   int32_t get_Value(int32_t clock, uint8_t unit_no, uint8_t kind) const;
 
-  const EVERECORD *get_Records() const;
+  const EVERECORD* get_Records() const;
 
   bool Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
                     int32_t value);
@@ -123,22 +125,21 @@ class pxtnEvelist {
 
   int32_t BeatClockOperation(int32_t rate);
 
-  bool io_Write(pxtnDescriptor *p_doc, int32_t rough) const;
-  pxtnERR io_Read(pxtnDescriptor *p_doc);
+  bool io_Write(void* desc, int32_t rough) const;
+  pxtnERR io_Read(void* desc);
 
-  int32_t io_Read_EventNum(pxtnDescriptor *p_doc) const;
+  int32_t io_Read_EventNum(void* desc) const;
 
   bool x4x_Read_Start();
   void x4x_Read_NewKind();
   void x4x_Read_Add(int32_t clock, uint8_t unit_no, uint8_t kind,
                     int32_t value);
 
-  pxtnERR io_Unit_Read_x4x_EVENT(pxtnDescriptor *p_doc, bool bTailAbsolute,
+  pxtnERR io_Unit_Read_x4x_EVENT(void* desc, bool bTailAbsolute,
                                  bool bCheckRRR);
-  pxtnERR io_Read_x4x_EventNum(pxtnDescriptor *p_doc, int32_t *p_num) const;
+  pxtnERR io_Read_x4x_EventNum(void* desc, int32_t* p_num) const;
 };
 
 bool Evelist_Kind_IsTail(int32_t kind);
-int32_t DefaultKindValue(uint8_t kind);
 
 #endif

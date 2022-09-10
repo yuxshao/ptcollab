@@ -1,12 +1,11 @@
-#ifndef pxtnService_H
+﻿#ifndef pxtnService_H
 #define pxtnService_H
 
-#include <map>
+#include <memory>  //std::shared_ptr
 #include <vector>
 
-#include "./pxtn.h"
+#include "./pxtnData.h"
 #include "./pxtnDelay.h"
-#include "./pxtnDescriptor.h"
 #include "./pxtnEvelist.h"
 #include "./pxtnMaster.h"
 #include "./pxtnMax.h"
@@ -20,8 +19,6 @@
 
 #define pxtnVOMITPREPFLAG_loop 0x01
 #define pxtnVOMITPREPFLAG_unit_mute 0x02
-
-class InterpolatedVolumeMeter;
 
 typedef struct {
   int32_t start_pos_meas;
@@ -38,7 +35,8 @@ typedef struct {
 
 class pxtnService;
 
-// Static parameters that are computed when moo is initialized.
+// start changes
+//  Static parameters that are computed when moo is initialized.
 struct mooParams {
   // Whether muting individual units is allowed or not
   bool b_mute_by_unit;
@@ -58,13 +56,13 @@ struct mooParams {
 
   mooParams();
 
-  void processEvent(pxtnUnitTone *p_u, const EVERECORD *e, int32_t clock,
-                    int32_t smp_num, const pxtnService *pxtn) const;
-  void processNonOnEvent(pxtnUnitTone *p_u, EVENTKIND kind, int32_t value,
-                         const pxtnService *pxtn) const;
+  void processEvent(pxtnUnitTone* p_u, const EVERECORD* e, int32_t clock,
+                    int32_t smp_num, const pxtnService* pxtn) const;
+  void processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind, int32_t value,
+                         const pxtnService* pxtn) const;
 
   // TODO: maybe don't need to expose
-  void resetVoiceOn(pxtnUnitTone *p_u) const;
+  void resetVoiceOn(pxtnUnitTone* p_u) const;
   void adjustClockRate(float rate) { clock_rate = rate; };
 };
 
@@ -80,7 +78,7 @@ struct mooState {
   int32_t smp_count;
 
   // Next event
-  const EVERECORD *p_eve;
+  const EVERECORD* p_eve;
 
   // Number of times this moo has looped. For ptcollab bookkeeping.
   int num_loop;
@@ -108,14 +106,15 @@ struct mooState {
   void tones_clear();
 };
 
-typedef bool (*pxtnSampledCallback)(void *user, const pxtnService *pxtn);
+// end changes
+typedef bool (*pxtnSampledCallback)(void* user, const pxtnService* pxtn);
 
-class pxtnService {
+class pxtnService : public pxtnData {
  private:
-  void operator=(const pxtnService &src) = delete;
-  pxtnService(const pxtnService &src) = delete;
+  void operator=(const pxtnService& src) {}
+  pxtnService(const pxtnService& src) {}
 
-  enum _enum_FMTVER : int8_t {
+  enum _enum_FMTVER {
     _enum_FMTVER_unknown = 0,
     _enum_FMTVER_x1x,  // fix event num = 10000
     _enum_FMTVER_x2x,  // no version of exe
@@ -130,39 +129,40 @@ class pxtnService {
 
   int32_t _dst_ch_num, _dst_sps, _dst_byte_per_smp;
 
-  pxtnPulse_NoiseBuilder *_ptn_bldr;
+  pxtnPulse_NoiseBuilder* _ptn_bldr;
 
   size_t _delay_max;
+  int32_t _delay_num;
   std::vector<pxtnDelay> _delays;
   size_t _ovdrv_max;
+  int32_t _ovdrv_num;
   std::vector<pxtnOverDrive> _ovdrvs;
   int32_t _woice_max;
   int32_t _woice_num;
-  std::shared_ptr<pxtnWoice> *_woices;
+  std::shared_ptr<pxtnWoice>* _woices;
   int32_t _unit_max;
   int32_t _unit_num;
-  // TODO: The units are largely also part of the moo state, besides the name.
-  pxtnUnit **_units;
+  pxtnUnit** _units;
 
   int32_t _group_num;
 
-  pxtnERR _ReadVersion(pxtnDescriptor *p_doc, _enum_FMTVER *p_fmt_ver,
-                       uint16_t *p_exe_ver);
-  pxtnERR _ReadTuneItems(pxtnDescriptor *p_doc);
-  bool _x1x_Project_Read(pxtnDescriptor *p_doc);
+  pxtnERR _ReadVersion(void* desc, _enum_FMTVER* p_fmt_ver,
+                       uint16_t* p_exe_ver);
+  pxtnERR _ReadTuneItems(void* desc);
+  bool _x1x_Project_Read(void* desc);
 
-  pxtnERR _io_Read_Delay(pxtnDescriptor *p_doc);
-  pxtnERR _io_Read_OverDrive(pxtnDescriptor *p_doc);
-  pxtnERR _io_Read_Woice(pxtnDescriptor *p_doc, pxtnWOICETYPE type);
-  pxtnERR _io_Read_OldUnit(pxtnDescriptor *p_doc, int32_t ver);
+  pxtnERR _io_Read_Delay(void* desc);
+  pxtnERR _io_Read_OverDrive(void* desc);
+  pxtnERR _io_Read_Woice(void* desc, pxtnWOICETYPE type);
+  pxtnERR _io_Read_OldUnit(void* desc, int32_t ver);
 
-  bool _io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const;
-  pxtnERR _io_assiWOIC_r(pxtnDescriptor *p_doc);
-  bool _io_assiUNIT_w(pxtnDescriptor *p_doc, int32_t idx) const;
-  pxtnERR _io_assiUNIT_r(pxtnDescriptor *p_doc);
+  bool _io_assiWOIC_w(void* desc, int32_t idx) const;
+  pxtnERR _io_assiWOIC_r(void* desc);
+  bool _io_assiUNIT_w(void* desc, int32_t idx) const;
+  pxtnERR _io_assiUNIT_r(void* desc);
 
-  bool _io_UNIT_num_w(pxtnDescriptor *p_doc) const;
-  pxtnERR _io_UNIT_num_r(pxtnDescriptor *p_doc, int32_t *p_num);
+  bool _io_UNIT_num_w(void* desc) const;
+  pxtnERR _io_UNIT_num_r(void* desc, int32_t* p_num);
 
   bool _x3x_TuningKeyEvent();
   bool _x3x_AddTuningEvent();
@@ -172,37 +172,78 @@ class pxtnService {
   // vomit..
   //////////////
   bool _moo_b_valid_data;
+  bool _moo_b_end_vomit;
+  bool _moo_b_init;
+
+  bool _moo_b_mute_by_unit;
+  bool _moo_b_loop;
+
+  int32_t _moo_smp_smooth;
+  float _moo_clock_rate;  // as the sample
+  int32_t _moo_smp_count;
+  int32_t _moo_smp_start;
+  int32_t _moo_smp_end;
+  int32_t _moo_smp_repeat;
+
+  int32_t _moo_fade_count;
+  int32_t _moo_fade_max;
+  int32_t _moo_fade_fade;
+  float _moo_master_vol;
+
+  int32_t _moo_top;
+  float _moo_smp_stride;
+  int32_t _moo_time_pan_index;
+
+  float _moo_bt_tempo;
+
+  // for make now-meas
+  int32_t _moo_bt_clock;
+  int32_t _moo_bt_num;
+
+  int32_t* _moo_group_smps;
+
+  const EVERECORD* _moo_p_eve;
+
+  pxtnPulse_Frequency* _moo_freq;
 
   pxtnERR _init(int32_t fix_evels_num, bool b_edit);
   bool _release();
-  pxtnERR _pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count);
+  pxtnERR _pre_count_event(void* desc, int32_t* p_count);
 
-  bool _moo_InitUnitTone(mooState &moo_state) const;
+  void _moo_constructor();
+  void _moo_destructer();
+  bool _moo_init();
+  bool _moo_release();
+
+  bool _moo_ResetVoiceOn(pxtnUnit* p_u, int32_t w) const;
+  bool _moo_InitUnitTone();
+  bool _moo_PXTONE_SAMPLE(void* p_data);
+
   pxtnSampledCallback _sampled_proc;
-  void *_sampled_user;
-
-  bool _moo_PXTONE_SAMPLE(void *p_data, mooState &moo_state) const;
+  void* _sampled_user;
 
  public:
-  pxtnService();
+  pxtnService(pxtnIO_r io_read, pxtnIO_w io_write, pxtnIO_seek io_seek,
+              pxtnIO_pos io_pos);
   ~pxtnService();
 
-  pxtnText *text;
-  pxtnMaster *master;
-  pxtnEvelist *evels;
+  pxtnText* text;
+  pxtnMaster* master;
+  pxtnEvelist* evels;
 
   pxtnERR init();
   pxtnERR init_collage(int32_t fix_evels_num);
   bool clear();
 
-  pxtnERR write(pxtnDescriptor *p_doc, bool bTune, uint16_t exe_ver);
-  pxtnERR read(pxtnDescriptor *p_doc);
+  pxtnERR write(void* desc, bool bTune, uint16_t exe_ver);
+  pxtnERR read(void* desc);
 
   bool AdjustMeasNum();
 
   int32_t get_last_error_id() const;
 
-  pxtnERR tones_ready(mooState &moo_state);
+  pxtnERR tones_ready(mooState& moo_state);
+  //  bool tones_clear();
 
   int32_t Group_Num() const;
 
@@ -212,20 +253,21 @@ class pxtnService {
   bool Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
                  int32_t group);
   bool Delay_Add(DELAYUNIT unit, float freq, float rate, int32_t group,
-                 mooState &moo_state);
-  bool Delay_Remove(int32_t idx, mooState &moo_state);
-  pxtnERR Delay_ReadyTone(int32_t idx, mooState &moo_state) const;
-  const pxtnDelay *Delay_Get(int32_t idx) const;
-  pxtnDelay *Delay_Get_variable(int32_t idx);
+                 mooState& moo_state);
+  bool Delay_Remove(int32_t idx, mooState& moo_state);
+  pxtnERR Delay_ReadyTone(int32_t idx, mooState& moo_state) const;
+  const pxtnDelay* Delay_Get(int32_t idx) const;
+  pxtnDelay* Delay_Get_variable(int32_t idx);
 
   // over drive.
   int32_t OverDrive_Num() const;
   int32_t OverDrive_Max() const;
   bool OverDrive_Set(int32_t idx, float cut, float amp, int32_t group);
   bool OverDrive_Add(float cut, float amp, int32_t group);
+  bool OverDrive_ReadyTone(int32_t idx);
   bool OverDrive_Remove(int32_t idx);
-  const pxtnOverDrive *OverDrive_Get(int32_t idx) const;
-  pxtnOverDrive *OverDrive_Get_variable(int32_t idx);
+  const pxtnOverDrive* OverDrive_Get(int32_t idx) const;
+  pxtnOverDrive* OverDrive_Get_variable(int32_t idx);
 
   // woice.
   int32_t Woice_Num() const;
@@ -233,7 +275,7 @@ class pxtnService {
   std::shared_ptr<const pxtnWoice> Woice_Get(int32_t idx) const;
   std::shared_ptr<pxtnWoice> Woice_Get_variable(int32_t idx);
 
-  pxtnERR Woice_read(int32_t idx, pxtnDescriptor *desc, pxtnWOICETYPE type);
+  pxtnERR Woice_read(int32_t idx, void* desc, pxtnWOICETYPE type);
   pxtnERR Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) const;
   bool Woice_Remove(int32_t idx);
   bool Woice_Replace(int32_t old_place, int32_t new_place);
@@ -241,67 +283,42 @@ class pxtnService {
   // unit.
   int32_t Unit_Num() const;
   int32_t Unit_Max() const;
-  const pxtnUnit *Unit_Get(int32_t idx) const;
-  pxtnUnit *Unit_Get_variable(int32_t idx);
+  const pxtnUnit* Unit_Get(int32_t idx) const;
+  pxtnUnit* Unit_Get_variable(int32_t idx);
 
   bool Unit_Remove(int32_t idx);
-  bool Unit_Replace(int32_t old_place, int32_t new_place, mooState &moo_state);
+  bool Unit_Replace(int32_t old_place, int32_t new_place);
   bool Unit_AddNew();
   bool Unit_SetOpratedAll(bool b);
   bool Unit_Solo(int32_t idx);
 
   // q
   bool set_destination_quality(int32_t ch_num, int32_t sps);
-  bool get_destination_quality(int32_t *p_ch_num, int32_t *p_sps) const;
-  bool get_byte_per_smp(int32_t *p_byte_per_smp) const;
-  bool set_sampled_callback(pxtnSampledCallback proc, void *user);
+  bool get_destination_quality(int32_t* p_ch_num, int32_t* p_sps) const;
+  bool set_sampled_callback(pxtnSampledCallback proc, void* user);
 
   //////////////
   // Moo..
   //////////////
 
-  bool Moo(mooState &moo_state, void *p_buf, int32_t size,
-           int32_t *filled_size = nullptr,
-           std::vector<InterpolatedVolumeMeter> *volume_meters = nullptr) const;
-
-  int32_t moo_tone_sample_multi(std::map<int, pxtnUnitTone *> p_us,
-                                const mooParams &params, void *data,
-                                int32_t buf_size, int32_t time_pan_index) const;
-
   bool moo_is_valid_data() const;
-  // TODO: Adjust delays here
-  void adjustTempo(int32_t new_tempo, mooState &moo_state) {
-    moo_state.adjustTempo(master->get_beat_tempo(), new_tempo);
-    master->Set(master->get_beat_num(), new_tempo, master->get_beat_clock());
-    moo_state.params.adjustClockRate(
-        (float)(60.0f * (double)_dst_sps /
-                ((double)master->get_beat_tempo() *
-                 (double)master->get_beat_clock())));
-    moo_state.params.bt_tempo = master->get_beat_tempo();
-  }
-  void adjustBeatNum(int32_t beat_num, mooState &moo_state) {
-    int32_t evels_max_clock = evels->get_Max_Clock();
-    master->Set(beat_num, master->get_beat_tempo(), master->get_beat_clock());
-    moo_state.num_loop = 0;
-    if (evels_max_clock > master->get_this_clock(master->get_last_meas(), 0, 0))
-      master->AdjustMeasNum(evels_max_clock);
-  }
+  bool moo_is_end_vomit() const;
 
   bool moo_set_mute_by_unit(bool b);
   bool moo_set_loop(bool b);
-  bool moo_set_fade(int32_t fade, float sec, mooState &moo_state) const;
+  bool moo_set_fade(int32_t fade, float sec);
   bool moo_set_master_volume(float v);
 
   int32_t moo_get_total_sample() const;
 
-  int32_t moo_get_now_clock(const mooState &moo_state) const;
+  int32_t moo_get_now_clock() const;
   int32_t moo_get_end_clock() const;
   int32_t moo_get_sampling_offset() const;
   int32_t moo_get_sampling_end() const;
-  int32_t moo_get_num_loop() const;
 
-  bool moo_preparation(const pxtnVOMITPREPARATION *p_prep,
-                       mooState &moo_state) const;
+  bool moo_preparation(const pxtnVOMITPREPARATION* p_build);
+
+  bool Moo(void* p_buf, int32_t size);
 };
 
 int32_t pxtnService_moo_CalcSampleNum(int32_t meas_num, int32_t beat_num,

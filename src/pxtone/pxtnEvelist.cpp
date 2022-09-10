@@ -1,15 +1,14 @@
-
+﻿
 #include "./pxtnEvelist.h"
 
-#include "./pxtn.h"
-
-const char* EVENTKIND_names[EVENTKIND_NUM] = {
-    "EVENTKIND_NULL",       "EVENTKIND_ON",        "EVENTKIND_KEY",
-    "EVENTKIND_PAN_VOLUME", "EVENTKIND_VELOCITY",  "EVENTKIND_VOLUME",
-    "EVENTKIND_PORTAMENT",  "EVENTKIND_BEATCLOCK", "EVENTKIND_BEATTEMPO",
-    "EVENTKIND_BEATNUM",    "EVENTKIND_REPEAT",    "EVENTKIND_LAST",
-    "EVENTKIND_VOICENO",    "EVENTKIND_GROUPNO",   "EVENTKIND_TUNING",
-    "EVENTKIND_PAN_TIME"};
+const char* EVENTKIND_names[EVENTKIND_NUM] =
+    {  // This struct is from the 2017 version, nevessary for PxtoneEditAction
+        "EVENTKIND_NULL",       "EVENTKIND_ON",        "EVENTKIND_KEY",
+        "EVENTKIND_PAN_VOLUME", "EVENTKIND_VELOCITY",  "EVENTKIND_VOLUME",
+        "EVENTKIND_PORTAMENT",  "EVENTKIND_BEATCLOCK", "EVENTKIND_BEATTEMPO",
+        "EVENTKIND_BEATNUM",    "EVENTKIND_REPEAT",    "EVENTKIND_LAST",
+        "EVENTKIND_VOICENO",    "EVENTKIND_GROUPNO",   "EVENTKIND_TUNING",
+        "EVENTKIND_PAN_TIME"};
 
 void pxtnEvelist::Release() {
   if (_eves) free(_eves);
@@ -18,7 +17,10 @@ void pxtnEvelist::Release() {
   _eve_allocated_num = 0;
 }
 
-pxtnEvelist::pxtnEvelist() {
+pxtnEvelist::pxtnEvelist(pxtnIO_r io_read, pxtnIO_w io_write,
+                         pxtnIO_seek io_seek, pxtnIO_pos io_pos) {
+  _set_io_funcs(io_read, io_write, io_seek, io_pos);
+
   _eves = NULL;
   _start = NULL;
   _eve_allocated_num = 0;
@@ -120,9 +122,8 @@ int32_t pxtnEvelist::get_Count(int32_t clock1, int32_t clock2,
   return count;
 }
 
-int32_t DefaultKindValue(uint8_t kind) {
+static int32_t _DefaultKindValue(uint8_t kind) {
   switch (kind) {
-      //    case EVENTKIND_ON        : return ;
     case EVENTKIND_KEY:
       return EVENTDEFAULT_KEY;
     case EVENTKIND_PAN_VOLUME:
@@ -139,8 +140,6 @@ int32_t DefaultKindValue(uint8_t kind) {
       return EVENTDEFAULT_BEATTEMPO;
     case EVENTKIND_BEATNUM:
       return EVENTDEFAULT_BEATNUM;
-      //    case EVENTKIND_REPEAT    : return ;
-      //    case EVENTKIND_LAST      : return ;
     case EVENTKIND_VOICENO:
       return EVENTDEFAULT_VOICENO;
     case EVENTKIND_GROUPNO:
@@ -161,7 +160,7 @@ int32_t pxtnEvelist::get_Value(int32_t clock, uint8_t unit_no,
   if (!_eves) return 0;
 
   EVERECORD* p;
-  int32_t val = DefaultKindValue(kind);
+  int32_t val = _DefaultKindValue(kind);
 
   for (p = _start; p; p = p->next) {
     if (p->clock > clock) break;
@@ -752,7 +751,7 @@ void pxtnEvelist::x4x_Read_Add(int32_t clock, uint8_t unit_no, uint8_t kind,
 // io
 // ------------
 
-bool pxtnEvelist::io_Write(pxtnDescriptor* p_doc, int32_t rough) const {
+bool pxtnEvelist::io_Write(void* desc, int32_t rough) const {
   int32_t eve_num = get_Count();
   int32_t ralatived_size = 0;
   int32_t absolute = 0;
@@ -762,17 +761,17 @@ bool pxtnEvelist::io_Write(pxtnDescriptor* p_doc, int32_t rough) const {
   for (const EVERECORD* p = get_Records(); p; p = p->next) {
     clock = p->clock - absolute;
 
-    ralatived_size += pxtnDescriptor_v_chk(p->clock);
+    ralatived_size += _data_check_v_size(p->clock);
     ralatived_size += 1;
     ralatived_size += 1;
-    ralatived_size += pxtnDescriptor_v_chk(p->value);
+    ralatived_size += _data_check_v_size(p->value);
 
     absolute = p->clock;
   }
 
   int32_t size = sizeof(int32_t) + ralatived_size;
-  if (!p_doc->w_asfile(&size, sizeof(int32_t), 1)) return false;
-  if (!p_doc->w_asfile(&eve_num, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &size, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &eve_num, sizeof(int32_t), 1)) return false;
 
   absolute = 0;
 
@@ -784,10 +783,10 @@ bool pxtnEvelist::io_Write(pxtnDescriptor* p_doc, int32_t rough) const {
     else
       value = p->value;
 
-    if (!p_doc->v_w_asfile(clock / rough, NULL)) return false;
-    if (!p_doc->w_asfile(&p->unit_no, sizeof(uint8_t), 1)) return false;
-    if (!p_doc->w_asfile(&p->kind, sizeof(uint8_t), 1)) return false;
-    if (!p_doc->v_w_asfile(value, NULL)) return false;
+    if (!_data_w_v(desc, clock / rough, NULL)) return false;
+    if (!_io_write(desc, &p->unit_no, sizeof(uint8_t), 1)) return false;
+    if (!_io_write(desc, &p->kind, sizeof(uint8_t), 1)) return false;
+    if (!_data_w_v(desc, value, NULL)) return false;
 
     absolute = p->clock;
   }
@@ -795,12 +794,12 @@ bool pxtnEvelist::io_Write(pxtnDescriptor* p_doc, int32_t rough) const {
   return true;
 }
 
-pxtnERR pxtnEvelist::io_Read(pxtnDescriptor* p_doc) {
+pxtnERR pxtnEvelist::io_Read(void* desc) {
   int32_t size = 0;
   int32_t eve_num = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&eve_num, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &eve_num, 4, 1)) return pxtnERR_desc_r;
 
   int32_t clock = 0;
   int32_t absolute = 0;
@@ -809,10 +808,10 @@ pxtnERR pxtnEvelist::io_Read(pxtnDescriptor* p_doc) {
   int32_t value = 0;
 
   for (int32_t e = 0; e < eve_num; e++) {
-    if (!p_doc->v_r(&clock)) return pxtnERR_desc_r;
-    if (!p_doc->r(&unit_no, 1, 1)) return pxtnERR_desc_r;
-    if (!p_doc->r(&kind, 1, 1)) return pxtnERR_desc_r;
-    if (!p_doc->v_r(&value)) return pxtnERR_desc_r;
+    if (!_data_r_v(desc, &clock)) return pxtnERR_desc_r;
+    if (!_io_read(desc, &unit_no, 1, 1)) return pxtnERR_desc_r;
+    if (!_io_read(desc, &kind, 1, 1)) return pxtnERR_desc_r;
+    if (!_data_r_v(desc, &value)) return pxtnERR_desc_r;
     absolute += clock;
     clock = absolute;
     Linear_Add_i(clock, unit_no, kind, value);
@@ -821,12 +820,12 @@ pxtnERR pxtnEvelist::io_Read(pxtnDescriptor* p_doc) {
   return pxtnOK;
 }
 
-int32_t pxtnEvelist::io_Read_EventNum(pxtnDescriptor* p_doc) const {
+int32_t pxtnEvelist::io_Read_EventNum(void* desc) const {
   int32_t size = 0;
   int32_t eve_num = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return 0;
-  if (!p_doc->r(&eve_num, 4, 1)) return 0;
+  if (!_io_read(desc, &size, 4, 1)) return 0;
+  if (!_io_read(desc, &eve_num, 4, 1)) return 0;
 
   int32_t count = 0;
   int32_t clock = 0;
@@ -835,10 +834,10 @@ int32_t pxtnEvelist::io_Read_EventNum(pxtnDescriptor* p_doc) const {
   int32_t value = 0;
 
   for (int32_t e = 0; e < eve_num; e++) {
-    if (!p_doc->v_r(&clock)) return 0;
-    if (!p_doc->r(&unit_no, 1, 1)) return 0;
-    if (!p_doc->r(&kind, 1, 1)) return 0;
-    if (!p_doc->v_r(&value)) return 0;
+    if (!_data_r_v(desc, &clock)) return 0;
+    if (!_io_read(desc, &unit_no, 1, 1)) return 0;
+    if (!_io_read(desc, &kind, 1, 1)) return 0;
+    if (!_data_r_v(desc, &value)) return 0;
     count++;
   }
   if (count != eve_num) return 0;
@@ -856,27 +855,27 @@ typedef struct {
 } _x4x_EVENTSTRUCT;
 
 // write event.
-pxtnERR pxtnEvelist::io_Unit_Read_x4x_EVENT(pxtnDescriptor* p_doc,
-                                            bool bTailAbsolute,
+pxtnERR pxtnEvelist::io_Unit_Read_x4x_EVENT(void* desc, bool bTailAbsolute,
                                             bool bCheckRRR) {
-  _x4x_EVENTSTRUCT evnt{};
+  _x4x_EVENTSTRUCT evnt = {0};
   int32_t clock = 0;
   int32_t value = 0;
   int32_t absolute = 0;
-  uint32_t e = 0;
+  int32_t e = 0;
   int32_t size = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&evnt, sizeof(_x4x_EVENTSTRUCT), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &evnt, sizeof(_x4x_EVENTSTRUCT), 1))
+    return pxtnERR_desc_r;
 
   if (evnt.data_num != 2) return pxtnERR_fmt_unknown;
   if (evnt.event_kind >= EVENTKIND_NUM) return pxtnERR_fmt_unknown;
   if (bCheckRRR && evnt.rrr) return pxtnERR_fmt_unknown;
 
   absolute = 0;
-  for (e = 0; e < evnt.event_num; e++) {
-    if (!p_doc->v_r(&clock)) break;
-    if (!p_doc->v_r(&value)) break;
+  for (e = 0; e < (int32_t)evnt.event_num; e++) {
+    if (!_data_r_v(desc, &clock)) break;
+    if (!_data_r_v(desc, &value)) break;
     absolute += clock;
     clock = absolute;
     x4x_Read_Add(clock, (uint8_t)evnt.unit_index, (uint8_t)evnt.event_kind,
@@ -891,24 +890,24 @@ pxtnERR pxtnEvelist::io_Unit_Read_x4x_EVENT(pxtnDescriptor* p_doc,
   return pxtnOK;
 }
 
-pxtnERR pxtnEvelist::io_Read_x4x_EventNum(pxtnDescriptor* p_doc,
-                                          int32_t* p_num) const {
-  if (!p_doc || !p_num) return pxtnERR_param;
+pxtnERR pxtnEvelist::io_Read_x4x_EventNum(void* desc, int32_t* p_num) const {
+  if (!desc || !p_num) return pxtnERR_param;
 
-  _x4x_EVENTSTRUCT evnt{};
+  _x4x_EVENTSTRUCT evnt = {0};
   int32_t work = 0;
-  uint32_t e = 0;
+  int32_t e = 0;
   int32_t size = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&evnt, sizeof(_x4x_EVENTSTRUCT), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &evnt, sizeof(_x4x_EVENTSTRUCT), 1))
+    return pxtnERR_desc_r;
 
   // support only 2
   if (evnt.data_num != 2) return pxtnERR_fmt_unknown;
 
-  for (e = 0; e < evnt.event_num; e++) {
-    if (!p_doc->v_r(&work)) break;
-    if (!p_doc->v_r(&work)) break;
+  for (e = 0; e < (int32_t)evnt.event_num; e++) {
+    if (!_data_r_v(desc, &work)) break;
+    if (!_data_r_v(desc, &work)) break;
   }
   if (e != evnt.event_num) return pxtnERR_desc_broken;
 

@@ -1,4 +1,4 @@
-
+﻿
 #include "./pxtnDelay.h"
 
 #include "./pxtn.h"
@@ -11,13 +11,23 @@ const char *DELAYUNIT_name(DELAYUNIT unit) {
   return DELAYUNIT_names[unit];
 }
 
-pxtnDelay::pxtnDelay() {
+pxtnDelay::pxtnDelay(pxtnIO_r io_read, pxtnIO_w io_write, pxtnIO_seek io_seek,
+                     pxtnIO_pos io_pos) {
+  _set_io_funcs(io_read, io_write, io_seek, io_pos);
+
   _b_played = true;
   _unit = DELAYUNIT_Beat;
   _group = 0;
   _rate = 33.0;
   _freq = 3.f;
+  _smp_num = 0;
+  _offset = 0;
+  _rate_s32 = 100;
+
+  memset(_bufs, 0, sizeof(_bufs));
 }
+
+pxtnDelay::~pxtnDelay() { Tone_Release(); }
 
 DELAYUNIT pxtnDelay::get_unit() const { return _unit; }
 int32_t pxtnDelay::get_group() const { return _group; }
@@ -38,53 +48,66 @@ bool pxtnDelay::switch_played() {
   return _b_played;
 }
 
-pxtnDelayTone::pxtnDelayTone(const pxtnDelay &delay, int32_t beat_num,
-                             float beat_tempo, int32_t sps) {
+void pxtnDelay::Tone_Release() {
+  for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++)
+    pxtnMem_free((void **)&_bufs[i]);
   _smp_num = 0;
-  _offset = 0;
-  _rate_s32 = 100;
+}
 
-  if (delay.get_freq() && delay.get_rate()) {
+pxtnERR pxtnDelay::Tone_Ready(int32_t beat_num, float beat_tempo, int32_t sps) {
+  Tone_Release();
+
+  pxtnERR res = pxtnERR_VOID;
+
+  if (_freq && _rate) {
     _offset = 0;
-    _rate_s32 = (int32_t)delay.get_rate();  // /100;
+    _rate_s32 = (int32_t)_rate;  // /100;
 
-    switch (delay.get_unit()) {
+    switch (_unit) {
       case DELAYUNIT_Beat:
-        _smp_num = (int32_t)(sps * 60 / beat_tempo / delay.get_freq());
+        _smp_num = (int32_t)(sps * 60 / beat_tempo / _freq);
         break;
       case DELAYUNIT_Meas:
-        _smp_num =
-            (int32_t)(sps * 60 * beat_num / beat_tempo / delay.get_freq());
+        _smp_num = (int32_t)(sps * 60 * beat_num / beat_tempo / _freq);
         break;
       case DELAYUNIT_Second:
-        _smp_num = (int32_t)(sps / delay.get_freq());
+        _smp_num = (int32_t)(sps / _freq);
         break;
     }
 
-    for (int32_t c = 0; c < pxtnMAX_CHANNEL; c++)
-      _bufs[c] = std::make_unique<int32_t[]>(_smp_num);
-    Tone_Clear();
+    for (int32_t c = 0; c < pxtnMAX_CHANNEL; c++) {
+      if (!pxtnMem_zero_alloc((void **)&_bufs[c], _smp_num * sizeof(int32_t))) {
+        res = pxtnERR_memory;
+        goto term;
+      }
+    }
   }
+
+  res = pxtnOK;
+term:
+
+  if (res != pxtnOK) Tone_Release();
+
+  return res;
 }
 
-void pxtnDelayTone::Tone_Supple(const pxtnDelay &delay, int32_t ch,
-                                int32_t *group_smps) {
+void pxtnDelay::Tone_Supple(int32_t ch, int32_t *group_smps) {
   if (!_smp_num) return;
   int32_t a = _bufs[ch][_offset] * _rate_s32 / 100;
-  if (delay.get_played()) group_smps[delay.get_group()] += a;
-  _bufs[ch][_offset] = group_smps[delay.get_group()];
+  if (_b_played) group_smps[_group] += a;
+  _bufs[ch][_offset] = group_smps[_group];
 }
 
-void pxtnDelayTone::Tone_Increment() {
+void pxtnDelay::Tone_Increment() {
   if (!_smp_num) return;
   if (++_offset >= _smp_num) _offset = 0;
 }
 
-void pxtnDelayTone::Tone_Clear() {
+void pxtnDelay::Tone_Clear() {
   if (!_smp_num) return;
   int32_t def = 0;  // ..
   for (int32_t i = 0; i < pxtnMAX_CHANNEL; i++)
-    memset(_bufs[i].get(), def, _smp_num * sizeof(int32_t));
+    memset(_bufs[i], def, _smp_num * sizeof(int32_t));
 }
 
 // (12byte) =================
@@ -95,7 +118,7 @@ typedef struct {
   float freq;
 } _DELAYSTRUCT;
 
-bool pxtnDelay::Write(pxtnDescriptor *p_doc) const {
+bool pxtnDelay::Write(void *desc) const {
   _DELAYSTRUCT dela;
   int32_t size;
 
@@ -107,19 +130,19 @@ bool pxtnDelay::Write(pxtnDescriptor *p_doc) const {
 
   // dela ----------
   size = sizeof(_DELAYSTRUCT);
-  if (!p_doc->w_asfile(&size, sizeof(int32_t), 1)) return false;
-  if (!p_doc->w_asfile(&dela, size, 1)) return false;
+  if (!_io_write(desc, &size, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &dela, size, 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnDelay::Read(pxtnDescriptor *p_doc) {
-  _DELAYSTRUCT dela{};
+pxtnERR pxtnDelay::Read(void *desc) {
+  _DELAYSTRUCT dela = {0};
   int32_t size = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&dela, sizeof(_DELAYSTRUCT), 1)) return pxtnERR_desc_r;
-  if (dela.unit > DELAYUNIT_max) return pxtnERR_fmt_unknown;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &dela, sizeof(_DELAYSTRUCT), 1)) return pxtnERR_desc_r;
+  if (dela.unit >= DELAYUNIT_num) return pxtnERR_fmt_unknown;
 
   _unit = (DELAYUNIT)dela.unit;
   _freq = dela.freq;

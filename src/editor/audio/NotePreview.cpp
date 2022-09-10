@@ -67,7 +67,8 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
   if (m_moo_state != nullptr) {
     for (auto &unit : m_moo_state->units) {
       pxtnUnitTone *u = &unit;
-      std::shared_ptr<const pxtnWoice> woice = u->get_woice();
+      std::shared_ptr<const pxtnWoice> woice =
+          std::make_shared<const pxtnWoice>(u->get_woice());
       for (int i = 0; i < woice->get_voice_num(); ++i) {
         auto tone = u->get_tone(i);
         if (u == m_this_unit || tone->on_count > 0) {
@@ -102,12 +103,14 @@ void NotePreview::processEvent(EVENTKIND kind, int32_t value) {
 }
 
 void NotePreview::resetOn(int duration) {
-  std::shared_ptr<const pxtnWoice> woice = m_this_unit->get_woice();
+  std::shared_ptr<const pxtnWoice> woice =
+      std::make_shared<const pxtnWoice>(m_this_unit->get_woice());
   for (int i = 0; i < woice->get_voice_num(); ++i) {
     // TODO: calculating the life count should be more automatic.
     auto tone = m_this_unit->get_tone(i);
-    *tone = pxtnVOICETONE(tone->env_release_clock, tone->offset_freq,
-                          woice->get_instance(i)->env_size != 0);
+    *tone =
+        pxtnVOICETONE{static_cast<double>(tone->env_release_clock),
+                      tone->offset_freq, woice->get_instance(i)->env_size != 0};
     tone->on_count = duration;
     tone->life_count = duration + woice->get_instance(i)->env_release;
   }

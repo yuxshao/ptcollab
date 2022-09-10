@@ -31,7 +31,8 @@ QVariant BasicWoiceListModel::data(const QModelIndex &index, int role) const {
       m_client->pxtn()->Woice_Get(index.row());
 
   if (role == Qt::DisplayRole)
-    return codec->toUnicode(woice->get_name_buf_jis(nullptr));
+    return codec->toUnicode(woice->get_name_buf(nullptr));
+  //  return codec->toUnicode(woice->get_name_buf_jis(nullptr));
 
   return QVariant();
 }

@@ -1,4 +1,4 @@
-//
+﻿//
 // x1x : v.0.1.2.8 (-2005/06/03) project-info has quality, tempo, clock.
 // x2x : v.0.6.N.N (-2006/01/15) no exe version.
 // x3x : v.0.7.N.N (-2006/09/30) unit includes voice / basic-key use for only
@@ -8,53 +8,51 @@
 
 #include "./pxtnService.h"
 
-#include <algorithm>
-
 #include "./pxtn.h"
 
 #define _VERSIONSIZE 16
 #define _CODESIZE 8
 
 //                                       0123456789012345
-static const char *_code_tune_x2x = "PTTUNE--20050608";
-static const char *_code_tune_x3x = "PTTUNE--20060115";
-static const char *_code_tune_x4x = "PTTUNE--20060930";
-static const char *_code_tune_v5 = "PTTUNE--20071119";
+static const char* _code_tune_x2x = "PTTUNE--20050608";
+static const char* _code_tune_x3x = "PTTUNE--20060115";
+static const char* _code_tune_x4x = "PTTUNE--20060930";
+static const char* _code_tune_v5 = "PTTUNE--20071119";
 
-static const char *_code_proj_x1x = "PTCOLLAGE-050227";
-static const char *_code_proj_x2x = "PTCOLLAGE-050608";
-static const char *_code_proj_x3x = "PTCOLLAGE-060115";
-static const char *_code_proj_x4x = "PTCOLLAGE-060930";
-static const char *_code_proj_v5 = "PTCOLLAGE-071119";
+static const char* _code_proj_x1x = "PTCOLLAGE-050227";
+static const char* _code_proj_x2x = "PTCOLLAGE-050608";
+static const char* _code_proj_x3x = "PTCOLLAGE-060115";
+static const char* _code_proj_x4x = "PTCOLLAGE-060930";
+static const char* _code_proj_v5 = "PTCOLLAGE-071119";
 
-static const char *_code_x1x_PROJ = "PROJECT=";
-static const char *_code_x1x_EVEN = "EVENT===";
-static const char *_code_x1x_UNIT = "UNIT====";
-static const char *_code_x1x_END = "END=====";
-static const char *_code_x1x_PCM = "matePCM=";
+static const char* _code_x1x_PROJ = "PROJECT=";
+static const char* _code_x1x_EVEN = "EVENT===";
+static const char* _code_x1x_UNIT = "UNIT====";
+static const char* _code_x1x_END = "END=====";
+static const char* _code_x1x_PCM = "matePCM=";
 
-static const char *_code_x3x_pxtnUNIT = "pxtnUNIT";
-static const char *_code_x4x_evenMAST = "evenMAST";
-static const char *_code_x4x_evenUNIT = "evenUNIT";
+static const char* _code_x3x_pxtnUNIT = "pxtnUNIT";
+static const char* _code_x4x_evenMAST = "evenMAST";
+static const char* _code_x4x_evenUNIT = "evenUNIT";
 
-static const char *_code_antiOPER = "antiOPER";  // anti operation(edit)
+static const char* _code_antiOPER = "antiOPER";  // anti operation(edit)
 
-static const char *_code_num_UNIT = "num UNIT";
-static const char *_code_MasterV5 = "MasterV5";
-static const char *_code_Event_V5 = "Event V5";
-static const char *_code_matePCM = "matePCM ";
-static const char *_code_matePTV = "matePTV ";
-static const char *_code_matePTN = "matePTN ";
-static const char *_code_mateOGGV = "mateOGGV";
-static const char *_code_effeDELA = "effeDELA";
-static const char *_code_effeOVER = "effeOVER";
-static const char *_code_textNAME = "textNAME";
-static const char *_code_textCOMM = "textCOMM";
-static const char *_code_assiUNIT = "assiUNIT";
-static const char *_code_assiWOIC = "assiWOIC";
-static const char *_code_pxtoneND = "pxtoneND";
+static const char* _code_num_UNIT = "num UNIT";
+static const char* _code_MasterV5 = "MasterV5";
+static const char* _code_Event_V5 = "Event V5";
+static const char* _code_matePCM = "matePCM ";
+static const char* _code_matePTV = "matePTV ";
+static const char* _code_matePTN = "matePTN ";
+static const char* _code_mateOGGV = "mateOGGV";
+static const char* _code_effeDELA = "effeDELA";
+static const char* _code_effeOVER = "effeOVER";
+static const char* _code_textNAME = "textNAME";
+static const char* _code_textCOMM = "textCOMM";
+static const char* _code_assiUNIT = "assiUNIT";
+static const char* _code_assiWOIC = "assiWOIC";
+static const char* _code_pxtoneND = "pxtoneND";
 
-enum _enum_Tag : int8_t {
+enum _enum_Tag {
   _TAG_Unknown = 0,
   _TAG_antiOPER,
 
@@ -84,7 +82,10 @@ enum _enum_Tag : int8_t {
 
 };
 
-pxtnService::pxtnService() {
+pxtnService::pxtnService(pxtnIO_r io_read, pxtnIO_w io_write,
+                         pxtnIO_seek io_seek, pxtnIO_pos io_pos) {
+  _set_io_funcs(io_read, io_write, io_seek, io_pos);
+
   _b_init = false;
   _b_edit = false;
   _b_fix_evels_num = false;
@@ -93,8 +94,10 @@ pxtnService::pxtnService() {
   master = NULL;
   evels = NULL;
 
-  _delay_max = 0;
-  _ovdrv_max = 0;
+  //_delays = NULL;
+  _delay_max = _delay_num = 0;
+  //_ovdrvs = NULL;
+  _ovdrv_max = _ovdrv_num = 0;
   _woices = NULL;
   _woice_max = _woice_num = 0;
   _units = NULL;
@@ -104,21 +107,36 @@ pxtnService::pxtnService() {
 
   _sampled_proc = NULL;
   _sampled_user = NULL;
+
+  _moo_constructor();
 }
 
 bool pxtnService::_release() {
   if (!_b_init) return false;
   _b_init = false;
 
+  _moo_destructer();
+
   SAFE_DELETE(text);
   SAFE_DELETE(master);
   SAFE_DELETE(evels);
   SAFE_DELETE(_ptn_bldr);
+
   _delays.clear();
+  //  if (_delays) {
+  //    for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_delays[i]);
+  //    free(_delays);
+  //    _delays = NULL;
+  //  }
   _ovdrvs.clear();
+  //  if (_ovdrvs) {
+  //    for (int32_t i = 0; i < _ovdrv_num; i++) SAFE_DELETE(_ovdrvs[i]);
+  //    free(_ovdrvs);
+  //    _ovdrvs = NULL;
+  //  }
   if (_woices) {
     for (int32_t i = 0; i < _woice_num; i++) _woices[i].reset();
-    delete[] _woices;
+    free(_woices);
     _woices = NULL;
   }
   if (_units) {
@@ -141,19 +159,20 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
   pxtnERR res = pxtnERR_VOID;
   int32_t byte_size = 0;
 
-  if (!(text = new pxtnText())) {
+  if (!(text = new pxtnText(_io_read, _io_write, _io_seek, _io_pos))) {
     res = pxtnERR_INIT;
     goto End;
   }
-  if (!(master = new pxtnMaster())) {
+  if (!(master = new pxtnMaster(_io_read, _io_write, _io_seek, _io_pos))) {
     res = pxtnERR_INIT;
     goto End;
   }
-  if (!(evels = new pxtnEvelist())) {
+  if (!(evels = new pxtnEvelist(_io_read, _io_write, _io_seek, _io_pos))) {
     res = pxtnERR_INIT;
     goto End;
   }
-  if (!(_ptn_bldr = new pxtnPulse_NoiseBuilder())) {
+  if (!(_ptn_bldr = new pxtnPulse_NoiseBuilder(_io_read, _io_write, _io_seek,
+                                               _io_pos))) {
     res = pxtnERR_INIT;
     goto End;
   }
@@ -172,22 +191,45 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
     _b_fix_evels_num = false;
   }
 
-  // delay
+  // // delay
+  //  byte_size = sizeof(pxtnDelay*) * pxtnMAX_TUNEDELAYSTRUCT;
+  //  if (!(_delays = (pxtnDelay**)malloc(byte_size))) {
+  //    res = pxtnERR_memory;
+  //    goto End;
+  //  }
+
+  // memset(_delays, 0, byte_size);
+  _delays.clear();
   _delay_max = pxtnMAX_TUNEDELAYSTRUCT;
 
-  // over-drive
+  // // over-drive
+  // byte_size = sizeof(pxtnOverDrive*) * pxtnMAX_TUNEOVERDRIVESTRUCT;
+  //  if (!(_ovdrvs = (pxtnOverDrive**)malloc(byte_size))) {
+  //    res = pxtnERR_memory;
+  //    goto End;
+  //  }
+
+  //  memset(_ovdrvs, 0, byte_size);
+  _ovdrvs.clear();
   _ovdrv_max = pxtnMAX_TUNEOVERDRIVESTRUCT;
 
-  // woice
+  // // woice
+  // byte_size = sizeof(pxtnWoice*) * pxtnMAX_TUNEWOICESTRUCT;
+  //  if (!(_woices = (pxtnWoice**)malloc(byte_size))) {
+  //    res = pxtnERR_memory;
+  //    goto End;
+  //  }
+
   if (!(_woices = new std::shared_ptr<pxtnWoice>[pxtnMAX_TUNEWOICESTRUCT])) {
     res = pxtnERR_memory;
     goto End;
   }
+  memset(_woices, 0, byte_size);
   _woice_max = pxtnMAX_TUNEWOICESTRUCT;
 
   // unit
-  byte_size = sizeof(pxtnUnit *) * pxtnMAX_TUNEUNITSTRUCT;
-  if (!(_units = (pxtnUnit **)malloc(byte_size))) {
+  byte_size = sizeof(pxtnUnit*) * pxtnMAX_TUNEUNITSTRUCT;
+  if (!(_units = (pxtnUnit**)malloc(byte_size))) {
     res = pxtnERR_memory;
     goto End;
   }
@@ -195,6 +237,11 @@ pxtnERR pxtnService::_init(int32_t fix_evels_num, bool b_edit) {
   _unit_max = pxtnMAX_TUNEUNITSTRUCT;
 
   _group_num = pxtnMAX_TUNEGROUPNUM;
+
+  if (!_moo_init()) {
+    res = pxtnERR_moo_init;
+    goto End;
+  }
 
   if (fix_evels_num) _moo_b_valid_data = true;
 
@@ -214,7 +261,7 @@ bool pxtnService::AdjustMeasNum() {
 
 int32_t pxtnService::Group_Num() const { return _b_init ? _group_num : 0; }
 
-pxtnERR pxtnService::tones_ready(mooState &moo_state) {
+pxtnERR pxtnService::tones_ready(mooState& moo_state) {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;
@@ -222,8 +269,17 @@ pxtnERR pxtnService::tones_ready(mooState &moo_state) {
   float beat_tempo = master->get_beat_tempo();
 
   moo_state.delays.clear();
-  for (size_t i = 0; i < _delays.size(); i++)
+
+  for (size_t i = 0; i < _delays.size(); i++) {
     moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
+    // res = _delays[ i ]->Tone_Ready( beat_num, beat_tempo, _dst_sps );
+    // if( res != pxtnOK ) return res;
+  }
+
+  // TODO: find out why this is new
+  //   for (int32_t i = 0; i < _ovdrv_num; i++) {
+  //     _ovdrvs[i]->Tone_Ready();
+  //   }
 
   for (int32_t i = 0; i < _woice_num; i++) {
     res = _woices[i]->Tone_Ready(_ptn_bldr, _dst_sps);
@@ -231,6 +287,15 @@ pxtnERR pxtnService::tones_ready(mooState &moo_state) {
   }
   return pxtnOK;
 }
+
+// bool pxtnService::tones_clear()
+//{
+//	if( !_b_init ) return false;
+//	for( int32_t i = 0; i < _delay_num; i++ ) _delays[ i ]->Tone_Clear();
+//	for( int32_t i = 0; i < _unit_num;  i++ ) _units [ i ]->Tone_Clear();
+
+//	return true;
+//}
 
 void mooState::tones_clear() {
   for (size_t i = 0; i < delays.size(); i++) delays[i].Tone_Clear();
@@ -247,13 +312,13 @@ int32_t pxtnService::Delay_Max() const { return _b_init ? _delay_max : 0; }
 bool pxtnService::Delay_Set(int32_t idx, DELAYUNIT unit, float freq, float rate,
                             int32_t group) {
   if (!_b_init) return false;
-  if (size_t(idx) >= _delays.size()) return false;
+  if (idx >= _delay_num) return false;
   _delays[idx].Set(unit, freq, rate, group);
   return true;
 }
 
 bool pxtnService::Delay_Add(DELAYUNIT unit, float freq, float rate,
-                            int32_t group, mooState &moo_state) {
+                            int32_t group, mooState& moo_state) {
   if (!_b_init) return false;
   if (_delays.size() >= _delay_max) return false;
   _delays.emplace_back();
@@ -263,7 +328,22 @@ bool pxtnService::Delay_Add(DELAYUNIT unit, float freq, float rate,
   return true;
 }
 
-bool pxtnService::Delay_Remove(int32_t idx, mooState &moo_state) {
+// bool pxtnService::Delay_Add(DELAYUNIT unit, float freq, float rate,
+//                             int32_t group, mooState& moo_state) {
+//   if (!_b_init) return false;
+//   if (_delay_num >= _delay_max) return false;
+//   //_delays[ _delay_num ] = new pxtnDelay( _io_read, _io_write, _io_seek,
+//   //_io_pos ); _delays[ _delay_num ]->Set( unit, freq, rate, group );
+//   //_delay_num++;
+
+//  _delays.emplace_back();
+//  _delays.rbegin()->Set(unit, freq, rate, group);
+//  moo_state.delays.emplace_back(*_delays.rbegin(), master->get_beat_num(),
+//                                master->get_beat_tempo(), _dst_sps);
+//  return true;
+//}
+
+bool pxtnService::Delay_Remove(int32_t idx, mooState& moo_state) {
   if (!_b_init) return false;
   if (size_t(idx) >= _delays.size()) return false;
   _delays.erase(_delays.begin() + idx);
@@ -272,25 +352,49 @@ bool pxtnService::Delay_Remove(int32_t idx, mooState &moo_state) {
   return true;
 }
 
-pxtnDelay *pxtnService::Delay_Get_variable(int32_t idx) {
+// bool pxtnService::Delay_Remove(int32_t idx) {
+//   if (!_b_init) return false;
+//   if (idx >= _delay_num) return false;
+
+//  SAFE_DELETE(_delays[idx]);
+//  _delay_num--;
+//  for (int32_t i = idx; i < _delay_num; i++) _delays[i] = _delays[i + 1];
+//  _delays[_delay_num] = NULL;
+//  return true;
+//}
+
+pxtnDelay* pxtnService::Delay_Get_variable(int32_t idx) {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _delays.size()) return NULL;
   return &_delays[idx];
 }
 
-const pxtnDelay *pxtnService::Delay_Get(int32_t idx) const {
+const pxtnDelay* pxtnService::Delay_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _delays.size()) return NULL;
   return &_delays[idx];
 }
 
-pxtnERR pxtnService::Delay_ReadyTone(int32_t idx, mooState &moo_state) const {
+// pxtnDelay* pxtnService::Delay_Get(int32_t idx) {
+//   if (!_b_init) return NULL;
+//   if (idx < 0 || idx >= _delay_num) return NULL;
+//   return _delays[idx];
+// }
+
+pxtnERR pxtnService::Delay_ReadyTone(int32_t idx, mooState& moo_state) const {
   if (!_b_init) return pxtnERR_INIT;
   if (idx < 0 || size_t(idx) >= moo_state.delays.size()) return pxtnERR_param;
   moo_state.delays[idx] = pxtnDelayTone(_delays[idx], master->get_beat_num(),
                                         master->get_beat_tempo(), _dst_sps);
   return pxtnOK;
 }
+
+// pxtnERR pxtnService::Delay_ReadyTone(int32_t idx) {
+//   if (!_b_init) return pxtnERR_INIT;
+//   if (idx < 0 || idx >= _delay_num) return pxtnERR_param;
+//   return _delays[idx]->Tone_Ready(master->get_beat_num(),
+//                                   master->get_beat_tempo(), _dst_sps);
+// }
 
 // ---------------------------
 // Over Drive..
@@ -307,17 +411,34 @@ bool pxtnService::OverDrive_Set(int32_t idx, float cut, float amp,
   if (size_t(idx) >= _ovdrvs.size()) return false;
   return _ovdrvs[idx].Set(cut, amp, group, true);
 }
+// bool pxtnService::OverDrive_Set(int32_t idx, float cut, float amp,
+//                                 int32_t group) {
+//   if (!_b_init) return false;
+//   if (idx >= _ovdrv_num) return false;
+//   _ovdrvs[idx]->Set(cut, amp, group);
+//   return true;
+// }
 
 bool pxtnService::OverDrive_Add(float cut, float amp, int32_t group) {
   if (!_b_init) return false;
   if (_ovdrvs.size() >= _ovdrv_max) return false;
   _ovdrvs.emplace_back();
   if (!_ovdrvs.rbegin()->Set(cut, amp, group, true)) {
-    _ovdrvs.pop_back();
+    //    _ovdrvs.pop_back();
     return false;
   }
   return true;
 }
+
+// bool pxtnService::OverDrive_Add(float cut, float amp, int32_t group) {
+//   if (!_b_init) return false;
+//   if (_ovdrv_num >= _ovdrv_max) return false;
+//   _ovdrvs[_ovdrv_num] =
+//       new pxtnOverDrive(_io_read, _io_write, _io_seek, _io_pos);
+//   _ovdrvs[_ovdrv_num]->Set(cut, amp, group);
+//   _ovdrv_num++;
+//   return true;
+// }
 
 bool pxtnService::OverDrive_Remove(int32_t idx) {
   if (!_b_init) return false;
@@ -326,16 +447,40 @@ bool pxtnService::OverDrive_Remove(int32_t idx) {
   return true;
 }
 
-pxtnOverDrive *pxtnService::OverDrive_Get_variable(int32_t idx) {
+// bool pxtnService::OverDrive_Remove(int32_t idx) {
+//   if (!_b_init) return false;
+//   if (idx >= _ovdrv_num) return false;
+
+//  SAFE_DELETE(_ovdrvs[idx]);
+//  _ovdrv_num--;
+//  for (int32_t i = idx; i < _ovdrv_num; i++) _ovdrvs[i] = _ovdrvs[i + 1];
+//  _ovdrvs[_ovdrv_num] = NULL;
+//  return true;
+//}
+
+pxtnOverDrive* pxtnService::OverDrive_Get_variable(int32_t idx) {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
   return &_ovdrvs[idx];
 }
 
-const pxtnOverDrive *pxtnService::OverDrive_Get(int32_t idx) const {
+const pxtnOverDrive* pxtnService::OverDrive_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || size_t(idx) >= _ovdrvs.size()) return NULL;
   return &_ovdrvs[idx];
+}
+
+// pxtnOverDrive* pxtnService::OverDrive_Get(int32_t idx) {
+//   if (!_b_init) return NULL;
+//   if (idx < 0 || idx >= _ovdrv_num) return NULL;
+//   return _ovdrvs[idx];
+// }
+
+bool pxtnService::OverDrive_ReadyTone(int32_t idx) {
+  if (!_b_init) return false;
+  if (idx < 0 || idx >= _ovdrv_num) return false;
+  _ovdrvs[idx].Tone_Ready();
+  return true;
 }
 
 // ---------------------------
@@ -356,13 +501,13 @@ std::shared_ptr<pxtnWoice> pxtnService::Woice_Get_variable(int32_t idx) {
   return _woices[idx];
 }
 
-pxtnERR pxtnService::Woice_read(int32_t idx, pxtnDescriptor *desc,
-                                pxtnWOICETYPE type) {
+pxtnERR pxtnService::Woice_read(int32_t idx, void* desc, pxtnWOICETYPE type) {
   if (!_b_init) return pxtnERR_INIT;
   if (idx < 0 || idx >= _woice_max) return pxtnERR_param;
   if (idx > _woice_num) return pxtnERR_param;
   if (idx == _woice_num) {
-    _woices[idx] = std::make_shared<pxtnWoice>();
+    _woices[idx] = std::make_shared<pxtnWoice>(
+        new pxtnWoice(_io_read, _io_write, _io_seek, _io_pos));
     _woice_num++;
   }
 
@@ -377,6 +522,10 @@ pxtnERR pxtnService::Woice_read(int32_t idx, pxtnDescriptor *desc,
 
 pxtnERR pxtnService::Woice_ReadyTone(std::shared_ptr<pxtnWoice> woice) const {
   return woice->Tone_Ready(_ptn_bldr, _dst_sps);
+
+  //  if (!_b_init) return pxtnERR_INIT;
+  //  if (idx < 0 || idx >= _woice_num) return pxtnERR_param;
+  //  return _woices[idx]->Tone_Ready(_ptn_bldr, _dst_sps);
 }
 
 bool pxtnService::Woice_Remove(int32_t idx) {
@@ -388,6 +537,16 @@ bool pxtnService::Woice_Remove(int32_t idx) {
   _woices[_woice_num] = NULL;
   return true;
 }
+
+// bool pxtnService::Woice_Remove(int32_t idx) {
+//   if (!_b_init) return false;
+//   if (idx < 0 || idx >= _woice_num) return false;
+//   SAFE_DELETE(_woices[idx]);
+//   _woice_num--;
+//   for (int32_t i = idx; i < _woice_num; i++) _woices[i] = _woices[i + 1];
+//   _woices[_woice_num] = NULL;
+//   return true;
+// }
 
 bool pxtnService::Woice_Replace(int32_t old_place, int32_t new_place) {
   if (!_b_init) return false;
@@ -419,12 +578,12 @@ bool pxtnService::Woice_Replace(int32_t old_place, int32_t new_place) {
 int32_t pxtnService::Unit_Num() const { return _b_init ? _unit_num : 0; }
 int32_t pxtnService::Unit_Max() const { return _b_init ? _unit_max : 0; }
 
-const pxtnUnit *pxtnService::Unit_Get(int32_t idx) const {
+const pxtnUnit* pxtnService::Unit_Get(int32_t idx) const {
   if (!_b_init) return NULL;
   if (idx < 0 || idx >= _unit_num) return NULL;
   return _units[idx];
 }
-pxtnUnit *pxtnService::Unit_Get_variable(int32_t idx) {
+pxtnUnit* pxtnService::Unit_Get_variable(int32_t idx) {
   if (!_b_init) return NULL;
   if (idx < 0 || idx >= _unit_num) return NULL;
   return _units[idx];
@@ -432,7 +591,7 @@ pxtnUnit *pxtnService::Unit_Get_variable(int32_t idx) {
 
 bool pxtnService::Unit_AddNew() {
   if (_unit_num >= _unit_max) return false;
-  _units[_unit_num] = new pxtnUnit();
+  _units[_unit_num] = new pxtnUnit(_io_read, _io_write, _io_seek, _io_pos);
   _unit_num++;
   return true;
 }
@@ -444,15 +603,13 @@ bool pxtnService::Unit_Remove(int32_t idx) {
   _unit_num--;
   for (int32_t i = idx; i < _unit_num; i++) _units[i] = _units[i + 1];
   _units[_unit_num] = NULL;
-
   return true;
 }
 
-bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place,
-                               mooState &moo_state) {
+bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place) {
   if (!_b_init) return false;
 
-  pxtnUnit *p_w = _units[old_place];
+  pxtnUnit* p_w = _units[old_place];
   int32_t max_place = _unit_num - 1;
 
   if (new_place > max_place) new_place = max_place;
@@ -468,14 +625,6 @@ bool pxtnService::Unit_Replace(int32_t old_place, int32_t new_place,
     }
   }
   _units[new_place] = p_w;
-
-  // TODO: Perhaps this should just not be part of pxtnService.
-  // In the case of adding a unit, we need custom woice setting anyway.
-  if (moo_state.units.size() > size_t(std::max(old_place, new_place)))
-    std::rotate(moo_state.units.begin() + std::min(old_place, new_place),
-                moo_state.units.begin() +
-                    (old_place < new_place ? old_place + 1 : old_place),
-                moo_state.units.begin() + std::max(old_place, new_place) + 1);
   return true;
 }
 
@@ -520,28 +669,22 @@ bool pxtnService::set_destination_quality(int32_t ch_num, int32_t sps) {
   return true;
 }
 
-bool pxtnService::get_destination_quality(int32_t *p_ch_num,
-                                          int32_t *p_sps) const {
+bool pxtnService::get_destination_quality(int32_t* p_ch_num,
+                                          int32_t* p_sps) const {
   if (!_b_init) return false;
   if (p_ch_num) *p_ch_num = _dst_ch_num;
   if (p_sps) *p_sps = _dst_sps;
   return true;
 }
 
-bool pxtnService::get_byte_per_smp(int32_t *p_byte_per_smp) const {
-  if (!_b_init) return false;
-  *p_byte_per_smp = _dst_byte_per_smp;
-  return true;
-}
-
-bool pxtnService::set_sampled_callback(pxtnSampledCallback proc, void *user) {
+bool pxtnService::set_sampled_callback(pxtnSampledCallback proc, void* user) {
   if (!_b_init) return false;
   _sampled_proc = proc;
   _sampled_user = user;
   return true;
 }
 
-static _enum_Tag _CheckTagCode(const char *p_code) {
+static _enum_Tag _CheckTagCode(const char* p_code) {
   if (!memcmp(p_code, _code_antiOPER, _CODESIZE))
     return _TAG_antiOPER;
   else if (!memcmp(p_code, _code_x1x_PROJ, _CODESIZE))
@@ -608,6 +751,15 @@ bool pxtnService::clear() {
   for (int32_t i = 0; i < _unit_num; i++) SAFE_DELETE(_units[i]);
   _unit_num = 0;
 
+  //  for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_delays[i]);
+  //  _delay_num = 0;
+  //  for (int32_t i = 0; i < _delay_num; i++) SAFE_DELETE(_ovdrvs[i]);
+  //  _ovdrv_num = 0;
+  //  for (int32_t i = 0; i < _woice_num; i++) SAFE_DELETE(_woices[i]);
+  //  _woice_num = 0;
+  //  for (int32_t i = 0; i < _unit_num; i++) SAFE_DELETE(_units[i]);
+  //  _unit_num = 0;
+
   master->Reset();
 
   if (!_b_edit)
@@ -617,14 +769,14 @@ bool pxtnService::clear() {
   return true;
 }
 
-pxtnERR pxtnService::_io_Read_Delay(pxtnDescriptor *p_doc) {
+pxtnERR pxtnService::_io_Read_Delay(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
   if (_delays.size() >= _delay_max) return pxtnERR_fmt_unknown;
 
   pxtnERR res = pxtnERR_VOID;
   _delays.emplace_back();
 
-  res = _delays.rbegin()->Read(p_doc);
+  res = _delays.rbegin()->Read(desc);
   if (res != pxtnOK) goto term;
   res = pxtnOK;
 term:
@@ -632,13 +784,34 @@ term:
   return res;
 }
 
-pxtnERR pxtnService::_io_Read_OverDrive(pxtnDescriptor *p_doc) {
+// pxtnERR pxtnService::_io_Read_Delay(void* desc) {
+//   if (!_b_init) return pxtnERR_INIT;
+//   if (!_delays) return pxtnERR_INIT;
+//   if (_delay_num >= _delay_max) return pxtnERR_fmt_unknown;
+
+//  pxtnERR res = pxtnERR_VOID;
+//  pxtnDelay* delay = new pxtnDelay(_io_read, _io_write, _io_seek, _io_pos);
+
+//  res = delay->Read(desc);
+//  if (res != pxtnOK) goto term;
+//  res = pxtnOK;
+// term:
+//  if (res == pxtnOK) {
+//    _delays[_delay_num] = delay;
+//    _delay_num++;
+//  } else {
+//    SAFE_DELETE(delay);
+//  }
+//  return res;
+//}
+
+pxtnERR pxtnService::_io_Read_OverDrive(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
   if (_ovdrvs.size() >= _ovdrv_max) return pxtnERR_fmt_unknown;
 
   pxtnERR res = pxtnERR_VOID;
   _ovdrvs.emplace_back();
-  res = _ovdrvs.rbegin()->Read(p_doc);
+  res = _ovdrvs.rbegin()->Read(desc);
   if (res != pxtnOK) goto term;
   res = pxtnOK;
 term:
@@ -646,31 +819,55 @@ term:
   return res;
 }
 
-pxtnERR pxtnService::_io_Read_Woice(pxtnDescriptor *p_doc, pxtnWOICETYPE type) {
+// pxtnERR pxtnService::_io_Read_OverDrive(void* desc) {
+//   if (!_b_init) return pxtnERR_INIT;
+//   if (!_ovdrvs) return pxtnERR_INIT;
+//   if (_ovdrv_num >= _ovdrv_max) return pxtnERR_fmt_unknown;
+
+//  pxtnERR res = pxtnERR_VOID;
+//  pxtnOverDrive* ovdrv =
+//      new pxtnOverDrive(_io_read, _io_write, _io_seek, _io_pos);
+//  res = ovdrv->Read(desc);
+//  if (res != pxtnOK) goto term;
+//  res = pxtnOK;
+// term:
+//  if (res == pxtnOK) {
+//    _ovdrvs[_ovdrv_num] = ovdrv;
+//    _ovdrv_num++;
+//  } else {
+//    SAFE_DELETE(ovdrv);
+//  }
+
+//  return res;
+//}
+
+pxtnERR pxtnService::_io_Read_Woice(void* desc, pxtnWOICETYPE type) {
   pxtnERR res = pxtnERR_VOID;
 
   if (!_b_init) return pxtnERR_INIT;
   if (!_woices) return pxtnERR_INIT;
   if (_woice_num >= _woice_max) return pxtnERR_woice_full;
 
-  std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>();
+  std::shared_ptr<pxtnWoice> woice = std::make_shared<pxtnWoice>(
+      new pxtnWoice(_io_read, _io_write, _io_seek, _io_pos));
 
   switch (type) {
     case pxtnWOICE_PCM:
-      res = woice->io_matePCM_r(p_doc);
+      res = woice->io_matePCM_r(desc);
       if (res != pxtnOK) goto term;
       break;
     case pxtnWOICE_PTV:
-      res = woice->io_matePTV_r(p_doc);
+      res = woice->io_matePTV_r(desc);
       if (res != pxtnOK) goto term;
       break;
     case pxtnWOICE_PTN:
-      res = woice->io_matePTN_r(p_doc);
+      res = woice->io_matePTN_r(desc);
       if (res != pxtnOK) goto term;
       break;
     case pxtnWOICE_OGGV:
+
 #ifdef pxINCLUDE_OGGVORBIS
-      res = woice->io_mateOGGV_r(p_doc);
+      res = woice->io_mateOGGV_r(desc);
       if (res != pxtnOK) goto term;
 #else
       res = pxtnERR_ogg_no_supported;
@@ -690,21 +887,21 @@ term:
   return res;
 }
 
-pxtnERR pxtnService::_io_Read_OldUnit(pxtnDescriptor *p_doc, int32_t ver) {
+pxtnERR pxtnService::_io_Read_OldUnit(void* desc, int32_t ver) {
   if (!_b_init) return pxtnERR_INIT;
   if (!_units) return pxtnERR_INIT;
   if (_unit_num >= _unit_max) return pxtnERR_fmt_unknown;
 
   pxtnERR res = pxtnERR_VOID;
-  pxtnUnit *unit = new pxtnUnit();
+  pxtnUnit* unit = new pxtnUnit(_io_read, _io_write, _io_seek, _io_pos);
   int32_t group = 0;
 
   switch (ver) {
     case 1:
-      if (!unit->Read_v1x(p_doc, &group)) goto term;
+      if (!unit->Read_v1x(desc, &group)) goto term;
       break;
     case 3:
-      res = unit->Read_v3x(p_doc, &group);
+      res = unit->Read_v3x(desc, &group);
       if (res != pxtnOK) goto term;
       break;
     default:
@@ -742,13 +939,13 @@ typedef struct {
   char name[pxtnMAX_TUNEWOICENAME];
 } _ASSIST_WOICE;
 
-bool pxtnService::_io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const {
+bool pxtnService::_io_assiWOIC_w(void* desc, int32_t idx) const {
   if (!_b_init) return false;
 
-  _ASSIST_WOICE assi{};
+  _ASSIST_WOICE assi = {0};
   int32_t size;
   int32_t name_size = 0;
-  const char *p_name = _woices[idx]->get_name_buf_jis(&name_size);
+  const char* p_name = _woices[idx]->get_name_buf(&name_size);
 
   if (name_size > pxtnMAX_TUNEWOICENAME) return false;
 
@@ -756,26 +953,26 @@ bool pxtnService::_io_assiWOIC_w(pxtnDescriptor *p_doc, int32_t idx) const {
   assi.woice_index = (uint16_t)idx;
 
   size = sizeof(_ASSIST_WOICE);
-  if (!p_doc->w_asfile(&size, sizeof(uint32_t), 1)) return false;
-  if (!p_doc->w_asfile(&assi, size, 1)) return false;
+  if (!_io_write(desc, &size, sizeof(uint32_t), 1)) return false;
+  if (!_io_write(desc, &assi, size, 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnService::_io_assiWOIC_r(pxtnDescriptor *p_doc) {
+pxtnERR pxtnService::_io_assiWOIC_r(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
 
-  _ASSIST_WOICE assi{};
+  _ASSIST_WOICE assi = {0};
   int32_t size = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
   if (size != sizeof(assi)) return pxtnERR_fmt_unknown;
-  if (!p_doc->r(&assi, size, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &assi, size, 1)) return pxtnERR_desc_r;
   if (assi.rrr) return pxtnERR_fmt_unknown;
   if (assi.woice_index >= _woice_num) return pxtnERR_fmt_unknown;
 
-  if (!_woices[assi.woice_index]->set_name_buf_jis(assi.name,
-                                                   pxtnMAX_TUNEWOICENAME))
+  if (!_woices[assi.woice_index]->set_name_buf(assi.name,
+                                               pxtnMAX_TUNEWOICENAME))
     return pxtnERR_FATAL;
 
   return pxtnOK;
@@ -791,38 +988,37 @@ typedef struct {
   char name[pxtnMAX_TUNEUNITNAME];
 } _ASSIST_UNIT;
 
-bool pxtnService::_io_assiUNIT_w(pxtnDescriptor *p_doc, int32_t idx) const {
+bool pxtnService::_io_assiUNIT_w(void* desc, int32_t idx) const {
   if (!_b_init) return false;
 
-  _ASSIST_UNIT assi{};
+  _ASSIST_UNIT assi = {0};
   int32_t size;
   int32_t name_size;
-  const char *p_name = _units[idx]->get_name_buf_jis(&name_size);
+  const char* p_name = _units[idx]->get_name_buf(&name_size);
 
   memcpy(assi.name, p_name, name_size);
   assi.unit_index = (uint16_t)idx;
 
   size = sizeof(assi);
-  if (!p_doc->w_asfile(&size, sizeof(uint32_t), 1)) return false;
-  if (!p_doc->w_asfile(&assi, size, 1)) return false;
+  if (!_io_write(desc, &size, sizeof(uint32_t), 1)) return false;
+  if (!_io_write(desc, &assi, size, 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnService::_io_assiUNIT_r(pxtnDescriptor *p_doc) {
+pxtnERR pxtnService::_io_assiUNIT_r(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
 
-  _ASSIST_UNIT assi{};
+  _ASSIST_UNIT assi = {0};
   int32_t size;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
   if (size != sizeof(assi)) return pxtnERR_fmt_unknown;
-  if (!p_doc->r(&assi, sizeof(assi), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &assi, sizeof(assi), 1)) return pxtnERR_desc_r;
   if (assi.rrr) return pxtnERR_fmt_unknown;
   if (assi.unit_index >= _unit_num) return pxtnERR_fmt_unknown;
 
-  if (!_units[assi.unit_index]->set_name_buf_jis(assi.name,
-                                                 pxtnMAX_TUNEUNITNAME))
+  if (!_units[assi.unit_index]->set_name_buf(assi.name, pxtnMAX_TUNEUNITNAME))
     return pxtnERR_FATAL;
 
   return pxtnOK;
@@ -836,7 +1032,7 @@ typedef struct {
   int16_t rrr;
 } _NUM_UNIT;
 
-bool pxtnService::_io_UNIT_num_w(pxtnDescriptor *p_doc) const {
+bool pxtnService::_io_UNIT_num_w(void* desc) const {
   if (!_b_init) return false;
 
   _NUM_UNIT data;
@@ -847,21 +1043,22 @@ bool pxtnService::_io_UNIT_num_w(pxtnDescriptor *p_doc) const {
   data.num = (int16_t)_unit_num;
 
   size = sizeof(_NUM_UNIT);
-  if (!p_doc->w_asfile(&size, sizeof(int32_t), 1)) return false;
-  if (!p_doc->w_asfile(&data, size, 1)) return false;
+
+  if (!_io_write(desc, &size, sizeof(int32_t), 1)) return false;
+  if (!_io_write(desc, &data, size, 1)) return false;
 
   return true;
 }
 
-pxtnERR pxtnService::_io_UNIT_num_r(pxtnDescriptor *p_doc, int32_t *p_num) {
+pxtnERR pxtnService::_io_UNIT_num_r(void* desc, int32_t* p_num) {
   if (!_b_init) return pxtnERR_INIT;
 
-  _NUM_UNIT data{};
+  _NUM_UNIT data = {0};
   int32_t size = 0;
 
-  if (!p_doc->r(&size, 4, 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &size, 4, 1)) return pxtnERR_desc_r;
   if (size != sizeof(_NUM_UNIT)) return pxtnERR_fmt_unknown;
-  if (!p_doc->r(&data, sizeof(_NUM_UNIT), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &data, sizeof(_NUM_UNIT), 1)) return pxtnERR_desc_r;
   if (data.rrr) return pxtnERR_fmt_unknown;
   if (data.num > _unit_max) return pxtnERR_fmt_new;
   if (data.num < 0) return pxtnERR_fmt_unknown;
@@ -874,64 +1071,64 @@ pxtnERR pxtnService::_io_UNIT_num_r(pxtnDescriptor *p_doc, int32_t *p_num) {
 // save               //////////////////
 ////////////////////////////////////////
 
-pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
-                           uint16_t exe_ver) {
+pxtnERR pxtnService::write(void* desc, bool b_tune, uint16_t exe_ver) {
   if (!_b_init) return pxtnERR_INIT;
 
+  bool b_ret = false;
   int32_t rough = b_tune ? 10 : 1;
   uint16_t rrr = 0;
   pxtnERR res = pxtnERR_VOID;
 
   // format version
   if (b_tune) {
-    if (!p_doc->w_asfile(_code_tune_v5, 1, _VERSIONSIZE)) {
+    if (!_io_write(desc, _code_tune_v5, 1, _VERSIONSIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
   } else {
-    if (!p_doc->w_asfile(_code_proj_v5, 1, _VERSIONSIZE)) {
+    if (!_io_write(desc, _code_proj_v5, 1, _VERSIONSIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
   }
 
   // exe version
-  if (!p_doc->w_asfile(&exe_ver, sizeof(uint16_t), 1)) {
+  if (!_io_write(desc, &exe_ver, sizeof(uint16_t), 1)) {
     res = pxtnERR_desc_w;
     goto End;
   }
-  if (!p_doc->w_asfile(&rrr, sizeof(uint16_t), 1)) {
+  if (!_io_write(desc, &rrr, sizeof(uint16_t), 1)) {
     res = pxtnERR_desc_w;
     goto End;
   }
 
   // master
-  if (!p_doc->w_asfile(_code_MasterV5, 1, _CODESIZE)) {
+  if (!_io_write(desc, _code_MasterV5, 1, _CODESIZE)) {
     res = pxtnERR_desc_w;
     goto End;
   }
-  if (!master->io_w_v5(p_doc, rough)) {
+  if (!master->io_w_v5(desc, rough)) {
     res = pxtnERR_desc_w;
     goto End;
   }
 
   // event
-  if (!p_doc->w_asfile(_code_Event_V5, 1, _CODESIZE)) {
+  if (!_io_write(desc, _code_Event_V5, 1, _CODESIZE)) {
     res = pxtnERR_desc_w;
     goto End;
   }
-  if (!evels->io_Write(p_doc, rough)) {
+  if (!evels->io_Write(desc, rough)) {
     res = pxtnERR_desc_w;
     goto End;
   }
 
   // name
   if (text->is_name_buf()) {
-    if (!p_doc->w_asfile(_code_textNAME, 1, _CODESIZE)) {
+    if (!_io_write(desc, _code_textNAME, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!text->Name_w(p_doc)) {
+    if (!text->Name_w(desc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
@@ -939,35 +1136,35 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
 
   // comment
   if (text->is_comment_buf()) {
-    if (!p_doc->w_asfile(_code_textCOMM, 1, _CODESIZE)) {
+    if (!_io_write(desc, _code_textCOMM, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!text->Comment_w(p_doc)) {
+    if (!text->Comment_w(desc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
   }
 
   // delay
-  for (size_t d = 0; d < _delays.size(); d++) {
-    if (!p_doc->w_asfile(_code_effeDELA, 1, _CODESIZE)) {
+  for (int32_t d = 0; d < _delay_num; d++) {
+    if (!_io_write(desc, _code_effeDELA, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!_delays[d].Write(p_doc)) {
+    if (!_delays[d].Write(desc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
   }
 
   // overdrive
-  for (size_t o = 0; o < _ovdrvs.size(); o++) {
-    if (!p_doc->w_asfile(_code_effeOVER, 1, _CODESIZE)) {
+  for (int32_t o = 0; o < _ovdrv_num; o++) {
+    if (!_io_write(desc, _code_effeOVER, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!_ovdrvs[o].Write(p_doc)) {
+    if (!_ovdrvs[o].Write(desc)) {
       res = pxtnERR_desc_w;
       goto End;
     }
@@ -979,31 +1176,31 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
 
     switch (p_w->get_type()) {
       case pxtnWOICE_PCM:
-        if (!p_doc->w_asfile(_code_matePCM, 1, _CODESIZE)) {
+        if (!_io_write(desc, _code_matePCM, 1, _CODESIZE)) {
           res = pxtnERR_desc_w;
           goto End;
         }
-        if (!p_w->io_matePCM_w(p_doc)) {
+        if (!p_w->io_matePCM_w(desc)) {
           res = pxtnERR_desc_w;
           goto End;
         }
         break;
       case pxtnWOICE_PTV:
-        if (!p_doc->w_asfile(_code_matePTV, 1, _CODESIZE)) {
+        if (!_io_write(desc, _code_matePTV, 1, _CODESIZE)) {
           res = pxtnERR_desc_w;
           goto End;
         }
-        if (!p_w->io_matePTV_w(p_doc)) {
+        if (!p_w->io_matePTV_w(desc)) {
           res = pxtnERR_desc_w;
           goto End;
         }
         break;
       case pxtnWOICE_PTN:
-        if (!p_doc->w_asfile(_code_matePTN, 1, _CODESIZE)) {
+        if (!_io_write(desc, _code_matePTN, 1, _CODESIZE)) {
           res = pxtnERR_desc_w;
           goto End;
         }
-        if (!p_w->io_matePTN_w(p_doc)) {
+        if (!p_w->io_matePTN_w(desc)) {
           res = pxtnERR_desc_w;
           goto End;
         }
@@ -1011,11 +1208,11 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
       case pxtnWOICE_OGGV:
 
 #ifdef pxINCLUDE_OGGVORBIS
-        if (!p_doc->w_asfile(_code_mateOGGV, 1, _CODESIZE)) {
+        if (!_io_write(desc, _code_mateOGGV, 1, _CODESIZE)) {
           res = pxtnERR_desc_w;
           goto End;
         }
-        if (!p_w->io_mateOGGV_w(p_doc)) {
+        if (!p_w->io_mateOGGV_w(desc)) {
           res = pxtnERR_desc_w;
           goto End;
         }
@@ -1030,11 +1227,11 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
     }
 
     if (!b_tune && p_w->is_name_buf()) {
-      if (!p_doc->w_asfile(_code_assiWOIC, 1, _CODESIZE)) {
+      if (!_io_write(desc, _code_assiWOIC, 1, _CODESIZE)) {
         res = pxtnERR_desc_w;
         goto End;
       }
-      if (!_io_assiWOIC_w(p_doc, w)) {
+      if (!_io_assiWOIC_w(desc, w)) {
         res = pxtnERR_desc_w;
         goto End;
       }
@@ -1042,22 +1239,22 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
   }
 
   // unit
-  if (!p_doc->w_asfile(_code_num_UNIT, 1, _CODESIZE)) {
+  if (!_io_write(desc, _code_num_UNIT, 1, _CODESIZE)) {
     res = pxtnERR_desc_w;
     goto End;
   }
-  if (!_io_UNIT_num_w(p_doc)) {
+  if (!_io_UNIT_num_w(desc)) {
     res = pxtnERR_desc_w;
     goto End;
   }
 
   for (int32_t u = 0; u < _unit_num; u++) {
     if (!b_tune && _units[u]->is_name_buf()) {
-      if (!p_doc->w_asfile(_code_assiUNIT, 1, _CODESIZE)) {
+      if (!_io_write(desc, _code_assiUNIT, 1, _CODESIZE)) {
         res = pxtnERR_desc_w;
         goto End;
       }
-      if (!_io_assiUNIT_w(p_doc, u)) {
+      if (!_io_assiUNIT_w(desc, u)) {
         res = pxtnERR_desc_w;
         goto End;
       }
@@ -1066,11 +1263,11 @@ pxtnERR pxtnService::write(pxtnDescriptor *p_doc, bool b_tune,
 
   {
     int32_t end_size = 0;
-    if (!p_doc->w_asfile(_code_pxtoneND, 1, _CODESIZE)) {
+    if (!_io_write(desc, _code_pxtoneND, 1, _CODESIZE)) {
       res = pxtnERR_desc_w;
       goto End;
     }
-    if (!p_doc->w_asfile(&end_size, 4, 1)) {
+    if (!_io_write(desc, &end_size, 4, 1)) {
       res = pxtnERR_desc_w;
       goto End;
     }
@@ -1086,18 +1283,16 @@ End:
 // Read Project //////////////
 ////////////////////////////////////////
 
-pxtnERR pxtnService::_ReadTuneItems(pxtnDescriptor *p_doc) {
+pxtnERR pxtnService::_ReadTuneItems(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;
   bool b_end = false;
   char code[_CODESIZE + 1] = {'\0'};
 
-  /* Iterates over each of the components of the project - woices, units, etc.
-   */
   /// must the unit before the voice.
   while (!b_end) {
-    if (!p_doc->r(code, 1, _CODESIZE)) {
+    if (!_io_read(desc, code, 1, _CODESIZE)) {
       res = pxtnERR_desc_r;
       goto term;
     }
@@ -1111,42 +1306,39 @@ pxtnERR pxtnService::_ReadTuneItems(pxtnDescriptor *p_doc) {
       // new -------
       case _TAG_num_UNIT: {
         int32_t num = 0;
-        /// just reads the number of units and creates the appropriate ones
-        res = _io_UNIT_num_r(p_doc, &num);
+        res = _io_UNIT_num_r(desc, &num);
         if (res != pxtnOK) goto term;
-        for (int32_t i = 0; i < num; i++) _units[i] = new pxtnUnit();
+        for (int32_t i = 0; i < num; i++)
+          _units[i] = new pxtnUnit(_io_read, _io_write, _io_seek, _io_pos);
         _unit_num = num;
-        break;
-      }
+      } break;
+
       case _TAG_MasterV5:
-        res = master->io_r_v5(p_doc);
+        res = master->io_r_v5(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_Event_V5:
-        /* The big event list reader. Loops over chunks and fills a linked
-         * list of data with them. */
-        res = evels->io_Read(p_doc);
+        res = evels->io_Read(desc);
         if (res != pxtnOK) goto term;
         break;
 
-      /// voice stuff
       case _TAG_matePCM:
-        res = _io_Read_Woice(p_doc, pxtnWOICE_PCM);
+        res = _io_Read_Woice(desc, pxtnWOICE_PCM);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_matePTV:
-        res = _io_Read_Woice(p_doc, pxtnWOICE_PTV);
+        res = _io_Read_Woice(desc, pxtnWOICE_PTV);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_matePTN:
-        res = _io_Read_Woice(p_doc, pxtnWOICE_PTN);
+        res = _io_Read_Woice(desc, pxtnWOICE_PTN);
         if (res != pxtnOK) goto term;
         break;
 
       case _TAG_mateOGGV:
 
 #ifdef pxINCLUDE_OGGVORBIS
-        res = _io_Read_Woice(p_doc, pxtnWOICE_OGGV);
+        res = _io_Read_Woice(desc, pxtnWOICE_OGGV);
         if (res != pxtnOK) goto term;
 #else
         res = pxtnERR_ogg_no_supported;
@@ -1155,32 +1347,31 @@ pxtnERR pxtnService::_ReadTuneItems(pxtnDescriptor *p_doc) {
         break;
 
       case _TAG_effeDELA:
-        res = _io_Read_Delay(p_doc);
+        res = _io_Read_Delay(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_effeOVER:
-        res = _io_Read_OverDrive(p_doc);
+        res = _io_Read_OverDrive(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_textNAME:
-        if (!text->Name_r(p_doc)) {
+        if (!text->Name_r(desc)) {
           res = pxtnERR_desc_r;
           goto term;
         }
         break;
       case _TAG_textCOMM:
-        if (!text->Comment_r(p_doc)) {
+        if (!text->Comment_r(desc)) {
           res = pxtnERR_desc_r;
           goto term;
         }
         break;
-      /// names for voice and unit
       case _TAG_assiWOIC:
-        res = _io_assiWOIC_r(p_doc);
+        res = _io_assiWOIC_r(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_assiUNIT:
-        res = _io_assiUNIT_r(p_doc);
+        res = _io_assiUNIT_r(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_pxtoneND:
@@ -1189,33 +1380,33 @@ pxtnERR pxtnService::_ReadTuneItems(pxtnDescriptor *p_doc) {
 
       // old -------
       case _TAG_x4x_evenMAST:
-        res = master->io_r_x4x(p_doc);
+        res = master->io_r_x4x(desc);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x4x_evenUNIT:
-        res = evels->io_Unit_Read_x4x_EVENT(p_doc, false, true);
+        res = evels->io_Unit_Read_x4x_EVENT(desc, false, true);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x3x_pxtnUNIT:
-        res = _io_Read_OldUnit(p_doc, 3);
+        res = _io_Read_OldUnit(desc, 3);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x1x_PROJ:
-        if (!_x1x_Project_Read(p_doc)) {
+        if (!_x1x_Project_Read(desc)) {
           res = pxtnERR_desc_r;
           goto term;
         }
         break;
       case _TAG_x1x_UNIT:
-        res = _io_Read_OldUnit(p_doc, 1);
+        res = _io_Read_OldUnit(desc, 1);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x1x_PCM:
-        res = _io_Read_Woice(p_doc, pxtnWOICE_PCM);
+        res = _io_Read_Woice(desc, pxtnWOICE_PCM);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x1x_EVEN:
-        res = evels->io_Unit_Read_x4x_EVENT(p_doc, true, false);
+        res = evels->io_Unit_Read_x4x_EVENT(desc, true, false);
         if (res != pxtnOK) goto term;
         break;
       case _TAG_x1x_END:
@@ -1236,15 +1427,14 @@ term:
 
 #define _MAX_FMTVER_x1x_EVENTNUM 10000
 
-pxtnERR pxtnService::_ReadVersion(pxtnDescriptor *p_doc,
-                                  _enum_FMTVER *p_fmt_ver,
-                                  uint16_t *p_exe_ver) {
+pxtnERR pxtnService::_ReadVersion(void* desc, _enum_FMTVER* p_fmt_ver,
+                                  uint16_t* p_exe_ver) {
   if (!_b_init) return pxtnERR_INIT;
 
   char version[_VERSIONSIZE] = {'\0'};
   uint16_t dummy;
 
-  if (!p_doc->r(version, 1, _VERSIONSIZE)) return pxtnERR_desc_r;
+  if (!_io_read(desc, version, 1, _VERSIONSIZE)) return pxtnERR_desc_r;
 
   // fmt version
   if (!memcmp(version, _code_proj_x1x, _VERSIONSIZE)) {
@@ -1275,8 +1465,8 @@ pxtnERR pxtnService::_ReadVersion(pxtnDescriptor *p_doc,
     return pxtnERR_fmt_unknown;
 
   // exe version
-  if (!p_doc->r(p_exe_ver, sizeof(uint16_t), 1)) return pxtnERR_desc_r;
-  if (!p_doc->r(&dummy, sizeof(uint16_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, p_exe_ver, sizeof(uint16_t), 1)) return pxtnERR_desc_r;
+  if (!_io_read(desc, &dummy, sizeof(uint16_t), 1)) return pxtnERR_desc_r;
 
   return pxtnOK;
 }
@@ -1321,12 +1511,12 @@ bool pxtnService::_x3x_SetVoiceNames() {
   for (int32_t i = 0; i < _woice_num; i++) {
     char name[pxtnMAX_TUNEWOICENAME + 1];
     sprintf(name, "voice_%02d", i);
-    _woices[i]->set_name_buf_jis(name, 8);
+    _woices[i]->set_name_buf(name, 8);
   }
   return true;
 }
 
-pxtnERR pxtnService::_pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count) {
+pxtnERR pxtnService::_pre_count_event(void* desc, int32_t* p_count) {
   if (!_b_init) return pxtnERR_INIT;
   if (!p_count) return pxtnERR_param;
 
@@ -1341,7 +1531,7 @@ pxtnERR pxtnService::_pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count) {
   uint16_t exe_ver = 0;
   _enum_FMTVER fmt_ver = _enum_FMTVER_unknown;
 
-  res = _ReadVersion(p_doc, &fmt_ver, &exe_ver);
+  res = _ReadVersion(desc, &fmt_ver, &exe_ver);
   if (res != pxtnOK) goto term;
 
   if (fmt_ver == _enum_FMTVER_x1x) {
@@ -1351,26 +1541,23 @@ pxtnERR pxtnService::_pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count) {
   }
 
   while (!b_end) {
-    if (!p_doc->r(code, 1, _CODESIZE)) {
+    if (!_io_read(desc, code, 1, _CODESIZE)) {
       res = pxtnERR_desc_r;
       goto term;
     }
 
     switch (_CheckTagCode(code)) {
-      /// Though these functions call functions on evels and master, these are
-      /// just checks to see if the event is valid. The appropriate size is
-      /// returned if they are.
       case _TAG_Event_V5:
-        count += evels->io_Read_EventNum(p_doc);
+        count += evels->io_Read_EventNum(desc);
         break;
       case _TAG_MasterV5:
-        count += master->io_r_v5_EventNum(p_doc);
+        count += master->io_r_v5_EventNum(desc);
         break;
       case _TAG_x4x_evenMAST:
-        count += master->io_r_x4x_EventNum(p_doc);
+        count += master->io_r_x4x_EventNum(desc);
         break;
       case _TAG_x4x_evenUNIT:
-        res = evels->io_Read_x4x_EventNum(p_doc, &c);
+        res = evels->io_Read_x4x_EventNum(desc, &c);
         if (res != pxtnOK) goto term;
         count += c;
         break;
@@ -1393,11 +1580,11 @@ pxtnERR pxtnService::_pre_count_event(pxtnDescriptor *p_doc, int32_t *p_count) {
       case _TAG_assiUNIT:
       case _TAG_assiWOIC:
 
-        if (!p_doc->r(&size, sizeof(int32_t), 1)) {
+        if (!_io_read(desc, &size, sizeof(int32_t), 1)) {
           res = pxtnERR_desc_r;
           goto term;
         }
-        if (!p_doc->seek(pxtnSEEK_cur, size)) {
+        if (!_io_seek(desc, SEEK_CUR, size)) {
           res = pxtnERR_desc_r;
           goto term;
         }
@@ -1432,7 +1619,7 @@ term:
   return res;
 }
 
-pxtnERR pxtnService::read(pxtnDescriptor *p_doc) {
+pxtnERR pxtnService::read(void* desc) {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;
@@ -1442,13 +1629,10 @@ pxtnERR pxtnService::read(pxtnDescriptor *p_doc) {
 
   clear();
 
-  /// counts the # of events
-  res = _pre_count_event(p_doc, &event_num);
+  res = _pre_count_event(desc, &event_num);
   if (res != pxtnOK) goto term;
-  p_doc->seek(pxtnSEEK_set, 0);
-  /// but also put it back to the start
+  _io_seek(desc, SEEK_SET, 0);
 
-  /// handle fixed vs. variable # events
   if (_b_fix_evels_num) {
     if (event_num > evels->get_Num_Max()) {
       res = pxtnERR_too_much_event;
@@ -1461,8 +1645,7 @@ pxtnERR pxtnService::read(pxtnDescriptor *p_doc) {
     }
   }
 
-  /// just reads version
-  res = _ReadVersion(p_doc, &fmt_ver, &exe_ver);
+  res = _ReadVersion(desc, &fmt_ver, &exe_ver);
   if (res != pxtnOK) goto term;
 
   if (fmt_ver >= _enum_FMTVER_v5)
@@ -1470,8 +1653,7 @@ pxtnERR pxtnService::read(pxtnDescriptor *p_doc) {
   else
     evels->x4x_Read_Start();
 
-  /// the thing that actually reads everything?
-  res = _ReadTuneItems(p_doc);
+  res = _ReadTuneItems(desc);
   if (res != pxtnOK) goto term;
 
   if (fmt_ver >= _enum_FMTVER_v5) evels->Linear_End(true);
@@ -1530,23 +1712,23 @@ typedef struct {
   uint32_t x1x_sps;
 } _x1x_PROJECT;
 
-bool pxtnService::_x1x_Project_Read(pxtnDescriptor *p_doc) {
+bool pxtnService::_x1x_Project_Read(void* desc) {
   if (!_b_init) return false;
 
-  _x1x_PROJECT prjc{};
+  _x1x_PROJECT prjc = {0};
   int32_t beat_num, beat_clock;
   int32_t size;
   float beat_tempo;
 
-  if (!p_doc->r(&size, 4, 1)) return false;
-  if (!p_doc->r(&prjc, sizeof(_x1x_PROJECT), 1)) return false;
+  if (!_io_read(desc, &size, 4, 1)) return false;
+  if (!_io_read(desc, &prjc, sizeof(_x1x_PROJECT), 1)) return false;
 
   beat_num = prjc.x1x_beat_num;
   beat_tempo = prjc.x1x_beat_tempo;
   beat_clock = prjc.x1x_beat_clock;
 
   int32_t ns = 0;
-  for (; ns < _MAX_PROJECTNAME_x1x; ns++) {
+  for (ns; ns < _MAX_PROJECTNAME_x1x; ns++) {
     if (!prjc.x1x_name[ns]) break;
   }
 
