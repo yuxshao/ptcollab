@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg959"
+   sodipodi:docname="add.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs963" />
+  <sodipodi:namedview
+     id="namedview961"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="90.509668"
+     inkscape:cx="11.766699"
+     inkscape:cy="7.5351066"
+     inkscape:window-width="3840"
+     inkscape:window-height="2054"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg959"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1"
+     showguides="true">
+    <sodipodi:guide
+       position="-1.421875,8"
+       orientation="0,-1"
+       id="guide1042"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="8,17.671875"
+       orientation="1,0"
+       id="guide1044"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="2,7.625"
+       orientation="1,0"
+       id="guide1046"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="14,5.707"
+       orientation="1,0"
+       id="guide1048"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="0,14.003906"
+       orientation="0,-1"
+       id="guide1050"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="2.765625,2.0039062"
+       orientation="0,-1"
+       id="guide1054"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <style
+     type="text/css"
+     id="current-color-scheme">
+        .ColorScheme-Text {
+            color:#D2CA9C;
+        }
+    </style>
+  <path
+     style="fill:#ffffff;stroke:#0000ff;stroke-width:1;stroke-dasharray:none;stroke-opacity:1"
+     d="M 2,8 H 14"
+     id="path1784" />
+  <path
+     style="fill:#ffffff;stroke:#0000ff;stroke-width:1;stroke-dasharray:none;stroke-opacity:1"
+     d="m 8,1.996094 v 12"
+     id="path1786" />
+</svg>

@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/icons/neutral">
         <file alias="audio-on">icons/neutral/audio-on.svg</file>
+        <file alias="add">icons/neutral/add.svg</file>
+		<file alias="remove">icons/neutral/remove.svg</file>
         <file alias="visible">icons/neutral/view-visible.svg</file>
         <file alias="select">icons/neutral/edit-select.svg</file>
         <file alias="loop">icons/neutral/media-playlist-repeat.svg</file>

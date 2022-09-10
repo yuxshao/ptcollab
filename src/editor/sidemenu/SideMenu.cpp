@@ -322,4 +322,8 @@ void SideMenu::setPlay(bool playing) {
   ui->saveBtn->setIcon(getIcon("save"));
   ui->upUnitBtn->setIcon(getIcon("up"));
   ui->downUnitBtn->setIcon(getIcon("down"));
+  ui->addUnitBtn->setIcon(getIcon("add"));
+  ui->removeUnitBtn->setIcon(getIcon("remove"));
+  ui->addWoiceBtn->setIcon(getIcon("add"));
+  ui->removeWoiceBtn->setIcon(getIcon("remove"));
 }

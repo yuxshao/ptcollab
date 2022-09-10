@@ -116,7 +116,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -161,18 +161,36 @@
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QPushButton" name="addWoiceBtn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Add voice</string>
+           </property>
            <property name="text">
-            <string>+</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="changeWoiceBtn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Change voice</string>
            </property>
            <property name="text">
             <string>Change</string>
@@ -181,11 +199,20 @@
          </item>
          <item>
           <widget class="QPushButton" name="removeWoiceBtn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Remove voice</string>
+           </property>
            <property name="text">
-            <string>-</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -239,6 +266,9 @@
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Move unit up</string>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -252,6 +282,9 @@
           <widget class="QPushButton" name="downUnitBtn">
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Move unit down</string>
            </property>
            <property name="text">
             <string/>
@@ -271,8 +304,11 @@
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Add unit</string>
+           </property>
            <property name="text">
-            <string>+</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -281,8 +317,11 @@
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Remove unit</string>
+           </property>
            <property name="text">
-            <string>-</string>
+            <string/>
            </property>
           </widget>
          </item>
