@@ -217,6 +217,8 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
     return false;
   }
 
+  loadFonts(styleSheetDir(basedir, styleName));
+
   Config p = defaultConfig(false);
   QString path = configPath(basedir, styleName);
   if (QFile::exists(path)) {
@@ -227,7 +229,6 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   }
   currentConfig = p;
 
-  loadFonts(styleSheetDir(basedir, styleName));
   qApp->setStyle(QStyleFactory::create("Fusion"));
   // Use Fusion as a base for aspects stylesheet does not cover, it should
   // look consistent across all platforms
