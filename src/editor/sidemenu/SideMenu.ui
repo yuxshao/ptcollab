@@ -395,8 +395,11 @@
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Add overdrive</string>
+           </property>
            <property name="text">
-            <string>+</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -405,8 +408,11 @@
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
+           <property name="toolTip">
+            <string>Remove overdrive</string>
+           </property>
            <property name="text">
-            <string>-</string>
+            <string/>
            </property>
           </widget>
          </item>

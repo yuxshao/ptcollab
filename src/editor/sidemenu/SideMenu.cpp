@@ -223,15 +223,28 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
 void SideMenu::setEditWidgetsEnabled(bool b) {
   // Really only this first one is necessary, since you can't add anything
   // else without it.
+
   ui->addWoiceBtn->setEnabled(b);
   ui->changeWoiceBtn->setEnabled(b);
   ui->removeWoiceBtn->setEnabled(b);
+
   ui->addUnitBtn->setEnabled(b);
   ui->removeUnitBtn->setEnabled(b);
-  ui->tempoSpin->setEnabled(b);
-  ui->beatsSpin->setEnabled(b);
   ui->upUnitBtn->setEnabled(b);
   ui->downUnitBtn->setEnabled(b);
+
+  ui->addOverdriveBtn->setEnabled(b);
+  ui->removeOverdriveBtn->setEnabled(b);
+
+  ui->woiceList->setEnabled(b);
+  ui->unitList->setEnabled(b);
+  ui->overdriveList->setEnabled(b);
+  ui->delayList->setEnabled(b);
+  ui->usersList->setEnabled(b);
+
+  ui->watchBtn->setEnabled(b);
+  ui->tempoSpin->setEnabled(b);
+  ui->beatsSpin->setEnabled(b);
 }
 
 void SideMenu::setTab(int index) { ui->tabWidget->setCurrentIndex(index); }
@@ -326,4 +339,6 @@ void SideMenu::setPlay(bool playing) {
   ui->removeUnitBtn->setIcon(getIcon("remove"));
   ui->addWoiceBtn->setIcon(getIcon("add"));
   ui->removeWoiceBtn->setIcon(getIcon("remove"));
+  ui->addOverdriveBtn->setIcon(getIcon("add"));
+  ui->removeOverdriveBtn->setIcon(getIcon("remove"));
 }

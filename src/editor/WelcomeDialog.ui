@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>195</height>
+    <width>276</width>
+    <height>146</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -130,6 +130,12 @@
      </property>
      <item>
       <widget class="QPushButton" name="buttonNew">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>New</string>
        </property>
@@ -137,6 +143,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="buttonOpen">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Open</string>
        </property>
@@ -144,6 +156,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="buttonConnect">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Connect</string>
        </property>
