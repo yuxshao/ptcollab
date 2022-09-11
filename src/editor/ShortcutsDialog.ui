@@ -382,32 +382,32 @@
      </item>
      <item row="13" column="0">
       <property name="text">
-       <string>(Shift)+up/down</string>
+       <string>(Ctrl)+up/down</string>
       </property>
      </item>
      <item row="13" column="1">
       <property name="text">
-       <string>Shift selection parameters (shift: by large value)</string>
+       <string>Shift selection parameters (ctrl: by large value)</string>
       </property>
      </item>
      <item row="14" column="0">
       <property name="text">
-       <string>Ctrl+(shift)+up/down</string>
+       <string>(Ctrl)+Shift+up/down</string>
       </property>
      </item>
      <item row="14" column="1">
       <property name="text">
-       <string>Transpose (shift: by octave)</string>
+       <string>Transpose (ctrl: by octave)</string>
       </property>
      </item>
      <item row="15" column="0">
       <property name="text">
-       <string>Ctrl+(shift)+left/right</string>
+       <string>(Ctrl)+Shift+left/right</string>
       </property>
      </item>
      <item row="15" column="1">
       <property name="text">
-       <string>Move selection by grid snap (shift: by measure)</string>
+       <string>Move selection by grid snap (ctrl: by measure)</string>
       </property>
      </item>
      <item row="16" column="0">
