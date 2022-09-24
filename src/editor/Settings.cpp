@@ -117,6 +117,12 @@ QString get() { return QSettings().value(KEY, "").toString(); }
 void set(QString value) { QSettings().setValue(KEY, value); }
 }  // namespace RenderFileDestination
 
+namespace RenderDirectoryDestination {
+const char *KEY = "render_directory_destination";
+QString get() { return QSettings().value(KEY, "").toString(); }
+void set(QString value) { QSettings().setValue(KEY, value); }
+}  // namespace RenderDirectoryDestination
+
 namespace StyleName {
 const char *KEY = "style_name";
 const char *default_included_with_distribution = "ptCollage";

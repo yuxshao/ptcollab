@@ -1064,8 +1064,10 @@ bool EditorWindow::save(bool forceSelectFilename) {
   return saved;
 }
 
+static QRegularExpression forbidden_filename_character_matcher("[\\/\"]+");
 void EditorWindow::render() {
   double length, fadeout, volume;
+  bool separate_units;
   double secs_per_meas =
       m_pxtn.master->get_beat_num() / m_pxtn.master->get_beat_tempo() * 60;
   const pxtnMaster *m = m_pxtn.master;
@@ -1079,41 +1081,70 @@ void EditorWindow::render() {
     length = m_render_dialog->renderLength();
     fadeout = m_render_dialog->renderFadeout();
     volume = m_render_dialog->renderVolume();
+    separate_units = m_render_dialog->renderUnitsSeparately();
   } catch (QString &e) {
     QMessageBox::warning(this, tr("Render settings invalid"), e);
     return;
   }
 
-  if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
-    QMessageBox::warning(this, tr("Could not render"),
-                         tr("Filename must end with .wav"));
-    return;
+  std::vector<std::pair<QString, std::optional<int>>> filenames_and_units;
+  if (!separate_units) {
+    if (QFileInfo(m_render_dialog->renderDestination()).suffix() != "wav") {
+      QMessageBox::warning(this, tr("Could not render"),
+                           tr("Filename must end with .wav"));
+      return;
+    }
+    filenames_and_units.push_back(
+        {m_render_dialog->renderDestination(), std::nullopt});
+  } else {
+    QFileInfo dir(m_render_dialog->renderDestination());
+    if (!dir.isDir()) {
+      QMessageBox::warning(this, tr("Could not render"),
+                           tr("Filename must be a directory"));
+      return;
+    }
+    for (int unit_no = 0; unit_no < m_pxtn.Unit_Num(); ++unit_no) {
+      QString unit_name = shift_jis_codec->toUnicode(
+          m_pxtn.Unit_Get(unit_no)->get_name_buf_jis(nullptr));
+      unit_name.remove(forbidden_filename_character_matcher);
+      QString filename = QString("%1/%2_%3.wav")
+                             .arg(dir.absoluteFilePath())
+                             .arg(unit_no)
+                             .arg(unit_name);
+      filenames_and_units.push_back({filename, unit_no});
+    }
   }
-
-  QSaveFile file(m_render_dialog->renderDestination());
-  if (!file.open(QIODevice::WriteOnly)) {
-    QMessageBox::warning(this, tr("Could not render"),
-                         tr("Could not open file for rendering"));
-    return;
-  }
-
   constexpr int GRANULARITY = 1000;
   QProgressDialog progress(tr("Rendering"), tr("Abort"), 0, GRANULARITY, this);
   progress.setWindowModality(Qt::WindowModal);
-  bool finished;
-  try {
-    finished = m_client->controller()->render_exn(
-        &file, length, fadeout, volume, [&](double p) {
-          progress.setValue(p * GRANULARITY);
-          return !progress.wasCanceled();
-        });
-  } catch (const QString &e) {
-    QMessageBox::warning(this, tr("Render error"), e);
-    finished = false;
+
+  uint num_tasks = filenames_and_units.size();
+  for (uint i = 0; i < num_tasks; ++i) {
+    const auto &[filename, solo_unit] = filenames_and_units[i];
+    QSaveFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+      QMessageBox::warning(this, tr("Could not render"),
+                           tr("Could not open file for rendering"));
+      return;
+    }
+    progress.setLabelText(tr("Rendering") +
+                          QString(" (%1/%2)").arg(i + 1).arg(num_tasks));
+
+    bool finished;
+    try {
+      finished = m_client->controller()->render_exn(
+          &file, length, fadeout, volume, solo_unit, [&](double p) {
+            progress.setValue((p + i) * GRANULARITY / num_tasks);
+            return !progress.wasCanceled();
+          });
+    } catch (const QString &e) {
+      QMessageBox::warning(this, tr("Render error"), e);
+      finished = false;
+    }
+    if (!finished) return;
+    file.commit();
   }
   progress.close();
-  if (!finished) return;
-  file.commit();
   QMessageBox::information(this, tr("Rendering done"), tr("Rendering done"));
 }
 

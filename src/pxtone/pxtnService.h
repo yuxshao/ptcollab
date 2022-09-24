@@ -2,6 +2,7 @@
 #define pxtnService_H
 
 #include <map>
+#include <optional>
 #include <vector>
 
 #include "./pxtn.h"
@@ -34,6 +35,8 @@ typedef struct {
 
   uint32_t flags;
   float master_volume;
+
+  std::optional<uint32_t> solo_unit;
 } pxtnVOMITPREPARATION;
 
 class pxtnService;
@@ -55,6 +58,9 @@ struct mooParams {
   float smp_stride;
 
   float bt_tempo;
+
+  // A setting to only render a single unit. For ptcollab per-unit export
+  std::optional<uint32_t> solo_unit;
 
   mooParams();
 

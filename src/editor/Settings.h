@@ -92,6 +92,11 @@ QString get();
 void set(QString);
 }  // namespace RenderFileDestination
 
+namespace RenderDirectoryDestination {
+QString get();
+void set(QString);
+}  // namespace RenderDirectoryDestination
+
 namespace StyleName {
 extern const char *default_included_with_distribution;
 QString get();

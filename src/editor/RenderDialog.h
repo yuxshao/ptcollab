@@ -20,6 +20,7 @@ class RenderDialog : public QDialog {
   double renderLength();
   double renderFadeout();
   double renderVolume();
+  bool renderUnitsSeparately();
   QString renderDestination();
 
  private:

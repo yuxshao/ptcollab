@@ -55,6 +55,7 @@ class PxtoneController : public QObject {
   void cycleSolo(int unit_no);
   bool render_exn(
       QIODevice *file, double secs, double fadeout, double volume,
+      std::optional<size_t> solo_unit,
       std::function<bool(double progress)> should_continue = [](double) {
         return true;
       }) const;

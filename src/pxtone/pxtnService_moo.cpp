@@ -230,7 +230,11 @@ bool pxtnService::_moo_PXTONE_SAMPLE(void* p_data, mooState& moo_state) const {
 
   // sampling..
   for (size_t u = 0; u < moo_state.units.size(); u++) {
-    bool muted = moo_state.params.b_mute_by_unit && !_units[u]->get_played();
+    bool muted;
+    if (moo_state.params.solo_unit.has_value())
+      muted = moo_state.params.solo_unit.value() != u;
+    else
+      muted = moo_state.params.b_mute_by_unit && !_units[u]->get_played();
     moo_state.units[u].Tone_Sample(muted, _dst_ch_num, moo_state.time_pan_index,
                                    moo_state.params.smp_smooth);
   }
@@ -417,6 +421,7 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep,
       moo_state.params.b_loop = false;
 
     moo_state.params.master_vol = p_prep->master_volume;
+    moo_state.params.solo_unit = p_prep->solo_unit;
   }
 
   /* _dst_sps is like samples to seconds. it's set in pxtnService.cpp

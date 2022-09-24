@@ -15,17 +15,36 @@ RenderDialog::RenderDialog(QWidget *parent)
   ui->fadeOutEdit->setValidator(&lengthValidator);
   ui->saveToEdit->setText(Settings::RenderFileDestination::get());
 
-  connect(ui->saveToBtn, &QPushButton::pressed, [this]() {
-    QString filename = QFileDialog::getSaveFileName(
-        this, "Render to file", Settings::RenderFileDestination::get(),
-        tr("WAV file (*.wav)"));
-    if (QFileInfo(filename).suffix() != "wav") filename += ".wav";
-    filename = QFileInfo(filename).absoluteFilePath();
-    ui->saveToEdit->setText(filename);
+  connect(ui->saveToBtn, &QPushButton::pressed, this, [this]() {
+    if (!renderUnitsSeparately()) {
+      QString filename = QFileDialog::getSaveFileName(
+          this, "Render to file", Settings::RenderFileDestination::get(),
+          tr("WAV file (*.wav)"));
+      if (QFileInfo(filename).suffix() != "wav") filename += ".wav";
+      filename = QFileInfo(filename).absoluteFilePath();
+      ui->saveToEdit->setText(filename);
+    } else {
+      QString filename = QFileDialog::getExistingDirectory(
+          this, "Render units to directory",
+          Settings::RenderDirectoryDestination::get());
+      ui->saveToEdit->setText(QFileInfo(filename).absoluteFilePath());
+    }
   });
 
-  connect(ui->saveToEdit, &QLineEdit::textChanged,
-          &Settings::RenderFileDestination::set);
+  connect(ui->renderSeparateUnitsRadio, &QRadioButton::toggled, this,
+          [this](bool separate_units) {
+            ui->saveToEdit->setText(
+                separate_units ? Settings::RenderDirectoryDestination::get()
+                               : Settings::RenderFileDestination::get());
+          });
+
+  connect(this, &QDialog::accepted, [this]() {
+    const QString &text = ui->saveToEdit->text();
+    if (renderUnitsSeparately())
+      Settings::RenderDirectoryDestination::set(text);
+    else
+      Settings::RenderFileDestination::set(text);
+  });
 }
 
 RenderDialog::~RenderDialog() { delete ui; }
@@ -66,6 +85,10 @@ double RenderDialog::renderVolume() {
   double v = ui->volumeEdit->text().toDouble(&ok);
   if (!ok) throw QString("Invalid volume");
   return v;
+}
+
+bool RenderDialog::renderUnitsSeparately() {
+  return ui->renderSeparateUnitsRadio->isChecked();
 }
 
 QString RenderDialog::renderDestination() { return ui->saveToEdit->text(); }
