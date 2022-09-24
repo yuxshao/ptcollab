@@ -48,6 +48,8 @@ class PxtoneController : public QObject {
   const mooState *moo() { return m_moo_state; }
   const pxtnService *pxtn() { return m_pxtn; };
   void setVolume(int volume);
+  void setSongTitle(const QString &);
+  void setSongComment(const QString &);
 
   void setUnitPlayed(int unit_no, bool played);
   void setUnitVisible(int unit_no, bool visible);

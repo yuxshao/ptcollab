@@ -404,6 +404,16 @@ void PxtoneController::setVolume(int volume) {
   m_moo_state->params.master_vol = ampl;
 }
 
+void PxtoneController::setSongTitle(const QString &title) {
+  QByteArray str = shift_jis_codec->fromUnicode(title);
+  m_pxtn->text->set_name_buf(str.data(), str.length());
+}
+
+void PxtoneController::setSongComment(const QString &comment) {
+  QByteArray str = shift_jis_codec->fromUnicode(comment);
+  m_pxtn->text->set_comment_buf(str.data(), str.length());
+}
+
 bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit beginRefresh();
   if (desc.get_size_bytes() > 0) {

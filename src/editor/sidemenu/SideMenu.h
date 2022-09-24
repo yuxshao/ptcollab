@@ -66,6 +66,7 @@ class SideMenu : public QWidget {
   void bufferLengthChanged(double secs);
   void userSelected(int user);
   void userFollowClicked(int user);
+  void titleCommentBtnClicked();
 
  public slots:
   void setQuantXIndex(int);

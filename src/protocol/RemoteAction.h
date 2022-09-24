@@ -462,12 +462,29 @@ inline QTextStream &operator<<(QTextStream &out, const WatchUser &a) {
   return out;
 }
 
+struct SetSongText {
+  enum { Title, Comment } field;
+  QString text;
+};
+inline QDataStream &operator<<(QDataStream &out, const SetSongText &a) {
+  out << a.field << a.text;
+  return out;
+}
+inline QDataStream &operator>>(QDataStream &in, SetSongText &a) {
+  in >> a.field >> a.text;
+  return in;
+}
+inline QTextStream &operator<<(QTextStream &out, const SetSongText &a) {
+  out << "WatchUser(" << a.field << ")";
+  return out;
+}
+
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, MoveUnit,
                  AddWoice, RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
                  Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set,
-                 Ping, PlayState, WatchUser>;
+                 Ping, PlayState, WatchUser, SetSongText>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;
   std::visit(overloaded{[&ret](const EditState &) { ret = false; },

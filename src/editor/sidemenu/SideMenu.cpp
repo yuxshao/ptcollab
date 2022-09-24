@@ -218,6 +218,8 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
     if (ui->usersList->selectionModel()->hasSelection())
       emit userFollowClicked(ui->usersList->currentIndex().row());
   });
+  connect(ui->titleCommentBtn, &QPushButton::clicked, this,
+          &SideMenu::titleCommentBtnClicked);
 }
 
 void SideMenu::setEditWidgetsEnabled(bool b) {
@@ -247,6 +249,7 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->watchBtn->setEnabled(b);
   ui->tempoSpin->setEnabled(b);
   ui->beatsSpin->setEnabled(b);
+  ui->titleCommentBtn->setEnabled(b);
 }
 
 void SideMenu::setTab(int index) { ui->tabWidget->setCurrentIndex(index); }

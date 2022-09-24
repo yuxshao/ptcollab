@@ -100,6 +100,7 @@ HEADERS += \
            editor/Settings.h \
            editor/SettingsDialog.h \
            editor/ShortcutsDialog.h \
+           editor/sidemenu/SongTitleDialog.h \
            editor/StyleEditor.h \
            editor/WelcomeDialog.h \
            editor/audio/VolumeMeter.h \
@@ -174,6 +175,7 @@ FORMS += \
     editor/RenderDialog.ui \
     editor/SettingsDialog.ui \
     editor/ShortcutsDialog.ui \
+    editor/sidemenu/SongTitleDialog.ui \
     editor/WelcomeDialog.ui \
     editor/sidemenu/SelectWoiceDialog.ui \
     editor/sidemenu/SideMenu.ui
@@ -190,6 +192,7 @@ SOURCES += main.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
            editor/ShortcutsDialog.cpp \
+           editor/sidemenu/SongTitleDialog.cpp \
            editor/StyleEditor.cpp \
            editor/WelcomeDialog.cpp \
            editor/audio/VolumeMeter.cpp \

@@ -475,6 +475,13 @@
          </item>
         </layout>
        </item>
+       <item>
+        <widget class="QPushButton" name="titleCommentBtn">
+         <property name="text">
+          <string>Edit title &amp;&amp; comment</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab">

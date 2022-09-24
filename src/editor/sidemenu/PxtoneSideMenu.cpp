@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include "BasicWoiceListModel.h"
+#include "SongTitleDialog.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 
@@ -189,6 +190,21 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
     auto it = m_client->remoteEditStates().begin();
     std::advance(it, user_no);
     m_client->jumpToUser(it->first);
+  });
+  connect(this, &SideMenu::titleCommentBtnClicked, this, [this]() {
+    QString title = shift_jis_codec->toUnicode(
+        m_client->pxtn()->text->get_name_buf(nullptr));
+    QString comment = shift_jis_codec->toUnicode(
+        m_client->pxtn()->text->get_comment_buf(nullptr));
+    // qDebug() << title << comment;
+    SongTitleDialog dialog(title, comment, this);
+    if (dialog.exec()) {
+      if (title != dialog.title())
+        m_client->sendAction(SetSongText{SetSongText::Title, dialog.title()});
+      if (comment != dialog.comment())
+        m_client->sendAction(
+            SetSongText{SetSongText::Comment, dialog.comment()});
+    }
   });
   refreshCopyCheckbox();
 }

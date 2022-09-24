@@ -290,6 +290,16 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                           emit followActivity(s);
                       }
                     },
+                    [this](const SetSongText &s) {
+                      switch (s.field) {
+                        case SetSongText::Title:
+                          m_controller->setSongTitle(s.text);
+                          break;
+                        case SetSongText::Comment:
+                          m_controller->setSongComment(s.text);
+                          break;
+                      }
+                    },
                     [this, uid](const WatchUser &) {
                       // TODO: Maybe remember who's watching whom so that if you
                       // watch them you follow their watchee too?
@@ -518,8 +528,8 @@ void PxtoneClient::removeUnusedUnitsAndWoices() {
   std::set<int> unitNosInUse;
   std::set<int> woiceNosInUse;
 
-  // Walk through the project to see which units have ON events, and what woices
-  // are active during those on events
+  // Walk through the project to see which units have ON events, and what
+  // woices are active during those on events
   std::vector<int> currentWoiceNos(pxtn()->Unit_Num(), 0);
   for (const EVERECORD *e = pxtn()->evels->get_Records(); e != nullptr;
        e = e->next)

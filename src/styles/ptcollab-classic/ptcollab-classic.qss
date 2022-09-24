@@ -1,10 +1,10 @@
 SideMenu QLabel, QTabWidget > QWidget { 
 	font-weight:bold; 
 }
-QLineEdit { 
+QLineEdit, QTextEdit {
 	background-color: #00003e; color: #00F080; font-weight: bold;
 }
-QLineEdit:disabled { 
+QLineEdit:disabled, QTextEdit:disabled {
 	background-color: #343255; color: #9D9784;
 }
 QPushButton:disabled { 
