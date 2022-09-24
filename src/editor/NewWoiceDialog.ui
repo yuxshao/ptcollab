@@ -44,10 +44,23 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLineEdit" name="voicePathLine"/>
+             <widget class="QLineEdit" name="voicePathLine">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="voicePathBrowseBtn">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Browse</string>
               </property>
@@ -123,10 +136,23 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QLineEdit" name="searchFolderLine"/>
+             <widget class="QLineEdit" name="searchFolderLine">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="searchFolderBrowseBtn">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Browse</string>
               </property>
