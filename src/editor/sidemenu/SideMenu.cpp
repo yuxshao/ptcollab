@@ -236,8 +236,10 @@ void SideMenu::setEditWidgetsEnabled(bool b) {
   ui->addOverdriveBtn->setEnabled(b);
   ui->removeOverdriveBtn->setEnabled(b);
 
-  ui->woiceList->setEnabled(b);
-  ui->unitList->setEnabled(b);
+  // Don't disable woiceList / unitList on startup. Otherwise the icons are
+  // greyed out sorta jarringly
+  // ui->woiceList->setEnabled(b);
+  // ui->unitList->setEnabled(b);
   ui->overdriveList->setEnabled(b);
   ui->delayList->setEnabled(b);
   ui->usersList->setEnabled(b);

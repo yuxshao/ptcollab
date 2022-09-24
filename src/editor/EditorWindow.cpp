@@ -379,7 +379,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_C:
       if (event->modifiers() & Qt::ControlModifier)
         m_keyboard_view->copySelection();
-      else {
+      else if (event->modifiers() & Qt::ShiftModifier) {
         EVENTKIND kind =
             paramOptions()[m_client->editState().current_param_kind_idx()]
                 .second;
