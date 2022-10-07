@@ -21,7 +21,7 @@ else()
 endif()
 message(STATUS "Found Qt${QT_VERSION}")
 
-set (QT_COMPONENTS Core Gui Multimedia Widgets LinguistTools)
+set (QT_COMPONENTS Core Gui Multimedia Widgets)
 if (QT_VERSION EQUAL 6)
 	# TODO check if needed when adding Qt6 support
 	# https://www.qt.io/blog/porting-from-qt-5-to-qt-6-using-qt5compat-library
