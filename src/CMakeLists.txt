@@ -147,6 +147,7 @@ if (APPLE)
 	)
 	list (APPEND PTCOLLAB_SOURCES ${MACOSX_ICNS})
 endif()
+
 add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
 	${PTCOLLAB_SOURCES}
 	${PTCOLLAB_FORMS}
@@ -154,8 +155,8 @@ add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${PTCOLLAB_INCLUDEPATHS})
 
-set(QT_LIBRARIES ${QT_COMPONENTS})
 # Filter out compile-time dependencies which we can't / don't need to link against
+set(QT_LIBRARIES ${QT_COMPONENTS})
 list(REMOVE_ITEM QT_LIBRARIES
 	LinguistTools
 )
@@ -175,4 +176,6 @@ target_compile_definitions (${PROJECT_NAME}
 	PTCOLLAB_VERSION=${PROJECT_VERSION}
 )
 
-#install (TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install (TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+install (FILES pxtone/LICENSE-pxtone DESTINATION "${CMAKE_INSTALL_DOCDIR}")
