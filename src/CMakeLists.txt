@@ -164,18 +164,45 @@ list(REMOVE_ITEM QT_LIBRARIES
 list(TRANSFORM QT_LIBRARIES PREPEND "Qt${QT_VERSION}::")
 target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES})
 
-# Dependencies
-#set (THREADS_PREFER_PTHREAD_FLAG ON)
-#include (FindThreads REQUIRED)
-#target_include_directories (${PROJECT_NAME} SYSTEM PRIVATE ${EMU2149_INCLUDE_DIRS} ${RTAUDIO_INCLUDE_DIRS} ${RTMIDI_INCLUDE_DIRS})
-#target_compile_options (${PROJECT_NAME} PRIVATE ${EMU2149_COMPILE_OPTIONS} ${RTAUDIO_COMPILE_OPTIONS} ${RTMIDI_COMPILE_OPTIONS})
-
 target_compile_definitions (${PROJECT_NAME}
 	PRIVATE
 	QT_DEPRECATED_WARNINGS
-	#pxINCLUDE_OGGVORBIS
 	PTCOLLAB_VERSION=${PROJECT_VERSION}
+	#pxINCLUDE_OGGVORBIS
+	${DEPENDENCIES_DEFINES}
 )
+
+target_include_directories (${PROJECT_NAME}
+	SYSTEM PRIVATE
+	${DEPENDENCIES_INCLUDE_DIRS}
+)
+target_compile_options (${PROJECT_NAME}
+	PRIVATE
+	${DEPENDENCIES_COMPILE_OPTIONS}
+)
+if ("${CMAKE_VERSION}" VERSION_LESS "3.13")
+	message (WARNING
+		"CMake version is <3.13, using old pkg-config LDFLAGS. "
+		"You may encounter linking problems with these!"
+	)
+	target_link_libraries (${PROJECT_NAME}
+		PRIVATE
+		${DEPENDENCIES_LDFLAGS_LEGACY}
+	)
+else()
+	target_link_libraries (${PROJECT_NAME}
+		PRIVATE
+		${DEPENDENCIES_LIBRARIES}
+	)
+	target_link_directories (${PROJECT_NAME}
+		PRIVATE
+		${DEPENDENCIES_LINK_DIRS}
+	)
+	target_link_options (${PROJECT_NAME}
+		PRIVATE
+		${DEPENDENCIES_LINK_OPTIONS}
+	)
+endif()
 
 install (TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
