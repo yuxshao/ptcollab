@@ -4,8 +4,11 @@ OBJECTS_DIR = ../build/cache
 MOC_DIR=../build/cache
 DESTDIR=../build
 
+# meta makefile generator breaks .qmake.conf sourcing in actual target makefiles
+CONFIG -= debug_and_release
+
 VERSION = "$$cat($${top_srcdir}/version)"
-DEFINES += "PTCOLLAB_VERSION=$$VERSION"
+DEFINES += "PTCOLLAB_VERSION=$${VERSION}"
 
 # Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
 # others it's in a subdir
