@@ -36,7 +36,7 @@ else()
 	set (PTCOLLAB_ICONDIR "${CMAKE_INSTALL_DATADIR}/icons")
 endif()
 
-# TODO Move this dependency-related code into submodules dir once initialised
+# TODO Move this dependency-related code into submodules dir once initialised, offer from-source builds
 set (DEPENDENCIES_INCLUDE_DIRS "")
 set (DEPENDENCIES_COMPILE_OPTIONS "")
 set (DEPENDENCIES_LIBRARIES "")
@@ -47,7 +47,7 @@ set (DEPENDENCIES_DEFINES "")
 
 include (FindPkgConfig OPTIONAL)
 
-# TODO Offer from-source build
+# FIXME Make option
 set (SYSTEM_RTMIDI YES)
 
 if (SYSTEM_RTMIDI)
@@ -71,20 +71,60 @@ if (SYSTEM_RTMIDI)
 		if (RTMIDI_MANUAL_LIBRARY AND RTMIDI_MANUAL_INCLUDE_DIRS)
 			set (RTMIDI_FOUND YES)
 			list (APPEND DEPENDENCIES_INCLUDE_DIRS ${RTMIDI_MANUAL_INCLUDE_DIRS})
-			set (APPEND DEPENDENCIES_LIBRARIES ${RTMIDI_MANUAL_LIBRARY})
-			set (APPEND DEPENDENCIES_LEGACY_LDFLAGS ${RTMIDI_MANUAL_LIBRARY})
+			list (APPEND DEPENDENCIES_LIBRARIES ${RTMIDI_MANUAL_LIBRARY})
+			list (APPEND DEPENDENCIES_LEGACY_LDFLAGS ${RTMIDI_MANUAL_LIBRARY})
 		else()
 			message (FATAL_ERROR "System-installed RtMidi requested but not found")
 		endif()
 	endif (NOT RTMIDI_FOUND)
 
-	# TODO from-source build
-	# else()
-	#		add_subdirectory (RtMidi EXCLUDE_FROM_ALL)
+# TODO from-source build
+# else()
+#		add_subdirectory (RtMidi EXCLUDE_FROM_ALL)
 endif (SYSTEM_RTMIDI)
 
 if (RTMIDI_FOUND)
 	list (APPEND DEPENDENCIES_DEFINES "RTMIDI_SUPPORTED")
+endif()
+
+# FIXME Make option
+set (SYSTEM_VORBISFILE YES)
+
+if (SYSTEM_VORBISFILE)
+	if (PKG_CONFIG_FOUND)
+		pkg_check_modules (VORBISFILE vorbisfile)
+		if (VORBISFILE_FOUND)
+			list(APPEND DEPENDENCIES_INCLUDE_DIRS ${VORBISFILE_INCLUDE_DIRS})
+			list(APPEND DEPENDENCIES_COMPILE_OPTIONS ${VORBISFILE_CFLAGS_OTHER})
+			list(APPEND DEPENDENCIES_LIBRARIES ${VORBISFILE_LIBRARIES})
+			list(APPEND DEPENDENCIES_LIBRARY_DIRS ${VORBISFILE_LIBRARY_DIRS})
+			list(APPEND DEPENDENCIES_LINK_OPTIONS ${VORBISFILE_LDFLAGS_OTHER})
+			list(APPEND DEPENDENCIES_LEGACY_LDFLAGS ${VORBISFILE_LDFLAGS})
+		endif()
+	endif()
+
+	if (NOT VORBISFILE_FOUND)
+		message (STATUS "Looking for vorbisfile library & headers")
+		find_library (VORBISFILE_MANUAL_LIBRARY vorbisfile)
+		find_path (VORBISFILE_MANUAL_INCLUDE_DIRS NAMES "vorbisfile.h" PATH_SUFFIXES "include/vorbis")
+
+		if (VORBISFILE_MANUAL_LIBRARY AND VORBISFILE_MANUAL_INCLUDE_DIRS)
+			set (VORBISFILE_FOUND YES)
+			list (APPEND DEPENDENCIES_INCLUDE_DIRS ${VORBISFILE_MANUAL_INCLUDE_DIRS})
+			list (APPEND DEPENDENCIES_LIBRARIES ${VORBISFILE_MANUAL_LIBRARY})
+			list (APPEND DEPENDENCIES_LEGACY_LDFLAGS ${VORBISFILE_MANUAL_LIBRARY})
+		else()
+			message (FATAL_ERROR "System-installed vorbisfile requested but not found")
+		endif()
+	endif (NOT VORBISFILE_FOUND)
+
+# TODO from-source build
+# else()
+#		add_subdirectory (vorbis EXCLUDE_FROM_ALL)
+endif (SYSTEM_VORBISFILE)
+
+if (VORBISFILE_FOUND)
+	list (APPEND DEPENDENCIES_DEFINES "pxINCLUDE_OGGVORBIS")
 endif()
 
 # TODO Export to global scope when moved to subdir
