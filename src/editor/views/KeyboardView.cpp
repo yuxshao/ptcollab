@@ -336,8 +336,8 @@ static void drawCursor(const EditState &state, QPainter &painter,
   drawCursor(position, painter, color, username, uid);
 }
 
-void drawLeftPiano(QPainter &painter, int y, int h, const QColor &b,
-                   QColor *bInner) {
+void drawLeftPiano(QPainter &painter, int y, int h, const QBrush &b,
+                   QBrush *bInner) {
   painter.fillRect(0, y, LEFT_LEGEND_WIDTH, h, b);
   painter.fillRect(LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
   if (bInner) painter.fillRect(0, y, LEFT_LEGEND_WIDTH * 2 / 3, h, *bInner);
@@ -455,17 +455,18 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                      (isMeasureLine ? measureBrush : beatBrush));
   }
   // Draw key background
-  QColor rootNoteBrush = StyleEditor::config.color.KeyboardRootNote;
-  QColor whiteNoteBrush = StyleEditor::config.color.KeyboardWhiteNote;
-  QColor blackNoteBrush = StyleEditor::config.color.KeyboardBlackNote;
+  QColor rootNoteColor = StyleEditor::config.color.KeyboardRootNote;
+  QBrush rootNoteBrush = rootNoteColor;
+  QBrush whiteNoteBrush = StyleEditor::config.color.KeyboardWhiteNote;
+  QBrush blackNoteBrush = StyleEditor::config.color.KeyboardBlackNote;
 
-  QColor whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
-  QColor blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
-  QColor blackLeftInnerBrush = StyleEditor::config.color.KeyboardBlackLeftInner;
-  QColor black = StyleEditor::config.color.KeyboardBlack;
+  QBrush whiteLeftBrush = StyleEditor::config.color.KeyboardWhiteLeft;
+  QBrush blackLeftBrush = StyleEditor::config.color.KeyboardBlackLeft;
+  QBrush blackLeftInnerBrush = StyleEditor::config.color.KeyboardBlackLeftInner;
+  QBrush black = StyleEditor::config.color.KeyboardBlack;
 
   QLinearGradient gradient(0, 0, 1, 0);
-  gradient.setColorAt(0.5, rootNoteBrush);
+  gradient.setColorAt(0.5, rootNoteColor);
   gradient.setColorAt(1, Qt::transparent);
   gradient.setCoordinateMode(QGradient::ObjectMode);
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
@@ -490,7 +491,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
                                   s->start_vel};
     }
   for (int row = 0; true; ++row) {
-    QColor *brush, *leftBrush, *leftInnerBrush = nullptr;
+    QBrush *brush, *leftBrush, *leftInnerBrush = nullptr;
     // Start the backgrounds on an A just so that the key pattern lines up
     int a_above_max_key =
         (EVENTMAX_KEY / PITCH_PER_OCTAVE + 1) * PITCH_PER_OCTAVE;
