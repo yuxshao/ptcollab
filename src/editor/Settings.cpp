@@ -2,6 +2,10 @@
 
 #include "ComboOptions.h"
 
+#ifndef PTCOLLAB_VERSION
+  #error Undefined PTCOLLAB_VERSION!
+#endif
+
 const QString BUFFER_LENGTH_KEY("buffer_length");
 const double DEFAULT_BUFFER_LENGTH = 0.15;
 const QString VOLUME_KEY("volume");
@@ -17,11 +21,17 @@ const QString HOSTING_ENABLED_KEY("hosting_enabled");
 
 const QString CONNECT_SERVER_KEY("connect_server");
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 namespace Settings {
 namespace Version {
-static QString v("0.6.3.0");
+static QString v(TOSTRING(PTCOLLAB_VERSION));
 const QString &string() { return v; }
 }  // namespace Version
+
+#undef TOSTRING
+#undef STRINGIFY
 
 namespace TextSize {
 const QString TEXT_SIZE_KEY("text_size");
