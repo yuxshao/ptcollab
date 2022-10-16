@@ -432,7 +432,6 @@ double distance_to_mouse(const MouseEditState &mouse, const Interval &clock_int,
 
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
-  // if (painted > 10) return;
   QPainter painter(this);
   painter.fillRect(event->rect(), Qt::black);
 
@@ -454,6 +453,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     painter.fillRect(x, 0, 1, size().height(),
                      (isMeasureLine ? measureBrush : beatBrush));
   }
+
   // Draw key background
   QColor rootNoteColor = StyleEditor::config.color.KeyboardRootNote;
   QBrush rootNoteBrush = rootNoteColor;
@@ -465,10 +465,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   QBrush blackLeftInnerBrush = StyleEditor::config.color.KeyboardBlackLeftInner;
   QBrush black = StyleEditor::config.color.KeyboardBlack;
 
-  QLinearGradient gradient(0, 0, 1, 0);
-  gradient.setColorAt(0.5, rootNoteColor);
-  gradient.setColorAt(1, Qt::transparent);
-  gradient.setCoordinateMode(QGradient::ObjectMode);
   double pitchPerPx = m_client->editState().scale.pitchPerPx;
   const QList<int> &displayEdoList = Settings::DisplayEdo::get();
   int displayEdo = displayEdoList.size();
