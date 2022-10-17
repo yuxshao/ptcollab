@@ -241,6 +241,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
       }
     }
     if (current_kind == EVENTKIND_TUNING) {
+      // Add tuning annotation
       QColor font = StyleEditor::config.color.ParamFont;
       font.setAlpha(onColor.alpha());
       painter.setPen(font);
@@ -264,6 +265,7 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
                            .arg(format_with_sign(cents)));
     }
   } else {
+    // EVENTKIND_TAIL bullet
     int32_t w = curr.value / clockPerPx;
     int num_layer = 1;
     for (int i = -num_layer; i <= num_layer; ++i) {
@@ -384,102 +386,102 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   EVENTKIND current_kind =
       paramOptions()[m_client->editState().current_param_kind_idx()].second;
 
-  QPixmap thisUnit(event->rect().size());
-  thisUnit.fill(Qt::transparent);
   int current_unit_no = 0;
   qreal clockPerPx = m_client->editState().scale.clockPerPx;
   qreal pitchPerPx = m_client->editState().scale.pitchPerPx;
-  QPainter thisUnitPainter(&thisUnit);
-  {
-    thisUnitPainter.translate(-event->rect().topLeft());
-    std::vector<QColor> colors;
-    std::vector<Event> lastEvents;
-    std::vector<QPainter *> painters;
-    colors.reserve(m_client->pxtn()->Unit_Num());
-    painters.reserve(m_client->pxtn()->Unit_Num());
-    lastEvents.reserve(m_client->pxtn()->Unit_Num());
-    int first_clock = first_beat * master->get_beat_clock();
-    for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-      lastEvents.emplace_back(
-          Event{first_clock, DefaultKindValue(current_kind)});
-      int unit_id = m_client->unitIdMap().noToId(i);
-      colors.push_back(
-          brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(108, false,
-                                                                     255));
-      int h, s, l, a;
-      colors.rbegin()->getHsl(&h, &s, &l, &a);
-      if (m_client->editState().m_current_unit_id != unit_id) {
-        if (m_client->pxtn()->Unit_Get(i)->get_visible())
-          a *= 0.3;
-        else
-          a *= 0;
-        painters.push_back(&painter);
-      } else {
-        painters.push_back(&thisUnitPainter);
-        current_unit_no = i;
-      }
-      colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
-    }
 
-    for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
-         e = e->next) {
-      if (e->clock > clockBounds.end) break;
-      if (e->kind != current_kind) continue;
-      int unit_no = e->unit_no;
+  // Draw events
+  std::vector<QColor> colors;
+  std::vector<Event> lastEvents;
+  colors.reserve(m_client->pxtn()->Unit_Num());
+  lastEvents.reserve(m_client->pxtn()->Unit_Num());
+  int first_clock = first_beat * master->get_beat_clock();
+  for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
+    lastEvents.emplace_back(Event{first_clock, DefaultKindValue(current_kind)});
+    int unit_id = m_client->unitIdMap().noToId(i);
+    colors.push_back(brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(
+        108, false, 255));
+    int h, s, l, a;
+    colors.rbegin()->getHsl(&h, &s, &l, &a);
+    if (m_client->editState().m_current_unit_id != unit_id) {
+      if (m_client->pxtn()->Unit_Get(i)->get_visible())
+        a *= 0.3;
+      else
+        a *= 0;
+    } else
+      current_unit_no = i;
 
-      Event curr{e->clock, e->value};
-      if (current_kind != EVENTKIND_VOICENO)
-        drawLastEvent(*painters[unit_no], current_kind, height(),
-                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
-                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
-      else if (unit_no == current_unit_no)
-        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
-                             curr, clockPerPx, colors[unit_no],
-                             m_client->pxtn());
-      lastEvents[unit_no] = curr;
-    }
-    for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
-      Event curr = lastEvents[unit_no];
-      curr.clock = (width() + 50) * clockPerPx;
-      if (current_kind != EVENTKIND_VOICENO)
-        drawLastEvent(*painters[unit_no], current_kind, height(),
-                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
-                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
-      else if (unit_no == current_unit_no)
-        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
-                             curr, clockPerPx, colors[unit_no],
-                             m_client->pxtn());
-    }
+    colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
+  }
+
+  auto handleLastEvent = [&](const Event &last, const Event &curr,
+                             int unit_no) {
+    if (current_kind != EVENTKIND_VOICENO)
+      drawLastEvent(painter, current_kind, height(), last, curr, clockPerPx,
+                    colors[unit_no], unit_no - current_unit_no,
+                    m_client->pxtn()->Unit_Num());
+    else if (unit_no == current_unit_no)
+      drawLastVoiceNoEvent(painter, height(), last, curr, clockPerPx,
+                           colors[unit_no], m_client->pxtn());
+  };
+
+  std::vector<Event> current_unit_events;
+  for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
+       e = e->next) {
+    if (e->clock > clockBounds.end) break;
+    if (e->kind != current_kind) continue;
+    int unit_no = e->unit_no;
+
+    Event curr{e->clock, e->value};
+    if (unit_no == current_unit_no)
+      current_unit_events.push_back(lastEvents[unit_no]);
+    else
+      handleLastEvent(lastEvents[unit_no], curr, unit_no);
+    lastEvents[unit_no] = curr;
+  }
+  for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
+    Event curr = lastEvents[unit_no];
+    curr.clock = (width() + 50) * clockPerPx;
+    if (unit_no == current_unit_no) {
+      current_unit_events.push_back(lastEvents[unit_no]);
+      current_unit_events.push_back(curr);
+    } else
+      handleLastEvent(lastEvents[unit_no], curr, unit_no);
   }
 
   // draw ongoing edit
+  auto handleOngoingEdit = [&](const EditState &state, double alphaMultiplier,
+                               double selectionAlphaMultiplier) {
+    int unit_no = m_client->unitIdMap()
+                      .idToNo(state.m_current_unit_id)
+                      .value_or(current_unit_no);
+    // TODO: be able to see others' param selections too.
+    drawOngoingEdit(painter, state.mouse_edit_state, current_kind,
+                    m_client->quantizeClock(
+                        quantizeXOptions()[state.m_quantize_clock_idx].second),
+                    clockPerPx, pitchPerPx, height(), alphaMultiplier,
+                    selectionAlphaMultiplier, unit_no - current_unit_no);
+  };
+
+  std::vector<const EditState *> current_unit_states;
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
-    if (remote_state.state.has_value()) {
-      const EditState &state = remote_state.state.value();
-      if (state.current_param_kind_idx() !=
-          m_client->editState().current_param_kind_idx())
-        continue;
-      QPainter *this_painter = &thisUnitPainter;
-      double alphaMultiplier = 0.7, selectionAlphaMultiplier = 0.5;
-      if (state.m_current_unit_id != m_client->editState().m_current_unit_id) {
-        alphaMultiplier = 0.3;
-        selectionAlphaMultiplier = 0.3;
-        this_painter = &painter;
-      }
-      int unit_no = m_client->unitIdMap()
-                        .idToNo(state.m_current_unit_id)
-                        .value_or(current_unit_no);
-      // TODO: be able to see others' param selections too.
-      drawOngoingEdit(
-          *this_painter, state.mouse_edit_state, current_kind,
-          m_client->quantizeClock(
-              quantizeXOptions()[state.m_quantize_clock_idx].second),
-          clockPerPx, pitchPerPx, height(), alphaMultiplier,
-          selectionAlphaMultiplier, unit_no - current_unit_no);
-    }
+    if (!remote_state.state.has_value()) continue;
+    const EditState &state = remote_state.state.value();
+    if (state.current_param_kind_idx() !=
+        m_client->editState().current_param_kind_idx())
+      continue;
+    if (state.m_current_unit_id != m_client->editState().m_current_unit_id)
+      handleOngoingEdit(state, 0.3, 0.3);
+    else
+      current_unit_states.push_back(&state);
   }
-  painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
+
+  for (unsigned int i = 0; i + 1 < current_unit_events.size(); ++i)
+    handleLastEvent(current_unit_events[i], current_unit_events[i + 1],
+                    current_unit_no);
+  for (unsigned int i = 0; i < current_unit_states.size(); ++i)
+    handleOngoingEdit(*current_unit_states[i], 0.7, 0.5);
 
   if (m_client->clipboard()->kindIsCopied(current_kind))
     drawExistingSelection(painter, m_client->editState().mouse_edit_state,
