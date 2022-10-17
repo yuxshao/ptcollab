@@ -347,16 +347,23 @@ double smoothDistance(double dy, double dx) {
   double r = dy * dy + dx * dx;
   return std::max(0.0, 1 / (r + 1));
 }
-void drawLeftPianoNoteHighlight(QPainter &leftPianoPainter, int pitch,
+void drawLeftPianoNoteHighlight(QPainter &painter, int pitch,
                                 const Scale &scale, int displayEdo,
                                 const QColor &c) {
   int nextPitch = pitch - PITCH_PER_OCTAVE / displayEdo;
   int floor_h = PITCH_PER_OCTAVE / scale.pitchPerPx / displayEdo;
   int h = int(scale.pitchToY(nextPitch)) - int(scale.pitchToY(pitch)) - 1;
-  drawLeftPiano(leftPianoPainter, int(scale.pitchToY(pitch)) - floor_h / 2, h,
-                c, nullptr);
+  drawLeftPiano(painter, int(scale.pitchToY(pitch)) - floor_h / 2, h, c,
+                nullptr);
 }
-void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
+
+struct LeftPianoNote {
+  int pitch;
+  QColor c;
+};
+
+void drawStateSegment(QPainter &painter,
+                      std::vector<LeftPianoNote> &left_piano_notes,
                       const DrawState &state, const Interval &segment,
                       const std::optional<Interval> &selection,
                       const Interval &bounds, const Brush &brush, qint32 alpha,
@@ -374,8 +381,7 @@ void drawStateSegment(QPainter &painter, QPainter &leftPianoPainter,
                painter, c, scale, displayEdo);
     c.setAlpha((64 + c.alpha() * 2 / 3) *
                (1 - std::min(0.5, (current_clock - on.start) / 1200.0)));
-    drawLeftPianoNoteHighlight(leftPianoPainter, state.pitch.value, scale,
-                               displayEdo, c);
+    left_piano_notes.push_back({state.pitch.value, c});
   }
   if (interval_intersect(interval, bounds).empty()) return;
   QColor color = brush.toQColor(state.velocity.value, playing && !muted, alpha);
@@ -430,6 +436,13 @@ double distance_to_mouse(const MouseEditState &mouse, const Interval &clock_int,
   return dx * dx + dy * dy;
 }
 
+struct BackgroundKeyRow {
+  enum { Root, Black, White } color;
+  int y;
+  int h;
+  int pitch;
+};
+
 void KeyboardView::paintEvent(QPaintEvent *event) {
   ++painted;
   QPainter painter(this);
@@ -471,23 +484,13 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   const Scale &scale = m_client->editState().scale;
   bool octave_display_a = Settings::OctaveDisplayA::get();
 
-  QPixmap leftPianoLayer(event->rect().size());
-  leftPianoLayer.fill(Qt::transparent);
-  QPainter leftPianoPainter(&leftPianoLayer);
-  leftPianoPainter.translate(-event->rect().topLeft());
-  leftPianoPainter.translate(-pos().x(), 0);
-  leftPianoPainter.fillRect(0, 0, LEFT_LEGEND_WIDTH, height(),
-                            blackLeftInnerBrush);
-
-  std::optional<std::pair<int, int>> left_piano_pitch_and_vel;
-  if (auto *keyboard_edit_state = std::get_if<MouseKeyboardEdit>(
-          &m_client->editState().mouse_edit_state.kind))
-    if (auto *s = std::get_if<MouseLeftKeyboard>(&keyboard_edit_state->kind)) {
-      left_piano_pitch_and_vel = {keyboard_edit_state->current_pitch,
-                                  s->start_vel};
-    }
+  // This structure is needed since we use the data here multiple times (first
+  // for the background, then for the foreground left piano). In the past the
+  // left piano was just drawn on a separate pixmap, but that was slow for high
+  // resolutions.
+  std::vector<BackgroundKeyRow> background_key_rows;
+  int background_key_floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
   for (int row = 0; true; ++row) {
-    QBrush *brush, *leftBrush, *leftInnerBrush = nullptr;
     // Start the backgrounds on an A just so that the key pattern lines up
     int a_above_max_key =
         (EVENTMAX_KEY / PITCH_PER_OCTAVE + 1) * PITCH_PER_OCTAVE;
@@ -495,51 +498,44 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
         a_above_max_key - row * PITCH_PER_OCTAVE / displayEdo, displayEdo);
     int nextPitch =
         quantize_pitch(pitch - PITCH_PER_OCTAVE / displayEdo, displayEdo);
+    BackgroundKeyRow r;
     if (pitch == EVENTDEFAULT_KEY) {
-      brush = &rootNoteBrush;
-      leftBrush = &whiteLeftBrush;
+      r.color = BackgroundKeyRow::Root;
     } else {
       if (displayEdoList[nonnegative_modulo(-row, displayEdo)]) {
-        brush = &blackNoteBrush;
-        leftBrush = &blackLeftBrush;
-        leftInnerBrush = &blackLeftInnerBrush;
+        r.color = BackgroundKeyRow::Black;
       } else {
-        brush = &whiteNoteBrush;
-        leftBrush = &whiteLeftBrush;
+        r.color = BackgroundKeyRow::White;
       }
     }
-    if (m_dark) brush = &black;
 
-    int floor_h = PITCH_PER_OCTAVE / pitchPerPx / displayEdo;
     int this_y = scale.pitchToY(pitch);
     int next_y = scale.pitchToY(nextPitch);
 
     if (this_y > size().height()) break;
     // Because of rounding error, calculate height by subbing next from this
     int h = next_y - this_y - 1;
-    painter.fillRect(0, this_y - floor_h / 2, size().width(), h, *brush);
-
-    drawLeftPiano(leftPianoPainter, this_y - floor_h / 2, h, *leftBrush,
-                  leftInnerBrush);
-    // painter.fillRect(0, this_y, 9999, 1, QColor::fromRgb(255, 255, 255,
-    // 50));
-
-    int pitch_offset = 0;
-    if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
-    if (nonnegative_modulo(pitch - EVENTDEFAULT_KEY, PITCH_PER_OCTAVE) ==
-        pitch_offset)
-      drawOctaveNumAlignBottomLeft(
-          &leftPianoPainter, 4, this_y - floor_h / 2 + h - 2,
-          (pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3, floor_h,
-          octave_display_a);
+    r.y = this_y - background_key_floor_h / 2;
+    r.h = h;
+    r.pitch = pitch;
+    background_key_rows.push_back(r);
   }
-  if (left_piano_pitch_and_vel.has_value() && m_audio_note_preview) {
-    int pitch = quantize_pitch(left_piano_pitch_and_vel.value().first,
-                               m_edit_state.m_quantize_pitch);
-    int vel = left_piano_pitch_and_vel.value().second;
-    drawLeftPianoNoteHighlight(
-        leftPianoPainter, pitch, scale, displayEdo,
-        QColor::fromRgb(255, 255, 255, 32 + 64 * vel / EVENTMAX_VELOCITY));
+
+  for (const BackgroundKeyRow &r : background_key_rows) {
+    QBrush *brush;
+    switch (r.color) {
+      case BackgroundKeyRow::Root:
+        brush = &rootNoteBrush;
+        break;
+      case BackgroundKeyRow::White:
+        brush = &whiteNoteBrush;
+        break;
+      case BackgroundKeyRow::Black:
+        brush = &blackNoteBrush;
+        break;
+    }
+    if (m_dark) brush = &black;
+    painter.fillRect(0, r.y, size().width(), r.h, *brush);
   }
 
   {
@@ -592,6 +588,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   double min_segment_distance_to_mouse = DISTANCE_THRESHOLD_SQ;
   int min_segment_unit_no = -1;
 
+  std::vector<LeftPianoNote> left_piano_notes;
   for (int unit_no = 0; unit_no < m_pxtn->Unit_Num(); ++unit_no) {
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
     const Brush &brush = brushes[unit_id % NUM_BRUSHES];
@@ -624,7 +621,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
     drawStateSegments.push_back(
         [=, &min_segment_unit_no, &min_segment_distance_to_mouse,
-         &leftPianoPainter](const DrawState &state, int end) {
+         &left_piano_notes](const DrawState &state, int end) {
           Interval segment{state.pitch.clock, end};
           const MouseEditState &mouse = m_client->editState().mouse_edit_state;
           const Scale &scale = m_client->editState().scale;
@@ -642,7 +639,7 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
               min_segment_distance_to_mouse = d;
             }
           }
-          drawStateSegment(*thisPainter, leftPianoPainter, state, segment,
+          drawStateSegment(*thisPainter, left_piano_notes, state, segment,
                            thisSelection, clockBounds, brush, alpha, scale,
                            clock, mouse, matchingUnit, muted, width(),
                            m_client->isPlaying(), displayEdo);
@@ -690,15 +687,6 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   painter.drawPixmap(event->rect(), activeLayer, activeLayer.rect());
   painter.drawPixmap(event->rect(), hoverLayer, hoverLayer.rect());
 
-  // Draw left piano highlights from MIDI pitches
-  for (auto &[pitch, vel] : m_midi_notes) {
-    const Brush &brush =
-        brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
-    drawLeftPianoNoteHighlight(leftPianoPainter, pitch,
-                               m_client->editState().scale, displayEdo,
-                               brush.toQColor(vel, true, 200));
-  }
-
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)
     setHoveredUnitNo(min_segment_unit_no);
@@ -742,10 +730,68 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   drawRepeatAndEndBars(painter, m_moo_clock,
                        m_client->editState().scale.clockPerPx, height());
 
-  painter.setOpacity(m_dark ? 0.7 : 1);
-  painter.drawPixmap(event->rect().translated(-LEFT_LEGEND_WIDTH, 0),
-                     leftPianoLayer, leftPianoLayer.rect());
-  painter.setOpacity(1);
+  // Left piano
+  {
+    painter.setOpacity(m_dark ? 0.7 : 1);
+    QTransform t = painter.transform();
+    painter.setTransform(QTransform::fromTranslate(event->rect().left(), 0));
+    QBrush *leftBrush, *leftInnerBrush;
+    for (const BackgroundKeyRow &r : background_key_rows) {
+      switch (r.color) {
+        case BackgroundKeyRow::Root:
+        case BackgroundKeyRow::White:
+          leftBrush = &whiteLeftBrush;
+          leftInnerBrush = nullptr;
+          break;
+        case BackgroundKeyRow::Black:
+          leftBrush = &blackLeftBrush;
+          leftInnerBrush = &blackLeftInnerBrush;
+          break;
+      }
+      painter.fillRect(0, r.y - 1, LEFT_LEGEND_WIDTH, 1, blackLeftInnerBrush);
+      drawLeftPiano(painter, r.y, r.h, *leftBrush, leftInnerBrush);
+      int pitch_offset = 0;
+      if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
+      if (nonnegative_modulo(r.pitch - EVENTDEFAULT_KEY, PITCH_PER_OCTAVE) ==
+          pitch_offset)
+        drawOctaveNumAlignBottomLeft(
+            &painter, 4, r.y + r.h - 2,
+            (r.pitch - PITCH_PER_OCTAVE / 4) / PITCH_PER_OCTAVE - 3,
+            background_key_floor_h, octave_display_a);
+    }
+
+    // Highlights from song notes
+    for (const LeftPianoNote &n : left_piano_notes)
+      drawLeftPianoNoteHighlight(painter, n.pitch, scale, displayEdo, n.c);
+
+    // Highlights from MIDI pitches
+    for (auto &[pitch, vel] : m_midi_notes) {
+      const Brush &brush =
+          brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
+      drawLeftPianoNoteHighlight(painter, pitch, m_client->editState().scale,
+                                 displayEdo, brush.toQColor(vel, true, 200));
+    }
+
+    // Highlight from clicked note
+    std::optional<std::pair<int, int>> left_piano_pitch_and_vel;
+    if (auto *keyboard_edit_state = std::get_if<MouseKeyboardEdit>(
+            &m_client->editState().mouse_edit_state.kind))
+      if (auto *s =
+              std::get_if<MouseLeftKeyboard>(&keyboard_edit_state->kind)) {
+        left_piano_pitch_and_vel = {keyboard_edit_state->current_pitch,
+                                    s->start_vel};
+      }
+    if (left_piano_pitch_and_vel.has_value() && m_audio_note_preview) {
+      int pitch = quantize_pitch(left_piano_pitch_and_vel.value().first,
+                                 m_edit_state.m_quantize_pitch);
+      int vel = left_piano_pitch_and_vel.value().second;
+      drawLeftPianoNoteHighlight(
+          painter, pitch, scale, displayEdo,
+          QColor::fromRgb(255, 255, 255, 32 + 64 * vel / EVENTMAX_VELOCITY));
+    }
+    painter.setOpacity(1);
+    painter.setTransform(t);
+  }
 
   drawCurrentPlayerPosition(painter, m_moo_clock, height(),
                             m_client->editState().scale.clockPerPx, false);
