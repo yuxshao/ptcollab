@@ -31,6 +31,8 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
       m_client(client),
       m_anim(new Animation(this)),
       m_moo_clock(moo_clock),
+      m_label_font(QFont()),
+      m_label_font_metrics(m_label_font),
       m_audio_note_preview(nullptr),
       m_jump_to_unit_enabled(false) {
   setFocusPolicy(Qt::NoFocus);
@@ -56,6 +58,7 @@ MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
     QFont f = QFont(StyleEditor::config.font.EditorFont, i);
     if (QFontMetrics(f).height() <= UNIT_EDIT_HEIGHT) m_label_font = f;
   }
+  m_label_font_metrics = QFontMetrics(m_label_font);
 }
 
 void MeasureView::setFocusedUnit(std::optional<int> unit_no) {
@@ -450,52 +453,74 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
                             m_client->editState().scale.clockPerPx, true);
   // Draw text labels
   if (Settings::PinnedUnitLabels::get()) {
-    QPixmap textLabelLayer(e->rect().size());
-    textLabelLayer.fill(Qt::transparent);
-    QPainter textLabelPainter(&textLabelLayer);
-    textLabelPainter.translate(-e->rect().topLeft());
-    int maxTextLabelWidth = 0;
-    QColor bg = StyleEditor::config.color.MeasureUnitEdit;
-    bg.setAlphaF(0.25);
-    auto drawText = [&](QPainter &p, int unit_no, int y_base) {
+    constexpr int SHADOW_WIDTH = 2, SHADOW_HEIGHT = 1, X_PADDING = 5;
+    std::optional<int> highlighted_focused_row;
+
+    // Generate pixmap list
+    m_pinned_unit_labels.resize(unit_draw_params_map.rows.size(), std::nullopt);
+    for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
+      auto &label = m_pinned_unit_labels[i];
+      if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) {
+        label = std::nullopt;
+        continue;
+      }
+      int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
+      std::optional<int> maybe_unit_no = m_client->unitIdMap().idToNo(unit_id);
+      if (!maybe_unit_no.has_value()) {
+        label = std::nullopt;
+        continue;
+      }
+      int unit_no = maybe_unit_no.value();
+      if (unit_no == m_focused_unit_no) highlighted_focused_row = i;
       QString unit_name = shift_jis_codec->toUnicode(
           m_client->pxtn()->Unit_Get(unit_no)->get_name_buf_jis(nullptr));
-      p.setFont(m_label_font);
-      p.setPen(bg);
-      constexpr int x_padding = 5;
-      for (int x = -2; x <= 2; ++x)
-        for (int y = -1; y <= 1; ++y)
-          p.drawText(-pos().x() - LEFT_LEGEND_WIDTH + x_padding + x, y_base + y,
-                     10000000, UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
-      p.setPen(Qt::white);
-      QRect bbox;
-      p.drawText(-pos().x() - LEFT_LEGEND_WIDTH + x_padding, y_base, 10000000,
-                 UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name, &bbox);
-      if (bbox.width() > maxTextLabelWidth) maxTextLabelWidth = bbox.width();
-    };
+      if (label.has_value() && label.value().first == unit_name) continue;
+      if (!label.has_value()) label = {"", QPixmap(0, 0)};
+      label.value().first = unit_name;
+      QPixmap &pixmap = label.value().second;
 
-    bool hovered_unit_highlighted = false;
-    for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
-      if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
-      int unit_id = unit_draw_params_map.rows[i].pinned_unit_id.value();
-      std::optional<int> unit_no = m_client->unitIdMap().idToNo(unit_id);
-      if (!unit_no.has_value()) continue;
-      if (unit_no == m_focused_unit_no) {
-        drawText(painter, unit_no.value(), unit_edit_y(i));
-        hovered_unit_highlighted = true;
-      } else
-        drawText(textLabelPainter, unit_no.value(), unit_edit_y(i));
+      // Generate new pixmap
+      QRect bbox = m_label_font_metrics.boundingRect(
+          0, 0, 10000000, UNIT_EDIT_HEIGHT, Qt::AlignVCenter, unit_name);
+      pixmap = QPixmap(bbox.width() + SHADOW_WIDTH * 2,
+                       bbox.height() + SHADOW_HEIGHT * 2);
+      pixmap.fill(Qt::transparent);
+      QPainter p(&pixmap);
+      p.setFont(m_label_font);
+
+      QColor bg = StyleEditor::config.color.MeasureUnitEdit;
+      bg.setAlphaF(0.25);
+      p.setPen(bg);
+      for (int x = 0; x <= 2 * SHADOW_WIDTH; ++x)
+        for (int y = 0; y <= 2 * SHADOW_HEIGHT; ++y)
+          p.drawText(x, y, bbox.width(), bbox.height(), Qt::AlignVCenter,
+                     unit_name);
+      p.setPen(Qt::white);
+      p.drawText(SHADOW_WIDTH, SHADOW_HEIGHT, bbox.width(), bbox.height(),
+                 Qt::AlignVCenter, unit_name);
     }
-    double textLabelAlpha = 1;
-    if (hovered_unit_highlighted)
-      textLabelAlpha = 0.3;
-    else if (m_mouse_x.has_value()) {
-      int dx = m_mouse_x.value();
-      textLabelAlpha =
-          0.1 + 0.9 * clamp(dx - maxTextLabelWidth - 20, 0, 100) / 100;
+
+    int maxTextLabelWidth = 0;
+    for (const auto &label : m_pinned_unit_labels)
+      if (label.has_value() && label.value().second.width() > maxTextLabelWidth)
+        maxTextLabelWidth = label.value().second.width();
+
+    for (uint i = 0; i < m_pinned_unit_labels.size(); ++i) {
+      if (!m_pinned_unit_labels[i].has_value()) continue;
+      double textLabelAlpha = 1;
+      if (highlighted_focused_row.has_value()) {
+        textLabelAlpha = (highlighted_focused_row == i ? 1 : 0.3);
+      } else if (m_mouse_x.has_value()) {
+        int dx = m_mouse_x.value();
+        textLabelAlpha =
+            0.1 + 0.9 * clamp(dx - maxTextLabelWidth - 20, 0, 100) / 100;
+      }
+      painter.setOpacity(textLabelAlpha);
+      painter.drawPixmap(
+          X_PADDING - SHADOW_WIDTH - LEFT_LEGEND_WIDTH - pos().x(),
+          unit_edit_y(i) - SHADOW_HEIGHT,
+          m_pinned_unit_labels[i].value().second);
     }
-    painter.setOpacity(textLabelAlpha);
-    painter.drawPixmap(e->rect(), textLabelLayer, textLabelLayer.rect());
     painter.setOpacity(1);
   }
 
