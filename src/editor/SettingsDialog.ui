@@ -200,6 +200,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QSpinBox" name="displayScaleSpin">
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -217,7 +220,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Display scaling</string>
+            <string>Editor pixel zoom</string>
            </property>
           </widget>
          </item>
