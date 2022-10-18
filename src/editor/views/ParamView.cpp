@@ -62,9 +62,13 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 }
 
 QSize ParamView::sizeHint() const {
-  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
-                                       m_client->editState().scale.clockPerPx,
-               0x20);
+  return worldTransform()
+      .mapRect(
+          QRect(0, 0,
+                LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                                        m_client->editState().scale.clockPerPx,
+                0x20))
+      .size();
 }
 
 constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;

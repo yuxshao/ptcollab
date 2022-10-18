@@ -68,7 +68,7 @@ class KeyboardView : public QWidget {
   std::set<int> selectedUnitNos();
   void setHoveredUnitNo(std::optional<int>);
   void updateHoverSelect(QMouseEvent *event);
-  void updateStatePositions(EditState &, const QMouseEvent *, int leftPos);
+  void updateStatePositions(EditState &, const QMouseEvent *);
   QScrollArea *m_scrollarea;
   const pxtnService *m_pxtn;
   QElapsedTimer *m_timer;

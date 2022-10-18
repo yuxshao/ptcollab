@@ -274,9 +274,14 @@ void drawOngoingAction(const EditState &state,
 }
 
 QSize MeasureView::sizeHint() const {
-  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
-                                       m_client->editState().scale.clockPerPx,
-               unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()));
+  return worldTransform()
+      .mapRect(QRect(
+          QPoint(-LEFT_LEGEND_WIDTH, 0),
+          QPoint(
+              one_over_last_clock(m_client->pxtn()) /
+                  m_client->editState().scale.clockPerPx,
+              unit_edit_y(1 + m_client->editState().m_pinned_unit_ids.size()))))
+      .size();
 }
 
 void MeasureView::handleNewEditState(const EditState &) {
