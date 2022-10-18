@@ -525,8 +525,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
             0.1 + 0.9 * clamp(dx - maxTextLabelWidth - 20, 0, 100) / 100;
       }
       painter.setOpacity(textLabelAlpha);
-      painter.drawPixmap(X_PADDING - SHADOW_WIDTH + viewport_pos.x(),
-                         unit_edit_y(i) - SHADOW_HEIGHT,
+      painter.drawPixmap(QPointF(X_PADDING - SHADOW_WIDTH + viewport_pos.x(),
+                                 unit_edit_y(i) - SHADOW_HEIGHT),
                          m_pinned_unit_labels[i].value().second);
     }
     painter.setOpacity(1);
