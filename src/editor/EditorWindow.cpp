@@ -28,6 +28,7 @@
 #include "views/MeasureView.h"
 #include "views/MooClock.h"
 #include "views/ParamView.h"
+#include "views/ViewHelper.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
@@ -123,7 +124,12 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_scroll_area, &EditorScrollArea::viewportChanged,
           [this](const QRect &viewport) {
             m_client->changeEditState(
-                [&](EditState &e) { e.viewport = viewport; }, true);
+                [&](EditState &e) {
+                  // Logical coords of just the roll area w/o the left piano
+                  e.viewport = worldTransform().inverted().mapRect(viewport);
+                  e.viewport.adjust(LEFT_LEGEND_WIDTH, 0, 0, 0);
+                },
+                true);
           });
   connect(m_client, &PxtoneClient::followActivity, [this](const EditState &r) {
     m_client->changeEditState(
@@ -141,10 +147,14 @@ EditorWindow::EditorWindow(QWidget *parent)
           // disable follow playhead b/c otherwise it could compete with follow
           // user for adjusting scrollbars.
           e.m_follow_playhead = FollowPlayhead::None;
-          m_scroll_area->horizontalScrollBar()->setValue(startClock /
-                                                         e.scale.clockPerPx);
-          m_scroll_area->verticalScrollBar()->setValue(startPitch /
-                                                       e.scale.pitchPerPx);
+          // Logical coords of roll area with left piano
+          QPointF logical_pos{
+              startClock / e.scale.clockPerPx - LEFT_LEGEND_WIDTH,
+              startPitch / e.scale.pitchPerPx};
+          // Scroll coords of roll area with left piano
+          QPointF scroll_pos = worldTransform().map(logical_pos);
+          m_scroll_area->horizontalScrollBar()->setValue(scroll_pos.x());
+          m_scroll_area->verticalScrollBar()->setValue(scroll_pos.y());
         },
         true);
   });

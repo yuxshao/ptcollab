@@ -315,7 +315,7 @@ void set(bool value) { return QSettings().setValue(KEY, value); }
 
 namespace DisplayScale {
 const char *KEY = "display_scale";
-int get() { return std::max(1, QSettings().value(KEY, 1).toInt()) * 0 + 1; }
+int get() { return std::max(1, QSettings().value(KEY, 1).toInt()); }
 void set(int value) { return QSettings().setValue(KEY, value); }
 }  // namespace DisplayScale
 
