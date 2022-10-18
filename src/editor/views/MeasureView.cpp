@@ -309,7 +309,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   QPaintEvent *e = &event;
   int height = worldTransform().inverted().map(QPoint(0, size().height())).y();
 
-  painter.fillRect(e->rect(), Qt::black);
+  QRect full_rect = e->rect().adjusted(-5, -5, 5, 5);
+  painter.fillRect(full_rect, Qt::black);
 
   // Draw white lines under background
   // TODO: Dedup with keyboardview
@@ -318,15 +319,15 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   int activeMeas = std::max(master->get_last_meas(), master->get_meas_num());
   qreal activeWidth =
       activeMeas * clockPerMeas / m_client->editState().scale.clockPerPx;
-  painter.fillRect(e->rect().left(), MEASURE_NUM_BLOCK_HEIGHT,
-                   e->rect().width(), RULER_HEIGHT,
+  painter.fillRect(full_rect.left(), MEASURE_NUM_BLOCK_HEIGHT,
+                   full_rect.width(), RULER_HEIGHT,
                    StyleEditor::config.color.MeasureExcluded);
   painter.fillRect(0, MEASURE_NUM_BLOCK_HEIGHT, activeWidth, RULER_HEIGHT,
                    StyleEditor::config.color.MeasureIncluded);
-  painter.fillRect(e->rect().left(),
+  painter.fillRect(full_rect.left(),
                    MEASURE_NUM_BLOCK_HEIGHT + RULER_HEIGHT + SEPARATOR_OFFSET,
-                   e->rect().width(), 1, StyleEditor::config.color.MeasureBeat);
-  int first_beat = e->rect().left() * m_client->editState().scale.clockPerPx /
+                   full_rect.width(), 1, StyleEditor::config.color.MeasureBeat);
+  int first_beat = full_rect.left() * m_client->editState().scale.clockPerPx /
                        master->get_beat_clock() -
                    1;
   std::optional<int> lastMeasureDraw;
@@ -376,7 +377,7 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
 
   // Draw the unit edit rows
   for (uint i = 0; i < unit_draw_params_map.rows.size(); ++i) {
-    painter.fillRect(e->rect().left(), unit_edit_y(i), e->rect().width(),
+    painter.fillRect(full_rect.left(), unit_edit_y(i), full_rect.width(),
                      UNIT_EDIT_HEIGHT,
                      StyleEditor::config.color.MeasureUnitEdit);
     if (!unit_draw_params_map.rows[i].pinned_unit_id.has_value()) continue;
