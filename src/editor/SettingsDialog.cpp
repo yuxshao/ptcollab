@@ -48,6 +48,7 @@ void SettingsDialog::apply() {
       ui->selectPinnedUnitOnClickCheck->isChecked());
   Settings::StrictFollowSeek::set(ui->followSeekStrictCheck->isChecked());
   Settings::VelocitySensitivity::set(ui->velocitySensitivityCheck->isChecked());
+  Settings::DisplayScale::set(ui->displayScaleSpin->value());
   if (ui->alternateTuningCheck->isChecked()) {
     QList<int> rowDisplayPattern;
     for (char c : ui->rowDisplayEdit->text().toStdString()) {
@@ -96,6 +97,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->selectPinnedUnitOnClickCheck->setChecked(
       Settings::MeasureViewClickToJumpUnit::get());
   ui->defaultVolumeSpin->setValue(Settings::NewUnitDefaultVolume::get());
+  ui->displayScaleSpin->setValue(Settings::DisplayScale::get());
   ui->recordMidiCheck->setChecked(Settings::RecordMidi::get());
   ui->followSeekStrictCheck->setChecked(Settings::StrictFollowSeek::get());
   ui->velocitySensitivityCheck->setChecked(

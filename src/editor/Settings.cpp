@@ -3,7 +3,7 @@
 #include "ComboOptions.h"
 
 #ifndef PTCOLLAB_VERSION
-  #error Undefined PTCOLLAB_VERSION!
+#error Undefined PTCOLLAB_VERSION!
 #endif
 
 const QString BUFFER_LENGTH_KEY("buffer_length");
@@ -312,5 +312,11 @@ const char *KEY = "velocity_sensitivity";
 bool get() { return QSettings().value(KEY, true).toBool(); }
 void set(bool value) { return QSettings().setValue(KEY, value); }
 }  // namespace VelocitySensitivity
+
+namespace DisplayScale {
+const char *KEY = "display_scale";
+int get() { return std::max(1, QSettings().value(KEY, 1).toInt()) * 0 + 1; }
+void set(int value) { return QSettings().setValue(KEY, value); }
+}  // namespace DisplayScale
 
 }  // namespace Settings

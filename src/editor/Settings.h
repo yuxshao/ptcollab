@@ -212,6 +212,10 @@ bool get();
 void set(bool);
 }  // namespace VelocitySensitivity
 
+namespace DisplayScale {
+int get();
+void set(int);
+}  // namespace DisplayScale
 }  // namespace Settings
 
 #endif  // SETTINGS_H
