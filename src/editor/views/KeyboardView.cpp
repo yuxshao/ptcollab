@@ -25,7 +25,7 @@ void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
 QSize KeyboardView::sizeHint() const {
   return worldTransform()
       .mapRect(
-          QRect(QPoint(-LEFT_LEGEND_WIDTH, 0),
+          QRect(QPoint(-Settings::LeftPianoWidth::get(), 0),
                 QPoint(one_over_last_clock(m_client->pxtn()) /
                            m_client->editState().scale.clockPerPx,
                        m_client->editState().scale.pitchToY(EVENTMIN_KEY))))
@@ -342,9 +342,9 @@ static void drawCursor(const EditState &state, QPainter &painter,
 
 void drawLeftPiano(QPainter &painter, int y, int h, const QBrush &b,
                    QBrush *bInner) {
-  painter.fillRect(0, y, LEFT_LEGEND_WIDTH, h, b);
-  painter.fillRect(LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
-  if (bInner) painter.fillRect(0, y, LEFT_LEGEND_WIDTH * 2 / 3, h, *bInner);
+  painter.fillRect(0, y, Settings::LeftPianoWidth::get(), h, b);
+  painter.fillRect(Settings::LeftPianoWidth::get(), y + 1, 1, h - 2, b);
+  if (bInner) painter.fillRect(0, y, Settings::LeftPianoWidth::get() * 2 / 3, h, *bInner);
 }
 
 double smoothDistance(double dy, double dx) {
@@ -790,7 +790,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
           leftInnerBrush = &blackLeftInnerBrush;
           break;
       }
-      painter.fillRect(0, r.y - 1, LEFT_LEGEND_WIDTH, 1, blackLeftInnerBrush);
+      painter.fillRect(0, r.y - 1, Settings::LeftPianoWidth::get(), 1, blackLeftInnerBrush);
       drawLeftPiano(painter, r.y, r.h, *leftBrush, leftInnerBrush);
       int pitch_offset = 0;
       if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
@@ -917,10 +917,10 @@ void KeyboardView::updateStatePositions(EditState &edit_state,
   int current_pitch = edit_state.scale.pitchOfY(mouse_pos.y());
   int left_keyboard_current_vel =
       int(EVENTMAX_VELOCITY * (mouse_pos.x() - viewport_pos.x()) /
-          LEFT_LEGEND_WIDTH);
+          Settings::LeftPianoWidth::get());
   std::variant<MouseLeftKeyboard, MouseMainKeyboard> kind;
 
-  if (mouse_pos.x() < viewport_pos.x() + LEFT_LEGEND_WIDTH &&
+  if (mouse_pos.x() < viewport_pos.x() + Settings::LeftPianoWidth::get() &&
       state.type == MouseEditState::Type::Nothing)
     kind = MouseLeftKeyboard{left_keyboard_current_vel};
   else

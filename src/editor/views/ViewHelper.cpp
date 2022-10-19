@@ -225,7 +225,8 @@ static int num_digits(int num) {
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
   QPixmap &images = *StyleEditor::measureImages();
-  if (height > 10) {
+  int left_piano_width = Settings::LeftPianoWidth::get();
+  if (height > 10 && left_piano_width >= 26) {
     bool big = height > 13;
     int num_width = (big ? 9 : 8);
     int num_height = (big ? 9 : 6);
@@ -236,16 +237,16 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                         num_height);
     drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
             num_width, num_height, num_offset_x, num_offset_y);
-  } else if (height >= 7)
+  } else if (height >= 7 && left_piano_width >= 9)
     painter->drawPixmap(x - 2, y - (height + 1) / 2, 6, 6, images, 96, 48, 6,
                         6);
 }
 
-const int LEFT_LEGEND_WIDTH = 40;
-
 QTransform worldTransform() {
   int scale = Settings::DisplayScale::get();
-  return QTransform().scale(scale, scale).translate(LEFT_LEGEND_WIDTH, 0);
+  return QTransform()
+      .scale(scale, scale)
+      .translate(Settings::LeftPianoWidth::get(), 0);
 }
 
 const int WINDOW_BOUND_SLACK = 32;

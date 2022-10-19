@@ -216,6 +216,11 @@ namespace DisplayScale {
 int get();
 void set(int);
 }  // namespace DisplayScale
+
+namespace LeftPianoWidth {
+int get();
+void set(int);
+}  // namespace LeftPianoWidth
 }  // namespace Settings
 
 #endif  // SETTINGS_H

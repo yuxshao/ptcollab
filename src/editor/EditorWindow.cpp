@@ -127,7 +127,7 @@ EditorWindow::EditorWindow(QWidget *parent)
                 [&](EditState &e) {
                   // Logical coords of just the roll area w/o the left piano
                   e.viewport = worldTransform().inverted().mapRect(viewport);
-                  e.viewport.adjust(LEFT_LEGEND_WIDTH, 0, 0, 0);
+                  e.viewport.adjust(Settings::LeftPianoWidth::get(), 0, 0, 0);
                 },
                 true);
           });
@@ -149,7 +149,7 @@ EditorWindow::EditorWindow(QWidget *parent)
           e.m_follow_playhead = FollowPlayhead::None;
           // Logical coords of roll area with left piano
           QPointF logical_pos{
-              startClock / e.scale.clockPerPx - LEFT_LEGEND_WIDTH,
+              startClock / e.scale.clockPerPx - Settings::LeftPianoWidth::get(),
               startPitch / e.scale.pitchPerPx};
           // Scroll coords of roll area with left piano
           QPointF scroll_pos = worldTransform().map(logical_pos);

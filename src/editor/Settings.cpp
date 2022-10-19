@@ -319,4 +319,10 @@ int get() { return std::max(1, QSettings().value(KEY, 1).toInt()); }
 void set(int value) { return QSettings().setValue(KEY, value); }
 }  // namespace DisplayScale
 
+namespace LeftPianoWidth {
+const char *KEY = "left_piano_width";
+int get() { return std::max(0, QSettings().value(KEY, 40).toInt()); }
+void set(int value) { return QSettings().setValue(KEY, value); }
+}  // namespace LeftPianoWidth
+
 }  // namespace Settings

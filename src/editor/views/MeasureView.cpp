@@ -276,7 +276,7 @@ void drawOngoingAction(const EditState &state,
 QSize MeasureView::sizeHint() const {
   return worldTransform()
       .mapRect(QRect(
-          QPoint(-LEFT_LEGEND_WIDTH, 0),
+          QPoint(-Settings::LeftPianoWidth::get(), 0),
           QPoint(
               one_over_last_clock(m_client->pxtn()) /
                   m_client->editState().scale.clockPerPx,

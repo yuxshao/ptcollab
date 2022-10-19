@@ -65,7 +65,7 @@ QSize ParamView::sizeHint() const {
   return worldTransform()
       .mapRect(
           QRect(0, 0,
-                LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                Settings::LeftPianoWidth::get() + one_over_last_clock(m_client->pxtn()) /
                                         m_client->editState().scale.clockPerPx,
                 0x20))
       .size();
