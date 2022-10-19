@@ -23,9 +23,13 @@ void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
 }
 
 QSize KeyboardView::sizeHint() const {
-  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_pxtn) /
-                                       m_client->editState().scale.clockPerPx,
-               m_client->editState().scale.pitchToY(EVENTMIN_KEY));
+  return worldTransform()
+      .mapRect(
+          QRect(QPoint(-LEFT_LEGEND_WIDTH, 0),
+                QPoint(one_over_last_clock(m_client->pxtn()) /
+                           m_client->editState().scale.clockPerPx,
+                       m_client->editState().scale.pitchToY(EVENTMIN_KEY))))
+      .size();
 }
 
 void KeyboardView::setHoveredUnitNo(std::optional<int> new_unit_no) {
@@ -457,12 +461,17 @@ struct BackgroundKeyRow {
   int pitch;
 };
 
-void KeyboardView::paintEvent(QPaintEvent *event) {
+void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   ++painted;
   QPainter painter(this);
-  painter.fillRect(event->rect(), Qt::black);
+  painter.fillRect(raw_event->rect(), Qt::black);
 
   painter.setTransform(worldTransform());
+  QRectF event_rect_f =
+      worldTransform().inverted().mapRect(QRectF(raw_event->rect()));
+  QPaintEvent e(worldTransform().inverted().mapRect(raw_event->rect()));
+  QPaintEvent *event = &e;
+
   Interval clockBounds = {
       qint32(event->rect().left() * m_client->editState().scale.clockPerPx) -
           WINDOW_BOUND_SLACK,
@@ -765,7 +774,9 @@ void KeyboardView::paintEvent(QPaintEvent *event) {
   {
     painter.setOpacity(m_dark ? 0.7 : 1);
     QTransform t = painter.transform();
-    painter.setTransform(QTransform::fromTranslate(event->rect().left(), 0));
+    // we use event_rect_f in case e->rect has some rounding from scaling up
+    painter.setTransform(QTransform::fromTranslate(event_rect_f.left(), 0),
+                         true);
     QBrush *leftBrush, *leftInnerBrush;
     for (const BackgroundKeyRow &r : background_key_rows) {
       switch (r.color) {
@@ -896,18 +907,21 @@ void KeyboardView::wheelEvent(QWheelEvent *event) {
 }
 
 void KeyboardView::updateStatePositions(EditState &edit_state,
-                                        const QMouseEvent *event, int leftPos) {
+                                        const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
   QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
+  // The logical coordinates of the top-left corner of the viewport.
+  QPointF viewport_pos = worldTransform().inverted().map(QPointF(-pos()));
   state.current_clock =
       std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
   int current_pitch = edit_state.scale.pitchOfY(mouse_pos.y());
   int left_keyboard_current_vel =
-      int(EVENTMAX_VELOCITY -
-          EVENTMAX_VELOCITY * (leftPos - mouse_pos.x()) / LEFT_LEGEND_WIDTH);
+      int(EVENTMAX_VELOCITY * (mouse_pos.x() - viewport_pos.x()) /
+          LEFT_LEGEND_WIDTH);
   std::variant<MouseLeftKeyboard, MouseMainKeyboard> kind;
 
-  if (mouse_pos.x() < leftPos && state.type == MouseEditState::Type::Nothing)
+  if (mouse_pos.x() < viewport_pos.x() + LEFT_LEGEND_WIDTH &&
+      state.type == MouseEditState::Type::Nothing)
     kind = MouseLeftKeyboard{left_keyboard_current_vel};
   else
     kind = MouseMainKeyboard{current_pitch};
@@ -948,7 +962,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
   if (m_pxtn->Unit_Num() == 0) return;
   m_client->changeEditState(
       [&](EditState &s) {
-        updateStatePositions(s, event, -pos().x());
+        updateStatePositions(s, event);
 
         bool make_note_preview = false;
         MouseEditState::Type type;
@@ -1015,8 +1029,8 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
 void KeyboardView::mouseMoveEvent(QMouseEvent *event) {
   if (!m_client->isFollowing()) {
-    m_client->changeEditState(
-        [&](auto &s) { updateStatePositions(s, event, -pos().x()); }, true);
+    m_client->changeEditState([&](auto &s) { updateStatePositions(s, event); },
+                              true);
   }
   if (m_audio_note_preview != nullptr) {
     bool is_left_kb = false;
@@ -1263,7 +1277,7 @@ void KeyboardView::mouseReleaseEvent(QMouseEvent *event) {
           }
         }
         s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-        updateStatePositions(s, event, -pos().x());
+        updateStatePositions(s, event);
       },
       false);
 }

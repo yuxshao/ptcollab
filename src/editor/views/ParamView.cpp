@@ -62,9 +62,13 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 }
 
 QSize ParamView::sizeHint() const {
-  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
-                                       m_client->editState().scale.clockPerPx,
-               0x20);
+  return worldTransform()
+      .mapRect(
+          QRect(0, 0,
+                LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                                        m_client->editState().scale.clockPerPx,
+                0x20))
+      .size();
 }
 
 constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;
@@ -351,6 +355,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   painter.setTransform(worldTransform());
   QPaintEvent e(worldTransform().inverted().mapRect(raw_event->rect()));
   QPaintEvent *event = &e;
+  int height = worldTransform().inverted().map(QPoint(0, size().height())).y();
   Interval clockBounds = {
       qint32(event->rect().left() * m_client->editState().scale.clockPerPx) -
           WINDOW_BOUND_SLACK,
@@ -371,14 +376,14 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     int x = master->get_beat_clock() * beat /
             m_client->editState().scale.clockPerPx;
     if (x > event->rect().right()) break;
-    painter.fillRect(x, 0, 1, size().height(),
+    painter.fillRect(x, 0, 1, height,
                      (isMeasureLine ? measureBrush : beatBrush));
   }
 
   // Draw param background
   for (int i = 0; i < NUM_BACKGROUND_GAPS - 1; ++i) {
-    int this_y = BACKGROUND_GAPS[i] * size().height() / 0x80;
-    int next_y = BACKGROUND_GAPS[i + 1] * size().height() / 0x80;
+    int this_y = BACKGROUND_GAPS[i] * height / 0x80;
+    int next_y = BACKGROUND_GAPS[i + 1] * height / 0x80;
     painter.fillRect(event->rect().left(), this_y + 1, event->rect().width(),
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
@@ -417,11 +422,11 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   auto handleLastEvent = [&](const Event &last, const Event &curr,
                              int unit_no) {
     if (current_kind != EVENTKIND_VOICENO)
-      drawLastEvent(painter, current_kind, height(), last, curr, clockPerPx,
+      drawLastEvent(painter, current_kind, height, last, curr, clockPerPx,
                     colors[unit_no], unit_no - current_unit_no,
                     m_client->pxtn()->Unit_Num());
     else if (unit_no == current_unit_no)
-      drawLastVoiceNoEvent(painter, height(), last, curr, clockPerPx,
+      drawLastVoiceNoEvent(painter, height, last, curr, clockPerPx,
                            colors[unit_no], m_client->pxtn());
   };
 
@@ -459,7 +464,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     drawOngoingEdit(painter, state.mouse_edit_state, current_kind,
                     m_client->quantizeClock(
                         quantizeXOptions()[state.m_quantize_clock_idx].second),
-                    clockPerPx, pitchPerPx, height(), alphaMultiplier,
+                    clockPerPx, pitchPerPx, height, alphaMultiplier,
                     selectionAlphaMultiplier, unit_no - current_unit_no);
   };
 
@@ -485,14 +490,14 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
 
   if (m_client->clipboard()->kindIsCopied(current_kind))
     drawExistingSelection(painter, m_client->editState().mouse_edit_state,
-                          clockPerPx, size().height(), 1);
+                          clockPerPx, height, 1);
   drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
-                  m_client->quantizeClock(), clockPerPx, pitchPerPx, height(),
-                  1, 1, 0);
+                  m_client->quantizeClock(), clockPerPx, pitchPerPx, height, 1,
+                  1, 0);
 
-  drawLastSeek(painter, m_client, height(), false);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(), clockPerPx, false);
-  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
+  drawLastSeek(painter, m_client, height, false);
+  drawCurrentPlayerPosition(painter, m_moo_clock, height, clockPerPx, false);
+  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -512,7 +517,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid, current_kind,
-                 height());
+                 height);
     }
   }
   {
@@ -520,16 +525,17 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), painter, StyleEditor::config.color.Cursor,
-               my_username, m_client->following_uid(), current_kind, height());
+               my_username, m_client->following_uid(), current_kind, height);
   }
 }
 
 // TODO: DEDUP
 static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event,
-                                 EVENTKIND current_kind, int height) {
+                                 EVENTKIND current_kind, const QSize &size) {
   MouseEditState &state = edit_state.mouse_edit_state;
   QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
+  int height = worldTransform().inverted().map(QPoint(0, size.height())).y();
   state.current_clock =
       std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
   bool snap = event->modifiers() & Qt::ControlModifier;
@@ -713,7 +719,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
           }
         }
         s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-        updateStatePositions(s, event, kind, height());
+        updateStatePositions(s, event, kind, size());
       },
       false);
 }
@@ -728,9 +734,7 @@ void ParamView::mouseMoveEvent(QMouseEvent *event) {
       paramOptions()[m_client->editState().current_param_kind_idx()].second;
   if (!m_client->isFollowing())
     m_client->changeEditState(
-        [&](auto &s) {
-          updateStatePositions(s, event, current_kind, height());
-        },
+        [&](auto &s) { updateStatePositions(s, event, current_kind, size()); },
         true);
   event->ignore();
 }
