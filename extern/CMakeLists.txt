@@ -8,8 +8,15 @@ set (DEPENDENCIES_DEFINES "")
 
 include (FindPkgConfig OPTIONAL)
 
-option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ON)
-option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ON)
+# Whether we're on a system where it is likely that we'll want to build against system-installed dependencies
+if (NOT WIN32 AND NOT APPLE)
+  set(SYSTEM_WITH_LIBS ON)
+else()
+  set(SYSTEM_WITH_LIBS OFF)
+endif()
+
+option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ${SYSTEM_WITH_LIBS})
+option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ${SYSTEM_WITH_LIBS})
 
 if (SYSTEM_RTMIDI)
   if (PKG_CONFIG_FOUND)
@@ -39,9 +46,16 @@ if (SYSTEM_RTMIDI)
     endif()
   endif (NOT RTMIDI_FOUND)
 
-# TODO from-source build
-# else()
-#   add_subdirectory (RtMidi EXCLUDE_FROM_ALL)
+else()
+
+  set (BUILD_SHARED_LIBS OFF CACHE BOOL "We don't want to build our vendored RtMidi as a shared library" FORCE)
+  set (RTMIDI_BUILD_TESTING OFF CACHE BOOL "We don't want to build our vendored RtMidi's test programs" FORCE)
+  add_subdirectory (rtmidi EXCLUDE_FROM_ALL)
+
+  set (RTMIDI_FOUND YES)
+  list(APPEND DEPENDENCIES_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/rtmidi")
+  list(APPEND DEPENDENCIES_LIBRARIES rtmidi)
+  list(APPEND DEPENDENCIES_LEGACY_LDFLAGS rtmidi)
 endif (SYSTEM_RTMIDI)
 
 if (RTMIDI_FOUND)
