@@ -8,8 +8,8 @@ set (DEPENDENCIES_DEFINES "")
 
 include (FindPkgConfig OPTIONAL)
 
-# FIXME Make option
-set (SYSTEM_RTMIDI YES)
+option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ON)
+option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ON)
 
 if (SYSTEM_RTMIDI)
   if (PKG_CONFIG_FOUND)
@@ -26,7 +26,7 @@ if (SYSTEM_RTMIDI)
 
   if (NOT RTMIDI_FOUND)
     message (STATUS "Looking for RtMidi library & headers")
-    find_library (RTMIDI_MANUAL_LIBRARY rtmidi)
+    find_library (RTMIDI_MANUAL_LIBRARY NAMES rtmidi)
     find_path (RTMIDI_MANUAL_INCLUDE_DIRS NAMES "RtMidi.h" PATH_SUFFIXES "include/rtmidi")
 
     if (RTMIDI_MANUAL_LIBRARY AND RTMIDI_MANUAL_INCLUDE_DIRS)
@@ -46,10 +46,9 @@ endif (SYSTEM_RTMIDI)
 
 if (RTMIDI_FOUND)
   list (APPEND DEPENDENCIES_DEFINES "RTMIDI_SUPPORTED")
+else()
+  message (FATAL_ERROR "Missing RtMidi (required for MIDI support)!")
 endif()
-
-# FIXME Make option
-set (SYSTEM_VORBISFILE YES)
 
 if (SYSTEM_VORBISFILE)
   if (PKG_CONFIG_FOUND)
@@ -66,7 +65,7 @@ if (SYSTEM_VORBISFILE)
 
   if (NOT VORBISFILE_FOUND)
     message (STATUS "Looking for vorbisfile library & headers")
-    find_library (VORBISFILE_MANUAL_LIBRARY vorbisfile)
+    find_library (VORBISFILE_MANUAL_LIBRARY NAMES vorbisfile vorbisfile_static)
     find_path (VORBISFILE_MANUAL_INCLUDE_DIRS NAMES "vorbisfile.h" PATH_SUFFIXES "include/vorbis")
 
     if (VORBISFILE_MANUAL_LIBRARY AND VORBISFILE_MANUAL_INCLUDE_DIRS)
@@ -86,6 +85,8 @@ endif (SYSTEM_VORBISFILE)
 
 if (VORBISFILE_FOUND)
   list (APPEND DEPENDENCIES_DEFINES "pxINCLUDE_OGGVORBIS")
+else()
+  message ("Missing vorbisfile (required for using vorbis-encoded samples)!")
 endif()
 
 # Export to global scope
