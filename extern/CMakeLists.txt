@@ -13,9 +13,12 @@ if (ENABLE_SYSTEM_LIBS)
 
   option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ON)
   option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ON)
+  # Dependency for vendored vorbisfile, otherwise unused
+  option (SYSTEM_OGG "Use a system-installed version of ogg instead of the vendored one" ON)
 else()
   set (SYSTEM_RTMIDI OFF CACHE BOOL "ENABLE_SYSTEM_LIBS is disabled" FORCE)
   set (SYSTEM_VORBISFILE OFF CACHE BOOL "ENABLE_SYSTEM_LIBS is disabled" FORCE)
+  set (SYSTEM_OGG OFF CACHE BOOL "ENABLE_SYSTEM_LIBS is disabled" FORCE)
 endif()
 
 if (SYSTEM_RTMIDI)
@@ -96,9 +99,13 @@ else()
 
   set (BUILD_SHARED_LIBS OFF CACHE BOOL "We don't want to build our vendored vorbisfile as a shared library" FORCE)
   set (BUILD_TESTING OFF CACHE BOOL "We don't want to build our vendored vorbisfile's test programs" FORCE)
-  add_subdirectory (ogg EXCLUDE_FROM_ALL)
-  set (OGG_LIBRARY ogg)
-  set (OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
+
+  # vorbis' code will handle system-installed ogg, override detection variables when using vendored one
+  if (NOT SYSTEM_OGG)
+    add_subdirectory (ogg EXCLUDE_FROM_ALL)
+    set (OGG_LIBRARY ogg)
+    set (OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
+  endif()
   add_subdirectory (vorbis EXCLUDE_FROM_ALL)
 
   set (VORBISFILE_FOUND YES)
