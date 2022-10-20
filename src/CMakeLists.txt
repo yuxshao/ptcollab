@@ -154,6 +154,8 @@ add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
 	${PTCOLLAB_FORMS}
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 target_include_directories (${PROJECT_NAME} PRIVATE ${PTCOLLAB_INCLUDEPATHS})
 
 # Filter out compile-time dependencies which we can't / don't need to link against
