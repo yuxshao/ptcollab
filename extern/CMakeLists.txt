@@ -6,17 +6,17 @@ set (DEPENDENCIES_LINK_OPTIONS "")
 set (DEPENDENCIES_LEGACY_LDFLAGS "")
 set (DEPENDENCIES_DEFINES "")
 
-include (FindPkgConfig OPTIONAL)
+option (ENABLE_SYSTEM_LIBS "Check for system-installed versions of our dependencies" ON)
 
-# Whether we're on a system where it is likely that we'll want to build against system-installed dependencies
-if (NOT WIN32 AND NOT APPLE)
-  set(SYSTEM_WITH_LIBS ON)
+if (ENABLE_SYSTEM_LIBS)
+  include (FindPkgConfig OPTIONAL)
+
+  option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ON)
+  option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ON)
 else()
-  set(SYSTEM_WITH_LIBS OFF)
+  set (SYSTEM_RTMIDI OFF CACHE BOOL "ENABLE_SYSTEM_LIBS is disabled" FORCE)
+  set (SYSTEM_VORBISFILE OFF CACHE BOOL "ENABLE_SYSTEM_LIBS is disabled" FORCE)
 endif()
-
-option (SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" ${SYSTEM_WITH_LIBS})
-option (SYSTEM_VORBISFILE "Use a system-installed version of vorbisfile (part of Vorbis) instead of the vendored one" ${SYSTEM_WITH_LIBS})
 
 if (SYSTEM_RTMIDI)
   if (PKG_CONFIG_FOUND)
