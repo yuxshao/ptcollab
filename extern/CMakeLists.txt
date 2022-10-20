@@ -96,6 +96,9 @@ else()
 
   set (BUILD_SHARED_LIBS OFF CACHE BOOL "We don't want to build our vendored vorbisfile as a shared library" FORCE)
   set (BUILD_TESTING OFF CACHE BOOL "We don't want to build our vendored vorbisfile's test programs" FORCE)
+  add_subdirectory (ogg EXCLUDE_FROM_ALL)
+  set (OGG_LIBRARY ogg)
+  set (OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
   add_subdirectory (vorbis EXCLUDE_FROM_ALL)
 
   set (VORBISFILE_FOUND YES)
