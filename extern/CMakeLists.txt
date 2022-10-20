@@ -1,3 +1,17 @@
+function(check_submodules_present)
+  if (NOT ${ARGC} GREATER 0)
+    message (FATAL_ERROR "check_submodules_present function called without any arguments!")
+  endif()
+
+  foreach (module ${ARGN})
+    file (GLOB files_list "${module}/*")
+    list (LENGTH files_list files_count)
+    if (files_count EQUAL 0)
+      message (FATAL_ERROR "${module} submodule not checked out!")
+    endif()
+  endforeach()
+endfunction()
+
 set (DEPENDENCIES_INCLUDE_DIRS "")
 set (DEPENDENCIES_COMPILE_OPTIONS "")
 set (DEPENDENCIES_LIBRARIES "")
@@ -53,6 +67,7 @@ else()
 
   set (BUILD_SHARED_LIBS OFF CACHE BOOL "We don't want to build our vendored RtMidi as a shared library" FORCE)
   set (RTMIDI_BUILD_TESTING OFF CACHE BOOL "We don't want to build our vendored RtMidi's test programs" FORCE)
+  check_submodules_present (rtmidi)
   add_subdirectory (rtmidi EXCLUDE_FROM_ALL)
 
   set (RTMIDI_FOUND YES)
@@ -102,10 +117,12 @@ else()
 
   # vorbis' code will handle system-installed ogg, override detection variables when using vendored one
   if (NOT SYSTEM_OGG)
+    check_submodules_present (ogg)
     add_subdirectory (ogg EXCLUDE_FROM_ALL)
     set (OGG_LIBRARY ogg)
     set (OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
   endif()
+  check_submodules_present (vorbis)
   add_subdirectory (vorbis EXCLUDE_FROM_ALL)
 
   set (VORBISFILE_FOUND YES)
