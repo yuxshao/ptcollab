@@ -92,9 +92,16 @@ if (SYSTEM_VORBISFILE)
     endif()
   endif (NOT VORBISFILE_FOUND)
 
-# TODO from-source build
-# else()
-#   add_subdirectory (vorbis EXCLUDE_FROM_ALL)
+else()
+
+  set (BUILD_SHARED_LIBS OFF CACHE BOOL "We don't want to build our vendored vorbisfile as a shared library" FORCE)
+  set (BUILD_TESTING OFF CACHE BOOL "We don't want to build our vendored vorbisfile's test programs" FORCE)
+  add_subdirectory (vorbis EXCLUDE_FROM_ALL)
+
+  set (VORBISFILE_FOUND YES)
+  list (APPEND DEPENDENCIES_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/vorbis/include")
+  list (APPEND DEPENDENCIES_LIBRARIES vorbisfile)
+  list (APPEND DEPENDENCIES_LEGACY_LDFLAGS vorbisfile)
 endif (SYSTEM_VORBISFILE)
 
 if (VORBISFILE_FOUND)
