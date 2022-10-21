@@ -251,7 +251,7 @@ jobs:
       - name: Fetch NSIS
         shell: bash
         if: steps.cache-nsis.outputs.cache-hit != 'true'
-        run: curl -o nsis-install.exe "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
+        run: curl -Lo nsis-install.exe "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
           
       - name: Install NSIS
         shell: bash
