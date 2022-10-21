@@ -219,13 +219,13 @@ jobs:
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
-          tar -cf- "${PACKAGE}" > output-${VERSION}-${ARCH}.tar
+          tar -cf- "${PACKAGE}" > output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
       - name: Upload Artifact
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
           name: deploy-result
-          path: output-${VERSION}-${ARCH}.tar
+          path: output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
@@ -244,8 +244,8 @@ jobs:
       - name: Install Dependencies [Windows]
         shell: bash
         run: |
-          wget -c -nv \
-            "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download" -O nsis.exe
+          curl -o nsis.exe \
+            "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
           nsis.exe /S
         
       - name: Import Artifact            
@@ -273,12 +273,20 @@ jobs:
           )
           
           export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
-          wget "${UPSTREAM_URI}/src/icon.ico"
-          wget "${UPSTREAM_URI}/res/header.bmp"
-          wget "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
+          curl -O "${UPSTREAM_URI}/src/icon.ico"
+          curl -O "${UPSTREAM_URI}/res/header.bmp"
+          curl -O "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
           
           export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
           
           ${DEPLOY_TOOL} ${DEPLOY_OPTS[@]} "${DEPLOY_TARGET}"  
+        - name: Release
+        if: steps.identify-build.outputs.release == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.package.outputs.artifact-name }}
+          asset_name: ${{ steps.package.outputs.artifact-name }}
+          tag: ${{ github.ref }}
           
 
