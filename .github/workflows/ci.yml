@@ -219,12 +219,13 @@ jobs:
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
-          tar -cf- "${PACKAGE}" > output.tar
+          tar -cf- "${PACKAGE}" > output-${VERSION}-${ARCH}.tar
       - name: Upload Artifact
+        if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
           name: deploy-result
-          path: output.tar
+          path: output-${VERSION}-${ARCH}.tar
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
@@ -264,7 +265,7 @@ jobs:
           else
             export ARCH="x64"
           fi
-          tar -xf output.tar
+          tar -xf `find -type f "*.tar"`
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
             "-DARCH=${ARCH}"
