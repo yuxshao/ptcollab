@@ -241,6 +241,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Install Dependencies [Windows]
+        shell: bash
         run: |
           wget -c -nv \
             "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download" -O nsis.exe
@@ -250,8 +251,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: deploy-result
-          
       - name: Create Installer
+        shell: bash    
         run: | 
           export PLATFORM_ABBR="win"
           export DEPLOY_TOOL='C:\Program Files (x86)\NSIS\makensis.exe'
