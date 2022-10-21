@@ -130,10 +130,6 @@ jobs:
 
       - name: Package
         id: package
-        uses: actions/upload-artifact@v3
-        with:
-          name: deploy-result
-          path: output.tar
         run: |
           # Deployment prep
           export VERSION="${{ steps.identify-build.outputs.build-tag }}-${{ runner.os }}"
@@ -224,6 +220,11 @@ jobs:
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
           tar -cf- "${PACKAGE}" > output.tar
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deploy-result
+          path: output.tar
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
