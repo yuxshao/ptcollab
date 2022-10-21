@@ -255,7 +255,7 @@ jobs:
           
       - name: Install NSIS
         shell: bash
-        run: nsis-install.exe /S
+        run: ./nsis-install.exe /S
           
       - name: Import Artifact            
         uses: actions/download-artifact@v3
