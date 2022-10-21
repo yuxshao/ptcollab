@@ -224,7 +224,7 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
-          name: deploy-result
+          name: package-result
           path: output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
 
       - name: Release
@@ -251,7 +251,7 @@ jobs:
       - name: Import Artifact            
         uses: actions/download-artifact@v3
         with:
-          name: deploy-result
+          name: package-result
       - name: Create Installer
         shell: bash    
         run: | 
