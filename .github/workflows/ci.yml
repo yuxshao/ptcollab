@@ -241,13 +241,22 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      - name: Install Dependencies [Windows]
+      - name: Cache NSIS
+        id: cache-nsis
+        uses: actions/cache@v3
+        with:
+          path: nsis-install.exe
+          
+      - name: Fetch NSIS
         shell: bash
-        run: |
-          curl -o nsis.exe \
+        if: steps.cache-nsis.outputs.cache-hit != 'true'
+        run: curl -o nsis.exe \
             "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
-          nsis.exe /S
-        
+          
+      - name: Install NSIS
+        shell: bash
+        run: nsis.exe /S
+          
       - name: Import Artifact            
         uses: actions/download-artifact@v3
         with:
