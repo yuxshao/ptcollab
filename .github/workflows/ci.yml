@@ -235,47 +235,47 @@ jobs:
           tag: ${{ github.ref }}
           
   create_installer:
-        name: Create Installer [Windows]
-        needs: build
-        runs-on: windows-latest
-        steps:
-          - name: Install Dependencies [Windows]
-            run: |
-              wget -c -nv \
-                "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download" -O nsis.exe
-              nsis.exe /S
-            
-          -name: Import Artifact            
-            uses: actions/download-artifact@v3
-            with:
-              name: deploy-result
-              
-          - name: Create Installer
-            run: | 
-              export PLATFORM_ABBR="win"
-              export DEPLOY_TOOL='C:\Program Files (x86)\NSIS\makensis.exe'
-              export DEPLOY_TARGET="ptcollab.nsi"
-              export PACKAGE_EXT="exe"
-              if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
-                export ARCH="x86"
-                export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
-              else
-                export ARCH="x64"
-              fi
-              tar -xf output.tar
-              export DEPLOY_OPTS=(
-                "-DVERSION=${VERSION}"
-                "-DARCH=${ARCH}"
-                "-DIN_PATH="`find -type d`"
-              )
-              
-              export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
-              wget "${UPSTREAM_URI}/src/icon.ico"
-              wget "${UPSTREAM_URI}/res/header.bmp"
-              wget "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
-              
-              export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
-              
-              ${DEPLOY_TOOL} ${DEPLOY_OPTS[@]} "${DEPLOY_TARGET}"  
-              
-              
+    name: Create Installer [Windows]
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Install Dependencies [Windows]
+        run: |
+          wget -c -nv \
+            "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download" -O nsis.exe
+          nsis.exe /S
+        
+      - name: Import Artifact            
+        uses: actions/download-artifact@v3
+        with:
+          name: deploy-result
+          
+      - name: Create Installer
+        run: | 
+          export PLATFORM_ABBR="win"
+          export DEPLOY_TOOL='C:\Program Files (x86)\NSIS\makensis.exe'
+          export DEPLOY_TARGET="ptcollab.nsi"
+          export PACKAGE_EXT="exe"
+          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
+            export ARCH="x86"
+            export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
+          else
+            export ARCH="x64"
+          fi
+          tar -xf output.tar
+          export DEPLOY_OPTS=(
+            "-DVERSION=${VERSION}"
+            "-DARCH=${ARCH}"
+            "-DIN_PATH="`find -type d`"
+          )
+          
+          export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
+          wget "${UPSTREAM_URI}/src/icon.ico"
+          wget "${UPSTREAM_URI}/res/header.bmp"
+          wget "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
+          
+          export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
+          
+          ${DEPLOY_TOOL} ${DEPLOY_OPTS[@]} "${DEPLOY_TARGET}"  
+          
+
