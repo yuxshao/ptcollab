@@ -241,19 +241,18 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      - name: Install Dependencies [Windows]
+    - name: Install Dependencies [Windows]
         shell: bash
         run: |
           curl -o nsis.exe \
             "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
           nsis.exe /S
         
-      - name: Import Artifact            
+    - name: Import Artifact            
         uses: actions/download-artifact@v3
         with:
           name: deploy-result
-        
-      - name: Create Installer
+    - name: Create Installer
         shell: bash    
         run: | 
           export PLATFORM_ABBR="win"
