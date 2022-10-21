@@ -220,11 +220,11 @@ jobs:
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
           tar -cf- "${PACKAGE}" > output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
-      - name: Upload Artifact
+      - name: Export Artifact
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
-          name: package-result
+          name: deploy-result
           path: output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
 
       - name: Release
@@ -251,7 +251,8 @@ jobs:
       - name: Import Artifact            
         uses: actions/download-artifact@v3
         with:
-          name: package-result
+          name: deploy-result
+          
       - name: Create Installer
         shell: bash    
         run: | 
