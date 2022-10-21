@@ -246,16 +246,17 @@ jobs:
         uses: actions/cache@v3
         with:
           path: nsis-install.exe
-          
+          key: NSIS 3.08
+      
       - name: Fetch NSIS
         shell: bash
         if: steps.cache-nsis.outputs.cache-hit != 'true'
-        run: curl -o nsis.exe \
+        run: curl -o nsis-install.exe \
             "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
           
       - name: Install NSIS
         shell: bash
-        run: nsis.exe /S
+        run: nsis-install.exe /S
           
       - name: Import Artifact            
         uses: actions/download-artifact@v3
