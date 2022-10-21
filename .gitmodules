@@ -1,0 +1,9 @@
+[submodule "extern/rtmidi"]
+	path = extern/rtmidi
+	url = https://github.com/thestk/rtmidi
+[submodule "extern/vorbis"]
+	path = extern/vorbis
+	url = https://gitlab.xiph.org/xiph/vorbis
+[submodule "extern/ogg"]
+	path = extern/ogg
+	url = https://gitlab.xiph.org/xiph/ogg
