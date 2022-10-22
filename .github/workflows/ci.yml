@@ -273,13 +273,13 @@ jobs:
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
             export ARCH="x86"
             export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
-            export FIND_EXPR="\*-x86.zip"
+            export FIND_EXPR="*-x86.zip"
           else
             export ARCH="x64"
             export FIND_EXPR="*.zip"
           fi
           
-          7z e $(find . -type f ${FIND_EXPR})
+          7z e $(find . -type f -name ${FIND_EXPR})
           
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
