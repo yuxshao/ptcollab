@@ -288,9 +288,9 @@ jobs:
           )
           
           export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
-          curl -Lo "${UPSTREAM_URI}/src/icon.ico"
-          curl -Lo "${UPSTREAM_URI}/res/header.bmp"
-          curl -Lo "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
+          curl -LO "${UPSTREAM_URI}/src/icon.ico"
+          curl -LO "${UPSTREAM_URI}/res/header.bmp"
+          curl -LO "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
           
           export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
           
