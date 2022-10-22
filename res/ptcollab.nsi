@@ -11,7 +11,7 @@
 	!error "No source path provided."
 !endif
 
-!if "${ARCH}" == "x64"
+!if "${ARCH}" == "amd64"
 	InstallDir "$PROGRAMFILES64\ptcollab"
 	!define NAME "ptcollab"
 	Name "ptcollab ${VERSION}"
@@ -22,7 +22,7 @@
 	Name "ptcollab ${VERSION} (${ARCH})"
 	OutFile "ptcollab-install-win-${ARCH}.exe"
 !else
-	!error "Architecture must be either \"x64\" or \"x86\"."
+	!error "Architecture must be either 'amd64' or 'x86'."
 !endif
 
 !include "MUI2.nsh"
@@ -37,7 +37,7 @@ RequestExecutionLevel admin
 !define MUI_UNICON "icon.ico"
 
 !insertmacro MUI_PAGE_DIRECTORY
-!insertmacro MUI_PAGE_INSTFILES  
+!insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !define MUI_FINISHPAGE_SHOWREADME ""
@@ -48,9 +48,9 @@ RequestExecutionLevel admin
 
 Section "Install"
 	SetShellVarContext all
-	
+
 	SetOutPath "$INSTDIR"
-	File "icon.ico"	
+	File "icon.ico"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 	File /r "${IN_PATH}\*"
 
@@ -70,13 +70,13 @@ SectionEnd
 
 Function StartMenuShortcut
 	SetShellVarContext all
-	
+
 	CreateShortcut "$SMPrograms\${NAME}.lnk" "$INSTDIR\ptcollab.exe"
 FunctionEnd
 
 Section "Uninstall"
 	SetShellVarContext all
-	
+
 	Delete "$INSTDIR\uninstall.exe"
 	Delete "$DESKTOP\${NAME}.lnk"
 	Delete "$SMPROGRAMS\${NAME}.lnk"
