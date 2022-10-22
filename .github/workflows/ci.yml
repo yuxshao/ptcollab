@@ -187,6 +187,7 @@ jobs:
           # Deployment finalizing
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip "${artifact_name}" "${PACKAGE}"
+            cp "${artifact_name}" output.zip
             
           elif [ "${{ runner.os }}" == "macOS" ]; then
             pushd "${PACKAGE}"
@@ -225,7 +226,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: package-result
-          path: "${artifact_name}"
+          path: "output.zip"
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
