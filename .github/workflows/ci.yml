@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: "Windows", os: windows-latest, make: nmake, qt_arch: win64_msvc2019_64 }
+          - { name: "Windows", os: windows-latest, make: nmake, qt_arch: win64_msvc2019_64, target_arch: amd64 }
           - { name: "Windows 32-bit", os: windows-latest, make: nmake, qt_arch: win32_msvc2019, target_arch: x86 }
           - { name: "macOS", os: macos-latest, make: "make -j2", qt_arch: clang_64 }
           - { name: "Ubuntu", os: ubuntu-18.04, make: "make -j2", qt_arch: gcc_64 }
@@ -187,7 +187,7 @@ jobs:
           # Deployment finalizing
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip "${artifact_name}" "${PACKAGE}"
-            cp "${artifact_name}" output.zip
+            cp "${artifact_name}" package-result-${{ matrix.config.target_arch }}.zip
             
           elif [ "${{ runner.os }}" == "macOS" ]; then
             pushd "${PACKAGE}"
@@ -226,7 +226,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: package-result
-          path: "output.zip"
+          path: "package-result-${{ matrix.config.target_arch }}.zip"
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
