@@ -255,7 +255,7 @@ jobs:
           
       - name: Install NSIS
         shell: bash
-        run: powershell -Command "./nsis-3.08-setup.exe /S"
+        run: powershell -Command "./nsis-install.exe /S"
           
       - name: Import Artifact            
         uses: actions/download-artifact@v3
