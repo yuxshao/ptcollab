@@ -279,12 +279,12 @@ jobs:
             export FIND_EXPR="*.zip"
           fi
                     
-          7z e $(find . -type f -name ${FIND_EXPR}) -aoa
+          7z e $(find . -type f -name "${FIND_EXPR}") -aoa
           
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
             "-DARCH=${ARCH}"
-            "-DIN_PATH="`find -type d`"
+            "-DIN_PATH=$(find -type d)"
           )
           
           export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
@@ -294,7 +294,7 @@ jobs:
           
           export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
           
-          ${DEPLOY_TOOL} ${DEPLOY_OPTS[@]} "${DEPLOY_TARGET}"  
+          "${DEPLOY_TOOL}" ${DEPLOY_OPTS[@]} ${DEPLOY_TARGET}
           
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
