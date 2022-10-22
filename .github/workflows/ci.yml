@@ -219,7 +219,7 @@ jobs:
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
-#          tar -cf- "${PACKAGE}" > output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
+
       - name: Export Artifact
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
