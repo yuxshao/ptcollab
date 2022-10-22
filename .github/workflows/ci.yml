@@ -278,10 +278,8 @@ jobs:
             export ARCH="x64"
             export FIND_EXPR="*.zip"
           fi
-          
-          ls -l
-          
-          7z e $(find . -type f -name ${FIND_EXPR})
+                    
+          7z e $(find . -type f -name ${FIND_EXPR}) -aoa
           
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
