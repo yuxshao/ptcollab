@@ -267,7 +267,7 @@ jobs:
         shell: bash    
         run: | 
           export PLATFORM_ABBR="win"
-          export DEPLOY_TOOL='C:\Program Files (x86)\NSIS\makensis.exe'
+          export DEPLOY_TOOL="C:\Program Files (x86)\NSIS\makensis.exe"
           export DEPLOY_TARGET="ptcollab.nsi"
           export PACKAGE_EXT="exe"
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
