@@ -279,6 +279,8 @@ jobs:
             export FIND_EXPR="*.zip"
           fi
           
+          ls -l
+          
           7z e $(find . -type f -name ${FIND_EXPR})
           
           export DEPLOY_OPTS=(
