@@ -256,7 +256,7 @@ jobs:
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
             export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
           fi
-          echo "::set-output name=artifact-name::ptcollab-installer-${PLATFORM_ABBR}.exe"
+          echo "::set-output name=artifact-name::ptcollab-install-${PLATFORM_ABBR}.exe"
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
