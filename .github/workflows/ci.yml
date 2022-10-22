@@ -225,7 +225,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: package-result
-          path: "${artifact_name}$
+          path: "${artifact_name}"
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
