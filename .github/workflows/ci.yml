@@ -279,7 +279,7 @@ jobs:
             export FIND_EXPR="*.zip"
           fi
           
-          7z e `find -type f "${FIND_EXPR}"`
+          7z e $(find . -type f ${FIND_EXPR})
           
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
