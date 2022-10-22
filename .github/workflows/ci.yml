@@ -285,7 +285,7 @@ jobs:
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
             "-DARCH=${ARCH}"
-            "-DIN_PATH=\"$(find -maxdepth 1 -type d -name "ptcollab-*")\""
+            "-DIN_PATH=\"$(find -maxdepth 1 -type d -name "ptcollab-*" -printf "%P\n")\""
           )
           
           export UPSTREAM_URI="https://raw.githubusercontent.com/ewangreen4/ptcollab/master" # change to yuxshao when merged
