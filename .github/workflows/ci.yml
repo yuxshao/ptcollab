@@ -266,7 +266,9 @@ jobs:
       - name: Create Installer
         shell: bash    
         run: | 
-          export VERSION="${{ steps.identify-build.outputs.build-tag }}-${{ runner.os }}"
+          case ${GITHUB_REF} in
+            refs/tags/* )
+              VERSION=${GITHUB_REF#refs/tags/}
           export PLATFORM_ABBR="win"
           export DEPLOY_TOOL="C:\Program Files (x86)\NSIS\makensis.exe"
           export DEPLOY_TARGET="ptcollab.nsi"
@@ -288,7 +290,7 @@ jobs:
             "-DIN_PATH=\"$(find -maxdepth 1 -type d -name "ptcollab-*")\""
           )
           
-          export UPSTREAM_URI="https://raw.githubusercontent.com/ewangreen4/ptcollab/tree/master" # change to yuxshao when merged
+          export UPSTREAM_URI="https://raw.githubusercontent.com/ewangreen4/ptcollab/master" # change to yuxshao when merged
           curl -LO "${UPSTREAM_URI}/src/icon.ico"
           curl -LO "${UPSTREAM_URI}/res/header.bmp"
           curl -LO "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
