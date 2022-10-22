@@ -266,9 +266,7 @@ jobs:
       - name: Create Installer
         shell: bash    
         run: | 
-          case ${GITHUB_REF} in
-            refs/tags/* )
-              VERSION=${GITHUB_REF#refs/tags/}
+          export VERSION="7" # todo make correct
           export PLATFORM_ABBR="win"
           export DEPLOY_TOOL="C:\Program Files (x86)\NSIS\makensis.exe"
           export DEPLOY_TARGET="ptcollab.nsi"
