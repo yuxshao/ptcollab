@@ -187,7 +187,7 @@ jobs:
           # Deployment finalizing
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip "${artifact_name}" "${PACKAGE}"
-            cp "${artifact_name}" package-result-${{ matrix.config.target_arch }}.zip
+            cp "${artifact_name}" output.zip
             
           elif [ "${{ runner.os }}" == "macOS" ]; then
             pushd "${PACKAGE}"
@@ -225,8 +225,8 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
-          name: package-result
-          path: "package-result-${{ matrix.config.target_arch }}.zip"
+          name: package-result-${{ matrix.config.target_arch }}.zip
+          path: "output.zip"
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
@@ -261,7 +261,7 @@ jobs:
       - name: Import Artifact            
         uses: actions/download-artifact@v3
         with:
-          name: package-result
+          name: package-result-${{ matrix.config.target_arch }}.zip
     
       - name: Create Installer
         shell: bash    
@@ -274,11 +274,10 @@ jobs:
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
             export ARCH="x86"
             export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
-            export FIND_EXPR="*-x86.zip"
           else
             export ARCH="x64"
-            export FIND_EXPR="*.zip"
           fi
+            export FIND_EXPR="*.zip"
                     
           7z x $(find . -type f -name "${FIND_EXPR}")
           
