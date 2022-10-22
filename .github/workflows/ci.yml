@@ -73,6 +73,23 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@v3
         with:
           arch: ${{ matrix.config.target_arch }}
+
+      - name: Cache NSIS [Windows]
+        if: ${{ runner.os == 'Windows' }}
+        id: cache-nsis
+        uses: actions/cache@v3
+        with:
+          path: nsis-install.exe
+          key: NSIS 3.08
+
+      - name: Fetch NSIS [Windows]
+        if: ${{ runner.os == 'Windows' && steps.cache-nsis.outputs.cache-hit != 'true' }}
+        run: curl -Lo nsis-install.exe "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
+
+      - name: Install NSIS [Windows]
+        if: ${{ runner.os == 'Windows' }}
+        run: powershell -Command "./nsis-install.exe /S"
+
       - name: Install Dependencies [macOS]
         if: ${{ runner.os == 'macOS' }}
         run: |
@@ -175,7 +192,9 @@ jobs:
           fi
 
           export PACKAGE="ptcollab-${VERSION}-${ARCH}"
+          export artifact_dir="${PACKAGE}"
           export artifact_name="ptcollab-${PLATFORM_ABBR}.${PACKAGE_EXT}"
+          echo "::set-output name=artifact-dir::${artifact_dir}"
           echo "::set-output name=artifact-name::${artifact_name}"
 
           # Deployment of binary
@@ -187,8 +206,6 @@ jobs:
           # Deployment finalizing
           if [ "${{ runner.os }}" == "Windows" ]; then
             7z a -tzip "${artifact_name}" "${PACKAGE}"
-            cp "${artifact_name}" output.zip
-            
           elif [ "${{ runner.os }}" == "macOS" ]; then
             pushd "${PACKAGE}"
 
@@ -221,82 +238,26 @@ jobs:
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
 
-      - name: Export Artifact
+      - name: Create Installer [Windows]
         if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: package-result-${{ matrix.config.target_arch }}.zip
-          path: "output.zip"
-
-      - name: Release
-        if: steps.identify-build.outputs.release == 'true'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.package.outputs.artifact-name }}
-          asset_name: ${{ steps.package.outputs.artifact-name }}
-          tag: ${{ github.ref }}
-          
-  create_installer:
-    name: Create Installer [Windows]
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - name: Cache NSIS
-        id: cache-nsis
-        uses: actions/cache@v3
-        with:
-          path: nsis-install.exe
-          key: NSIS 3.08
-      
-      - name: Fetch NSIS
-        shell: bash
-        if: steps.cache-nsis.outputs.cache-hit != 'true'
-        run: curl -Lo nsis-install.exe "https://prdownloads.sourceforge.net/nsis/nsis-3.08-setup.exe?download"
-          
-      - name: Install NSIS
-        shell: bash
-        run: powershell -Command "./nsis-install.exe /S"
-          
-      - name: Import Artifact            
-        uses: actions/download-artifact@v3
-        with:
-          name: package-result-${{ matrix.config.target_arch }}.zip
-    
-      - name: Create Installer
-        shell: bash    
-        run: | 
-          export VERSION="${GITHUB_REF##*/}"
-          export PLATFORM_ABBR="win"
-          export DEPLOY_TOOL="C:\Program Files (x86)\NSIS\makensis.exe"
-          export DEPLOY_TARGET="ptcollab.nsi"
-          export PACKAGE_EXT="exe"
-          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
-            export ARCH="x86"
-            export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
-          else
-            export ARCH="x64"
-          fi
-            export FIND_EXPR="*.zip"
-                    
-          7z x $(find . -type f -name "${FIND_EXPR}")
-          
-          export DEPLOY_OPTS=(
-            "-DVERSION=${VERSION}"
-            "-DARCH=${ARCH}"
-            "-DIN_PATH=$(find -maxdepth 1 -type d -name "ptcollab-*" -printf "%P\n")"
+        id: installer
+        run: |
+          export NSIS_TOOL='C:\Program Files (x86)\NSIS\makensis.exe'
+          export NSIS_OPTS=(
+            "-DVERSION=${{ steps.identify-build.outputs.build-tag }}"
+            "-DARCH=${{ matrix.config.target_arch }}"
+            "-DIN_PATH=${{ steps.package.outputs.artifact-dir }}"
           )
-          
-          export UPSTREAM_URI="https://raw.githubusercontent.com/ewangreen4/ptcollab/master" # change to yuxshao when merged
-          curl -LO "${UPSTREAM_URI}/src/icon.ico"
-          curl -LO "${UPSTREAM_URI}/res/header.bmp"
-          curl -LO "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
-          
-          
-          export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
-          
-          "${DEPLOY_TOOL}" ${DEPLOY_OPTS[@]} ${DEPLOY_TARGET}
-          
+
+          cp src/icon.ico res/{header.bmp,ptcollab.nsi} ./
+          "${NSIS_TOOL}" ${NSIS_OPTS[@]} ptcollab.nsi
+
+          export PLATFORM_ABBR="win"
+          if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
+            export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
+          fi
+          echo "::set-output name=artifact-name::ptcollab-installer-${PLATFORM_ABBR}.exe"
+
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
         uses: svenstaro/upload-release-action@v2
@@ -305,5 +266,12 @@ jobs:
           file: ${{ steps.package.outputs.artifact-name }}
           asset_name: ${{ steps.package.outputs.artifact-name }}
           tag: ${{ github.ref }}
-          
 
+      - name: Release Installer [Windows]
+        if: ${{ runner.os == 'Windows' && steps.identify-build.outputs.release == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.installer.outputs.artifact-name }}
+          asset_name: ${{ steps.installer.outputs.artifact-name }}
+          tag: ${{ github.ref }}
