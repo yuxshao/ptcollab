@@ -219,13 +219,13 @@ jobs:
             popd
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
-          tar -cf- "${PACKAGE}" > output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
+#          tar -cf- "${PACKAGE}" > output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
       - name: Export Artifact
         if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v3
         with:
-          name: deploy-result
-          path: output-${VERSION}-${BRANCH}-${GITHUB_SHA}-${ARCH}.tar
+          name: package-result
+          path: "${artifact_name}$
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
@@ -259,8 +259,8 @@ jobs:
           
       - name: Import Artifact            
         uses: actions/download-artifact@v3
-        with:
-          name: deploy-result
+       with:
+          name: package-result
     
       - name: Create Installer
         shell: bash    
@@ -272,10 +272,14 @@ jobs:
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
             export ARCH="x86"
             export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
+            export FIND_EXPR="\*-x86.zip"
           else
             export ARCH="x64"
+            export FIND_EXPR="*.zip"
           fi
-          tar -xf `find -type f "*.tar"`
+          
+          7z e `find -type f "${FIND_EXPR}"`
+          
           export DEPLOY_OPTS=(
             "-DVERSION=${VERSION}"
             "-DARCH=${ARCH}"
@@ -283,9 +287,9 @@ jobs:
           )
           
           export UPSTREAM_URI="https://github.com/yuxshao/ptcollab/tree/master"
-          curl -O "${UPSTREAM_URI}/src/icon.ico"
-          curl -O "${UPSTREAM_URI}/res/header.bmp"
-          curl -O "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
+          curl -Lo "${UPSTREAM_URI}/src/icon.ico"
+          curl -Lo "${UPSTREAM_URI}/res/header.bmp"
+          curl -Lo "${UPSTREAM_URI}/res/${DEPLOY_TARGET}"
           
           export artifact_name="ptcollab-install-${PLATFORM_ABBR}.${PACKAGE_EXT}"
           
