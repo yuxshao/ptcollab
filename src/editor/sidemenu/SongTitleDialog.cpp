@@ -8,6 +8,7 @@ SongTitleDialog::SongTitleDialog(const QString &title, const QString &comment,
   ui->setupUi(this);
   ui->titleLineEdit->setText(title);
   ui->commentTextEdit->setText(comment);
+  setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 }
 
 QString SongTitleDialog::title() { return ui->titleLineEdit->text(); }
