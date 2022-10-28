@@ -88,6 +88,11 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
           &PxtoneClient::processRemoteAction);
 }
 
+PxtoneClient::~PxtoneClient() {
+  m_audio->stop();
+  m_pxtn_device->setPlaying(false);
+}
+
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
