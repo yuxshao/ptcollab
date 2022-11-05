@@ -88,7 +88,8 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
 void KeyboardView::ensurePlayheadFollowed() {
   bool follow_exactly =
       m_client->editState().m_follow_playhead == FollowPlayhead::Follow;
-  double x = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  double logicalX = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  double x = worldTransform().map(QPointF(logicalX, 0)).x();
   emit ensureVisibleX(x, follow_exactly);
 }
 
