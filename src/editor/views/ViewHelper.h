@@ -38,6 +38,7 @@ T distance_to_range(T x, T lo, T hi) {
 }
 
 extern int lerp(double r, int a, int b);
+extern double lerp_f(double r, double a, double b);
 
 constexpr int EVENTMAX_VELOCITY = 128;
 struct Brush {
@@ -59,12 +60,13 @@ struct Brush {
         on_brightness(on_brightness) {}
   Brush(double hue) : Brush(int(hue * 360)){};
 
-  QColor toQColor(int velocity, bool on, int alpha) const {
-    int brightness =
-        lerp(double(velocity) / EVENTMAX_VELOCITY, muted_brightness,
-             on ? on_brightness : base_brightness);
-    int saturation = lerp(double(velocity) / EVENTMAX_VELOCITY,
-                          muted_saturation, base_saturation);
+  QColor toQColor(int velocity, double on_strength, int alpha) const {
+    double velocity_strength = double(velocity) / EVENTMAX_VELOCITY;
+    int brightness_offset_by_on_strength =
+        lerp(on_strength, base_brightness, on_brightness);
+    int brightness = lerp(velocity_strength, muted_brightness,
+                          brightness_offset_by_on_strength);
+    int saturation = lerp(velocity_strength, muted_saturation, base_saturation);
     return QColor::fromHsl(hue, saturation, brightness, alpha);
   }
 };

@@ -210,10 +210,9 @@ void drawOngoingAction(const EditState &state,
       return;
     const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
     for (int y : unit_draw_params_map.no_to_params.at(no.value()).ys) {
-      painter.fillRect(
-          interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2, interval.length(),
-          UNIT_EDIT_HEIGHT - 6,
-          brush.toQColor(velocity, false, alpha * alphaMultiplier));
+      painter.fillRect(interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2,
+                       interval.length(), UNIT_EDIT_HEIGHT - 6,
+                       brush.toQColor(velocity, 0, alpha * alphaMultiplier));
     }
   };
 
@@ -419,13 +418,23 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
       int x = i.start / scaleX;
       int w = int(i.end / scaleX) - x;
       const Brush *brush = unit_draw_params_map.no_to_params[no].brush;
-      QColor c = brush->toQColor(vel, i.contains(m_moo_clock->now()), 255);
+      double on_strength = 0;
+      std::optional<double> position_along_block =
+          i.position_along_interval(m_moo_clock->now());
+      if (position_along_block.has_value()) {
+        double seconds_in_block = double(position_along_block.value()) /
+                                  m_client->pxtn()->master->get_beat_clock() /
+                                  m_client->pxtn()->master->get_beat_tempo() *
+                                  60;
+        on_strength = lerp_f(seconds_in_block / 0.3, 1, 0.5);
+      }
+      QColor c = brush->toQColor(vel, on_strength, 255);
       for (int y : unit_draw_params_map.no_to_params[no].ys)
         fillUnitBullet(painter, x, y, w, c);
       if (selected_unit_nos.count(no) > 0 && selection.has_value()) {
         Interval selection_segment = interval_intersect(selection.value(), i);
         if (!selection_segment.empty()) {
-          painter.setPen(brush->toQColor(EVENTDEFAULT_VELOCITY, true, 255));
+          painter.setPen(brush->toQColor(EVENTDEFAULT_VELOCITY, 1, 255));
           int x = selection_segment.start / scaleX;
           int w = int(selection_segment.end / scaleX) - x;
           for (int y : unit_draw_params_map.no_to_params[no].ys)
@@ -575,8 +584,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
       int unit_id = state.m_current_unit_id;
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
-                                                        false, 128);
+        color =
+            brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY, 0, 128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, unit_draw_params_map, m_client->unitIdMap(), painter,

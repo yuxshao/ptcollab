@@ -136,6 +136,12 @@ int lerp(double r, int a, int b) {
   return a + r * (b - a);
 }
 
+double lerp_f(double r, double a, double b) {
+  if (r > 1) r = 1;
+  if (r < 0) r = 0;
+  return a + r * (b - a);
+}
+
 const Brush brushes[] = {
     0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
 };

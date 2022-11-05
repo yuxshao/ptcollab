@@ -63,11 +63,11 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 
 QSize ParamView::sizeHint() const {
   return worldTransform()
-      .mapRect(
-          QRect(0, 0,
-                Settings::LeftPianoWidth::get() + one_over_last_clock(m_client->pxtn()) /
-                                        m_client->editState().scale.clockPerPx,
-                0x20))
+      .mapRect(QRect(0, 0,
+                     Settings::LeftPianoWidth::get() +
+                         one_over_last_clock(m_client->pxtn()) /
+                             m_client->editState().scale.clockPerPx,
+                     0x20))
       .size();
 }
 
@@ -405,7 +405,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     lastEvents.emplace_back(Event{first_clock, DefaultKindValue(current_kind)});
     int unit_id = m_client->unitIdMap().noToId(i);
     colors.push_back(brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(
-        108, false, 255));
+        108, 0, 255));
     int h, s, l, a;
     colors.rbegin()->getHsl(&h, &s, &l, &a);
     if (m_client->editState().m_current_unit_id != unit_id) {
@@ -512,8 +512,8 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
       int unit_id = state.m_current_unit_id;
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
-                                                        false, 128);
+        color =
+            brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY, 0, 128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid, current_kind,

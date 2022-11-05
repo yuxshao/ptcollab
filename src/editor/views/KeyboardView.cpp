@@ -179,7 +179,7 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
                     int displayEdo) {
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
-  painter.setPen(brush.toQColor(draw_vel, true, alpha));
+  painter.setPen(brush.toQColor(draw_vel, 1, alpha));
   painter.setFont(
       QFont(StyleEditor::config.font.EditorFont, Settings::TextSize::get()));
   painter.drawText(
@@ -196,16 +196,15 @@ void drawGhostOnNote(QPainter &painter, const Interval &interval,
                      bool rowHighlight, bool noteHighlight, int pitch,
                      int displayEdo) {
   if (rowHighlight)
-    paintBlock(
-        pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
-        brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
-        scale, displayEdo);
+    paintBlock(pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
+               brush.toQColor(128, 0, 48 * velocity / 128 * alphaMultiplier),
+               scale, displayEdo);
   paintBlock(pitch, interval, painter,
-             brush.toQColor(velocity, false, alpha * alphaMultiplier), scale,
+             brush.toQColor(velocity, 0, alpha * alphaMultiplier), scale,
              displayEdo);
   if (noteHighlight)
     paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                   brush.toQColor(128, true, alpha * alphaMultiplier), scale,
+                   brush.toQColor(128, 1, alpha * alphaMultiplier), scale,
                    displayEdo);
 }
 
@@ -344,7 +343,8 @@ void drawLeftPiano(QPainter &painter, int y, int h, const QBrush &b,
                    QBrush *bInner) {
   painter.fillRect(0, y, Settings::LeftPianoWidth::get(), h, b);
   painter.fillRect(Settings::LeftPianoWidth::get(), y + 1, 1, h - 2, b);
-  if (bInner) painter.fillRect(0, y, Settings::LeftPianoWidth::get() * 2 / 3, h, *bInner);
+  if (bInner)
+    painter.fillRect(0, y, Settings::LeftPianoWidth::get() * 2 / 3, h, *bInner);
 }
 
 double smoothDistance(double dy, double dx) {
@@ -368,7 +368,7 @@ struct LeftPianoNote {
 
 struct NoteSegment {
   Interval interval;
-  bool playing;
+  double on_strength;
   int pitch;
   int velocity;
   Interval on;
@@ -380,6 +380,7 @@ struct UnitDrawParam {
   bool hoveredUnit;
   bool visible;
   int alpha;
+  bool scale_alpha_by_velocity;
   bool muted;
   bool selected;
 };
@@ -388,9 +389,11 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
                      const NoteSegment &note, const Scale &scale,
                      int displayEdo, const std::optional<Interval> &selection) {
   QColor color = param.brush->toQColor(
-      note.velocity, note.playing && !param.muted, param.alpha);
+      note.velocity, (param.muted ? 0.0 : note.on_strength), param.alpha);
   if (param.muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
+  if (param.scale_alpha_by_velocity)
+    color.setAlpha(color.alpha() * note.velocity / EVENTMAX_VELOCITY);
 
   // draw note
   paintBlock(note.pitch, note.interval, painter, color, scale, displayEdo);
@@ -398,7 +401,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
   // draw highlight at front
   if (note.interval.start == note.on.start) {
     paintHighlight(note.pitch, note.interval.start, painter,
-                   param.brush->toQColor(255, true, param.alpha), scale,
+                   param.brush->toQColor(255, 1, color.alpha()), scale,
                    displayEdo);
   }
 
@@ -408,7 +411,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
         interval_intersect(selection.value(), note.interval);
     if (!selection_segment.empty()) {
       painter.setPen(
-          param.brush->toQColor(EVENTDEFAULT_VELOCITY, true, param.alpha));
+          param.brush->toQColor(EVENTDEFAULT_VELOCITY, 1, param.alpha));
       drawBlock(note.pitch, selection_segment, painter, scale, displayEdo);
     }
   }
@@ -582,7 +585,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   std::optional<Interval> selection = std::nullopt;
   std::set<int> selected_unit_nos = m_client->selectedUnitNos();
   if (m_dark)
-    painter.setCompositionMode(QPainter::CompositionMode_Plus);
+    painter.setCompositionMode(QPainter::CompositionMode_Screen);
   else
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
@@ -616,7 +619,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       if (matchingUnit)
         alpha = 255;
       else if (visible)
-        alpha = 64;
+        alpha = (m_dark ? 216 : 64);
       else
         alpha = 0;
       if (m_focused_unit_no.has_value() || m_hovered_unit_no.has_value())
@@ -624,7 +627,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
     UnitDrawParam param{brush, matchingUnit, hoveredUnit, visible,
-                        alpha, muted,        selected};
+                        alpha, m_dark,       muted,       selected};
     unit_draw_params.push_back(param);
     if (matchingUnit) current_unit_draw_param = param;
     if (hoveredUnit) hover_unit_draw_param = param;
@@ -649,16 +652,33 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       }
     }
 
-    bool playing = m_client->isPlaying() && on.contains(clock);
+    double on_strength = 0;
+    if (m_client->isPlaying()) {
+      auto position_along_block = on.position_along_interval(clock);
+      if (position_along_block.has_value()) {
+        double seconds_in_block = double(position_along_block.value()) /
+                                  m_client->pxtn()->master->get_beat_clock() /
+                                  m_client->pxtn()->master->get_beat_tempo() *
+                                  60;
+        on_strength = lerp_f(seconds_in_block / 0.1, 1.0, 0.5);
+      }
+    }
     int pitch = state.pitch.value;
     int velocity = state.velocity.value;
-    NoteSegment note{interval, playing, pitch, velocity, on};
+    NoteSegment note{interval, on_strength, pitch, velocity, on};
 
     // draw background highlight & record left piano note
-    if (note.playing && interval.start == on.start && !param.muted &&
+    if (note.on_strength > 0 && interval.start == on.start && !param.muted &&
         param.alpha > 0) {
-      QColor c = param.brush->toQColor(
-          128, false, 16 * note.velocity / 128 * (param.alpha / 2 + 128) / 256);
+      int alpha;
+      if (!m_dark)
+        alpha = 16 * note.velocity / EVENTMAX_VELOCITY *
+                (param.alpha / 2 + 128) / 256;
+      else
+        alpha =
+            lerp(double(note.velocity) / EVENTMAX_VELOCITY * param.alpha / 256,
+                 32, 96);
+      QColor c = param.brush->toQColor(128, 0, alpha);
       paintBlock(state.pitch.value,
                  Interval{0, int(scale.clockPerPx * width())}, painter, c,
                  scale, displayEdo);
@@ -790,7 +810,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
           leftInnerBrush = &blackLeftInnerBrush;
           break;
       }
-      painter.fillRect(0, r.y - 1, Settings::LeftPianoWidth::get(), 1, blackLeftInnerBrush);
+      painter.fillRect(0, r.y - 1, Settings::LeftPianoWidth::get(), 1,
+                       blackLeftInnerBrush);
       drawLeftPiano(painter, r.y, r.h, *leftBrush, leftInnerBrush);
       int pitch_offset = 0;
       if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
@@ -811,7 +832,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       const Brush &brush =
           brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
       drawLeftPianoNoteHighlight(painter, pitch, m_client->editState().scale,
-                                 displayEdo, brush.toQColor(vel, true, 200));
+                                 displayEdo, brush.toQColor(vel, 1, 200));
     }
 
     // Highlight from clicked note
@@ -849,8 +870,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       // Draw cursor
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
-                                                        false, 128);
+        color =
+            brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY, 0, 128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
