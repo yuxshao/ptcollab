@@ -142,6 +142,16 @@ double lerp_f(double r, double a, double b) {
   return a + r * (b - a);
 }
 
+QColor Brush::toQColor(int velocity, double on_strength, int alpha) const {
+  double velocity_strength = double(velocity) / EVENTMAX_VELOCITY;
+  int brightness_offset_by_on_strength =
+      lerp(on_strength, base_brightness, on_brightness);
+  int brightness = lerp(velocity_strength, muted_brightness,
+                        brightness_offset_by_on_strength);
+  int saturation = lerp(velocity_strength, muted_saturation, base_saturation);
+  return QColor::fromHsl(hue, saturation, brightness, alpha);
+}
+
 const Brush brushes[] = {
     0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
 };

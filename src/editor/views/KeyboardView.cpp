@@ -379,6 +379,7 @@ struct UnitDrawParam {
   const Brush *brush;
   bool matchingUnit;
   bool hoveredUnit;
+  bool draw_left_highlights;
   bool visible;
   int alpha;
   bool scale_alpha_by_velocity;
@@ -400,7 +401,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
   paintBlock(note.pitch, note.interval, painter, color, scale, displayEdo);
 
   // draw highlight at front
-  if (note.interval.start == note.on.start) {
+  if (note.interval.start == note.on.start && param.draw_left_highlights) {
     paintHighlight(note.pitch, note.interval.start, painter,
                    param.brush->toQColor(255, 1, color.alpha()), scale,
                    displayEdo);
@@ -627,8 +628,10 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
         alpha /= 2;
     }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-    UnitDrawParam param{brush, matchingUnit, hoveredUnit, visible,
-                        alpha, m_dark,       muted,       selected};
+    bool draw_left_highlight = matchingUnit || hoveredUnit || m_dark;
+    UnitDrawParam param{brush,   matchingUnit, hoveredUnit, draw_left_highlight,
+                        visible, alpha,        m_dark,      muted,
+                        selected};
     unit_draw_params.push_back(param);
     if (matchingUnit) current_unit_draw_param = param;
     if (hoveredUnit) hover_unit_draw_param = param;

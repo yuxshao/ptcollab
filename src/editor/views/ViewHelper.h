@@ -60,15 +60,7 @@ struct Brush {
         on_brightness(on_brightness) {}
   Brush(double hue) : Brush(int(hue * 360)){};
 
-  QColor toQColor(int velocity, double on_strength, int alpha) const {
-    double velocity_strength = double(velocity) / EVENTMAX_VELOCITY;
-    int brightness_offset_by_on_strength =
-        lerp(on_strength, base_brightness, on_brightness);
-    int brightness = lerp(velocity_strength, muted_brightness,
-                          brightness_offset_by_on_strength);
-    int saturation = lerp(velocity_strength, muted_saturation, base_saturation);
-    return QColor::fromHsl(hue, saturation, brightness, alpha);
-  }
+  QColor toQColor(int velocity, double on_strength, int alpha) const;
 };
 
 extern const Brush brushes[];
