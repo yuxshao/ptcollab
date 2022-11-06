@@ -222,6 +222,18 @@ std::shared_ptr<NoteBrush const> noteBrush(int i) {
 static Config currentConfig = Config::empty();
 const Config &config = currentConfig;
 
+void tryLoadNoteColours(const QString &filename) {
+  QImage note_colours(filename);
+  if (!note_colours.isNull() && note_colours.width() == 3 &&
+      note_colours.height() >= 1) {
+    currentNoteBrushes.clear();
+    for (int i = 0; i < note_colours.height(); ++i)
+      currentNoteBrushes.push_back(std::make_shared<NoteBrush>(
+          note_colours.pixel(0, i), note_colours.pixel(1, i),
+          note_colours.pixel(2, i)));
+  }
+}
+
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   // A stylesheet needs to exist for any part of the style to be loaded.
   QFile styleSheet = styleSheetPath(basedir, styleName);
@@ -254,15 +266,9 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   if (!px.isNull() && px.size() == currentMeasureImages->size())
     currentMeasureImages = std::make_shared<QPixmap>(px);
 
-  currentNoteBrushes.clear();
-  QImage note_colours(styleSheetDir(basedir, styleName) + "/note_colours.png");
-  if (!note_colours.isNull() && note_colours.width() == 3 &&
-      note_colours.height() >= 1) {
-    for (int i = 0; i < note_colours.height(); ++i)
-      currentNoteBrushes.push_back(std::make_shared<NoteBrush>(
-          note_colours.pixel(0, i), note_colours.pixel(1, i),
-          note_colours.pixel(2, i)));
-  }
+  tryLoadNoteColours(":/images/default_note_colours.png");
+  tryLoadNoteColours(styleSheetDir(basedir, styleName) + "/note_colours.png");
+
   return true;
 }
 
@@ -301,6 +307,7 @@ bool tryLoadStyle(const QString &styleName) {
   if (styleName == SYSTEM_STYLE) {
     currentConfig = defaultConfig(true);
     currentMeasureImages = std::make_shared<QPixmap>(":/images/images");
+    tryLoadNoteColours(":/images/default_note_colours.png");
     return true;
   }
 
