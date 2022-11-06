@@ -404,7 +404,7 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
     lastEvents.emplace_back(Event{first_clock, DefaultKindValue(current_kind)});
     int unit_id = m_client->unitIdMap().noToId(i);
-    colors.push_back(StyleEditor::noteBrush(unit_id)->toQColor(108, 0, 255));
+    colors.push_back(StyleEditor::noteBrush(unit_id)->toQColor(108, 1, 255));
     int h, s, l, a;
     colors.rbegin()->getHsl(&h, &s, &l, &a);
     if (m_client->editState().m_current_unit_id != unit_id) {
