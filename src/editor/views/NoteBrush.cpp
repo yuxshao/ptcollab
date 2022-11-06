@@ -14,13 +14,6 @@ NoteBrush::NoteBrush(int hue) {
   max = QColor::fromHsl(hue, on_brightness, base_saturation);
 }
 
-const NoteBrush default_note_brushes[] = {
-    360 * 0 / 7, 360 * 3 / 7, 360 * 6 / 7, 360 * 2 / 7,
-    360 * 5 / 7, 360 * 1 / 7, 360 * 4 / 7,
-};
-const int DEFAULT_NUM_NOTE_BRUSHES =
-    sizeof(default_note_brushes) / sizeof(NoteBrush);
-
 QColor lerpColor(double r, const QColor &a, const QColor &b) {
   return QColor::fromRgb(lerp(r, a.red(), b.red()),
                          lerp(r, a.green(), b.green()),

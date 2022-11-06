@@ -211,11 +211,6 @@ const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
 
 static std::vector<std::shared_ptr<NoteBrush const>> currentNoteBrushes;
 std::shared_ptr<NoteBrush const> noteBrush(int i) {
-  if (currentNoteBrushes.size() == 0) {
-    for (int i = 0; i < DEFAULT_NUM_NOTE_BRUSHES; ++i)
-      currentNoteBrushes.push_back(
-          std::make_shared<NoteBrush>(default_note_brushes[i]));
-  }
   return currentNoteBrushes[nonnegative_modulo(i, currentNoteBrushes.size())];
 }
 
