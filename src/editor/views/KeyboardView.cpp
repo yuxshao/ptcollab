@@ -12,7 +12,6 @@
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
-#include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
@@ -176,7 +175,7 @@ static void paintHighlight(int pitch, int clock, QPainter &painter,
 static qint32 arbitrarily_tall = 512;
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
-                    const Brush &brush, const Scale &scale, qint32 alpha,
+                    const NoteBrush &brush, const Scale &scale, qint32 alpha,
                     int displayEdo) {
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
@@ -192,7 +191,7 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
 }
 
 void drawGhostOnNote(QPainter &painter, const Interval &interval,
-                     const Scale &scale, int width, const Brush &brush,
+                     const Scale &scale, int width, const NoteBrush &brush,
                      int velocity, int alpha, double alphaMultiplier,
                      bool rowHighlight, bool noteHighlight, int pitch,
                      int displayEdo) {
@@ -247,8 +246,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
                        double alphaMultiplier, double selectionAlphaMultiplier,
                        int displayEdo) {
-  const Brush &brush =
-      brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
+  const NoteBrush &brush = *StyleEditor::noteBrush(state.m_current_unit_id);
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
   switch (mouse_edit_state.type) {
@@ -317,7 +315,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   if (nowNoWrap.has_value()) {
     for (const auto &[unit_id, v] : state.m_input_state.notes_by_id) {
       for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master)) {
-        const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+        const NoteBrush &brush = *StyleEditor::noteBrush(unit_id);
         drawGhostOnNote(painter, interval, state.scale, width, brush,
                         v.on.vel(), 255, alphaMultiplier, true, true, v.on.key,
                         displayEdo);
@@ -376,7 +374,7 @@ struct NoteSegment {
 };
 
 struct UnitDrawParam {
-  const Brush *brush;
+  std::shared_ptr<const NoteBrush> brush;
   bool matchingUnit;
   bool hoveredUnit;
   bool draw_left_highlights;
@@ -605,7 +603,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   std::vector<NoteSegment> current_unit_notes, hover_unit_notes;
   for (int unit_no = 0; unit_no < m_pxtn->Unit_Num(); ++unit_no) {
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
-    const Brush *brush = &brushes[unit_id % NUM_BRUSHES];
+    std::shared_ptr<const NoteBrush> brush = StyleEditor::noteBrush(unit_id);
     bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
     bool hoveredUnit =
         unit_no == m_focused_unit_no || unit_no == m_hovered_unit_no;
@@ -621,7 +619,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       if (matchingUnit)
         alpha = 255;
       else if (visible)
-        alpha = (m_dark ? 216 : 64);
+        alpha = (m_dark ? 216 : 96);
       else
         alpha = 0;
       if (m_focused_unit_no.has_value() || m_hovered_unit_no.has_value())
@@ -833,8 +831,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
     // Highlights from MIDI pitches
     for (auto &[pitch, vel] : m_midi_notes) {
-      const Brush &brush =
-          brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
+      const NoteBrush &brush =
+          *StyleEditor::noteBrush(m_client->editState().m_current_unit_id);
       drawLeftPianoNoteHighlight(painter, pitch, m_client->editState().scale,
                                  displayEdo, brush.toQColor(vel, 1, 200));
     }
@@ -874,8 +872,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       // Draw cursor
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color =
-            brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY, 0, 128);
+        color = StyleEditor::noteBrush(unit_id)->toQColor(EVENTMAX_VELOCITY, 0,
+                                                          128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);

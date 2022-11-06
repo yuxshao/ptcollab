@@ -36,5 +36,6 @@
         <file>styles/ptCollage/images.png</file>
         <file>styles/ptCollage/ptCollage.qss</file>
         <file>styles/README.md</file>
+        <file>styles/ptCollage/note_colours.png</file>
     </qresource>
 </RCC>

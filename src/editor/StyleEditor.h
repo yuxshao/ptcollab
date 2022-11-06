@@ -7,12 +7,13 @@
 #include <QPixmap>
 #include <QStringList>
 
-#include "Settings.h"
+#include "views/NoteBrush.h"
 
 namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
+std::shared_ptr<NoteBrush const> noteBrush(int i);
 struct Config {
  private:
   Config() {}

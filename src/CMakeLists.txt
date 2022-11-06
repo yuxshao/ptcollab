@@ -70,6 +70,7 @@ set (PTCOLLAB_SOURCES
 	editor/audio/NotePreview.cpp
 	editor/views/MeasureView.cpp
 	editor/views/MooClock.cpp
+    editor/views/NoteBrush.cpp
 	editor/views/ParamView.cpp
 	editor/PxtoneClient.cpp
 	editor/PxtoneController.cpp

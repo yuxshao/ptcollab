@@ -5,7 +5,6 @@
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
-#include "pxtone/pxtnEvelist.h"
 
 int pixelsPerVelocity = 3;
 static double slack = 50;
@@ -141,21 +140,6 @@ double lerp_f(double r, double a, double b) {
   if (r < 0) r = 0;
   return a + r * (b - a);
 }
-
-QColor Brush::toQColor(int velocity, double on_strength, int alpha) const {
-  double velocity_strength = double(velocity) / EVENTMAX_VELOCITY;
-  int brightness_offset_by_on_strength =
-      lerp(on_strength, base_brightness, on_brightness);
-  int brightness = lerp(velocity_strength, muted_brightness,
-                        brightness_offset_by_on_strength);
-  int saturation = lerp(velocity_strength, muted_saturation, base_saturation);
-  return QColor::fromHsl(hue, saturation, brightness, alpha);
-}
-
-const Brush brushes[] = {
-    0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
-};
-const int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
 
 int nonnegative_modulo(int x, int m) {
   if (m == 0) return 0;

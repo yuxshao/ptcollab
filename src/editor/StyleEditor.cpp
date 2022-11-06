@@ -9,12 +9,11 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QPalette>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QStyleFactory>
 #include <QUrl>
 #include <set>
-
-#include "Settings.h"
 
 namespace StyleEditor {
 const char *SYSTEM_STYLE = "<System>";
@@ -202,8 +201,23 @@ void loadFonts(const QString path) {
   }
 }
 
+int nonnegative_modulo(int x, int m) {
+  if (m == 0) return 0;
+  return ((x % m) + m) % m;
+}
+
 static std::shared_ptr<QPixmap> currentMeasureImages = nullptr;
 const std::shared_ptr<QPixmap> measureImages() { return currentMeasureImages; }
+
+static std::vector<std::shared_ptr<NoteBrush const>> currentNoteBrushes;
+std::shared_ptr<NoteBrush const> noteBrush(int i) {
+  if (currentNoteBrushes.size() == 0) {
+    for (int i = 0; i < DEFAULT_NUM_NOTE_BRUSHES; ++i)
+      currentNoteBrushes.push_back(
+          std::make_shared<NoteBrush>(default_note_brushes[i]));
+  }
+  return currentNoteBrushes[nonnegative_modulo(i, currentNoteBrushes.size())];
+}
 
 static Config currentConfig = Config::empty();
 const Config &config = currentConfig;
@@ -239,6 +253,16 @@ bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   QPixmap px(styleSheetDir(basedir, styleName) + "/images.png");
   if (!px.isNull() && px.size() == currentMeasureImages->size())
     currentMeasureImages = std::make_shared<QPixmap>(px);
+
+  currentNoteBrushes.clear();
+  QImage note_colours(styleSheetDir(basedir, styleName) + "/note_colours.png");
+  if (!note_colours.isNull() && note_colours.width() == 3 &&
+      note_colours.height() >= 1) {
+    for (int i = 0; i < note_colours.height(); ++i)
+      currentNoteBrushes.push_back(std::make_shared<NoteBrush>(
+          note_colours.pixel(0, i), note_colours.pixel(1, i),
+          note_colours.pixel(2, i)));
+  }
   return true;
 }
 

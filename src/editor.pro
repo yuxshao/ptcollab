@@ -131,6 +131,7 @@ HEADERS += \
            editor/audio/NotePreview.h \
            editor/views/MeasureView.h \
            editor/views/MooClock.h \
+           editor/views/NoteBrush.h \
            editor/views/ParamView.h \
            editor/PxtoneClient.h \
            editor/PxtoneController.h \
@@ -223,6 +224,7 @@ SOURCES += main.cpp \
            editor/audio/NotePreview.cpp \
            editor/views/MeasureView.cpp \
            editor/views/MooClock.cpp \
+           editor/views/NoteBrush.cpp \
            editor/views/ParamView.cpp \
            editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \

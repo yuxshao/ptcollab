@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
+#include "NoteBrush.h"
 #include "ViewHelper.h"
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
@@ -104,7 +105,7 @@ static void drawFlag(QPainter *painter, FlagType type, bool outline,
 
 struct UnitDrawParams {
   std::vector<int> ys;
-  const Brush *brush;
+  std::shared_ptr<NoteBrush const> brush;
 };
 struct UnitDrawParamsMap {
   std::map<int, UnitDrawParams> no_to_params;
@@ -121,7 +122,7 @@ UnitDrawParamsMap make_draw_params_map(const EditState &e, const NoIdMap &m) {
     std::optional<int> maybe_unit_no = m.idToNo(unit_id);
     if (maybe_unit_no.has_value()) {
       UnitDrawParams &p = no_to_params[maybe_unit_no.value()];
-      p.brush = &brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+      p.brush = StyleEditor::noteBrush(unit_id);
     }
   }
 
@@ -136,7 +137,7 @@ UnitDrawParamsMap make_draw_params_map(const EditState &e, const NoIdMap &m) {
   std::optional<int> maybe_unit_no = m.idToNo(e.m_current_unit_id);
   if (maybe_unit_no.has_value()) {
     UnitDrawParams &p = no_to_params[maybe_unit_no.value()];
-    p.brush = &brushes[nonnegative_modulo(e.m_current_unit_id, NUM_BRUSHES)];
+    p.brush = StyleEditor::noteBrush(e.m_current_unit_id);
     p.ys.push_back(unit_edit_y(row) + UNIT_EDIT_HEIGHT / 2);
   }
 
@@ -208,7 +209,7 @@ void drawOngoingAction(const EditState &state,
     if (!no.has_value() ||
         unit_draw_params_map.no_to_params.count(no.value()) == 0)
       return;
-    const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+    const NoteBrush &brush = *StyleEditor::noteBrush(unit_id);
     for (int y : unit_draw_params_map.no_to_params.at(no.value()).ys) {
       painter.fillRect(interval.start, y + 3 - UNIT_EDIT_HEIGHT / 2,
                        interval.length(), UNIT_EDIT_HEIGHT - 6,
@@ -417,7 +418,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
                                               : EVENTDEFAULT_VELOCITY);
       int x = i.start / scaleX;
       int w = int(i.end / scaleX) - x;
-      const Brush *brush = unit_draw_params_map.no_to_params[no].brush;
+      std::shared_ptr<const NoteBrush> brush =
+          unit_draw_params_map.no_to_params[no].brush;
       double on_strength = 0;
       std::optional<double> position_along_block =
           i.position_along_interval(m_moo_clock->now());
@@ -584,8 +586,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
       int unit_id = state.m_current_unit_id;
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color =
-            brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY, 0, 128);
+        color = StyleEditor::noteBrush(unit_id)->toQColor(EVENTMAX_VELOCITY, 0,
+                                                          128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, unit_draw_params_map, m_client->unitIdMap(), painter,
