@@ -635,6 +635,9 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     if (hoveredUnit) hover_unit_draw_param = param;
   }
 
+  double seconds_per_clock = 60 / m_client->pxtn()->master->get_beat_tempo() /
+                             m_client->pxtn()->master->get_beat_clock();
+  double decay_length = 0.25 / seconds_per_clock;
   auto handleNoteSegment = [&](int unit_no, const DrawState &state, int end) {
     Interval segment{state.pitch.clock, end};
     const MouseEditState &mouse = m_client->editState().mouse_edit_state;
@@ -656,13 +659,17 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
     double on_strength = 0;
     if (m_client->isPlaying()) {
-      auto position_along_block = on.position_along_interval(clock);
-      if (position_along_block.has_value()) {
-        double seconds_in_block = double(position_along_block.value()) /
-                                  m_client->pxtn()->master->get_beat_clock() /
-                                  m_client->pxtn()->master->get_beat_tempo() *
-                                  60;
-        on_strength = lerp_f(seconds_in_block / 0.1, 1.0, 0.5);
+      if (clock >= on.start) {
+        if (!m_dark)
+          on_strength = clock < on.end ? 1 : 0;
+        else {
+          if (clock < on.end) {
+            double seconds_in_block = (clock - on.start) * seconds_per_clock;
+            on_strength = lerp_f(seconds_in_block / 0.25, 1, 0.6);
+          } else if (clock < on.end + decay_length) {
+            on_strength = lerp_f((clock - on.end) / decay_length, 0.5, 0.0);
+          }
+        }
       }
     }
     int pitch = state.pitch.value;
@@ -673,19 +680,16 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     if (note.on_strength > 0 && interval.start == on.start && !param.muted &&
         param.alpha > 0) {
       int alpha;
+      double velocity_strength = double(note.velocity) / EVENTMAX_VELOCITY;
       if (!m_dark)
-        alpha = 16 * note.velocity / EVENTMAX_VELOCITY *
-                (param.alpha / 2 + 128) / 256;
+        alpha = 32 * velocity_strength * (param.alpha / 2 + 128) / 256;
       else
-        alpha =
-            lerp(double(note.velocity) / EVENTMAX_VELOCITY * param.alpha / 256,
-                 32, 96);
-      QColor c = param.brush->toQColor(128, 0, alpha);
+        alpha = lerp(velocity_strength * param.alpha / 256, 32, 72);
+      QColor c = param.brush->toQColor(128, 0, alpha * note.on_strength);
       paintBlock(state.pitch.value,
                  Interval{0, int(scale.clockPerPx * width())}, painter, c,
                  scale, displayEdo);
-      c.setAlpha((64 + c.alpha() * 2 / 3) *
-                 (1 - std::min(0.5, (clock - note.on.start) / 1200.0)));
+      c.setAlpha((128 + c.alpha() / 2) * note.on_strength);
       left_piano_notes.push_back({state.pitch.value, c});
     }
 

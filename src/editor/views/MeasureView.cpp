@@ -411,6 +411,10 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   std::set<int> selected_unit_nos = m_client->selectedUnitNos();
 
   // Draw on events
+
+  double seconds_per_clock = 60 / m_client->pxtn()->master->get_beat_tempo() /
+                             m_client->pxtn()->master->get_beat_clock();
+  int now = m_moo_clock->now();
   auto drawLastOn = [&](int no, bool erase) {
     if (last_on_by_no.count(no) > 0) {
       const Interval &i = last_on_by_no[no];
@@ -421,13 +425,8 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
       std::shared_ptr<const NoteBrush> brush =
           unit_draw_params_map.no_to_params[no].brush;
       double on_strength = 0;
-      std::optional<double> position_along_block =
-          i.position_along_interval(m_moo_clock->now());
-      if (position_along_block.has_value()) {
-        double seconds_in_block = double(position_along_block.value()) /
-                                  m_client->pxtn()->master->get_beat_clock() /
-                                  m_client->pxtn()->master->get_beat_tempo() *
-                                  60;
+      if (now >= i.start && now < i.end) {
+        double seconds_in_block = (now - i.start) * seconds_per_clock;
         on_strength = lerp_f(seconds_in_block / 0.3, 1, 0.5);
       }
       QColor c = brush->toQColor(vel, on_strength, 255);
