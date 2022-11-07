@@ -23,6 +23,7 @@
 #include "InputEvent.h"
 #include "Settings.h"
 #include "WelcomeDialog.h"
+#include "editor/StyleEditor.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
@@ -503,7 +504,14 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key::Key_R:
       if (event->modifiers() & Qt::ControlModifier && !event->isAutoRepeat()) {
+#ifdef QT_DEBUG
+        if (event->modifiers() & Qt::ShiftModifier)
+          StyleEditor::tryLoadStyle(Settings::StyleName::get());
+        else
+          Settings::RecordMidi::set(!Settings::RecordMidi::get());
+#else
         Settings::RecordMidi::set(!Settings::RecordMidi::get());
+#endif
       } else {
         rKeyStateChanged(true);
       }
