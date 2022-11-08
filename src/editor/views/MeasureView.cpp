@@ -609,7 +609,6 @@ static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event) {
   MouseEditState &state = edit_state.mouse_edit_state;
   QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
-  qDebug() << mouse_pos;
 
   state.current_clock =
       std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
