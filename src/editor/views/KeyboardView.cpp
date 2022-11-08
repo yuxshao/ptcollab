@@ -1040,14 +1040,18 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
             qint32 vel =
                 m_pxtn->evels->get_Value(clock, unit_no, EVENTKIND_VELOCITY);
             s.mouse_edit_state.base_velocity = vel;
-            if (const auto *left_kb_state =
-                    std::get_if<MouseLeftKeyboard>(&mouse_keyboard_state.kind))
+            bool chord_preview;
+            if (const auto *left_kb_state = std::get_if<MouseLeftKeyboard>(
+                    &mouse_keyboard_state.kind)) {
               vel = left_kb_state->start_vel;
+              chord_preview = false;
+            } else
+              chord_preview =
+                  Settings::ChordPreview::get() && !m_client->isPlaying();
 
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
-                m_client->audioState()->bufferSize(),
-                Settings::ChordPreview::get() && !m_client->isPlaying(), this);
+                m_client->audioState()->bufferSize(), chord_preview, this);
           }
         }
       },
