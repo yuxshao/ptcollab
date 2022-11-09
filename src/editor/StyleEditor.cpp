@@ -91,6 +91,8 @@ void loadQPalette(const QString &path, QPalette &palette) {
   setQPaletteColor(palette, QPalette::Text, styleConfig, "Text");
   setQPaletteColor(palette, QPalette::Link, styleConfig, "Link");
   setQPaletteColor(palette, QPalette::Highlight, styleConfig, "Highlight");
+  setQPaletteColor(palette, QPalette::HighlightedText, styleConfig,
+                   "HighlightedText");
   setQPaletteColor(palette, QPalette::Light, styleConfig, "Light");
   setQPaletteColor(palette, QPalette::Dark, styleConfig, "Dark");
   styleConfig.endGroup();
