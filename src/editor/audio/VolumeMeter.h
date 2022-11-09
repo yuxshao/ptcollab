@@ -14,7 +14,7 @@ class RunningMax {
  public:
   RunningMax(uint32_t window);
   void insert(double x);
-  double max() const;
+  double zmax() const;
 };
 
 class VolumeMeter {

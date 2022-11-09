@@ -8,7 +8,6 @@
 #include <QStringList>
 
 #include "views/NoteBrush.h"
-
 namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);

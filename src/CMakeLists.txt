@@ -165,7 +165,7 @@ list(REMOVE_ITEM QT_LIBRARIES
 	LinguistTools
 )
 list(TRANSFORM QT_LIBRARIES PREPEND "Qt${QT_VERSION}::")
-target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES})
+target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES} dwmapi)
 
 target_compile_definitions (${PROJECT_NAME}
 	PRIVATE
