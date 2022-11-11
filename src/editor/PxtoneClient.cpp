@@ -110,13 +110,12 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   m_pxtn_device->open(QIODevice::ReadOnly);
   {
     bool ok;
-    int v = QSettings().value(VOLUME_KEY).toInt(&ok);
+    int v = Settings::value(VOLUME_KEY, QVariant()).toInt(&ok);
     if (ok) setVolume(v);
   }
   {
     bool ok;
-    double v = QSettings()
-                   .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
+    double v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
                    .toDouble(&ok);
     if (ok) setBufferSize(v);
   }

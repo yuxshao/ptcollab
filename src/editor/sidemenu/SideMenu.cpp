@@ -188,26 +188,24 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   {
     bool ok;
     int v;
-    v = QSettings().value(VOLUME_KEY).toInt(&ok);
+    v = Settings::value(VOLUME_KEY, QVariant()).toInt(&ok);
     if (ok) ui->volumeSlider->setValue(v);
   }
   connect(ui->volumeSlider, &QSlider::valueChanged, [this](int v) {
-    QSettings().setValue(VOLUME_KEY, v);
+    Settings::setValue(VOLUME_KEY, v);
     emit volumeChanged(v);
   });
   {
     bool ok;
     double v;
-    v = QSettings()
-            .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
-            .toDouble(&ok);
+    v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH).toDouble(&ok);
     if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;
     double length = ui->bufferLength->text().toDouble(&ok);
     if (ok) {
-      QSettings().setValue(BUFFER_LENGTH_KEY, length);
+      Settings::setValue(BUFFER_LENGTH_KEY, length);
       ui->bufferLength->clearFocus();
       emit bufferLengthChanged(length);
     }

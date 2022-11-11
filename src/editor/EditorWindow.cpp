@@ -259,7 +259,7 @@ EditorWindow::EditorWindow(QWidget *parent)
     if (QMessageBox::question(this, tr("Clear settings"),
                               tr("Are you sure you want to clear your app "
                                  "settings?")))
-      QSettings().clear();
+      Settings::clear();
   });
   connect(ui->actionDecrease_font_size, &QAction::triggered,
           &Settings::TextSize::decrease);
@@ -1050,7 +1050,6 @@ bool EditorWindow::saveToFile(QString filename, bool warnOnError) {
 }
 
 bool EditorWindow::save(bool forceSelectFilename) {
-  QSettings settings;
   QString filename;
   if (m_filename.has_value() && !forceSelectFilename)
     filename = m_filename.value();

@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QSettings>
 
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
   parser.process(*a);
 
   if (parser.isSet(clearSettingsOption)) {
-    QSettings().clear();
+    Settings::clear();
     qWarning("Settings have been cleared.");
     return 0;
   }
@@ -154,8 +153,8 @@ int main(int argc, char *argv[]) {
 
   QString username = parser.value(usernameOption);
   if (parser.value(usernameOption) != "")
-    QSettings().setValue(DISPLAY_NAME_KEY, username);
-  username = QSettings().value(DISPLAY_NAME_KEY).toString();
+    Settings::setValue(DISPLAY_NAME_KEY, username);
+  username = Settings::value(DISPLAY_NAME_KEY, "").toString();
 
   QString logFile = parser.value(logFileOption);
   if (logFile != "") {
