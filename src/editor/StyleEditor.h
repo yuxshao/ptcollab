@@ -1,6 +1,7 @@
 #ifndef STYLEEDITOR_H
 #define STYLEEDITOR_H
 
+
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
@@ -8,10 +9,21 @@
 #include <QStringList>
 
 #include "views/NoteBrush.h"
+#include <QWindow>
+#include <QOperatingSystemVersion>
+#ifdef Q_OS_WINDOWS
+
+#include <Windows.h>
+
+#elif Q_OS_OSX
+  // Soon
+#endif
+
 namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
+bool setWindowBorderColor(QWidget *w);
 std::shared_ptr<NoteBrush const> noteBrush(int i);
 struct Config {
  private:
@@ -58,12 +70,20 @@ struct Config {
     QColor Playhead;
     QColor PlayheadRecording;
     QColor Cursor;
+
+    QColor WindowCaption;
+    QColor WindowText;
+    QColor WindowBorder;
   } color;
 
   struct font {
     QString EditorFont;
     QString MeterFont;
   } font;
+
+  struct other {
+    bool Win10BorderDark; //bool
+  } other;
 
   static Config empty() { return {}; }
 };

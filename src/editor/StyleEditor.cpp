@@ -13,6 +13,7 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 #include <QUrl>
+#include <QtPlatformHeaders/QWindowsWindowFunctions>
 #include <set>
 
 namespace StyleEditor {
@@ -32,6 +33,22 @@ struct InvalidColorError {
   QString settingsKey;
   QString setting;
 };
+
+template <typename T>
+void withSettingsValue(const QSettings &settings, const QString &key,
+                       std::function<void(const T &)> f) {
+  if (settings.contains(key)) {
+    QVariant v = settings.value(key);
+    if (v.isValid())
+
+      f(v.value<T>());
+    else
+      qWarning() << QString(
+                        "Invalid parameter (%1) for "
+                        "setting (%2) in config")
+                        .arg(v.toString(), key);
+  }
+}
 
 void withSettingsColor(const QSettings &settings, const QString &key,
                        std::function<void(const QColor &)> f) {
@@ -73,6 +90,11 @@ void setQPaletteColor(QPalette &palette, QPalette::ColorRole role,
 void setConfigColor(const QSettings &settings, QColor &dst,
                     const QString &key) {
   withSettingsColor(settings, key, [&](const QColor &c) { dst = c; });
+};
+
+template <typename T>
+void setConfigValue(const QSettings &settings, T *dst, const QString &key) {
+  withSettingsValue<T>(settings, key, [&](const T &c) { *dst = c; });
 };
 
 void loadQPalette(const QString &path, QPalette &palette) {
@@ -146,6 +168,12 @@ void loadConfig(const QString &path, Config &c) {
   setConfigColor(styleConfig, c.color.PlayheadRecording,
                  "views/PlayheadRecording");
   setConfigColor(styleConfig, c.color.Cursor, "views/Cursor");
+
+  setConfigColor(styleConfig, c.color.WindowCaption, "platform/WindowCaption");
+  setConfigColor(styleConfig, c.color.WindowText, "platform/WindowText");
+  setConfigColor(styleConfig, c.color.WindowBorder, "platform/WindowBorder");
+  setConfigValue<bool>(styleConfig, &c.other.Win10BorderDark,
+                       "platform/WindowDark");
 
   setConfigFont(styleConfig, c.font.EditorFont, "fonts/Editor");
   setConfigFont(styleConfig, c.font.MeterFont, "fonts/Meter");
@@ -327,4 +355,67 @@ QStringList getStyles() {
   return styles;
 }
 
+bool setWindowBorderColor(QWidget *w) {
+#ifdef Q_OS_WINDOWS
+
+  if (QOperatingSystemVersion::current() >=
+      QOperatingSystemVersion::Windows10) {
+    static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
+    // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-kuser_shared_data#syntax
+    // member "NtMinorVersion" of _KUSER_SHARED_DATA. don't even ask where the
+    // address comes from
+
+    //  https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+    static auto hdwmapi = LoadLibraryW(L"dwmapi.dll");
+    if (hdwmapi) {
+      auto qColorToColorRef = [](const QColor &c) -> COLORREF {
+        return (c.red() | c.green() << 8 | c.blue() << 16);
+      };
+
+      quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
+      typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
+          HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+      static auto DwmSetWindowAttribute =
+          reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
+              GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
+      auto hwnd = (HWND)w->winId();
+      DwmSetWindowAttribute(
+          hwnd,
+          (osBuildNumber >= 18985)
+              ? 20
+              : 19 /*DWMWINDOWATTRIBUTE:DWMWA_USE_IMMERSIVE_DARK_MODE*/,
+          &darkTitleBar, sizeof(uint32_t));
+
+      qDebug() << osBuildNumber;
+      if (osBuildNumber >= 22000) {
+        QColor border = StyleEditor::config.color.WindowBorder;
+        if (border.isValid()) {
+          COLORREF b = qColorToColorRef(border);
+          DwmSetWindowAttribute(hwnd,
+                                34 /*DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR*/,
+                                &b, sizeof(b));
+        }
+
+        QColor caption = StyleEditor::config.color.WindowCaption;
+        if (caption.isValid()) {
+          COLORREF c = qColorToColorRef(caption);
+          DwmSetWindowAttribute(hwnd,
+                                35 /*DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR*/,
+                                &c, sizeof(c));
+        }
+        QColor text = StyleEditor::config.color.WindowText;
+        if (text.isValid()) {
+          COLORREF t = qColorToColorRef(text);
+          DwmSetWindowAttribute(
+              hwnd, 36 /*DWMWINDOWATTRIBUTE::DWMWA_TEXT_COLOR*/, &t, sizeof(t));
+        }
+      }
+    }
+  }
+
+#elif Q_OS_OSX
+  // Soon
+#endif
+  return 1;
+}
 }  // namespace StyleEditor

@@ -18,7 +18,7 @@ void VolumeMeter::insert(int64_t sample) {
   m_peak.insert(current_volume_dbfs());
 }
 
-double VolumeMeter::last_peak_dbfs() const { return m_peak.zmax(); }
+double VolumeMeter::last_peak_dbfs() const { return m_peak.max(); }
 
 double VolumeMeter::current_volume_dbfs() const {
   // https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
@@ -47,7 +47,7 @@ void RunningMax::insert(double x) {
   s2.pop();
 }
 
-double RunningMax::zmax() const { return std::max(stackMax(s1), stackMax(s2)); }
+double RunningMax::max() const { return std::max(stackMax(s1), stackMax(s2)); }
 
 void InterpolatedVolumeMeter::commit() const {
   int samples_to_commit = m_batch_timer.nsecsElapsed() * 44100 / 1e9;

@@ -14,7 +14,8 @@ class RunningMax {
  public:
   RunningMax(uint32_t window);
   void insert(double x);
-  double zmax() const;
+  double max() const;
+  // Renamed due to conflicts with MSVC macro "max()"; same for a few std::max calls. I changed them to qMin/qMax
 };
 
 class VolumeMeter {

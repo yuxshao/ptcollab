@@ -117,6 +117,7 @@ struct LastEvent {
   }
 };
 
+#undef DrawState  // Windows GDI thing
 struct DrawState {
   LastEvent pitch;
   LastEvent velocity;

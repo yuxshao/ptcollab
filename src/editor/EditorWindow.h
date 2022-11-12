@@ -1,9 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <windows.h>
-#include <dwmapi.h>
-
 #include <QFile>
 #include <QLabel>
 #include <QMainWindow>

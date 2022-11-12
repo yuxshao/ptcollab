@@ -81,3 +81,6 @@ qmake/config.tests/*/test
 /bin/
 /build/
 /build32/
+
+# vscode
+.vscode

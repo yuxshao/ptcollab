@@ -33,6 +33,8 @@
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
+
+#undef EVENT_MAX  // winuser.h conflict -- warns without
 #define EVENT_MAX 1000000
 
 static constexpr int AUTOSAVE_CHECK_INTERVAL_MS = 1 * 1000;
@@ -336,6 +338,18 @@ EditorWindow::EditorWindow(QWidget *parent)
     // In a timer so that the main window has time to show up
     QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
   }
+
+  QTimer::singleShot(0, this, [this] {
+    StyleEditor::setWindowBorderColor(this);
+
+    //    for (auto it : qApp->allWidgets()) {
+    //      QObject::connect(it, &QWidget::windowIconTextChanged, this, [it] {
+    //        qDebug() << it->objectName();
+    //        StyleEditor::setWindowBorderColor(reinterpret_cast<QWindow
+    //        *>(it));
+    //      });
+    //    }
+  });
 }
 
 EditorWindow::~EditorWindow() {
@@ -434,18 +448,6 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
           },
           false);
       break;
-    case Qt::Key_G: {
-      COLORREF DARK_COLOR = 0x0080f000;
-      auto h = DwmSetWindowAttribute((HWND)this->window()->internalWinId(),
-                                     DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR,
-                                     &DARK_COLOR, sizeof(DARK_COLOR));
-      if (h != S_OK)
-        QMessageBox::critical(nullptr, "Error",
-                              "0x" + QString::number(h, 16).right(8));
-
-    }
-
-    break;
     /*case Qt::Key_H:
       if (event->modifiers() & Qt::ShiftModifier) {
         m_keyboard_view->toggleTestActivity();
@@ -690,9 +692,10 @@ void EditorWindow::tweakSelectionRange(bool shift_right, bool grow) {
         else if (shift_right && !grow)
           selection.start = quantize(selection.start + q, q);
         else if (!shift_right && grow)
-          selection.start = qMax(0, quantize(selection.start - q, q));
+          selection.start = std::max(0, quantize(selection.start - q, q));
         else if (!shift_right && !grow)
-          selection.end = qMax(selection.start, quantize(selection.end - q, q));
+          selection.end =
+              std::max(selection.start, quantize(selection.end - q, q));
       },
       false);
 }

@@ -70,7 +70,7 @@ set (PTCOLLAB_SOURCES
 	editor/audio/NotePreview.cpp
 	editor/views/MeasureView.cpp
 	editor/views/MooClock.cpp
-    editor/views/NoteBrush.cpp
+        editor/views/NoteBrush.cpp
 	editor/views/ParamView.cpp
 	editor/PxtoneClient.cpp
 	editor/PxtoneController.cpp
@@ -152,7 +152,7 @@ endif()
 
 add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
 	${PTCOLLAB_SOURCES}
-	${PTCOLLAB_FORMS}
+        ${PTCOLLAB_FORMS}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -165,11 +165,12 @@ list(REMOVE_ITEM QT_LIBRARIES
 	LinguistTools
 )
 list(TRANSFORM QT_LIBRARIES PREPEND "Qt${QT_VERSION}::")
-target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES} dwmapi)
+target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES})
 
 target_compile_definitions (${PROJECT_NAME}
 	PRIVATE
 	QT_DEPRECATED_WARNINGS
+        NOMINMAX # Fixes MSVC min()/max() macro conflicts with STL versions
 	PTCOLLAB_VERSION=${PROJECT_VERSION}
 	${DEPENDENCIES_DEFINES}
 )
