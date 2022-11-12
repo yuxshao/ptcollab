@@ -21,6 +21,7 @@ const QString HOSTING_ENABLED_KEY("hosting_enabled");
 
 const QString CONNECT_SERVER_KEY("connect_server");
 
+#undef STRINGIFY
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
