@@ -119,7 +119,6 @@ void loadQPalette(const QString &path, QPalette &palette) {
   setQPaletteColor(palette, QPalette::Dark, styleConfig, "Dark");
   styleConfig.endGroup();
 }
-#include <Windows.h>
 
 void loadConfig(const QString &path, Config &c) {
   QSettings styleConfig(path, QSettings::IniFormat);

@@ -11,10 +11,9 @@
 #include "views/NoteBrush.h"
 #include <QWindow>
 #include <QOperatingSystemVersion>
+
 #ifdef Q_OS_WINDOWS
-
 #include <Windows.h>
-
 #elif Q_OS_OSX
   // Soon
 #endif
