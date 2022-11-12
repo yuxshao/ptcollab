@@ -13,7 +13,6 @@
 #include <QStandardPaths>
 #include <QStyleFactory>
 #include <QUrl>
-#include <QtPlatformHeaders/QWindowsWindowFunctions>
 #include <set>
 
 namespace StyleEditor {
