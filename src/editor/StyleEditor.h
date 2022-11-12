@@ -13,9 +13,10 @@
 #include <QOperatingSystemVersion>
 
 #ifdef Q_OS_WINDOWS
+#define NOMINMAX
 #include <Windows.h>
-#elif Q_OS_OSX
-  // Soon
+//#elif Q_OS_OSX
+// Soon
 #endif
 
 namespace StyleEditor {

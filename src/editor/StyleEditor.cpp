@@ -411,9 +411,8 @@ bool setWindowBorderColor(QWidget *w) {
       }
     }
   }
-
-#elif Q_OS_OSX
-  // Soon
+// #elif Q_OS_OSX
+//  Soon
 #endif
   return 1;
 }
