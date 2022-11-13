@@ -381,10 +381,9 @@ bool setWindowBorderColor(QWidget *w) {
           hwnd,
           (osBuildNumber >= 18985)
               ? 20
-              : 19 /*DWMWINDOWATTRIBUTE:DWMWA_USE_IMMERSIVE_DARK_MODE*/,
+              : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
           &darkTitleBar, sizeof(uint32_t));
 
-      qDebug() << osBuildNumber;
       if (osBuildNumber >= 22000) {
         QColor border = StyleEditor::config.color.WindowBorder;
         if (border.isValid()) {
@@ -401,6 +400,7 @@ bool setWindowBorderColor(QWidget *w) {
                                 35 /*DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR*/,
                                 &c, sizeof(c));
         }
+
         QColor text = StyleEditor::config.color.WindowText;
         if (text.isValid()) {
           COLORREF t = qColorToColorRef(text);
