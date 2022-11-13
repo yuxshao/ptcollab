@@ -176,6 +176,15 @@ const EVERECORD* pxtnEvelist::get_Records() const {
   return _start;
 }
 
+pxtnEvelist::Hint pxtnEvelist::get_StartHint() const {
+  Hint h{};
+  if (!_eves)
+    h.eve = nullptr;
+  else
+    h.eve = _start;
+  return h;
+}
+
 void pxtnEvelist::_rec_set(EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next,
                            int32_t clock, uint8_t unit_no, uint8_t kind,
                            int32_t value) {
@@ -228,11 +237,12 @@ void pxtnEvelist::_rec_cut(EVERECORD* p_rec) {
 bool pxtnEvelist::Record_Add_f(int32_t clock, uint8_t unit_no, uint8_t kind,
                                float value_f) {
   int32_t value = *((int32_t*)(&value_f));
-  return Record_Add_i(clock, unit_no, kind, value);
+  return Record_Add_i(clock, unit_no, kind, value, nullptr);
 }
 
+#include <QDebug>
 bool pxtnEvelist::Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
-                               int32_t value) {
+                               int32_t value, pxtnEvelist::Hint* hint) {
   if (!_eves) return false;
 
   EVERECORD* p_new = NULL;
@@ -255,9 +265,20 @@ bool pxtnEvelist::Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
   else if (clock < _start->clock) {
     p_next = _start;
   } else {
-    for (EVERECORD* p = _start; p; p = p->next) {
+    EVERECORD* p = _start;
+    if (hint && hint->eve) {
+      // try to set up hint to be the first p s.t. p->clock >= clock,
+      // since I may be adding other things with the same clock (or slightly
+      // later clock) after
+      p = hint->eve;
+      while (p->prev && p->prev->clock >= clock) p = p->prev;
+      hint->eve = p;
+    }
+
+    for (; p; p = p->next) {
       if (p->clock == clock)  // 同時
       {
+        if (hint) hint->eve = p;
         for (; true; p = p->next) {
           if (p->clock != clock) {
             p_prev = p->prev;
@@ -282,6 +303,7 @@ bool pxtnEvelist::Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
         }
         break;
       } else if (p->clock > clock) {
+        if (hint) hint->eve = p;
         p_prev = p->prev;
         p_next = p;
         break;
@@ -319,17 +341,31 @@ bool pxtnEvelist::Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
 }
 
 int32_t pxtnEvelist::Record_Delete(int32_t clock1, int32_t clock2,
-                                   uint8_t unit_no, uint8_t kind) {
+                                   uint8_t unit_no, uint8_t kind,
+                                   pxtnEvelist::Hint* hint) {
   if (!_eves) return 0;
 
   int32_t count = 0;
 
-  for (EVERECORD* p = _start; p; p = p->next) {
+  EVERECORD* p = _start;
+  // Try to set up hint to be the last p with p->clock < clock, since I may get
+  // multiple deletions in the same range in a row. Or I may get a list of
+  // deletions going backwards.
+  if (hint && hint->eve) {
+    p = hint->eve;
+    while (p->prev && p->prev->clock >= clock1) p = p->prev;
+    hint->eve = p->prev;
+  }
+
+  for (; p; p = p->next) {
     if (p->clock != clock1 && p->clock >= clock2) break;
-    if (p->clock >= clock1 && p->unit_no == unit_no && p->kind == kind) {
-      _rec_cut(p);
-      count++;
-    }
+    if (p->clock >= clock1) {
+      if (p->unit_no == unit_no && p->kind == kind) {
+        _rec_cut(p);
+        count++;
+      }
+    } else if (hint)
+      hint->eve = p;
   }
 
   if (Evelist_Kind_IsTail(kind)) {
@@ -465,7 +501,8 @@ int32_t pxtnEvelist::BeatClockOperation(int32_t rate) {
 
 int32_t pxtnEvelist::Record_Value_Change(int32_t clock1, int32_t clock2,
                                          uint8_t unit_no, uint8_t kind,
-                                         int32_t value) {
+                                         int32_t value,
+                                         pxtnEvelist::Hint* hint) {
   if (!_eves) return 0;
 
   int32_t count = 0;
@@ -506,7 +543,15 @@ int32_t pxtnEvelist::Record_Value_Change(int32_t clock1, int32_t clock2,
       min = 0;
   }
 
-  for (EVERECORD* p = _start; p; p = p->next) {
+  EVERECORD* p = _start;
+  // hint is set to roughly some time between t1 and t2.
+  if (hint && hint->eve) {
+    p = hint->eve;
+    while (p->prev && p->prev->clock >= clock1) p = p->prev;
+    hint->eve = p;
+  }
+
+  for (; p; p = p->next) {
     if (p->unit_no == unit_no && p->kind == kind && p->clock >= clock1) {
       if (clock2 == -1 || p->clock < clock2) {
         p->value += value;
@@ -516,6 +561,7 @@ int32_t pxtnEvelist::Record_Value_Change(int32_t clock1, int32_t clock2,
       }
     }
   }
+  if (hint) hint->eve = p;
 
   return count;
 }
@@ -601,7 +647,7 @@ int32_t pxtnEvelist::Record_Clock_Shift(int32_t clock, int32_t shift,
         p_next = p->next;
 
         _rec_cut(p);
-        if (c >= 0) Record_Add_i(c, unit_no, k, v);
+        if (c >= 0) Record_Add_i(c, unit_no, k, v, nullptr);
         count++;
 
         p = p_next;
@@ -621,7 +667,7 @@ int32_t pxtnEvelist::Record_Clock_Shift(int32_t clock, int32_t shift,
         p_prev = p->prev;
 
         _rec_cut(p);
-        Record_Add_i(c, unit_no, k, v);
+        Record_Add_i(c, unit_no, k, v, nullptr);
         count++;
 
         p = p_prev;

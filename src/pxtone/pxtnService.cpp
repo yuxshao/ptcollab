@@ -1294,9 +1294,11 @@ bool pxtnService::_x3x_TuningKeyEvent() {
         _woices[u]->get_x3x_basic_key() - EVENTDEFAULT_BASICKEY;
 
     if (!evels->get_Count((uint8_t)u, (uint8_t)EVENTKIND_KEY)) {
-      evels->Record_Add_i(0, (uint8_t)u, EVENTKIND_KEY, (int32_t)0x6000);
+      evels->Record_Add_i(0, (uint8_t)u, EVENTKIND_KEY, (int32_t)0x6000,
+                          nullptr);
     }
-    evels->Record_Value_Change(0, -1, (uint8_t)u, EVENTKIND_KEY, change_value);
+    evels->Record_Value_Change(0, -1, (uint8_t)u, EVENTKIND_KEY, change_value,
+                               nullptr);
   }
   return true;
 }

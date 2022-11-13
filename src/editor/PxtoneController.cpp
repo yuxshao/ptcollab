@@ -233,10 +233,11 @@ bool PxtoneController::applyAddUnit(const AddUnit &a, qint64 uid) {
   m_unit_id_map.add();
   int unit_no = m_pxtn->Unit_Num() - 1;
   auxSetUnitName(m_pxtn->Unit_Get_variable(unit_no), a.unit_name);
-  m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_no);
+  m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOICENO, a.woice_no,
+                              nullptr);
   if (a.starting_volume != EVENTDEFAULT_VOLUME)
-    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOLUME,
-                                a.starting_volume);
+    m_pxtn->evels->Record_Add_i(0, unit_no, EVENTKIND_VOLUME, a.starting_volume,
+                                nullptr);
   emit endAddUnit();
 
   emit edited();
