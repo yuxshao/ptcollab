@@ -5,43 +5,46 @@
 namespace Action {
 
 void perform(const Primitive &a, pxtnService *pxtn, bool *widthChanged,
-             const NoIdMap &unit_id_map, const NoIdMap &woice_id_map) {
+             const NoIdMap &unit_id_map, const NoIdMap &woice_id_map,
+             pxtnEvelist::Hint *hint) {
   // if (a.kind == EVENTKIND_KEY) qDebug() << "Perform" << a;
   auto unit_no_maybe = unit_id_map.idToNo(a.unit_id);
   if (unit_no_maybe == std::nullopt) return;
   qint32 unit_no = unit_no_maybe.value();
-  std::visit(
-      overloaded{
-          [&](const Add &b) {
-            int32_t value = b.value;
-            if (a.kind == EVENTKIND_VOICENO) {
-              std::optional<qint32> voice_no = woice_id_map.idToNo(value);
-              if (!voice_no.has_value()) return;
-              value = voice_no.value();
-            }
-            pxtn->evels->Record_Add_i(a.start_clock, unit_no, a.kind, value);
+  std::visit(overloaded{[&](const Add &b) {
+                          int32_t value = b.value;
+                          if (a.kind == EVENTKIND_VOICENO) {
+                            std::optional<qint32> voice_no =
+                                woice_id_map.idToNo(value);
+                            if (!voice_no.has_value()) return;
+                            value = voice_no.value();
+                          }
+                          pxtn->evels->Record_Add_i(a.start_clock, unit_no,
+                                                    a.kind, value, hint);
 
-            // -1 since end is exclusive
-            int end_clock = a.start_clock;
-            if (Evelist_Kind_IsTail(a.kind)) end_clock += b.value - 1;
+                          // -1 since end is exclusive
+                          int end_clock = a.start_clock;
+                          if (Evelist_Kind_IsTail(a.kind))
+                            end_clock += b.value - 1;
 
-            int clockPerMeas =
-                pxtn->master->get_beat_clock() * pxtn->master->get_beat_num();
-            int end_meas = end_clock / clockPerMeas;
-            if (end_meas >= pxtn->master->get_meas_num()) {
-              if (widthChanged) *widthChanged = true;
-              pxtn->master->set_meas_num(end_meas + 1);
-            }
-          },
-          [&](const Delete &b) {
-            pxtn->evels->Record_Delete(a.start_clock, b.end_clock, unit_no,
-                                       a.kind);
-          },
-          [&](const Shift &b) {
-            pxtn->evels->Record_Value_Change(a.start_clock, b.end_clock,
-                                             unit_no, a.kind, b.offset);
-          }},
-      a.type);
+                          int clockPerMeas = pxtn->master->get_beat_clock() *
+                                             pxtn->master->get_beat_num();
+                          int end_meas = end_clock / clockPerMeas;
+                          if (end_meas >= pxtn->master->get_meas_num()) {
+                            if (widthChanged) *widthChanged = true;
+                            pxtn->master->set_meas_num(end_meas + 1);
+                          }
+                        },
+                        [&](const Delete &b) {
+                          pxtn->evels->Record_Delete(a.start_clock, b.end_clock,
+                                                     unit_no, a.kind, hint);
+                        },
+                        [&](const Shift &b) {
+                          pxtn->evels->Record_Value_Change(
+                              a.start_clock, b.end_clock, unit_no, a.kind,
+                              b.offset, hint);
+                        }},
+             a.type);
 }
 
 std::list<Primitive> get_undo(const Primitive &a, const pxtnService *pxtn,
@@ -120,9 +123,10 @@ std::list<Primitive> apply_and_get_undo(const std::list<Primitive> &actions,
                                         const NoIdMap &unit_id_map,
                                         const NoIdMap &woice_id_map) {
   std::list<Primitive> undo;
+  pxtnEvelist::Hint hint = pxtn->evels->get_StartHint();
   for (const Primitive &a : actions) {
     undo.splice(undo.begin(), get_undo(a, pxtn, unit_id_map, woice_id_map));
-    perform(a, pxtn, widthChanged, unit_id_map, woice_id_map);
+    perform(a, pxtn, widthChanged, unit_id_map, woice_id_map, &hint);
   }
   return undo;
 }
