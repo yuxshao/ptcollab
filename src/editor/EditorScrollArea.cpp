@@ -189,11 +189,10 @@ void EditorScrollArea::ensureWithinMargin(int x, qreal minDistFromLeft,
           .x();
   if (logicalX - minDistFromLeft < horizontalScrollBar()->value()) {
     horizontalScrollBar()->setValue(
-        std::max(0, qint32(logicalX - jumpMaxDistFromLeft)));
+        qMax(0, qint32(logicalX - jumpMaxDistFromLeft)));
   } else if (logicalX - maxDistFromLeft > horizontalScrollBar()->value()) {
-    horizontalScrollBar()->setValue(
-        std::min(qint32(logicalX - jumpMinDistFromLeft),
-                 horizontalScrollBar()->maximum()));
+    horizontalScrollBar()->setValue(qMin(qint32(logicalX - jumpMinDistFromLeft),
+                                         horizontalScrollBar()->maximum()));
   }
 }
 

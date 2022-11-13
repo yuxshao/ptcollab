@@ -35,7 +35,7 @@
 // w/ smart pointers.
 
 #undef EVENT_MAX  // winuser.h conflict -- warns without
-#define EVENT_MAX 1000000
+static constexpr int EVENT_MAX = 1000000;
 
 static constexpr int AUTOSAVE_CHECK_INTERVAL_MS = 1 * 1000;
 static constexpr int AUTOSAVE_WRITE_PERIOD = 30;

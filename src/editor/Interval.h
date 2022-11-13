@@ -19,7 +19,7 @@ struct Interval {
   bool empty() const { return end <= start; }
 };
 inline Interval interval_intersect(const Interval &a, const Interval &b) {
-  return {qMax(a.start, b.start), qMin(a.end, b.end)};
+  return {std::max(a.start, b.start), std::min(a.end, b.end)};
 }
 inline Interval operator/(const Interval &a, const qreal b) {
   return {qint32(a.start / b), qint32(a.end / b)};
