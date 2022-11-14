@@ -23,7 +23,7 @@ namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
-bool setWindowBorderColor(QWidget *w);
+void setWindowBorderColor(QWidget *w);
 std::shared_ptr<NoteBrush const> noteBrush(int i);
 struct Config {
  private:
