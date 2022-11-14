@@ -368,7 +368,7 @@ void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
   emit endRemoveOverdrive();
 }
 
-void PxtoneController::applySetDelay(const Delay::Set &a, qint64 uid) {
+void PxtoneController::applySetDelay(const ZDelay::Set &a, qint64 uid) {
   (void)uid;
   if (a.freq > 1000 || a.freq <= 0.001 || a.rate > 100 || a.rate < 0 ||
       a.group >= m_pxtn->Group_Num() || a.group < 0 || a.unit > DELAYUNIT_max ||

@@ -325,7 +325,7 @@ inline QTextStream &operator<<(QTextStream &out, const Remove &a) {
 
 }  // namespace Overdrive
 
-namespace Delay {
+namespace ZDelay {
 
 struct Set {
   qint32 delay_no;
@@ -483,7 +483,7 @@ using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, MoveUnit,
                  AddWoice, RemoveWoice, ChangeWoice, TempoChange, BeatChange,
                  SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
-                 Overdrive::Set, Overdrive::Remove, Delay::Set, Woice::Set,
+                 Overdrive::Set, Overdrive::Remove, ZDelay::Set, Woice::Set,
                  Ping, PlayState, WatchUser, SetSongText>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;

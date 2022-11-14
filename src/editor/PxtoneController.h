@@ -74,7 +74,7 @@ class PxtoneController : public QObject {
   void applySetOverdrive(const Overdrive::Set &a, qint64 uid);
   void applyAddOverdrive(const Overdrive::Add &a, qint64 uid);
   void applyRemoveOverdrive(const Overdrive::Remove &a, qint64 uid);
-  void applySetDelay(const Delay::Set &a, qint64 uid);
+  void applySetDelay(const ZDelay::Set &a, qint64 uid);
 
  signals:
   void measureNumChanged();

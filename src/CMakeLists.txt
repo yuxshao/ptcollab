@@ -148,12 +148,20 @@ if (APPLE)
 		PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
 	)
 	list (APPEND PTCOLLAB_SOURCES ${MACOSX_ICNS})
+
+        list (APPEND PTCOLLAB_SOURCES editor/StyleEditor.mm) # Title bar customization :)
 endif()
 
 add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
-	${PTCOLLAB_SOURCES}
+        ${PTCOLLAB_SOURCES}
         ${PTCOLLAB_FORMS}
 )
+
+if(APPLE) # ugh
+        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
+        target_link_libraries(${PROJECT_NAME} PUBLIC  "-framework Cocoa")
+        # Necessary Cocoa libraries for title bar customization
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -170,7 +178,6 @@ target_link_libraries (${PROJECT_NAME} PUBLIC ${QT_LIBRARIES})
 target_compile_definitions (${PROJECT_NAME}
 	PRIVATE
 	QT_DEPRECATED_WARNINGS
-        NOMINMAX # Fixes MSVC min()/max() macro conflicts with STL versions
 	PTCOLLAB_VERSION=${PROJECT_VERSION}
 	${DEPENDENCIES_DEFINES}
 )

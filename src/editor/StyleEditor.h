@@ -15,8 +15,8 @@
 #ifdef Q_OS_WINDOWS
 #define NOMINMAX
 #include <Windows.h>
-//#elif Q_OS_OSX
-// Soon
+//#elif Q_OS_MACOS
+//#import <Cocoa/Cocoa.h>
 #endif
 
 namespace StyleEditor {
@@ -91,5 +91,7 @@ struct Config {
 extern const Config &config;
 QStringList getStyles();
 }  // namespace StyleEditor
+
+void setMacOsTitleBar(WId w);
 
 #endif  // STYLEEDITOR_H

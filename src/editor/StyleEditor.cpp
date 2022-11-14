@@ -410,9 +410,9 @@ bool setWindowBorderColor(QWidget *w) {
       }
     }
   }
-// #elif Q_OS_OSX
-//  Soon
 #endif
-  return 1;
+//#elif Q_OS_MACOS
+   setMacOsTitleBar(w->window()->winId());
+  //return 1;
 }
 }  // namespace StyleEditor

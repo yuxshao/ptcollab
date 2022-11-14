@@ -366,7 +366,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const Overdrive::Remove &s) {
                       m_controller->applyRemoveOverdrive(s, uid);
                     },
-                    [this, uid](const Delay::Set &s) {
+                    [this, uid](const ZDelay::Set &s) {
                       m_controller->applySetDelay(s, uid);
                     },
                     [this, uid](const AddWoice &s) {
