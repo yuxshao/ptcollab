@@ -353,7 +353,7 @@ QStringList getStyles() {
   return styles;
 }
 
-bool setWindowBorderColor(QWidget *w) {
+void setWindowBorderColor(QWidget *w) {
 #ifdef Q_OS_WINDOWS
 
   if (QOperatingSystemVersion::current() >=
@@ -413,6 +413,5 @@ bool setWindowBorderColor(QWidget *w) {
 #elif Q_OS_MACOS
   setMacOsTitleBar(w->window()->winId());
 #endif
-  return 1;
 }
 }  // namespace StyleEditor
