@@ -82,7 +82,7 @@ struct Config {
   } font;
 
   struct other {
-    bool Win10BorderDark; //bool
+    bool Win10BorderDark = false; //bool
   } other;
 
   static Config empty() { return {}; }

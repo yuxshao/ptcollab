@@ -370,19 +370,20 @@ void setWindowBorderColor(QWidget *w) {
         return (c.red() | c.green() << 8 | c.blue() << 16);
       };
 
-      quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
       typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
           HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
       static auto DwmSetWindowAttribute =
           reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
               GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
       auto hwnd = (HWND)w->winId();
+
+      quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
       DwmSetWindowAttribute(
           hwnd,
           (osBuildNumber >= 18985)
               ? 20
               : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
-          &darkTitleBar, sizeof(uint32_t));
+          &darkTitleBar, sizeof(quint32));
 
       if (osBuildNumber >= 22000) {
         QColor border = StyleEditor::config.color.WindowBorder;
