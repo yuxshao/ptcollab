@@ -1,8 +1,8 @@
+#ifdef Q_OS_MAC
 #include "StyleEditor.h"
 #import <Cocoa/Cocoa.h>
 
-void setMacOsTitleBar(WId w)
-{
+void setMacOsTitleBar(WId w) {
     QColor caption = StyleEditor::config.color.WindowCaption;
     if(caption.isValid()) {
         auto qColorToNsColor = [] (const QColor &c) -> NSColor * {
@@ -31,3 +31,4 @@ void setMacOsTitleBar(WId w)
         */
     }
 }
+#endif
