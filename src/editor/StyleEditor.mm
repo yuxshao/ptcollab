@@ -1,4 +1,4 @@
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MACOS)
 #include "StyleEditor.h"
 #import <Cocoa/Cocoa.h>
 

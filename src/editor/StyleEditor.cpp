@@ -354,8 +354,7 @@ QStringList getStyles() {
 }
 
 void setWindowBorderColor(QWidget *w) {
-#ifdef Q_OS_WINDOWS
-
+#if defined(Q_OS_WINDOWS)
   if (QOperatingSystemVersion::current() >=
       QOperatingSystemVersion::Windows10) {
     static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
@@ -411,7 +410,7 @@ void setWindowBorderColor(QWidget *w) {
       }
     }
   }
-#elif Q_OS_MACOS
+#elif defined(Q_OS_MACOS)
   setMacOsTitleBar(w->window()->winId());
 #endif
 }

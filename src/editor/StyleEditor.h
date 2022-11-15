@@ -12,10 +12,10 @@
 #include <QWindow>
 #include <QOperatingSystemVersion>
 
-#ifdef Q_OS_WINDOWS
+#if defined(Q_OS_WINDOWS)
 #define NOMINMAX
 #include <Windows.h>
-#elif Q_OS_MACOS
+#elif defined(Q_OS_MACOS)
 void setMacOsTitleBar(WId w);
 #endif
 
