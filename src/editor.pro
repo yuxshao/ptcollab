@@ -27,12 +27,7 @@ win32 {
     LIBS += -L"$$PWD/../deps/lib/$${libdeps_dir}" -L"$$PWD/deps/lib/$${libdeps_dir}"
 }
 
-macx:QMAKE_LFLAGS += "-Wl,-F/Library/Frameworks"
-
-
 macx:LIBS += -L/usr/local/lib
-macx:LIBS += -F/Library/Frameworks/
-macx:LIBS += -framework Cocoa
 
 pkgconfig_required = false
 
@@ -272,6 +267,9 @@ SOURCES += main.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
            network/BroadcastServer.cpp
+
+macx:LIBS += -framework Cocoa
+macx:OBJECTIVE_SOURCES += editor/MacOsStyleEditor.mm
 
 # Rules for deployment.
 isEmpty(PREFIX) {

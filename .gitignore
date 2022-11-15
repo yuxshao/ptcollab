@@ -44,6 +44,8 @@ qmake/config.tests/*/test
 CMakeLists.txt.user
 /.qtc-clangd/
 /.qtc_clangd/
+*.qtc_clangd/
+*.qtc-clangd/
 
 # xemacs temporary files
 *.flc
