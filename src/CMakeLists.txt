@@ -159,9 +159,9 @@ add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
 )
 
 if(APPLE) # ugh
-        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
-        target_link_libraries(${PROJECT_NAME} PUBLIC  "-framework Cocoa")
-        # Necessary Cocoa libraries for title bar customization
+    find_library(COCOA Cocoa REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${COCOA})
+    # Necessary Cocoa libraries for title bar customization
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
