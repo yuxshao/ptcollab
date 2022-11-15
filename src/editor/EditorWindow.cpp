@@ -334,11 +334,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_autosave_timer, &QTimer::timeout, this, &EditorWindow::autoSave);
   checkForOldAutoSaves();
 
-  if (Settings::ShowWelcomeDialog::get()) {
-    // In a timer so that the main window has time to show up
-    QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
-  }
-
   QTimer::singleShot(0, this, [this] {
     StyleEditor::setWindowBorderColor(this);
 
@@ -350,6 +345,11 @@ EditorWindow::EditorWindow(QWidget *parent)
     //      });
     //    }
   });
+
+  if (Settings::ShowWelcomeDialog::get()) {
+    // In a timer so that the main window has time to show up
+    QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
+  }
 }
 
 EditorWindow::~EditorWindow() {
