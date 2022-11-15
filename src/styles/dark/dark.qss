@@ -18,8 +18,7 @@ QScrollBar::down-arrow,
 QScrollBar::up-arrow,
 QScrollBar::left-arrow,
 QScrollBar::right-arrow {
-	font-family: "Fira Sans Regular";
-	font-size: 8pt;
+        font-family: "Fira Sans Regular";
 }
 
 #playBtn {

@@ -149,8 +149,8 @@ if (APPLE)
 	)
 	list (APPEND PTCOLLAB_SOURCES ${MACOSX_ICNS})
 
-        list (APPEND PTCOLLAB_SOURCES editor/MacOsStyleEditor.mm) # Title 
-bar customization :)
+        list (APPEND PTCOLLAB_SOURCES editor/MacOsStyleEditor.mm)
+        # Title bar customization :)
 endif()
 
 add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
