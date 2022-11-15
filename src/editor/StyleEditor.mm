@@ -1,5 +1,3 @@
-#include <QtGlobal>
-#if defined(Q_OS_MACOS)
 #include "StyleEditor.h"
 #import <Cocoa/Cocoa.h>
 
@@ -32,4 +30,3 @@ void setMacOsTitleBar(WId w) {
         */
     }
 }
-#endif
