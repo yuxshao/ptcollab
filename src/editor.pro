@@ -27,8 +27,9 @@ win32 {
     LIBS += -L"$$PWD/../deps/lib/$${libdeps_dir}" -L"$$PWD/deps/lib/$${libdeps_dir}"
 }
 macx:LIBS += -L/usr/local/lib
-macx:QMAKE_LFLAGS += "-Wl,-F/Library/Frameworks"
-macx:LIBS += "-framework Cocoa"
+macx:LIBS += -F/path/to/framework/directory/
+macx:LIBS += -framework Cocoa
+
 pkgconfig_required = false
 
 include("../qmake/findLibrary.pri")
