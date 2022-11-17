@@ -19,7 +19,7 @@
 #endif
 
 #if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
-void setWindowBorderColor(QWidget *w) noexcept;
+void customizeNativeTitleBar(WId *w) noexcept;
 // On Windows, defined in StyleEditor.cpp
 // On macOS, defined in MacOsStyleEditor.mm
 #endif
