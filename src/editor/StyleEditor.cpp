@@ -354,7 +354,7 @@ QStringList getStyles() {
 }
 
 #if defined(Q_OS_WINDOWS)
-void setWindowsTitleBar(WId w) noexcept {
+void customizeNativeTitleBar(WId w) noexcept {
   if (QOperatingSystemVersion::current() >=
       QOperatingSystemVersion::Windows10) {
     static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
@@ -453,16 +453,12 @@ void setWindowsTitleBar(WId w) noexcept {
 }
 #endif
 
-void setWindowBorderColor(QWidget *w) noexcept {
+void setTitleBar(QWidget *w) noexcept {
   if (w->windowHandle() == nullptr)
     return;  // Widget is not top-level, and therefore does not have borders
   if (w->property("HasStyledTitleBar") == true)
     return;  // No need to do this multiple times
-#if defined(Q_OS_WINDOWS)
-  setWindowsTitleBar(w->window()->winId());
-#elif defined(Q_OS_MACOS)
-  setMacOsTitleBar(w->window()->winId());
-#endif
+  customizeNativeTitleBar(w->window()->winId());
   w->setProperty("HasStyledTitleBar", true);
 }
 }  // namespace StyleEditor

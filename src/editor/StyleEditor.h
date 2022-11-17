@@ -1,7 +1,6 @@
 #ifndef STYLEEDITOR_H
 #define STYLEEDITOR_H
 
-
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
@@ -13,18 +12,23 @@
 #include <QOperatingSystemVersion>
 #include <QString>
 #include <QLayout>
+
 #if defined(Q_OS_WINDOWS)
 #define NOMINMAX
 #include <Windows.h>
-#elif defined(Q_OS_MACOS)
-void setMacOsTitleBar(WId w) noexcept;
+#endif
+
+#if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
+void setWindowBorderColor(QWidget *w) noexcept;
+// On Windows, defined in StyleEditor.cpp
+// On macOS, defined in MacOsStyleEditor.mm
 #endif
 
 namespace StyleEditor {
 void initializeStyleDir();
+void setTitleBar(QWidget *w) noexcept;
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
-void setWindowBorderColor(QWidget *w) noexcept;
 std::shared_ptr<NoteBrush const> noteBrush(int i);
 struct Config {
  private:

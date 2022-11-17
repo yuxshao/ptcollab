@@ -1037,7 +1037,7 @@ bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
       // visible.
       if (!event->spontaneous()) {
         QWidget *w = qobject_cast<QWidget *>(watched);
-        if (w) StyleEditor::setWindowBorderColor(w);
+        if (w) StyleEditor::setTitleBar(w);
       }
       return false;
     default:
