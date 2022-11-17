@@ -11,19 +11,20 @@
 #include "views/NoteBrush.h"
 #include <QWindow>
 #include <QOperatingSystemVersion>
-
+#include <QString>
+#include <QLayout>
 #if defined(Q_OS_WINDOWS)
 #define NOMINMAX
 #include <Windows.h>
 #elif defined(Q_OS_MACOS)
-void setMacOsTitleBar(WId w);
+void setMacOsTitleBar(WId w) noexcept;
 #endif
 
 namespace StyleEditor {
 void initializeStyleDir();
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
-void setWindowBorderColor(QWidget *w);
+void setWindowBorderColor(QWidget *w) noexcept;
 std::shared_ptr<NoteBrush const> noteBrush(int i);
 struct Config {
  private:

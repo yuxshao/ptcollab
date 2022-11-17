@@ -334,18 +334,6 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_autosave_timer, &QTimer::timeout, this, &EditorWindow::autoSave);
   checkForOldAutoSaves();
 
-  QTimer::singleShot(0, this, [this] {
-    StyleEditor::setWindowBorderColor(this);
-
-    //    for (auto it : qApp->allWidgets()) {
-    //      QObject::connect(it, &QWidget::windowIconTextChanged, this, [it] {
-    //        qDebug() << it->objectName();
-    //        StyleEditor::setWindowBorderColor(reinterpret_cast<QWindow
-    //        *>(it));
-    //      });
-    //    }
-  });
-
   if (Settings::ShowWelcomeDialog::get()) {
     // In a timer so that the main window has time to show up
     QTimer::singleShot(0, m_welcome_dialog, &QDialog::exec);
@@ -1037,6 +1025,24 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
   m_side_menu->setModified(false);
 
   m_client->connectToLocalServer(m_server, username);
+}
+
+bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
+  switch (event->type()) {
+    case QEvent::Show:
+      // https://doc.qt.io/qt-5/qshowevent.html
+      // Spontaneous QShowEvents are sent by the window system after the window
+      // is shown, as well as when it's reshown after being iconified. We only
+      // want this to trigger when Qt sends it, which is right before it becomes
+      // visible.
+      if (!event->spontaneous()) {
+        QWidget *w = qobject_cast<QWidget *>(watched);
+        if (w) StyleEditor::setWindowBorderColor(w);
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 bool EditorWindow::saveToFile(QString filename, bool warnOnError) {

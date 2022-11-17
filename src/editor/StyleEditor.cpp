@@ -353,8 +353,7 @@ QStringList getStyles() {
   return styles;
 }
 
-void setWindowBorderColor(QWidget *w) {
-#if defined(Q_OS_WINDOWS)
+void setWindowsTitleBar(WId w) noexcept {
   if (QOperatingSystemVersion::current() >=
       QOperatingSystemVersion::Windows10) {
     static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
@@ -362,56 +361,104 @@ void setWindowBorderColor(QWidget *w) {
     // member "NtMinorVersion" of _KUSER_SHARED_DATA. don't even ask where the
     // address comes from
 
-    //  https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
-    static auto hdwmapi = LoadLibraryW(L"dwmapi.dll");
-    if (hdwmapi) {
-      auto qColorToColorRef = [](const QColor &c) -> COLORREF {
-        return (c.red() | c.green() << 8 | c.blue() << 16);
+    auto qColorToColorRef = [](const QColor &c) -> COLORREF {
+      return (c.red() | c.green() << 8 | c.blue() << 16);
+    };
+
+    enum {
+      NoDwm,
+      NoDwmSetWindowAttribute,
+      NoDarkMode,
+      NoBorderColor,
+      NoCaptionColor,
+      NoTextColor
+    };
+
+    static auto error = [](int i) {
+      static QHash<const int, const char *> errorTable = {
+          {NoDwm, "DWM library not found."},
+          {NoDwmSetWindowAttribute, "DwmSetWindowAttribute not found."},
+          {NoDarkMode, "Unable to set immersive dark mode attribute."},
+          {NoBorderColor, "Unable to set window border color attribute."},
+          {NoCaptionColor, "Unable to set window caption color attribute."},
+          {NoTextColor, "Unable to set window text color attribute."},
       };
+      static QVector<int> alreadyErrored;
+      if (!alreadyErrored.contains(i)) {
+        qWarning() << "Error while setting title bar attributes: "
+                   << QObject::tr(errorTable.find(i).value());
+        alreadyErrored.push_back(i);
+      }
+    };
 
-      typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
-          HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
-      static auto DwmSetWindowAttribute =
-          reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
-              GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
-      auto hwnd = (HWND)w->winId();
+    static auto hdwmapi = LoadLibraryW(L"dwmapi.dll");
+    if (!hdwmapi) {
+      error(NoDwm);
+      return;
+    }
 
-      quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
-      DwmSetWindowAttribute(
-          hwnd,
-          (osBuildNumber >= 18985)
-              ? 20
-              : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
-          &darkTitleBar, sizeof(quint32));
+    //  https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+    typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
+        HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+    static auto DwmSetWindowAttribute = reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
+        GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
+    if (!DwmSetWindowAttribute) {
+      error(NoDwmSetWindowAttribute);
+      return;
+    }
 
-      if (osBuildNumber >= 22000) {
-        QColor border = StyleEditor::config.color.WindowBorder;
-        if (border.isValid()) {
-          COLORREF b = qColorToColorRef(border);
-          DwmSetWindowAttribute(hwnd,
-                                34 /*DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR*/,
-                                &b, sizeof(b));
-        }
+    auto hwnd = (HWND)w;
 
-        QColor caption = StyleEditor::config.color.WindowCaption;
-        if (caption.isValid()) {
-          COLORREF c = qColorToColorRef(caption);
-          DwmSetWindowAttribute(hwnd,
-                                35 /*DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR*/,
-                                &c, sizeof(c));
-        }
+    quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
+    if (FAILED(DwmSetWindowAttribute(
+            hwnd,
+            (osBuildNumber >= 18985)
+                ? 20
+                : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
+            &darkTitleBar, sizeof(quint32))))
+      error(NoDarkMode);
 
-        QColor text = StyleEditor::config.color.WindowText;
-        if (text.isValid()) {
-          COLORREF t = qColorToColorRef(text);
-          DwmSetWindowAttribute(
-              hwnd, 36 /*DWMWINDOWATTRIBUTE::DWMWA_TEXT_COLOR*/, &t, sizeof(t));
-        }
+    if (osBuildNumber >= 22000) {
+      QColor border = StyleEditor::config.color.WindowBorder;
+      if (border.isValid()) {
+        COLORREF b = qColorToColorRef(border);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 34 /*DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR*/, &b,
+                sizeof(b))))
+          error(NoBorderColor);
+      }
+
+      QColor caption = StyleEditor::config.color.WindowCaption;
+      if (caption.isValid()) {
+        COLORREF c = qColorToColorRef(caption);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 35 /*DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR*/, &c,
+                sizeof(c))))
+          error(NoCaptionColor);
+      }
+
+      QColor text = StyleEditor::config.color.WindowText;
+      if (text.isValid()) {
+        COLORREF t = qColorToColorRef(text);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 36 /*DWMWINDOWATTRIBUTE::DWMWA_TEXT_COLOR*/, &t,
+                sizeof(t))))
+          error(NoTextColor);
       }
     }
   }
+}
+
+void setWindowBorderColor(QWidget *w) noexcept {
+  if (w->windowHandle() == nullptr)
+    return;  // Widget is not top-level, and therefore does not have borders
+  if (w->property("HasStyledTitleBar") == true)
+    return;  // No need to do this multiple times
+#if defined(Q_OS_WINDOWS)
+  setWindowsTitleBar(w->window()->winId());
 #elif defined(Q_OS_MACOS)
   setMacOsTitleBar(w->window()->winId());
 #endif
+  w->setProperty("HasStyledTitleBar", true);
 }
 }  // namespace StyleEditor

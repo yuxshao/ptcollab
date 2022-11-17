@@ -181,6 +181,7 @@ int main(int argc, char *argv[]) {
         qWarning() << "No styles were loaded. Falling back on system style.";
     }
     EditorWindow w;
+    a->installEventFilter(&w);
     w.show();
     if (startServerImmediately)
       w.hostDirectly(filename, host, port, recording_file, username);

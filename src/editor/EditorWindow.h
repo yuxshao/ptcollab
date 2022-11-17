@@ -27,13 +27,13 @@
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 #include "views/MeasureView.h"
+#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;
 }
 QT_END_NAMESPACE
-
 enum struct HostSetting { LoadFile, NewFile, SkipFile };
 
 class EditorWindow : public QMainWindow {
@@ -55,6 +55,7 @@ class EditorWindow : public QMainWindow {
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
+  bool eventFilter(QObject *watched, QEvent *event) override;
   KeyboardView* m_keyboard_view;
   MeasureView* m_measure_view;
   pxtnService m_pxtn;
