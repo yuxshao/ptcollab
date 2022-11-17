@@ -353,6 +353,7 @@ QStringList getStyles() {
   return styles;
 }
 
+#if defined(Q_OS_WINDOWS)
 void setWindowsTitleBar(WId w) noexcept {
   if (QOperatingSystemVersion::current() >=
       QOperatingSystemVersion::Windows10) {
@@ -407,7 +408,7 @@ void setWindowsTitleBar(WId w) noexcept {
       return;
     }
 
-    auto hwnd = (HWND)w;
+    auto hwnd = reinterpret_cast<HWND>(w);
 
     quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
     if (FAILED(DwmSetWindowAttribute(
@@ -448,6 +449,7 @@ void setWindowsTitleBar(WId w) noexcept {
     }
   }
 }
+#endif
 
 void setWindowBorderColor(QWidget *w) noexcept {
   if (w->windowHandle() == nullptr)
