@@ -458,7 +458,12 @@ void setTitleBar(QWidget *w) noexcept {
     return;  // Widget is not top-level, and therefore does not have borders
   if (w->property("HasStyledTitleBar") == true)
     return;  // No need to do this multiple times
+#if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
   customizeNativeTitleBar(w->window()->winId());
+#else
+  qWarning() << QObject::tr(
+      "Title bar customization is not supported on this platform.");
+#endif
   w->setProperty("HasStyledTitleBar", true);
 }
 }  // namespace StyleEditor
