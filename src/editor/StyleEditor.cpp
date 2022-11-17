@@ -400,7 +400,9 @@ void setWindowsTitleBar(WId w) noexcept {
 
     //  https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
     typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
-        HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+        HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute,
+        DWORD cbAttribute);  // typedef is required here thanks to WINAPI
+                             // keyword (__stdcall) >:|
     static auto DwmSetWindowAttribute = reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
         GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
     if (!DwmSetWindowAttribute) {
