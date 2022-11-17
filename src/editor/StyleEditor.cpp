@@ -359,8 +359,8 @@ void customizeNativeTitleBar(WId w) noexcept {
       QOperatingSystemVersion::Windows10) {
     static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
     // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-kuser_shared_data#syntax
-    // member "NtMinorVersion" of _KUSER_SHARED_DATA. don't even ask where the
-    // address comes from
+    // Member "NtMinorVersion" of _KUSER_SHARED_DATA. Address is reserved by the
+    // OS
 
     auto qColorToColorRef = [](const QColor &c) -> COLORREF {
       return (c.red() | c.green() << 8 | c.blue() << 16);
@@ -415,13 +415,17 @@ void customizeNativeTitleBar(WId w) noexcept {
     quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
     if (FAILED(DwmSetWindowAttribute(
             hwnd,
-            (osBuildNumber >= 18985)
+            (osBuildNumber >=
+             18985) /* 18985 is a build of Windows 10 that presumably
+                       displaced the attribute in the enum*/
                 ? 20
                 : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
             &darkTitleBar, sizeof(quint32))))
       error(NoDarkMode);
 
     if (osBuildNumber >= 22000) {
+      // 22000 is the first build of Windows 11
+
       QColor border = StyleEditor::config.color.WindowBorder;
       if (border.isValid()) {
         COLORREF b = qColorToColorRef(border);

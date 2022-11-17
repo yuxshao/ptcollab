@@ -281,7 +281,7 @@ inline QTextStream &operator<<(QTextStream &out, const SetLastMeas &a) {
   return out;
 }
 
-namespace Overdrive {
+namespace OverdriveEffect {
 struct Set {
   qint32 ovdrv_no;
   qreal cut;
@@ -482,8 +482,8 @@ inline QTextStream &operator<<(QTextStream &out, const SetSongText &a) {
 using ClientAction =
     std::variant<EditAction, EditState, UndoRedo, AddUnit, RemoveUnit, MoveUnit,
                  AddWoice, RemoveWoice, ChangeWoice, TempoChange, BeatChange,
-                 SetRepeatMeas, SetLastMeas, SetUnitName, Overdrive::Add,
-                 Overdrive::Set, Overdrive::Remove, DelayEffect::Set, Woice::Set,
+                 SetRepeatMeas, SetLastMeas, SetUnitName, OverdriveEffect::Add,
+                 OverdriveEffect::Set, OverdriveEffect::Remove, DelayEffect::Set, Woice::Set,
                  Ping, PlayState, WatchUser, SetSongText>;
 inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   bool ret;

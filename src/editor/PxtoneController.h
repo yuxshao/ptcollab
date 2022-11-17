@@ -71,9 +71,9 @@ class PxtoneController : public QObject {
   void applySetRepeatMeas(const SetRepeatMeas &a, qint64 uid);
   void applySetLastMeas(const SetLastMeas &a, qint64 uid);
   void applySetUnitName(const SetUnitName &a, qint64 uid);
-  void applySetOverdrive(const Overdrive::Set &a, qint64 uid);
-  void applyAddOverdrive(const Overdrive::Add &a, qint64 uid);
-  void applyRemoveOverdrive(const Overdrive::Remove &a, qint64 uid);
+  void applySetOverdrive(const OverdriveEffect::Set &a, qint64 uid);
+  void applyAddOverdrive(const OverdriveEffect::Add &a, qint64 uid);
+  void applyRemoveOverdrive(const OverdriveEffect::Remove &a, qint64 uid);
   void applySetDelay(const DelayEffect::Set &a, qint64 uid);
 
  signals:
