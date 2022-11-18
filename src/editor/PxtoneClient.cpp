@@ -356,16 +356,16 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const SetLastMeas &s) {
                       m_controller->applySetLastMeas(s, uid);
                     },
-                    [this, uid](const Overdrive::Add &s) {
+                    [this, uid](const OverdriveEffect::Add &s) {
                       m_controller->applyAddOverdrive(s, uid);
                     },
-                    [this, uid](const Overdrive::Set &s) {
+                    [this, uid](const OverdriveEffect::Set &s) {
                       m_controller->applySetOverdrive(s, uid);
                     },
-                    [this, uid](const Overdrive::Remove &s) {
+                    [this, uid](const OverdriveEffect::Remove &s) {
                       m_controller->applyRemoveOverdrive(s, uid);
                     },
-                    [this, uid](const Delay::Set &s) {
+                    [this, uid](const DelayEffect::Set &s) {
                       m_controller->applySetDelay(s, uid);
                     },
                     [this, uid](const AddWoice &s) {

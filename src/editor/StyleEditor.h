@@ -8,9 +8,25 @@
 #include <QStringList>
 
 #include "views/NoteBrush.h"
+#include <QWindow>
+#include <QOperatingSystemVersion>
+#include <QString>
+#include <QLayout>
+
+#if defined(Q_OS_WINDOWS)
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
+#if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
+void customizeNativeTitleBar(WId w) noexcept;
+// On Windows, defined in StyleEditor.cpp
+// On macOS, defined in MacOsStyleEditor.mm
+#endif
 
 namespace StyleEditor {
 void initializeStyleDir();
+void setTitleBar(QWidget *w) noexcept;
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
 std::shared_ptr<NoteBrush const> noteBrush(int i);
@@ -59,12 +75,20 @@ struct Config {
     QColor Playhead;
     QColor PlayheadRecording;
     QColor Cursor;
+
+    QColor WindowCaption;
+    QColor WindowText;
+    QColor WindowBorder;
   } color;
 
   struct font {
     QString EditorFont;
     QString MeterFont;
   } font;
+
+  struct other {
+    bool Win10BorderDark = false; //bool
+  } other;
 
   static Config empty() { return {}; }
 };

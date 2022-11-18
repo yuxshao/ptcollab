@@ -33,6 +33,22 @@ struct InvalidColorError {
   QString setting;
 };
 
+template <typename T>
+void withSettingsValue(const QSettings &settings, const QString &key,
+                       std::function<void(const T &)> f) {
+  if (settings.contains(key)) {
+    QVariant v = settings.value(key);
+    if (v.isValid())
+
+      f(v.value<T>());
+    else
+      qWarning() << QString(
+                        "Invalid parameter (%1) for "
+                        "setting (%2) in config")
+                        .arg(v.toString(), key);
+  }
+}
+
 void withSettingsColor(const QSettings &settings, const QString &key,
                        std::function<void(const QColor &)> f) {
   if (settings.contains(key)) {
@@ -73,6 +89,11 @@ void setQPaletteColor(QPalette &palette, QPalette::ColorRole role,
 void setConfigColor(const QSettings &settings, QColor &dst,
                     const QString &key) {
   withSettingsColor(settings, key, [&](const QColor &c) { dst = c; });
+};
+
+template <typename T>
+void setConfigValue(const QSettings &settings, T *dst, const QString &key) {
+  withSettingsValue<T>(settings, key, [&](const T &c) { *dst = c; });
 };
 
 void loadQPalette(const QString &path, QPalette &palette) {
@@ -145,6 +166,12 @@ void loadConfig(const QString &path, Config &c) {
   setConfigColor(styleConfig, c.color.PlayheadRecording,
                  "views/PlayheadRecording");
   setConfigColor(styleConfig, c.color.Cursor, "views/Cursor");
+
+  setConfigColor(styleConfig, c.color.WindowCaption, "platform/WindowCaption");
+  setConfigColor(styleConfig, c.color.WindowText, "platform/WindowText");
+  setConfigColor(styleConfig, c.color.WindowBorder, "platform/WindowBorder");
+  setConfigValue<bool>(styleConfig, &c.other.Win10BorderDark,
+                       "platform/WindowDark");
 
   setConfigFont(styleConfig, c.font.EditorFont, "fonts/Editor");
   setConfigFont(styleConfig, c.font.MeterFont, "fonts/Meter");
@@ -326,4 +353,121 @@ QStringList getStyles() {
   return styles;
 }
 
+#if defined(Q_OS_WINDOWS)
+void customizeNativeTitleBar(WId w) noexcept {
+  if (QOperatingSystemVersion::current() >=
+      QOperatingSystemVersion::Windows10) {
+    static ULONG osBuildNumber = *reinterpret_cast<DWORD *>(0x7FFE0000 + 0x260);
+    // https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-kuser_shared_data#syntax
+    // Member "NtMinorVersion" of _KUSER_SHARED_DATA. Address is reserved by the
+    // OS
+
+    auto qColorToColorRef = [](const QColor &c) -> COLORREF {
+      return (c.red() | c.green() << 8 | c.blue() << 16);
+    };
+
+    enum {
+      NoDwm,
+      NoDwmSetWindowAttribute,
+      NoDarkMode,
+      NoBorderColor,
+      NoCaptionColor,
+      NoTextColor
+    };
+
+    static auto error = [](int i) {
+      static QHash<const int, const char *> errorTable = {
+          {NoDwm, "DWM library not found."},
+          {NoDwmSetWindowAttribute, "DwmSetWindowAttribute not found."},
+          {NoDarkMode, "Unable to set immersive dark mode attribute."},
+          {NoBorderColor, "Unable to set window border color attribute."},
+          {NoCaptionColor, "Unable to set window caption color attribute."},
+          {NoTextColor, "Unable to set window text color attribute."},
+      };
+      static QVector<int> alreadyErrored;
+      if (!alreadyErrored.contains(i)) {
+        qWarning() << "Error while setting title bar attributes: "
+                   << QObject::tr(errorTable.find(i).value());
+        alreadyErrored.push_back(i);
+      }
+    };
+
+    static auto hdwmapi = LoadLibraryW(L"dwmapi.dll");
+    if (!hdwmapi) {
+      error(NoDwm);
+      return;
+    }
+
+    //  https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+    typedef int(WINAPI * DWMSETWINDOWATTRIBUTE)(
+        HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute,
+        DWORD cbAttribute);  // typedef is required here thanks to WINAPI
+                             // keyword (__stdcall) >:|
+    static auto DwmSetWindowAttribute = reinterpret_cast<DWMSETWINDOWATTRIBUTE>(
+        GetProcAddress(hdwmapi, "DwmSetWindowAttribute"));
+    if (!DwmSetWindowAttribute) {
+      error(NoDwmSetWindowAttribute);
+      return;
+    }
+
+    auto hwnd = reinterpret_cast<HWND>(w);
+
+    quint32 darkTitleBar = StyleEditor::config.other.Win10BorderDark;
+    if (FAILED(DwmSetWindowAttribute(
+            hwnd,
+            (osBuildNumber >=
+             18985) /* 18985 is a build of Windows 10 that presumably
+                       displaced the attribute in the enum*/
+                ? 20
+                : 19 /*DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE*/,
+            &darkTitleBar, sizeof(quint32))))
+      error(NoDarkMode);
+
+    if (osBuildNumber >= 22000) {
+      // 22000 is the first build of Windows 11
+
+      QColor border = StyleEditor::config.color.WindowBorder;
+      if (border.isValid()) {
+        COLORREF b = qColorToColorRef(border);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 34 /*DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR*/, &b,
+                sizeof(b))))
+          error(NoBorderColor);
+      }
+
+      QColor caption = StyleEditor::config.color.WindowCaption;
+      if (caption.isValid()) {
+        COLORREF c = qColorToColorRef(caption);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 35 /*DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR*/, &c,
+                sizeof(c))))
+          error(NoCaptionColor);
+      }
+
+      QColor text = StyleEditor::config.color.WindowText;
+      if (text.isValid()) {
+        COLORREF t = qColorToColorRef(text);
+        if (FAILED(DwmSetWindowAttribute(
+                hwnd, 36 /*DWMWINDOWATTRIBUTE::DWMWA_TEXT_COLOR*/, &t,
+                sizeof(t))))
+          error(NoTextColor);
+      }
+    }
+  }
+}
+#endif
+
+void setTitleBar(QWidget *w) noexcept {
+  if (w->windowHandle() == nullptr)
+    return;  // Widget is not top-level, and therefore does not have borders
+  if (w->property("HasStyledTitleBar") == true)
+    return;  // No need to do this multiple times
+#if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
+  customizeNativeTitleBar(w->window()->winId());
+#else
+  qWarning() << QObject::tr(
+      "Title bar customization is not supported on this platform.");
+#endif
+  w->setProperty("HasStyledTitleBar", true);
+}
 }  // namespace StyleEditor

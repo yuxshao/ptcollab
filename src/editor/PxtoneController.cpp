@@ -339,7 +339,7 @@ void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   emit edited();
 }
 
-void PxtoneController::applyAddOverdrive(const Overdrive::Add &, qint64 uid) {
+void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &, qint64 uid) {
   (void)uid;
   if (m_pxtn->OverDrive_Num() >= m_pxtn->OverDrive_Max()) return;
   emit beginAddOverdrive();
@@ -347,7 +347,7 @@ void PxtoneController::applyAddOverdrive(const Overdrive::Add &, qint64 uid) {
   emit endAddOverdrive();
 }
 
-void PxtoneController::applySetOverdrive(const Overdrive::Set &a, qint64 uid) {
+void PxtoneController::applySetOverdrive(const OverdriveEffect::Set &a, qint64 uid) {
   (void)uid;
 
   // cut and amp are checked in OverDrive_Set so not checked here
@@ -359,7 +359,7 @@ void PxtoneController::applySetOverdrive(const Overdrive::Set &a, qint64 uid) {
   emit edited();
 }
 
-void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
+void PxtoneController::applyRemoveOverdrive(const OverdriveEffect::Remove &a,
                                             qint64 uid) {
   (void)uid;
   if (m_pxtn->OverDrive_Num() <= a.ovdrv_no) return;
@@ -368,7 +368,7 @@ void PxtoneController::applyRemoveOverdrive(const Overdrive::Remove &a,
   emit endRemoveOverdrive();
 }
 
-void PxtoneController::applySetDelay(const Delay::Set &a, qint64 uid) {
+void PxtoneController::applySetDelay(const DelayEffect::Set &a, qint64 uid) {
   (void)uid;
   if (a.freq > 1000 || a.freq <= 0.001 || a.rate > 100 || a.rate < 0 ||
       a.group >= m_pxtn->Group_Num() || a.group < 0 || a.unit > DELAYUNIT_max ||

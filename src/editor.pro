@@ -26,6 +26,7 @@ win32 {
     }
     LIBS += -L"$$PWD/../deps/lib/$${libdeps_dir}" -L"$$PWD/deps/lib/$${libdeps_dir}"
 }
+
 macx:LIBS += -L/usr/local/lib
 
 pkgconfig_required = false
@@ -266,6 +267,9 @@ SOURCES += main.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
            network/BroadcastServer.cpp
+
+macx:LIBS += -framework Cocoa
+macx:OBJECTIVE_SOURCES += editor/MacOsStyleEditor.mm
 
 # Rules for deployment.
 isEmpty(PREFIX) {
