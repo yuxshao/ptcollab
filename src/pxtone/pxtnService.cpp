@@ -214,7 +214,7 @@ bool pxtnService::AdjustMeasNum() {
 
 int32_t pxtnService::Group_Num() const { return _b_init ? _group_num : 0; }
 
-pxtnERR pxtnService::tones_ready(mooState &moo_state) {
+pxtnERR pxtnService::tones_ready(mooState &moo_state) const {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;

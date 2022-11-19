@@ -340,7 +340,8 @@ void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   emit edited();
 }
 
-void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &, qint64 uid) {
+void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &,
+                                         qint64 uid) {
   (void)uid;
   if (m_pxtn->OverDrive_Num() >= m_pxtn->OverDrive_Max()) return;
   emit beginAddOverdrive();
@@ -348,7 +349,8 @@ void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &, qint64 ui
   emit endAddOverdrive();
 }
 
-void PxtoneController::applySetOverdrive(const OverdriveEffect::Set &a, qint64 uid) {
+void PxtoneController::applySetOverdrive(const OverdriveEffect::Set &a,
+                                         qint64 uid) {
   (void)uid;
 
   // cut and amp are checked in OverDrive_Set so not checked here
