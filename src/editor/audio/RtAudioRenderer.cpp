@@ -16,9 +16,10 @@ int rtAudioMoo(void *outputBuffer, void * /*inputBuffer*/,
     return 1;
 
   int size = nBufferFrames * byte_per_smp * num_channels;
-  qDebug() << size;
-  renderer->m_pxtn->Moo(renderer->m_moo_state, outputBuffer, size, nullptr,
-                        nullptr);
+  if (!renderer->m_pxtn->Moo(renderer->m_moo_state, outputBuffer, size, nullptr,
+                             nullptr))
+    return 1;
+
   return 0;
 }
 
@@ -31,8 +32,13 @@ RtAudioRenderer::RtAudioRenderer(const pxtnService *pxtn)
   parameters.deviceId = m_dac.getDefaultOutputDevice();
   parameters.nChannels = 2;
   parameters.firstChannel = 0;
-  if (m_pxtn->tones_ready(m_moo_state) != pxtnOK) {
-    throw std::runtime_error("tones ready failed");
+
+  pxtnVOMITPREPARATION prep{};
+  prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
+  prep.start_pos_sample = 0;
+  prep.master_volume = 1;  // need to be able to dynamically change moo state
+  if (!m_pxtn->moo_preparation(&prep, m_moo_state)) {
+    throw std::runtime_error("moo prep failed");
   }
 
   int sampleRate = 44100;

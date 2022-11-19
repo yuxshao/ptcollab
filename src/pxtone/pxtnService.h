@@ -208,7 +208,7 @@ class pxtnService {
 
   int32_t get_last_error_id() const;
 
-  pxtnERR tones_ready(mooState &moo_state) const;
+  pxtnERR tones_ready();
 
   int32_t Group_Num() const;
 

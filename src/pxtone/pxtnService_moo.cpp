@@ -26,6 +26,7 @@ void mooState::resetGroups(int32_t group_num) {
 
 bool mooState::resetUnits(size_t unit_num,
                           std::shared_ptr<const pxtnWoice> woice) {
+  // Might get called in audio thread?
   units.clear();
   units.reserve(unit_num);
   for (size_t i = 0; i < unit_num; ++i)
@@ -460,6 +461,13 @@ bool pxtnService::moo_preparation(const pxtnVOMITPREPARATION* p_prep,
   moo_state.p_eve = nullptr;
   moo_state.num_loop = 0;
 
+  moo_state.delays.clear();
+
+  int32_t beat_num = master->get_beat_num();
+  float beat_tempo = master->get_beat_tempo();
+  for (size_t i = 0; i < _delays.size(); i++)
+    moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
+
   _moo_InitUnitTone(moo_state);
 
   b_ret = true;
@@ -517,7 +525,6 @@ bool pxtnService::Moo(
       }
       for (int ch = 0; ch < _dst_ch_num; ch++, p16++) {
         if (volume_meters) (*volume_meters)[ch].insert(sample[ch]);
-        qDebug() << sample[ch];
         *p16 = sample[ch];
       }
     }

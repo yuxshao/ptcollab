@@ -435,7 +435,7 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   }
   m_unit_id_map = NoIdMap(m_pxtn->Unit_Num());
   m_woice_id_map = NoIdMap(m_pxtn->Woice_Num());
-  if (m_pxtn->tones_ready(*m_moo_state) != pxtnOK) {
+  if (m_pxtn->tones_ready() != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;
   }
@@ -691,7 +691,7 @@ bool PxtoneController::render_exn(
 
   mooState moo_state;
   pxtnERR err;
-  err = m_pxtn->tones_ready(moo_state);
+  err = m_pxtn->tones_ready();
   if (err != pxtnOK)
     throw QString("Error getting tones ready: error code %1").arg(err);
 
