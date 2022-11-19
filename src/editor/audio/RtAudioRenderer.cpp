@@ -10,12 +10,10 @@ int rtAudioMoo(void *outputBuffer, void * /*inputBuffer*/,
   RtAudioRenderer *renderer = (RtAudioRenderer *)userData;
   if (status) qWarning() << "Stream underflow detected!";
 
-  int byte_per_smp, num_channels;
+  int byte_per_smp;
   if (!renderer->m_pxtn->get_byte_per_smp(&byte_per_smp)) return 1;
-  if (!renderer->m_pxtn->get_destination_quality(&num_channels, nullptr))
-    return 1;
 
-  int size = nBufferFrames * byte_per_smp * num_channels;
+  int size = nBufferFrames * byte_per_smp;
   if (!renderer->m_pxtn->Moo(renderer->m_moo_state, outputBuffer, size, nullptr,
                              nullptr))
     return 1;
