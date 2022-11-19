@@ -517,6 +517,7 @@ bool pxtnService::Moo(
       }
       for (int ch = 0; ch < _dst_ch_num; ch++, p16++) {
         if (volume_meters) (*volume_meters)[ch].insert(sample[ch]);
+        qDebug() << sample[ch];
         *p16 = sample[ch];
       }
     }

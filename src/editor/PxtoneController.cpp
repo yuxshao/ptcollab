@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QTextCodec>
 
+#include "audio/RtAudioRenderer.h"
+
 const QTextCodec *shift_jis_codec = QTextCodec::codecForName("Shift-JIS");
 
 PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
@@ -447,6 +449,9 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit measureNumChanged();
   emit tempoBeatChanged();
   emit newSong();
+
+  new RtAudioRenderer(m_pxtn);
+
   return true;
 }
 
