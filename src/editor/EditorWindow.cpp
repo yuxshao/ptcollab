@@ -111,7 +111,7 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_key_splitter = new QSplitter(Qt::Vertical, m_splitter);
   m_scroll_area = new EditorScrollArea(m_key_splitter, true);
-  m_keyboard_view = new KeyboardView(m_client, m_moo_clock, m_scroll_area);
+  m_keyboard_view = new KeyboardView(m_client, m_scroll_area);
   m_scroll_area->setWidget(m_keyboard_view);
 
   // TODO: find a better place for this.
@@ -185,14 +185,12 @@ EditorWindow::EditorWindow(QWidget *parent)
 
   m_param_scroll_area = new EditorScrollArea(m_key_splitter, false);
   m_param_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_param_scroll_area->setWidget(
-      new ParamView(m_client, m_moo_clock, m_param_scroll_area));
+  m_param_scroll_area->setWidget(new ParamView(m_client, m_param_scroll_area));
 
   m_measure_scroll_area = new EditorScrollArea(m_splitter, false);
   m_measure_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_measure_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  m_measure_view =
-      new MeasureView(m_client, m_moo_clock, m_measure_scroll_area);
+  m_measure_view = new MeasureView(m_client, m_measure_scroll_area);
   m_measure_scroll_area->setWidget(m_measure_view);
   m_measure_scroll_area->setSizePolicy(
       QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));

@@ -4,6 +4,13 @@
 
 #include <QDebug>
 
+int MooTiming::now_no_wrap(const pxtnMaster *master) {
+  return MasterExtended::unwrapClock(master, now_clock, num_loops);
+}
+
+const unsigned int BUFFER_FRAMES =
+    256;  // At higher buffers, this does stuttter. So you will need a
+          // MooClock-like thing anyway.
 int rtAudioMoo(void *outputBuffer, void * /*inputBuffer*/,
                unsigned int nBufferFrames, double /*streamTime*/,
                RtAudioStreamStatus status, void *userData) {
@@ -17,6 +24,8 @@ int rtAudioMoo(void *outputBuffer, void * /*inputBuffer*/,
   if (!renderer->m_pxtn->Moo(renderer->m_moo_state, outputBuffer, size, nullptr,
                              nullptr))
     return 1;
+  renderer->m_moo_timing.store(
+      {renderer->m_moo_state.get_now_clock(), renderer->m_moo_state.num_loop});
 
   return 0;
 }
@@ -26,6 +35,7 @@ RtAudioRenderer::RtAudioRenderer(const pxtnService *pxtn)
   if (m_dac.getDeviceCount() < 1)
     throw std::runtime_error("No audio devices found");
 
+  qDebug() << "lock free" << m_moo_timing.is_lock_free();
   RtAudio::StreamParameters parameters;
   parameters.deviceId = m_dac.getDefaultOutputDevice();
   parameters.nChannels = 2;
@@ -40,12 +50,14 @@ RtAudioRenderer::RtAudioRenderer(const pxtnService *pxtn)
   }
 
   int sampleRate = 44100;
-  unsigned int bufferFrames = 256;  // 256 sample frames
+  unsigned int bufferFrames = BUFFER_FRAMES;
   m_dac.openStream(&parameters, NULL, RTAUDIO_SINT16, sampleRate, &bufferFrames,
                    &rtAudioMoo, this);
   m_dac.startStream();
-  qDebug() << "started stream";
+  qDebug() << "started stream" << bufferFrames;
 }
+
+MooTiming RtAudioRenderer::moo_timing() const { return m_moo_timing.load(); }
 
 RtAudioRenderer::~RtAudioRenderer() {
   try {

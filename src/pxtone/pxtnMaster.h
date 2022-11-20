@@ -58,6 +58,7 @@ class pxtnMaster {
 
 namespace MasterExtended {
 int wrapClock(const pxtnMaster *master, int clock);
+int unwrapClock(const pxtnMaster *master, int clock, int num_loops);
 int last_clock(const pxtnMaster *master);
 int repeat_clock(const pxtnMaster *master);
 }  // namespace MasterExtended

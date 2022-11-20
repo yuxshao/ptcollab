@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QEvent>
 #include <QFile>
 #include <QLabel>
 #include <QMainWindow>
@@ -27,7 +28,6 @@
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 #include "views/MeasureView.h"
-#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -55,7 +55,7 @@ class EditorWindow : public QMainWindow {
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
-  bool eventFilter(QObject *watched, QEvent *event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
   KeyboardView* m_keyboard_view;
   MeasureView* m_measure_view;
   pxtnService m_pxtn;

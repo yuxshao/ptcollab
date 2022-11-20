@@ -271,4 +271,7 @@ int wrapClock(const pxtnMaster *master, int clock) {
             repeat_clock(master);
   return clock;
 }
+int unwrapClock(const pxtnMaster *master, int clock, int num_loops) {
+  return clock + num_loops * (last_clock(master) - repeat_clock(master));
+}
 }  // namespace MasterExtended

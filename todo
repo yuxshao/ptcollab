@@ -538,16 +538,22 @@ unit view:
 2. left piano midi highlight
 3. option to make pinned unit click also switch to the unit
 
+11/19
+
 Todo by priority
 ----------------
+- rtaudio
+ - have playback be able to communicate position
+ - modify moostate
+   - have it stop / startable
+   - have it seekable
+ - modify pxtn
+   - some sorta buffering system?
+
  - update gh-pages
-   - update beat-fit meaning
-   - page w all keybindings
-   - update how to copy / paste
-   - update legend on unit tab
 
  - move voices
- - drag voices / units
+   - drag voices / units
  - test to see if the midi noodling is causing the lag. delete voice previews if so
  - way to elongate notes (ctrl click in unit row)
 

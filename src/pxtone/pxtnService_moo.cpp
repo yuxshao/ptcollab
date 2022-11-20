@@ -41,6 +41,12 @@ bool mooState::addUnit(std::shared_ptr<const pxtnWoice> woice) {
   return true;
 }
 
+int32_t mooState::get_now_clock(int smp_offset) const {
+  if (params.clock_rate)
+    return (int32_t)((smp_count - smp_offset) / params.clock_rate);
+  return 0;
+}
+
 ////////////////////////////////////////////////
 // Units   ////////////////////////////////////
 ////////////////////////////////////////////////
@@ -353,13 +359,6 @@ int32_t pxtnService::moo_tone_sample_multi(std::map<int, pxtnUnitTone*> p_us,
 }
 
 bool pxtnService::moo_is_valid_data() const { return _moo_b_valid_data; }
-
-/* This place might be a chance to allow variable tempo songs */
-int32_t pxtnService::moo_get_now_clock(const mooState& moo_state) const {
-  if (moo_state.params.clock_rate)
-    return (int32_t)(moo_state.smp_count / moo_state.params.clock_rate);
-  return 0;
-}
 
 int32_t pxtnService::moo_get_end_clock() const {
   return master->get_this_clock(master->get_play_meas(), 0, 0);

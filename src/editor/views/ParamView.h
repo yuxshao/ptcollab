@@ -5,7 +5,6 @@
 #include <QWidget>
 
 #include "Animation.h"
-#include "MooClock.h"
 #include "editor/PxtoneClient.h"
 #include "editor/audio/NotePreview.h"
 
@@ -15,7 +14,6 @@ class ParamView : public QWidget {
   PxtoneClient *m_client;
   Animation *m_anim;
   Scale m_last_scale;
-  MooClock *m_moo_clock;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   QMenu *m_woice_menu;
   int m_last_woice_menu_preview_id;
@@ -29,8 +27,7 @@ class ParamView : public QWidget {
   QSize sizeHint() const override;
 
  public:
-  explicit ParamView(PxtoneClient *client, MooClock *moo_clock,
-                     QWidget *parent = nullptr);
+  explicit ParamView(PxtoneClient *client, QWidget *parent = nullptr);
 
  signals:
 };

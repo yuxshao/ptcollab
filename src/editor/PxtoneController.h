@@ -5,6 +5,7 @@
 #include <list>
 
 #include "audio/PxtoneIODevice.h"
+#include "audio/RtAudioRenderer.h"
 #include "protocol/PxtoneEditAction.h"
 #include "protocol/RemoteAction.h"
 
@@ -61,6 +62,8 @@ class PxtoneController : public QObject {
       std::function<bool(double progress)> should_continue = [](double) {
         return true;
       }) const;
+
+  std::unique_ptr<RtAudioRenderer> m_audio_renderer;
 
  public slots:
   // Maybe these types could be grouped.

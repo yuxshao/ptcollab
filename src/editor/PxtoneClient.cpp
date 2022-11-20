@@ -115,8 +115,8 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   }
   {
     bool ok;
-    double v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
-                   .toDouble(&ok);
+    double v =
+        Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH).toDouble(&ok);
     if (ok) setBufferSize(v);
   }
   m_pxtn_device->setPlaying(false);
@@ -156,13 +156,13 @@ void PxtoneClient::togglePlayState() {
 }
 
 void PxtoneClient::sendPlayState(bool from_action) {
-  sendAction(PlayState{pxtn()->moo_get_now_clock(*moo()),
-                       m_pxtn_device->playing(), from_action});
+  sendAction(
+      PlayState{moo()->get_now_clock(), m_pxtn_device->playing(), from_action});
 }
 
 void PxtoneClient::resetAndSuspendAudio() {
   m_pxtn_device->setPlaying(false);
-  if (pxtn()->moo_get_now_clock(*moo()) > m_last_seek)
+  if (moo()->get_now_clock() > m_last_seek)
     seekMoo(m_last_seek);
   else
     seekMoo(0);

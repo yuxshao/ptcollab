@@ -26,12 +26,10 @@ constexpr int UNIT_EDIT_MARGIN = 1;
 constexpr int UNIT_EDIT_INCREMENT = UNIT_EDIT_MARGIN + UNIT_EDIT_HEIGHT;
 inline int unit_edit_y(int i) { return UNIT_EDIT_Y + UNIT_EDIT_INCREMENT * i; }
 
-MeasureView::MeasureView(PxtoneClient *client, MooClock *moo_clock,
-                         QWidget *parent)
+MeasureView::MeasureView(PxtoneClient *client, QWidget *parent)
     : QWidget(parent),
       m_client(client),
       m_anim(new Animation(this)),
-      m_moo_clock(moo_clock),
       m_label_font(QFont()),
       m_label_font_metrics(m_label_font),
       m_audio_note_preview(nullptr),
@@ -356,16 +354,15 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
                        StyleEditor::config.color.MeasureBeat);
   }
   drawFlag(&painter, FlagType::Top, false, 0, FLAG_Y);
-  if (m_moo_clock->repeat_clock() > 0) {
-    drawFlag(
-        &painter, FlagType::Repeat, false,
-        m_moo_clock->repeat_clock() / m_client->editState().scale.clockPerPx,
-        FLAG_Y);
+  int repeat_clock = MasterExtended::repeat_clock(m_client->pxtn()->master);
+  if (repeat_clock > 0) {
+    drawFlag(&painter, FlagType::Repeat, false,
+             repeat_clock / m_client->editState().scale.clockPerPx, FLAG_Y);
   }
-  if (m_moo_clock->has_last()) {
+  int last_clock = MasterExtended::last_clock(m_client->pxtn()->master);
+  if (last_clock > 0) {
     drawFlag(&painter, FlagType::Last, false,
-             m_moo_clock->last_clock() / m_client->editState().scale.clockPerPx,
-             FLAG_Y);
+             last_clock / m_client->editState().scale.clockPerPx, FLAG_Y);
   }
 
   double scaleX = m_client->editState().scale.clockPerPx;
@@ -414,7 +411,7 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
 
   double seconds_per_clock = 60 / m_client->pxtn()->master->get_beat_tempo() /
                              m_client->pxtn()->master->get_beat_clock();
-  int now = m_moo_clock->now();
+  int now = m_client->controller()->m_audio_renderer->moo_timing().now_clock;
   auto drawLastOn = [&](int no, bool erase) {
     if (last_on_by_no.count(no) > 0) {
       const Interval &i = last_on_by_no[no];
@@ -466,7 +463,7 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
     drawLastOn(it->first, false);
 
   drawLastSeek(painter, m_client, height, true);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height,
+  drawCurrentPlayerPosition(painter, now, height,
                             m_client->editState().scale.clockPerPx, true);
   // Draw text labels
   if (Settings::PinnedUnitLabels::get()) {
@@ -566,11 +563,15 @@ void MeasureView::paintEvent(QPaintEvent *raw_event) {
   }
   drawExistingSelection(painter, m_client->editState().mouse_edit_state,
                         m_client->editState().scale.clockPerPx, height, 1);
-  if (!m_jump_to_unit_enabled)
+  if (!m_jump_to_unit_enabled) {
+    int now_no_wrap =
+        m_client->controller()->m_audio_renderer->moo_timing().now_no_wrap(
+            master);
     drawOngoingAction(m_client->editState(), unit_draw_params_map,
                       m_client->unitIdMap(), painter, height,
-                      m_client->quantizeClock(), clockPerMeas,
-                      m_moo_clock->nowNoWrap(), m_client->pxtn()->master, 1, 1);
+                      m_client->quantizeClock(), clockPerMeas, now_no_wrap,
+                      m_client->pxtn()->master, 1, 1);
+  }
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {

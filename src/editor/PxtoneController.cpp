@@ -4,13 +4,12 @@
 #include <QDialog>
 #include <QTextCodec>
 
-#include "audio/RtAudioRenderer.h"
-
 const QTextCodec *shift_jis_codec = QTextCodec::codecForName("Shift-JIS");
 
 PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
                                    mooState *moo_state, QObject *parent)
     : QObject(parent),
+      m_audio_renderer(std::make_unique<RtAudioRenderer>(pxtn)),
       m_uid(uid),
       m_pxtn(pxtn),
       m_moo_state(moo_state),
@@ -398,9 +397,7 @@ void PxtoneController::seekMoo(int64_t clock) {
   emit seeked(clock);
 }
 
-void PxtoneController::refreshMoo() {
-  seekMoo(m_pxtn->moo_get_now_clock(*m_moo_state));
-}
+void PxtoneController::refreshMoo() { seekMoo(m_moo_state->get_now_clock()); }
 
 void PxtoneController::setVolume(int volume) {
   double v = volume / 100.0;
@@ -420,6 +417,7 @@ void PxtoneController::setSongComment(const QString &comment) {
 }
 
 bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
+  m_audio_renderer.reset();
   emit beginRefresh();
   if (desc.get_size_bytes() > 0) {
     if (m_pxtn->read(&desc) != pxtnOK) {
@@ -450,7 +448,7 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit tempoBeatChanged();
   emit newSong();
 
-  new RtAudioRenderer(m_pxtn);
+  m_audio_renderer = std::make_unique<RtAudioRenderer>(m_pxtn);
 
   return true;
 }

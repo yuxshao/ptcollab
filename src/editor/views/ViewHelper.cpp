@@ -61,14 +61,12 @@ void drawPlayhead(QPainter &painter, qint32 x, qint32 height, QColor color,
   painter.fillRect(x, s, 1, height, color);
 }
 
-void drawCurrentPlayerPosition(QPainter &painter, MooClock *moo_clock,
-                               int height, qreal clockPerPx, bool drawHead) {
+void drawCurrentPlayerPosition(QPainter &painter, int now, int height,
+                               qreal clockPerPx, bool drawHead) {
   QColor color = Settings::RecordMidi::get()
                      ? StyleEditor::config.color.PlayheadRecording
                      : StyleEditor::config.color.Playhead;
-  if (!moo_clock->this_seek_caught_up() || moo_clock->now() <= 0)
-    color = makeTranslucent(color, 2);
-  const int x = moo_clock->now() / clockPerPx;
+  const int x = now / clockPerPx;
   drawPlayhead(painter, x, height, color, drawHead);
 }
 
@@ -83,13 +81,15 @@ void drawLastSeek(QPainter &painter, const PxtoneClient *client, qint32 height,
   }
 }
 
-void drawRepeatAndEndBars(QPainter &painter, const MooClock *moo_clock,
+void drawRepeatAndEndBars(QPainter &painter, const pxtnMaster *master,
                           qreal clockPerPx, int height) {
-  if (moo_clock->has_last())
-    painter.fillRect(moo_clock->last_clock() / clockPerPx, 0, 1, height,
+  if (master->get_last_meas() > 0)
+    painter.fillRect(MasterExtended::last_clock(master) / clockPerPx, 0, 1,
+                     height,
                      makeTranslucent(StyleEditor::config.color.Playhead, 2));
 
-  painter.fillRect(moo_clock->repeat_clock() / clockPerPx, 0, 1, height,
+  painter.fillRect(MasterExtended::repeat_clock(master) / clockPerPx, 0, 1,
+                   height,
                    makeTranslucent(StyleEditor::config.color.Playhead, 2));
 }
 
