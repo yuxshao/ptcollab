@@ -8,7 +8,8 @@
 
 #include "pxtone/pxtnService.h"
 
-struct MooTiming {
+// Need the alignas to work with MSVC2019
+struct alignas(8) MooTiming {
   int now_clock;
   int num_loops;
 

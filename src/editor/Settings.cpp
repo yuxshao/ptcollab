@@ -26,8 +26,7 @@ const QString CONNECT_SERVER_KEY("connect_server");
 namespace Settings {
 namespace Version {
 #define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-static QString v(TOSTRING(PTCOLLAB_VERSION));
+static QString v(STRINGIFY(PTCOLLAB_VERSION));
 const QString &string() { return v; }
 #undef TOSTRING
 #undef STRINGIFY

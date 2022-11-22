@@ -69,7 +69,7 @@ if(findLibrary("RtMidi", tests_rtmidi, false)) {
     DEFINES += RTMIDI_SUPPORTED
 }
 
-LIBS += -lrtaudio
+LIBS += -lole32 -lrtaudio
 
 if (equals(pkgconfig_required, "true")) {
     message("Using PKGCONFIG: $$PKGCONFIG")
