@@ -9,11 +9,10 @@
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
 
-ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
+ParamView::ParamView(PxtoneClient *client, QWidget *parent)
     : QWidget(parent),
       m_client(client),
       m_anim(new Animation(this)),
-      m_moo_clock(moo_clock),
       m_audio_note_preview(nullptr),
       m_woice_menu(new QMenu(this)),
       m_last_woice_menu_preview_id(-1) {
@@ -55,7 +54,7 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
       m_audio_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
           m_client->editState().mouse_edit_state.start_clock, 48000,
-          std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+          std::list<EVERECORD>({e}), m_client->bufferSize(),
           Settings::ChordPreview::get() && !m_client->isPlaying(), this);
     }
   });
@@ -495,8 +494,9 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
                   1, 0);
 
   drawLastSeek(painter, m_client, height, false);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height, clockPerPx, false);
-  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height);
+  int clock = m_client->controller()->m_audio_renderer->moo_timing().now_clock;
+  drawCurrentPlayerPosition(painter, clock, height, clockPerPx, false);
+  drawRepeatAndEndBars(painter, m_client->pxtn()->master, clockPerPx, height);
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -599,7 +599,7 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
                                     m_client->quantizeClock());
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_client->pxtn(), &m_client->moo()->params, unit_no, clock,
-                std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+                std::list<EVERECORD>({e}), m_client->bufferSize(),
                 Settings::ChordPreview::get() && !m_client->isPlaying(), this);
           }
         }

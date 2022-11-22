@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
     w.show();
     if (startServerImmediately)
       w.hostDirectly(filename, host, port, recording_file, username);
+
     return a->exec();
   }
 }

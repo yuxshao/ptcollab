@@ -35,7 +35,8 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
           [this]() { setEditWidgetsEnabled(true); });
   connect(m_client->controller(), &PxtoneController::tempoBeatChanged, this,
           &PxtoneSideMenu::refreshTempoBeat);
-  connect(m_client, &PxtoneClient::playStateChanged, this, &SideMenu::setPlay);
+  connect(m_client->controller(), &PxtoneController::playStateChanged, this,
+          &SideMenu::setPlay);
   /*connect(m_client, &PxtoneClient::volumeLevelChanged, this,
           [this](const std::vector<VolumeMeter> &levels) {
             qDebug() << QString("Volume: (%1dbfs,%2dbfs), peak (%3dbfs,%4dbfs)")
@@ -106,8 +107,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
             m_client->pxtn(), &m_client->moo()->params,
             m_client->editState().mouse_edit_state.last_pitch,
             m_client->editState().mouse_edit_state.base_velocity, 48000,
-            m_client->pxtn()->Woice_Get(idx),
-            m_client->audioState()->bufferSize(), this);
+            m_client->pxtn()->Woice_Get(idx), m_client->bufferSize(), this);
       else
         m_note_preview = nullptr;
     }
@@ -119,7 +119,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
       if (idx >= 0)
         m_note_preview = std::make_unique<NotePreview>(
             m_client->pxtn(), &m_client->moo()->params, idx, m_moo_clock->now(),
-            48000, std::list<EVERECORD>(), m_client->audioState()->bufferSize(),
+            48000, std::list<EVERECORD>(), m_client->bufferSize(),
             false, this);
       else
         m_note_preview = nullptr;

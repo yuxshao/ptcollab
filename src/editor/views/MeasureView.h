@@ -15,7 +15,6 @@ class MeasureView : public QWidget {
   PxtoneClient *m_client;
   Animation *m_anim;
   Scale m_last_scale;
-  MooClock *m_moo_clock;
   QFont m_label_font;
   QFontMetrics m_label_font_metrics;
   std::unique_ptr<NotePreview> m_audio_note_preview;
@@ -42,8 +41,7 @@ class MeasureView : public QWidget {
   void setHoveredUnitNo(std::optional<int>);
 
  public:
-  explicit MeasureView(PxtoneClient *client, MooClock *moo_clock,
-                       QWidget *parent = nullptr);
+  explicit MeasureView(PxtoneClient *client, QWidget *parent = nullptr);
   void setFocusedUnit(std::optional<int> unit_no);
   void setSelectUnitEnabled(bool);
 

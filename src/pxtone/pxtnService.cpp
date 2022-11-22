@@ -214,16 +214,11 @@ bool pxtnService::AdjustMeasNum() {
 
 int32_t pxtnService::Group_Num() const { return _b_init ? _group_num : 0; }
 
-pxtnERR pxtnService::tones_ready(mooState &moo_state) {
+// Not actually const?
+pxtnERR pxtnService::tones_ready() {
   if (!_b_init) return pxtnERR_INIT;
 
   pxtnERR res = pxtnERR_VOID;
-  int32_t beat_num = master->get_beat_num();
-  float beat_tempo = master->get_beat_tempo();
-
-  moo_state.delays.clear();
-  for (size_t i = 0; i < _delays.size(); i++)
-    moo_state.delays.emplace_back(_delays[i], beat_num, beat_tempo, _dst_sps);
 
   for (int32_t i = 0; i < _woice_num; i++) {
     res = _woices[i]->Tone_Ready(_ptn_bldr, _dst_sps);

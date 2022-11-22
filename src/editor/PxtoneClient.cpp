@@ -6,7 +6,6 @@
 
 #include "ComboOptions.h"
 #include "Settings.h"
-#include "audio/AudioFormat.h"
 
 QList<UserListEntry> getUserList(
     const std::map<qint64, RemoteEditState> &users) {
@@ -29,22 +28,6 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
       m_ping_timer(new QTimer(this)),
       m_last_seek(0),
       m_clipboard(new Clipboard(this)) {
-  QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-  if (!info.isFormatSupported(pxtoneAudioFormat())) {
-    qWarning()
-        << "Raw audio format not supported by backend, cannot play audio.";
-    return;
-  }
-  m_pxtn_device = new PxtoneIODevice(this, m_controller->pxtn(), &m_moo_state);
-  m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
-
-  // Apparently this reduces latency in pulseaudio, but also makes
-  // some sounds choppier
-  // m_audio->setCategory("game");
-  m_audio->setVolume(1.0);
-  connect(m_pxtn_device, &PxtoneIODevice::playingChanged, this,
-          &PxtoneClient::playStateChanged);
-
   connect(m_ping_timer, &QTimer::timeout, [this]() {
     sendPlayState(false);
     sendAction(Ping{QDateTime::currentMSecsSinceEpoch(), m_last_ping});
@@ -88,14 +71,13 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
           &PxtoneClient::processRemoteAction);
 }
 
-PxtoneClient::~PxtoneClient() {
-  m_audio->stop();
-  m_pxtn_device->setPlaying(false);
-}
+PxtoneClient::~PxtoneClient() {}
 
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
-  m_controller->loadDescriptor(desc);
+  double bufferLength =
+      Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH).toDouble();
+  m_controller->loadDescriptor(desc, bufferLength);
   changeEditState(
       [this](EditState &e) {
         e.m_current_unit_id =
@@ -104,65 +86,49 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
       },
       false);
   m_following_user.reset();
-  m_pxtn_device->setPlaying(false);
   seekMoo(0);
 
-  m_pxtn_device->open(QIODevice::ReadOnly);
   {
     bool ok;
     int v = Settings::value(VOLUME_KEY, QVariant()).toInt(&ok);
     if (ok) setVolume(v);
   }
-  {
-    bool ok;
-    double v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
-                   .toDouble(&ok);
-    if (ok) setBufferSize(v);
-  }
-  m_pxtn_device->setPlaying(false);
-  m_audio->start(m_pxtn_device);
-  qDebug() << "Actual" << m_audio->bufferSize();
 }
 
 void PxtoneClient::setBufferSize(double secs) {
-  bool started = (m_audio->state() != QAudio::StoppedState &&
-                  m_audio->state() != QAudio::IdleState);
-  QAudioFormat fmt = pxtoneAudioFormat();
-
-  if (started) {
-    m_audio->stop();
-    m_pxtn_device->setPlaying(false);
-  }
-
   if (secs < 0.01) secs = 0.01;
   if (secs > 10) secs = 10;
   qDebug() << "Setting buffer size: " << secs;
-  m_audio->setBufferSize(fmt.bytesForDuration(secs * 1e6));
-  if (started) m_audio->start(m_pxtn_device);
+  m_controller->m_audio_renderer->setBufferFrames(secs * 44100);
 }
 
-bool PxtoneClient::isPlaying() { return m_pxtn_device->playing(); }
+bool PxtoneClient::isPlaying() {
+  return m_controller->m_audio_renderer->isPlaying();
+}
 
 // TODO: Factor this out into a PxtoneAudioPlayer class. Setting play state,
 // seeking. Unfortunately start / stop don't even fix this because stopping
 // still waits for the buffer to drain (instead of flushing and throwing away)
 void PxtoneClient::togglePlayState() {
-  if (Settings::SpacebarStop::get() && m_pxtn_device->playing())
+  if (Settings::SpacebarStop::get() &&
+      m_controller->m_audio_renderer->isPlaying())
     resetAndSuspendAudio();
   else {
-    m_pxtn_device->setPlaying(!m_pxtn_device->playing());
+    m_controller->m_audio_renderer->setPlaying(
+        !m_controller->m_audio_renderer->isPlaying());
     sendPlayState(true);
   }
 }
 
 void PxtoneClient::sendPlayState(bool from_action) {
-  sendAction(PlayState{pxtn()->moo_get_now_clock(*moo()),
-                       m_pxtn_device->playing(), from_action});
+  sendAction(PlayState{moo()->get_now_clock(),
+                       m_controller->m_audio_renderer->isPlaying(),
+                       from_action});
 }
 
 void PxtoneClient::resetAndSuspendAudio() {
-  m_pxtn_device->setPlaying(false);
-  if (pxtn()->moo_get_now_clock(*moo()) > m_last_seek)
+  m_controller->m_audio_renderer->setPlaying(false);
+  if (moo()->get_now_clock() > m_last_seek)
     seekMoo(m_last_seek);
   else
     seekMoo(0);
@@ -184,7 +150,7 @@ void PxtoneClient::setFollowing(std::optional<qint64> following) {
     if (it != m_remote_edit_states.end() && it->second.state.has_value()) {
       // stop audio, so that the next playstate msg causes us to sync if the
       // other user's playing.
-      m_pxtn_device->setPlaying(false);
+      m_controller->m_audio_renderer->setPlaying(false);
       emit followActivity(it->second.state.value());
     }
   }
@@ -332,10 +298,11 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                         // Since playstates come with heartbeats, we only reset
                         // the moo for non-heartbeat updates or if there's a
                         // drastic diff.
-                        if (m_pxtn_device->playing() != s.playing ||
+                        if (m_controller->m_audio_renderer->isPlaying() !=
+                                s.playing ||
                             s.from_action)
                           m_controller->seekMoo(s.clock);
-                        m_pxtn_device->setPlaying(s.playing);
+                        m_controller->m_audio_renderer->setPlaying(s.playing);
                       }
                     },
                     [this, uid](const EditAction &s) {
@@ -558,6 +525,4 @@ void PxtoneClient::removeUnusedUnitsAndWoices() {
   }
 }
 
-const std::vector<InterpolatedVolumeMeter> &PxtoneClient::volumeLevels() const {
-  return m_pxtn_device->volumeLevels();
-}
+std::vector<int> PxtoneClient::volumeLevels() const { return {0, 0}; }

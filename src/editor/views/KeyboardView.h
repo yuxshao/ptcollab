@@ -28,8 +28,7 @@ struct LocalEditState {
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
-  explicit KeyboardView(PxtoneClient *client, MooClock *moo_clock,
-                        QScrollArea *parent = nullptr);
+  explicit KeyboardView(PxtoneClient *client, QScrollArea *parent = nullptr);
   void cycleCurrentUnit(int offset, bool selectedOnly);
   void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
@@ -78,7 +77,6 @@ class KeyboardView : public QWidget {
   std::unique_ptr<NotePreview> m_audio_note_preview;
   Animation *m_anim;
   PxtoneClient *m_client;
-  MooClock *m_moo_clock;
   std::optional<int> m_focused_unit_no;
   std::optional<int> m_hovered_unit_no;
   std::map<int, int> m_midi_notes;

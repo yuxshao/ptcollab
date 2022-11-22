@@ -110,6 +110,7 @@ struct mooState {
   void resetGroups(int32_t group_num);
   bool resetUnits(size_t unit_num, std::shared_ptr<const pxtnWoice> woice);
   bool addUnit(std::shared_ptr<const pxtnWoice> woice);
+  int32_t get_now_clock(int smp_offset = 0) const;
 
   void tones_clear();
 };
@@ -208,7 +209,7 @@ class pxtnService {
 
   int32_t get_last_error_id() const;
 
-  pxtnERR tones_ready(mooState &moo_state);
+  pxtnERR tones_ready();
 
   int32_t Group_Num() const;
 
@@ -300,7 +301,6 @@ class pxtnService {
 
   int32_t moo_get_total_sample() const;
 
-  int32_t moo_get_now_clock(const mooState &moo_state) const;
   int32_t moo_get_end_clock() const;
   int32_t moo_get_sampling_offset() const;
   int32_t moo_get_sampling_end() const;

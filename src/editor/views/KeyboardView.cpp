@@ -38,8 +38,7 @@ void KeyboardView::setHoveredUnitNo(std::optional<int> new_unit_no) {
   }
 }
 
-KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
-                           QScrollArea *parent)
+KeyboardView::KeyboardView(PxtoneClient *client, QScrollArea *parent)
     : QWidget(parent),
       m_scrollarea(parent),
       m_pxtn(client->pxtn()),
@@ -50,7 +49,6 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
       m_audio_note_preview(nullptr),
       m_anim(new Animation(this)),
       m_client(client),
-      m_moo_clock(moo_clock),
       m_select_unit_enabled(false),
       m_last_left_kb_pitch(0),
       m_test_activity(false) {
@@ -87,7 +85,9 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
 void KeyboardView::ensurePlayheadFollowed() {
   bool follow_exactly =
       m_client->editState().m_follow_playhead == FollowPlayhead::Follow;
-  double logicalX = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  double logicalX =
+      m_client->controller()->m_audio_renderer->moo_timing().now_clock /
+      m_client->editState().scale.clockPerPx;
   double x = worldTransform().map(QPointF(logicalX, 0)).x();
   emit ensureVisibleX(x, follow_exactly);
 }
@@ -579,7 +579,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   std::vector<DrawState> drawStates;
   for (int i = 0; i < m_pxtn->Unit_Num(); ++i) drawStates.emplace_back();
 
-  int clock = m_moo_clock->now();
+  int clock = m_client->controller()->m_audio_renderer->moo_timing().now_clock;
 
   // Draw the note blocks! Upon hitting an event, see if we are able to draw a
   // previous block.
@@ -659,7 +659,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     }
 
     double on_strength = 0;
-    if (m_client->isPlaying()) {
+    if (m_client->isPlaying() || true) {
       if (clock >= on.start) {
         if (!m_dark)
           on_strength = clock < on.end ? 1 : 0;
@@ -788,13 +788,15 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
                         m_client->editState().scale.clockPerPx, size().height(),
                         mySelectionAlphaMultiplier);
   if (!m_select_unit_enabled)
-    drawOngoingAction(m_client->editState(), m_edit_state, painter, width(),
-                      height(), m_moo_clock->nowNoWrap(), m_pxtn->master, 1, 1,
-                      displayEdo);
+    drawOngoingAction(
+        m_client->editState(), m_edit_state, painter, width(), height(),
+        m_client->controller()->m_audio_renderer->moo_timing().now_no_wrap(
+            m_pxtn->master),
+        m_pxtn->master, 1, 1, displayEdo);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
   drawLastSeek(painter, m_client, height(), false);
-  drawRepeatAndEndBars(painter, m_moo_clock,
+  drawRepeatAndEndBars(painter, m_pxtn->master,
                        m_client->editState().scale.clockPerPx, height());
 
   // Left piano
@@ -863,7 +865,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     painter.setTransform(t);
   }
 
-  drawCurrentPlayerPosition(painter, m_moo_clock, height(),
+  drawCurrentPlayerPosition(painter, clock, height(),
                             m_client->editState().scale.clockPerPx, false);
 
   // Draw cursors
@@ -1052,7 +1054,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
-                m_client->audioState()->bufferSize(), chord_preview, this);
+                0 /* TODO */, chord_preview, this);
           }
         }
       },

@@ -34,8 +34,6 @@ class PxtoneClient : public QObject {
   std::optional<qint64> m_following_user;
   mooState m_moo_state;
   EditState m_edit_state;
-  QAudioOutput *m_audio;
-  PxtoneIODevice *m_pxtn_device;
   std::optional<quint64> m_last_ping;
   QTimer *m_ping_timer;
   qint32 m_last_seek;
@@ -43,7 +41,6 @@ class PxtoneClient : public QObject {
 
  signals:
   void editStateChanged(const EditState &m_edit_state);
-  void playStateChanged(bool playing);
   void followActivity(const EditState &r);
   void updatePing(std::optional<qint64> ping_length);
   void connected();
@@ -78,7 +75,7 @@ class PxtoneClient : public QObject {
   const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
   const mooState *moo() const { return m_controller->moo(); }
-  const QAudioOutput *audioState() const { return m_audio; }
+  int bufferSize() const { return 256; }  // TODO
 
   const NoIdMap &unitIdMap() const { return m_controller->unitIdMap(); }
   const std::map<qint64, RemoteEditState> &remoteEditStates() {
@@ -106,7 +103,7 @@ class PxtoneClient : public QObject {
   void setUnitOperated(int unit_no, bool operated);
   void cycleSolo(int unit_no);
   void removeUnusedUnitsAndWoices();
-  const std::vector<InterpolatedVolumeMeter> &volumeLevels() const;
+  std::vector<int> volumeLevels() const;
 
  private:
   void processRemoteAction(const ServerAction &a);

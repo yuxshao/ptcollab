@@ -12,7 +12,7 @@ DEFINES += "PTCOLLAB_VERSION=$${VERSION}"
 
 # Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
 # others it's in a subdir
-INCLUDEPATH += . /usr/include/rtmidi
+INCLUDEPATH += . /usr/include/rtmidi /usr/include/rtaudio
 win32|macx:INCLUDEPATH += ../deps/include
 
 win32 {
@@ -69,6 +69,8 @@ if(findLibrary("RtMidi", tests_rtmidi, false)) {
     DEFINES += RTMIDI_SUPPORTED
 }
 
+LIBS += -lole32 -lrtaudio
+
 if (equals(pkgconfig_required, "true")) {
     message("Using PKGCONFIG: $$PKGCONFIG")
     CONFIG += link_pkgconfig
@@ -107,6 +109,7 @@ HEADERS += \
            editor/Settings.h \
            editor/SettingsDialog.h \
            editor/ShortcutsDialog.h \
+           editor/audio/RtAudioRenderer.h \
            editor/sidemenu/SongTitleDialog.h \
            editor/StyleEditor.h \
            editor/WelcomeDialog.h \
@@ -200,6 +203,7 @@ SOURCES += main.cpp \
            editor/Settings.cpp \
            editor/SettingsDialog.cpp \
            editor/ShortcutsDialog.cpp \
+           editor/audio/RtAudioRenderer.cpp \
            editor/sidemenu/SongTitleDialog.cpp \
            editor/StyleEditor.cpp \
            editor/WelcomeDialog.cpp \

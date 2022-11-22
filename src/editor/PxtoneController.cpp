@@ -4,11 +4,15 @@
 #include <QDialog>
 #include <QTextCodec>
 
+#include "editor/Settings.h"
+
 const QTextCodec *shift_jis_codec = QTextCodec::codecForName("Shift-JIS");
 
 PxtoneController::PxtoneController(int uid, pxtnService *pxtn,
                                    mooState *moo_state, QObject *parent)
     : QObject(parent),
+      m_audio_renderer(std::make_unique<RtAudioRenderer>(
+          pxtn, 256 /* TODO: change this away from default */)),
       m_uid(uid),
       m_pxtn(pxtn),
       m_moo_state(moo_state),
@@ -340,7 +344,8 @@ void PxtoneController::applySetLastMeas(const SetLastMeas &a, qint64 uid) {
   emit edited();
 }
 
-void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &, qint64 uid) {
+void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &,
+                                         qint64 uid) {
   (void)uid;
   if (m_pxtn->OverDrive_Num() >= m_pxtn->OverDrive_Max()) return;
   emit beginAddOverdrive();
@@ -348,7 +353,8 @@ void PxtoneController::applyAddOverdrive(const OverdriveEffect::Add &, qint64 ui
   emit endAddOverdrive();
 }
 
-void PxtoneController::applySetOverdrive(const OverdriveEffect::Set &a, qint64 uid) {
+void PxtoneController::applySetOverdrive(const OverdriveEffect::Set &a,
+                                         qint64 uid) {
   (void)uid;
 
   // cut and amp are checked in OverDrive_Set so not checked here
@@ -394,9 +400,7 @@ void PxtoneController::seekMoo(int64_t clock) {
   emit seeked(clock);
 }
 
-void PxtoneController::refreshMoo() {
-  seekMoo(m_pxtn->moo_get_now_clock(*m_moo_state));
-}
+void PxtoneController::refreshMoo() { seekMoo(m_moo_state->get_now_clock()); }
 
 void PxtoneController::setVolume(int volume) {
   double v = volume / 100.0;
@@ -415,7 +419,9 @@ void PxtoneController::setSongComment(const QString &comment) {
   m_pxtn->text->set_comment_buf(str.data(), str.length());
 }
 
-bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
+bool PxtoneController::loadDescriptor(pxtnDescriptor &desc,
+                                      double bufferLength) {
+  m_audio_renderer.reset();
   emit beginRefresh();
   if (desc.get_size_bytes() > 0) {
     if (m_pxtn->read(&desc) != pxtnOK) {
@@ -431,7 +437,7 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   }
   m_unit_id_map = NoIdMap(m_pxtn->Unit_Num());
   m_woice_id_map = NoIdMap(m_pxtn->Woice_Num());
-  if (m_pxtn->tones_ready(*m_moo_state) != pxtnOK) {
+  if (m_pxtn->tones_ready() != pxtnOK) {
     qWarning() << "Error getting tones ready";
     return false;
   }
@@ -445,6 +451,12 @@ bool PxtoneController::loadDescriptor(pxtnDescriptor &desc) {
   emit measureNumChanged();
   emit tempoBeatChanged();
   emit newSong();
+
+  m_audio_renderer =
+      std::make_unique<RtAudioRenderer>(m_pxtn, bufferLength * 44100);
+  connect(m_audio_renderer.get(), &RtAudioRenderer::playingChanged, this,
+          &PxtoneController::playStateChanged);
+
   return true;
 }
 
@@ -684,7 +696,7 @@ bool PxtoneController::render_exn(
 
   mooState moo_state;
   pxtnERR err;
-  err = m_pxtn->tones_ready(moo_state);
+  err = m_pxtn->tones_ready();
   if (err != pxtnOK)
     throw QString("Error getting tones ready: error code %1").arg(err);
 
