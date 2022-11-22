@@ -214,7 +214,7 @@ void NewWoiceDialog::previewWoice(const QString &path) {
       ui->previewVolSlider->value() * 128 / ui->previewVolSlider->maximum();
   m_note_preview = std::make_unique<NotePreview>(
       m_client->pxtn(), &m_client->moo()->params, key, vel, 48000,
-      m_preview_woice, m_client->audioState()->bufferSize(), this);
+      m_preview_woice, m_client->bufferSize(), this);
 }
 
 NewWoiceDialog::NewWoiceDialog(bool multi, const PxtoneClient *client,
@@ -330,8 +330,7 @@ void NewWoiceDialog::inputMidi(const Input::Event::Event &e) {
                    if (m_preview_woice == nullptr) return;
                    m_record_note_preview[e.key] = std::make_unique<NotePreview>(
                        m_client->pxtn(), &m_client->moo()->params, e.key,
-                       e.vel(), 100000000, m_preview_woice,
-                       m_client->audioState()->bufferSize(), this);
+                       e.vel(), 100000000, m_preview_woice, 0 /* TODO */, this);
                  },
                  [this](const Input::Event::Off &e) {
                    if (m_record_note_preview[e.key])

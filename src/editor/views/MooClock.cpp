@@ -47,7 +47,7 @@ void MooClock::tick() {
   }
 
   int64_t offset_from_buffer =
-      m_client->audioState()->bufferSize();  // - m_audio_output->bytesFree()
+      m_client->bufferSize();  // - m_audio_output->bytesFree()
 
   double estimated_buffer_offset =
       -offset_from_buffer / double(bytes_per_second);

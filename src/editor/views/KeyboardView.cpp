@@ -1054,7 +1054,7 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
 
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
-                m_client->audioState()->bufferSize(), chord_preview, this);
+                0 /* TODO */, chord_preview, this);
           }
         }
       },

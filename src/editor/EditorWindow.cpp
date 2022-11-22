@@ -806,8 +806,7 @@ void EditorWindow::recordInput(const Input::Event::Event &e) {
                   Settings::ChordPreview::get() && !m_client->isPlaying();
               m_record_note_preview[e.key] = std::make_unique<NotePreview>(
                   &m_pxtn, &m_client->moo()->params, unit_no, start, e.key,
-                  e.vel(), m_client->audioState()->bufferSize(), chordPreview,
-                  this);
+                  e.vel(), m_client->bufferSize(), chordPreview, this);
 
               m_keyboard_view->currentMidiNotes()[e.key] = e.vel();
             }

@@ -19,8 +19,7 @@ SelectWoiceDialog::SelectWoiceDialog(QAbstractListModel *model,
               m_client->pxtn(), &m_client->moo()->params,
               m_client->editState().mouse_edit_state.last_pitch,
               m_client->editState().mouse_edit_state.base_velocity, 48000,
-              m_client->pxtn()->Woice_Get(idx),
-              m_client->audioState()->bufferSize(), this);
+              m_client->pxtn()->Woice_Get(idx), m_client->bufferSize(), this);
         else
           m_note_preview = nullptr;
         QString name = ui->unitName->text();

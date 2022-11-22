@@ -47,10 +47,10 @@ void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
   p.fillRect(e->rect(), StyleEditor::config.color.MeterBackground);
   // int w_limit = dbToX(-3);
 
-  const auto &levels = m_client->volumeLevels();
+  const auto levels = m_client->volumeLevels();
   while (levels.size() > m_peaks.size()) m_peaks.push_back(-INFINITY);
   for (uint i = 0; i < levels.size(); ++i) {
-    int w = dbToX(levels[i].current_volume_dbfs());
+    int w = dbToX(levels[i]);  // TODO cur vol
     int y = (height() + 1) * i / levels.size();
     int h = (height() + 1) / levels.size() - 1;
     p.fillRect(QRect(0, y, width(), h), barGradient());
@@ -66,7 +66,7 @@ void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
     p.fillRect(dbToX(-3), y, 1, h,
                StyleEditor::config.color.MeterBackgroundSoft);
 
-    double peak = levels[i].last_peak_dbfs();
+    double peak = levels[i];  // TODO peak
     p.fillRect(QRect(dbToX(peak) - 1, y, 2, h), colAtDb(peak));
     if (peak > m_peaks[i]) m_peaks[i] = peak;
     if (m_peaks[i] > HIGH_DB)

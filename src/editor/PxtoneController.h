@@ -36,7 +36,7 @@ class PxtoneController : public QObject {
   qint64 uid();
   const NoIdMap &unitIdMap() const { return m_unit_id_map; }
   const NoIdMap &woiceIdMap() const { return m_woice_id_map; }
-  bool loadDescriptor(pxtnDescriptor &desc);
+  bool loadDescriptor(pxtnDescriptor &desc, double bufferLength);
   bool applyAddUnit(const AddUnit &a, qint64 uid);
   bool applyAddWoice(const AddWoice &a, qint64 uid);
   bool applyRemoveWoice(const RemoveWoice &a, qint64 uid);
@@ -84,6 +84,7 @@ class PxtoneController : public QObject {
   void tempoBeatChanged();
   void playedToggled(int unit_no);
   void operatedToggled(int unit_no, bool operated);
+  void playStateChanged(bool playing);
   void soloToggled();
   void newSong();
   void edited();
@@ -120,7 +121,6 @@ class PxtoneController : public QObject {
   qint64 m_uid;
   pxtnService *m_pxtn;
   mooState *m_moo_state;
-  PxtoneIODevice *m_moo_io_device;
 
   std::vector<LoggedAction> m_log;
   std::list<std::list<Action::Primitive>> m_uncommitted;

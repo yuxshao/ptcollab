@@ -54,7 +54,7 @@ ParamView::ParamView(PxtoneClient *client, QWidget *parent)
       m_audio_note_preview = std::make_unique<NotePreview>(
           m_client->pxtn(), &m_client->moo()->params, maybe_unit_no.value(),
           m_client->editState().mouse_edit_state.start_clock, 48000,
-          std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+          std::list<EVERECORD>({e}), m_client->bufferSize(),
           Settings::ChordPreview::get() && !m_client->isPlaying(), this);
     }
   });
@@ -599,7 +599,7 @@ void ParamView::mousePressEvent(QMouseEvent *event) {
                                     m_client->quantizeClock());
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_client->pxtn(), &m_client->moo()->params, unit_no, clock,
-                std::list<EVERECORD>({e}), m_client->audioState()->bufferSize(),
+                std::list<EVERECORD>({e}), m_client->bufferSize(),
                 Settings::ChordPreview::get() && !m_client->isPlaying(), this);
           }
         }
