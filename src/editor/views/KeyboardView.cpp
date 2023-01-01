@@ -674,7 +674,6 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     } else {
       if (m_hovered_unit_no.has_value()) {
         something_is_focused = true;
-        // need to make focused have higher alpha. also test on expensive ptcop
         if (m_hovered_unit_no == unit_no) is_focused = true;
       }
     }
