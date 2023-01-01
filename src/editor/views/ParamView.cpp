@@ -184,9 +184,7 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
                                  const Event &last, const Event &curr,
                                  qreal clockPerPx, const QColor &onColor,
                                  const pxtnService *pxtn) {
-  // This check is because there's a dummy voice no event before the left side
-  // of the screen that pokes in.
-  if (last.clock < 0) return;
+  if (last.clock < 0) return;  // Don't render the dummy default event
   int32_t lastX = last.clock / clockPerPx;
   QPainterPath path;
   constexpr int s = 4;
@@ -270,10 +268,11 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
       float tuning;
       memcpy(&tuning, &last.value, sizeof(tuning));
       int cents = log2(tuning) * 100 * 12;
-      painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
-                       QString("%1 (%2c)")
-                           .arg(tuning, 0, 'f', 3)
-                           .arg(format_with_sign(cents)));
+      if (last.clock >= 0)  // Block the text from the default dummy event
+        painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
+                         QString("%1 (%2c)")
+                             .arg(tuning, 0, 'f', 3)
+                             .arg(format_with_sign(cents)));
     }
   } else {
     // EVENTKIND_TAIL bullet
@@ -410,9 +409,10 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   std::vector<Event> lastEvents;
   colors.reserve(m_client->pxtn()->Unit_Num());
   lastEvents.reserve(m_client->pxtn()->Unit_Num());
-  int first_clock = first_beat * master->get_beat_clock();
+  int default_event_clock = std::min(first_beat * master->get_beat_clock(), -1);
   for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-    lastEvents.emplace_back(Event{first_clock, DefaultKindValue(current_kind)});
+    lastEvents.emplace_back(
+        Event{default_event_clock, DefaultKindValue(current_kind)});
     int unit_id = m_client->unitIdMap().noToId(i);
     colors.push_back(StyleEditor::noteBrush(unit_id)->toQColor(108, 1, 255));
     int h, s, l, a;
