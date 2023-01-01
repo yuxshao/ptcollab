@@ -677,17 +677,17 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
         if (m_hovered_unit_no == unit_no) is_focused = true;
       }
     }
-    if (param.isCurrentUnit)
-      base_alpha = 255;
-    else if (param.visible)
-      base_alpha = (m_dark ? 216 : 96);
-    else
-      base_alpha = 0;
+    if (!param.visible) base_alpha = 0;
     if (something_is_focused) {
       if (is_focused)
-        base_alpha = base_alpha / 2 + 128;
+        base_alpha = 216;
       else
-        base_alpha /= 2;
+        base_alpha = (m_dark ? 108 : 48);
+    } else {
+      if (param.isCurrentUnit)
+        base_alpha = 255;
+      else
+        base_alpha = (m_dark ? 216 : 96);
     }
 
     int note_alpha = base_alpha;
@@ -739,6 +739,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
         break;
       case EVENTKIND_VOICENO:
         state.voice_no.set(e);
+        break;
       case EVENTKIND_VELOCITY:
         state.velocity.set(e);
         break;
@@ -826,7 +827,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     // we use event_rect_f in case e->rect has some rounding from scaling up
     painter.setTransform(QTransform::fromTranslate(event_rect_f.left(), 0),
                          true);
-    QBrush *leftBrush, *leftInnerBrush;
+    QBrush *leftBrush = nullptr, *leftInnerBrush = nullptr;
     for (const BackgroundKeyRow &r : background_key_rows) {
       switch (r.color) {
         case BackgroundKeyRow::Root:
