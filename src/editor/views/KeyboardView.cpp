@@ -92,8 +92,9 @@ void KeyboardView::ensurePlayheadFollowed() {
   emit ensureVisibleX(x, follow_exactly);
 }
 
-void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
-  m_focused_unit_no = unit_no;
+void KeyboardView::setFocusState(
+    const std::optional<KeyboardFocus::State> &state) {
+  m_focus_state = state;
 }
 
 void KeyboardView::setSelectUnitEnabled(bool b) {
@@ -121,11 +122,13 @@ struct LastEvent {
 struct DrawState {
   LastEvent pitch;
   LastEvent velocity;
+  LastEvent voice_no;
   std::optional<Interval> ongoingOnEvent;
 
   DrawState()
       : pitch(EVENTDEFAULT_KEY),
         velocity(EVENTDEFAULT_VELOCITY),
+        voice_no(EVENTDEFAULT_VOICENO),
         ongoingOnEvent(std::nullopt) {}
 };
 
@@ -372,16 +375,15 @@ struct NoteSegment {
   int pitch;
   int velocity;
   Interval on;
+  int alpha;
+  int aux_alpha;
+  bool draw_left_highlight;
 };
 
 struct UnitDrawParam {
   std::shared_ptr<const NoteBrush> brush;
-  bool matchingUnit;
-  bool hoveredUnit;
-  bool draw_left_highlights;
+  bool isCurrentUnit;
   bool visible;
-  int alpha;
-  bool scale_alpha_by_velocity;
   bool muted;
   bool selected;
 };
@@ -390,17 +392,15 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
                      const NoteSegment &note, const Scale &scale,
                      int displayEdo, const std::optional<Interval> &selection) {
   QColor color = param.brush->toQColor(
-      note.velocity, (param.muted ? 0.0 : note.on_strength), param.alpha);
+      note.velocity, (param.muted ? 0.0 : note.on_strength), note.alpha);
   if (param.muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
-  if (param.scale_alpha_by_velocity)
-    color.setAlpha(color.alpha() * note.velocity / EVENTMAX_VELOCITY);
 
   // draw note
   paintBlock(note.pitch, note.interval, painter, color, scale, displayEdo);
 
   // draw highlight at front
-  if (note.interval.start == note.on.start && param.draw_left_highlights) {
+  if (note.interval.start == note.on.start && note.draw_left_highlight) {
     paintHighlight(note.pitch, note.interval.start, painter,
                    param.brush->toQColor(255, 1, color.alpha()), scale,
                    displayEdo);
@@ -412,7 +412,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
         interval_intersect(selection.value(), note.interval);
     if (!selection_segment.empty()) {
       painter.setPen(
-          param.brush->toQColor(EVENTDEFAULT_VELOCITY, 1, param.alpha));
+          param.brush->toQColor(EVENTDEFAULT_VELOCITY, 1, note.aux_alpha));
       drawBlock(note.pitch, selection_segment, painter, scale, displayEdo);
     }
   }
@@ -441,7 +441,7 @@ void maybeDrawNoteVelTooltip(QPainter &painter, const NoteSegment &note,
   else if (selection.has_value() && selection.value().contains(note.on.start))
     alphaMultiplier += 0.3;
   drawVelTooltip(painter, note.velocity, note.on.start, note.pitch,
-                 *param.brush, scale, param.alpha * alphaMultiplier,
+                 *param.brush, scale, note.aux_alpha * alphaMultiplier,
                  displayEdo);
 }
 
@@ -600,40 +600,20 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
   std::vector<LeftPianoNote> left_piano_notes;
   std::vector<UnitDrawParam> unit_draw_params;
-  UnitDrawParam current_unit_draw_param, hover_unit_draw_param;
-  std::vector<NoteSegment> current_unit_notes, hover_unit_notes;
+  UnitDrawParam current_unit_draw_param;
+  std::vector<NoteSegment> current_unit_notes;
+  std::vector<std::pair<const UnitDrawParam *, NoteSegment>> focused_notes;
+
   for (int unit_no = 0; unit_no < m_pxtn->Unit_Num(); ++unit_no) {
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
     std::shared_ptr<const NoteBrush> brush = StyleEditor::noteBrush(unit_id);
-    bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-    bool hoveredUnit =
-        unit_no == m_focused_unit_no || unit_no == m_hovered_unit_no;
+    bool isCurrentUnit = (unit_id == m_client->editState().m_current_unit_id);
     bool selected = selected_unit_nos.find(unit_no) != selected_unit_nos.end();
     bool visible = m_pxtn->Unit_Get(unit_no)->get_visible();
-    int alpha;
-    if (hoveredUnit) {
-      if (matchingUnit)
-        alpha = 255;
-      else
-        alpha = 192;
-    } else {
-      if (matchingUnit)
-        alpha = 255;
-      else if (visible)
-        alpha = (m_dark ? 216 : 96);
-      else
-        alpha = 0;
-      if (m_focused_unit_no.has_value() || m_hovered_unit_no.has_value())
-        alpha /= 2;
-    }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-    bool draw_left_highlight = matchingUnit || hoveredUnit || m_dark;
-    UnitDrawParam param{brush,   matchingUnit, hoveredUnit, draw_left_highlight,
-                        visible, alpha,        m_dark,      muted,
-                        selected};
+    UnitDrawParam param{brush, isCurrentUnit, visible, muted, selected};
     unit_draw_params.push_back(param);
-    if (matchingUnit) current_unit_draw_param = param;
-    if (hoveredUnit) hover_unit_draw_param = param;
+    if (isCurrentUnit) current_unit_draw_param = param;
   }
 
   double seconds_per_clock = 60 / m_client->pxtn()->master->get_beat_tempo() /
@@ -675,17 +655,59 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     }
     int pitch = state.pitch.value;
     int velocity = state.velocity.value;
-    NoteSegment note{interval, on_strength, pitch, velocity, on};
+
+    int base_alpha;
+    bool is_focused = false;
+    bool something_is_focused = false;
+    if (m_focus_state.has_value()) {
+      something_is_focused = true;
+      if (const KeyboardFocus::UnitFocused *focused_unit =
+              std::get_if<KeyboardFocus::UnitFocused>(&m_focus_state.value())) {
+        if (unit_no == focused_unit->unit_no) is_focused = true;
+      }
+      if (const KeyboardFocus::WoiceFocused *focused_woice =
+              std::get_if<KeyboardFocus::WoiceFocused>(
+                  &m_focus_state.value())) {
+        if (state.voice_no.value == focused_woice->woice_no) is_focused = true;
+      }
+
+    } else {
+      if (m_hovered_unit_no.has_value()) {
+        something_is_focused = true;
+        // need to make focused have higher alpha. also test on expensive ptcop
+        if (m_hovered_unit_no == unit_no) is_focused = true;
+      }
+    }
+    if (param.isCurrentUnit)
+      base_alpha = 255;
+    else if (param.visible)
+      base_alpha = (m_dark ? 216 : 96);
+    else
+      base_alpha = 0;
+    if (something_is_focused) {
+      if (is_focused)
+        base_alpha = base_alpha / 2 + 128;
+      else
+        base_alpha /= 2;
+    }
+
+    int note_alpha = base_alpha;
+    if (m_dark)
+      note_alpha = base_alpha * state.velocity.value / EVENTMAX_VELOCITY;
+
+    bool draw_left_highlight = is_focused || param.isCurrentUnit;
+    NoteSegment note{interval, on_strength, pitch,      velocity,
+                     on,       note_alpha,  base_alpha, draw_left_highlight};
 
     // draw background highlight & record left piano note
     if (note.on_strength > 0 && interval.start == on.start && !param.muted &&
-        param.alpha > 0) {
+        note.alpha > 0) {
       int alpha;
       double velocity_strength = double(note.velocity) / EVENTMAX_VELOCITY;
       if (!m_dark)
-        alpha = 32 * velocity_strength * (param.alpha / 2 + 128) / 256;
+        alpha = 32 * velocity_strength * (base_alpha / 2 + 128) / 256;
       else
-        alpha = lerp(velocity_strength * param.alpha / 256, 32, 72);
+        alpha = lerp(velocity_strength * base_alpha / 256, 32, 72);
       QColor c = param.brush->toQColor(128, 0, alpha * note.on_strength);
       paintBlock(state.pitch.value,
                  Interval{0, int(scale.clockPerPx * width())}, painter, c,
@@ -695,10 +717,10 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     }
 
     if (interval_intersect(interval, clockBounds).empty()) return;
-    if (param.matchingUnit)
+    if (param.isCurrentUnit)
       current_unit_notes.push_back(note);
-    else if (param.hoveredUnit)
-      hover_unit_notes.push_back(note);
+    else if (is_focused)
+      focused_notes.push_back({&param, note});
     else
       drawNoteSegment(painter, param, note, scale, displayEdo, selection);
   };
@@ -716,6 +738,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
           handleNoteSegment(unit_no, state, e->clock);
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
         break;
+      case EVENTKIND_VOICENO:
+        state.voice_no.set(e);
       case EVENTKIND_VELOCITY:
         state.velocity.set(e);
         break;
@@ -750,9 +774,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     maybeDrawNoteVelTooltip(painter, note, current_unit_draw_param, mouse,
                             scale, displayEdo, selection);
   }
-  for (const NoteSegment &note : hover_unit_notes)
-    drawNoteSegment(painter, hover_unit_draw_param, note, scale, displayEdo,
-                    selection);
+  for (const auto &[draw_param, note] : focused_notes)
+    drawNoteSegment(painter, *draw_param, note, scale, displayEdo, selection);
 
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)

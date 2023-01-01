@@ -207,11 +207,23 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
-          &KeyboardView::setFocusedUnit);
+          [&](std::optional<int> no) {
+            m_keyboard_view->setFocusState(
+                (no.has_value()
+                     ? std::optional(KeyboardFocus::UnitFocused{no.value()})
+                     : std::nullopt));
+          });
+  connect(m_side_menu, &SideMenu::hoveredWoiceChanged, m_keyboard_view,
+          [&](std::optional<int> no) {
+            m_keyboard_view->setFocusState(
+                (no.has_value()
+                     ? std::optional(KeyboardFocus::WoiceFocused{no.value()})
+                     : std::nullopt));
+          });
   // Below is just so that if you change units with W/S while hovered, the
   // highlighted unit isn't hijacked by your current mouse position.
   connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_view,
-          [this](int) { m_keyboard_view->setFocusedUnit(std::nullopt); });
+          [this](int) { m_keyboard_view->setFocusState(std::nullopt); });
 
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
           [this](std::optional<int> unit_no, bool) {
@@ -219,8 +231,10 @@ EditorWindow::EditorWindow(QWidget *parent)
           });
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
           [this](std::optional<int> unit_no, bool selecting_unit) {
-            m_keyboard_view->setFocusedUnit(selecting_unit ? unit_no
-                                                           : std::nullopt);
+            m_keyboard_view->setFocusState(
+                selecting_unit && unit_no.has_value()
+                    ? std::optional(KeyboardFocus::UnitFocused{unit_no.value()})
+                    : std::nullopt);
           });
   connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
