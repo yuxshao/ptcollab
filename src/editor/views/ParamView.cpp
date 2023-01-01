@@ -75,9 +75,10 @@ constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;
 static qreal paramToY(int param, EVENTKIND current_kind, int height) {
   switch (current_kind) {
     case EVENTKIND_TUNING: {
-      double tuning = log2(*((float *)&param));
+      float tuning;
+      memcpy(&tuning, &param, sizeof(tuning));
       return height -
-             (tuning - min_tuning) / (max_tuning - min_tuning) * height;
+             (log2(tuning) - min_tuning) / (max_tuning - min_tuning) * height;
     }
     case EVENTKIND_GROUPNO:
       return height - param * height / (pxtnMAX_TUNEGROUPNUM - 1);
@@ -98,7 +99,9 @@ static qreal paramOfY(int y, EVENTKIND current_kind, int height, bool snap) {
         proportion =
             int(0x10 - (y * 0x10 + height / 2) / height) / (0x10 + 0.0);
       float tuning = exp2(proportion * (max_tuning - min_tuning) + min_tuning);
-      return *((int32_t *)&tuning);
+      int32_t param;
+      memcpy(&param, &tuning, sizeof(param));
+      return param;
     }
     case EVENTKIND_GROUPNO:
       return int((pxtnMAX_TUNEGROUPNUM - 1) * (1 - (y + 0.0) / height) + 0.5);
@@ -264,7 +267,8 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         y = std::min(lastY, height) - lineHeight / 2 - 1 - height;
         alignment = Qt::AlignBottom;
       }
-      float tuning = *((float *)&last.value);
+      float tuning;
+      memcpy(&tuning, &last.value, sizeof(tuning));
       int cents = log2(tuning) * 100 * 12;
       painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
                        QString("%1 (%2c)")
@@ -292,24 +296,27 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
   QColor c = StyleEditor::config.color.ParamBrightGreen;
   switch (state.type) {
     case MouseEditState::Type::SetOn:
-      if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
-          std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
-        if (current_kind == EVENTKIND_VELOCITY &&
-            state.type == MouseEditState::Type::SetOn) {
-          c.setAlpha(alphaMultiplier * 255);
-          int velocity = impliedVelocity(state, pitchPerPx);
-          int y = paramToY(velocity, current_kind, height);
-          Interval interval = state.clock_int(quantizeClock);
-          painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
-                           std::max(1.0, interval.length() / clockPerPx),
-                           lineHeight, c);
-        }
-      }
-      // explicitly don't break;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
+      if (state.type == MouseEditState::Type::SetOn) {
+        // Draw a velocity hint when there's a note being placed in one of the
+        // other views
+        if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
+            std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+          if (current_kind == EVENTKIND_VELOCITY &&
+              state.type == MouseEditState::Type::SetOn) {
+            c.setAlpha(alphaMultiplier * 255);
+            int velocity = impliedVelocity(state, pitchPerPx);
+            int y = paramToY(velocity, current_kind, height);
+            Interval interval = state.clock_int(quantizeClock);
+            painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
+                             std::max(1.0, interval.length() / clockPerPx),
+                             lineHeight, c);
+          }
+        }
+      }
       if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));

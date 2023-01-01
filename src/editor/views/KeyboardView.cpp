@@ -549,7 +549,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   }
 
   for (const BackgroundKeyRow &r : background_key_rows) {
-    QBrush *brush;
+    // Initialize it to start to suppress uninitialized warning
+    QBrush *brush = &whiteNoteBrush;
     switch (r.color) {
       case BackgroundKeyRow::Root:
         brush = &rootNoteBrush;

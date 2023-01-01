@@ -1,8 +1,6 @@
 
 #include "./pxtnEvelist.h"
 
-#include "./pxtn.h"
-
 const char* EVENTKIND_names[EVENTKIND_NUM] = {
     "EVENTKIND_NULL",       "EVENTKIND_ON",        "EVENTKIND_KEY",
     "EVENTKIND_PAN_VOLUME", "EVENTKIND_VELOCITY",  "EVENTKIND_VOLUME",
@@ -148,7 +146,9 @@ int32_t DefaultKindValue(uint8_t kind) {
     case EVENTKIND_TUNING: {
       float tuning;
       tuning = EVENTDEFAULT_TUNING;
-      return *((int32_t*)&tuning);
+      int32_t param;
+      memcpy(&param, &tuning, sizeof(param));
+      return param;
     }
     case EVENTKIND_PAN_TIME:
       return EVENTDEFAULT_PAN_TIME;
@@ -236,7 +236,8 @@ void pxtnEvelist::_rec_cut(EVERECORD* p_rec) {
 
 bool pxtnEvelist::Record_Add_f(int32_t clock, uint8_t unit_no, uint8_t kind,
                                float value_f) {
-  int32_t value = *((int32_t*)(&value_f));
+  int32_t value;
+  memcpy(&value, &value_f, sizeof(value));
   return Record_Add_i(clock, unit_no, kind, value, nullptr);
 }
 
@@ -704,7 +705,8 @@ void pxtnEvelist::Linear_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
 
 void pxtnEvelist::Linear_Add_f(int32_t clock, uint8_t unit_no, uint8_t kind,
                                float value_f) {
-  int32_t value = *((int32_t*)(&value_f));
+  int32_t value;
+  memcpy(&value, &value_f, sizeof(value));
   Linear_Add_i(clock, unit_no, kind, value);
 }
 
