@@ -181,6 +181,9 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
                                  const Event &last, const Event &curr,
                                  qreal clockPerPx, const QColor &onColor,
                                  const pxtnService *pxtn) {
+  // This check is because there's a dummy voice no event before the left side
+  // of the screen that pokes in.
+  if (last.clock < 0) return;
   int32_t lastX = last.clock / clockPerPx;
   QPainterPath path;
   constexpr int s = 4;
