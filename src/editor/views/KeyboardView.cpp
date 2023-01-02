@@ -678,8 +678,9 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
         if (m_hovered_unit_no == unit_no) is_focused = true;
       }
     }
-    if (!param.visible) base_alpha = 0;
-    if (something_is_focused) {
+    if (!param.visible)
+      base_alpha = 0;
+    else if (something_is_focused) {
       if (is_focused)
         base_alpha = 216;
       else
