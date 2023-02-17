@@ -1158,10 +1158,19 @@ void EditorWindow::render() {
       QString unit_name = shift_jis_codec->toUnicode(
           m_pxtn.Unit_Get(unit_no)->get_name_buf_jis(nullptr));
       unit_name.remove(forbidden_filename_character_matcher);
+
+      QString unit = unit_name;
+      static const QString illegal = "\\/<>:\"|?*";
+      for (auto it : unit)
+        if (illegal.contains(it)) unit.replace(it, "_");
+      // mr clean magic eraser
+
       QString filename = QString("%1/%2_%3.wav")
                              .arg(dir.absoluteFilePath())
                              .arg(unit_no)
-                             .arg(unit_name);
+                             .arg(unit)
+                             .trimmed();  // smile
+
       filenames_and_units.push_back({filename, unit_no});
     }
   }
