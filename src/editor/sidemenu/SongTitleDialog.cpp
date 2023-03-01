@@ -13,7 +13,7 @@ SongTitleDialog::SongTitleDialog(const QString &title, const QString &comment,
 
 QString SongTitleDialog::title() { return ui->titleLineEdit->text(); }
 QString SongTitleDialog::comment() {
-  return ui->commentTextEdit->toPlainText();
+  return ui->commentTextEdit->toPlainText().replace('\n', "\r\n");
 }
 
 SongTitleDialog::~SongTitleDialog() { delete ui; }
