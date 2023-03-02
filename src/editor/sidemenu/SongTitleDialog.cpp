@@ -1,5 +1,7 @@
 #include "SongTitleDialog.h"
 
+#include <QRegularExpression>
+
 #include "ui_SongTitleDialog.h"
 
 SongTitleDialog::SongTitleDialog(const QString &title, const QString &comment,
@@ -13,10 +15,8 @@ SongTitleDialog::SongTitleDialog(const QString &title, const QString &comment,
 
 QString SongTitleDialog::title() { return ui->titleLineEdit->text(); }
 QString SongTitleDialog::comment() {
-  return ui->commentTextEdit->toPlainText()
-      .replace('\n', "\r\n")
-      .replace("\r\r\n",
-               "\r\n");  // gross. i'll replace with something better later
+  return ui->commentTextEdit->toPlainText().replace(
+      QRegularExpression("[\r*\n]"), "\r\n");
 }
 
 SongTitleDialog::~SongTitleDialog() { delete ui; }
