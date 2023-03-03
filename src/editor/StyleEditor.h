@@ -30,6 +30,30 @@ void setTitleBar(QWidget *w) noexcept;
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
 std::shared_ptr<NoteBrush const> noteBrush(int i);
+
+class EventFilter : public QObject {
+  Q_OBJECT
+ public:
+  bool eventFilter(QObject *watched, QEvent *event) {
+    switch (event->type()) {
+      case QEvent::Show:
+        // https://doc.qt.io/qt-5/qshowevent.html
+        // Spontaneous QShowEvents are sent by the window system after the
+        // window is shown, as well as when it's reshown after being iconified.
+        // We only want this to trigger when Qt sends it, which is right before
+        // it becomes visible.
+        if (!event->spontaneous()) {
+          QWidget *w = qobject_cast<QWidget *>(watched);
+          if (w) setTitleBar(w);
+        }
+
+        return false;
+      default:
+        return false;
+    }
+  }
+};
+
 struct Config {
  private:
   Config() {}

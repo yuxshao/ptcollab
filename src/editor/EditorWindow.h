@@ -55,7 +55,6 @@ class EditorWindow : public QMainWindow {
   void keyPressEvent(QKeyEvent* event) override;
   void keyReleaseEvent(QKeyEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
-  bool eventFilter(QObject *watched, QEvent *event) override;
   KeyboardView* m_keyboard_view;
   MeasureView* m_measure_view;
   pxtnService m_pxtn;

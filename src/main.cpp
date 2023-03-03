@@ -54,6 +54,13 @@ int main(int argc, char *argv[]) {
   a->setApplicationName("ptcollab");
   a->setApplicationVersion(Settings::Version::string());
 
+  // Remove "?" button on dialogs; this is a Windows-only feature and
+  // goes unused in ptcollab. It shouldn't be the default...
+  a->setAttribute(Qt::AA_DisableWindowContextHelpButton);
+
+  StyleEditor::EventFilter f;
+  a->installEventFilter(&f);
+
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
   parser.addHelpOption();
@@ -180,7 +187,6 @@ int main(int argc, char *argv[]) {
         qWarning() << "No styles were loaded. Falling back on system style.";
     }
     EditorWindow w;
-    a->installEventFilter(&w);
     w.show();
     if (startServerImmediately)
       w.hostDirectly(filename, host, port, recording_file, username);

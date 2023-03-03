@@ -54,6 +54,7 @@ VolumeMeterFrame {
 QPushButton,
 QComboBox,
 QLineEdit,
+QTextEdit,
 QSpinBox {
 	padding: 0.2em;
 	border: 0.1em solid palette(button);
@@ -63,6 +64,7 @@ QSpinBox {
 QPushButton:disabled,
 QComboBox:disabled,
 QLineEdit:disabled,
+QTextEdit:disabled,
 QSpinBox:disabled,
 QHeaderView::section:disabled,
 QLabel:disabled {
@@ -72,9 +74,11 @@ QLabel:disabled {
 QPushButton:disabled,
 QComboBox:disabled,
 QLineEdit:disabled,
+QTextEdit:disabled,
 QSpinBox:disabled,
 QHeaderView::section:disabled {
 	border-color: palette(bright-text);
+	color: #9a9a9a; /* This is what the text color roughly equates to when grayed out. */
 }
 
 QPushButton {
@@ -94,12 +98,14 @@ QTabBar::tab {
 }
 
 QLineEdit,
+QTextEdit,
 QSpinBox {
 	border: 0.1em solid palette(button);
 	background-color: palette(base);
 }
 
 QLineEdit:disabled,
+QTextEdit:disabled,
 QSpinBox:disabled {
 	border: 0.1em solid palette(bright-text);
 }

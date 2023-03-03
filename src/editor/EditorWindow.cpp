@@ -1041,24 +1041,6 @@ void EditorWindow::hostDirectly(std::optional<QString> filename,
   m_client->connectToLocalServer(m_server, username);
 }
 
-bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
-  switch (event->type()) {
-    case QEvent::Show:
-      // https://doc.qt.io/qt-5/qshowevent.html
-      // Spontaneous QShowEvents are sent by the window system after the window
-      // is shown, as well as when it's reshown after being iconified. We only
-      // want this to trigger when Qt sends it, which is right before it becomes
-      // visible.
-      if (!event->spontaneous()) {
-        QWidget *w = qobject_cast<QWidget *>(watched);
-        if (w) StyleEditor::setTitleBar(w);
-      }
-      return false;
-    default:
-      return false;
-  }
-}
-
 bool EditorWindow::saveToFile(QString filename, bool warnOnError) {
 #ifdef _WIN32
   FILE *f_raw;
