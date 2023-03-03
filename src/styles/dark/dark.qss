@@ -71,6 +71,11 @@ QLabel:disabled {
 	color: #C0FFFFFF;
 }
 
+VolumeMeterFrame {
+	qproperty-borderThickness: 0.1em;
+	qproperty-borderColor: palette(button);
+}
+
 QPushButton:disabled,
 QComboBox:disabled,
 QLineEdit:disabled,

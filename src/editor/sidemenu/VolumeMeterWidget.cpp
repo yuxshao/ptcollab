@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QVBoxLayout>
 
 #include "editor/Settings.h"
@@ -33,10 +34,8 @@ static const QColor &colAtDb(double db) {
                                       : StyleEditor::config.color.MeterBarMid)
                       : StyleEditor::config.color.MeterBar);
 }
-
 VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
-    : QFrame(parent), m_client(client), m_animation(new Animation(this)) {
-  setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    : QWidget(parent), m_client(client), m_animation(new Animation(this)) {
   connect(m_animation, &Animation::nextFrame, this, [this]() { update(); });
   connect(client, &PxtoneClient::connected, this,
           &VolumeMeterFrame::resetPeaks);
@@ -44,47 +43,77 @@ VolumeMeterFrame::VolumeMeterFrame(const PxtoneClient *client, QWidget *parent)
 
 void VolumeMeterFrame::paintEvent(QPaintEvent *e) {
   QPainter p(this);
-  p.fillRect(e->rect(), StyleEditor::config.color.MeterBackground);
+  p.fillRect(/*e->rect()*/ this->rect(),
+             StyleEditor::config.color.MeterBackground);
   // int w_limit = dbToX(-3);
+
+  p.setTransform(QTransform().fromTranslate(getRealBorderThickness(),
+                                            getRealBorderThickness()));
+
+  const int width = this->width() - getRealBorderThickness() * 2;
+  const int height = this->height() - getRealBorderThickness() * 2;
 
   const auto &levels = m_client->volumeLevels();
   while (levels.size() > m_peaks.size()) m_peaks.push_back(-INFINITY);
   for (uint i = 0; i < levels.size(); ++i) {
-    int w = dbToX(levels[i].current_volume_dbfs());
-    int y = (height() + 1) * i / levels.size();
-    int h = (height() + 1) / levels.size() - 1;
-    p.fillRect(QRect(0, y, width(), h), barGradient());
+    int w = dbToX(levels[i].current_volume_dbfs(), width);
+    int y = (height + 1) * i / levels.size();
+    int h = (height + 1) / levels.size() - 1;
+    p.fillRect(QRect(0, y, width, h), barGradient());
 
-    p.fillRect(QRect(w, y, width() - w, h),
+    p.fillRect(QRect(w, y, width - w, h),
                StyleEditor::config.color.MeterBackground);
 
     for (int db = MIN_DB; db < MAX_DB; db += 3)
-      p.fillRect(dbToX(db), y, 1, h,
+      p.fillRect(dbToX(db, width), y, 1, h,
                  StyleEditor::config.color.MeterBackgroundSoft);
-    p.fillRect(dbToX(-3), y, 1, h,
+    p.fillRect(dbToX(-3, width), y, 1, h,
                StyleEditor::config.color.MeterBackgroundSoft);
-    p.fillRect(dbToX(-3), y, 1, h,
+    p.fillRect(dbToX(-3, width), y, 1, h,
                StyleEditor::config.color.MeterBackgroundSoft);
 
     double peak = levels[i].last_peak_dbfs();
-    p.fillRect(QRect(dbToX(peak) - 1, y, 2, h), colAtDb(peak));
+    p.fillRect(QRect(dbToX(peak, width) - 1, y, 2, h), colAtDb(peak));
     if (peak > m_peaks[i]) m_peaks[i] = peak;
     if (m_peaks[i] > HIGH_DB)
-      p.fillRect(QRect(dbToX(m_peaks[i]) - 1, y, 2, h), colAtDb(m_peaks[i]));
+      p.fillRect(QRect(dbToX(m_peaks[i], width) - 1, y, 2, h),
+                 colAtDb(m_peaks[i]));
   }
-  QFrame::paintEvent(e);
+
+  // Draw border :(
+
+  p.resetTransform();
+
+#define quad(a) a, a, a, a
+  QRect r =
+      this->rect().marginsRemoved(QMargins(quad(getRealBorderThickness())));
+#undef quad
+  QRegion reg(this->rect());
+  reg = reg.subtracted(r);
+
+  QPainterPath path;
+  path.addRegion(reg);
+
+  p.fillPath(path, borderColor);
 }
 
-int VolumeMeterFrame::dbToX(double db) {
-  return std::clamp<int>((db - MIN_DB) * width() / (MAX_DB - MIN_DB), 0,
-                         width());
+int VolumeMeterFrame::dbToX(const double db, const int width) {
+  return std::clamp<int>((db - MIN_DB) * width / (MAX_DB - MIN_DB), 0, width);
 }
 
 void VolumeMeterFrame::resetPeaks() {
   for (auto &p : m_peaks) p = -INFINITY;
 }
 
-QSize VolumeMeterFrame::minimumSizeHint() const { return QSize(0, 13); }
+int VolumeMeterFrame::getRealBorderThickness() const {
+  return StyleEditor::parseStyleNumber(borderThickness, this->font());
+}
+
+QSize VolumeMeterFrame::minimumSizeHint() const {
+  return QSize(
+      getRealBorderThickness() * 2,
+      ((13 * this->logicalDpiY()) / 96) + (getRealBorderThickness() * 2));
+}
 
 VolumeMeterLabels::VolumeMeterLabels(VolumeMeterFrame *frame, QWidget *parent)
     : QWidget(parent),
@@ -104,15 +133,21 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   p.setFont(QFont(StyleEditor::config.font.MeterFont, 6));
   p.setPen(StyleEditor::config.color.MeterLabel);
 
-  p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
+  p.drawText(QRect(m_frame->getRealBorderThickness(), 0,
+                   width() - 2 - (m_frame->getRealBorderThickness() * 2),
+                   height() - TICK_HEIGHT),
              (Qt::AlignRight | Qt::AlignBottom), "dB");
   for (int db = MIN_DB + 6; db < MAX_DB; db += 6) {
-    int x = m_frame->dbToX(db);
+    int x =
+        m_frame->dbToX(db, width() - (m_frame->getRealBorderThickness() * 2)) +
+        m_frame->getRealBorderThickness();
     p.drawText(QRect(x - 20, 0, 40, height() - TICK_HEIGHT),
                (Qt::AlignHCenter | Qt::AlignBottom), QString("%1").arg(db));
   }
   for (int db = MIN_DB; db < MAX_DB; db += 1) {
-    int x = m_frame->dbToX(db);
+    int x =
+        m_frame->dbToX(db, width() - (m_frame->getRealBorderThickness() * 2)) +
+        m_frame->getRealBorderThickness();
     int h = (db % 6 == 0 ? TICK_HEIGHT : SMALL_TICK_HEIGHT);
     p.fillRect(x, height() - h, 1, h, StyleEditor::config.color.MeterTick);
   }
@@ -120,7 +155,8 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
 }
 
 QSize VolumeMeterLabels::minimumSizeHint() const {
-  return QSize(0, m_show_text ? TICK_HEIGHT + 12 : TICK_HEIGHT);
+  return QSize(m_frame->getRealBorderThickness() * 2,
+               m_show_text ? TICK_HEIGHT + 12 : TICK_HEIGHT);
 }
 
 VolumeMeterWidget::VolumeMeterWidget(VolumeMeterFrame *meter, QWidget *parent)

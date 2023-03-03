@@ -30,6 +30,7 @@ void setTitleBar(QWidget *w) noexcept;
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
 std::shared_ptr<NoteBrush const> noteBrush(int i);
+int parseStyleNumber(const QString &str, const QFont &f);
 
 class EventFilter : public QObject {
   Q_OBJECT

@@ -353,6 +353,33 @@ QStringList getStyles() {
   return styles;
 }
 
+int parseStyleNumber(const QString &str, const QFont &f) {
+  qreal number;
+  int scale = 1;
+
+  QStringRef s(&str);
+
+  bool hasSuffix = false;
+  if (s.endsWith(QLatin1String("ex"), Qt::CaseInsensitive)) {
+    scale = QFontMetrics(f).xHeight();
+    hasSuffix = true;
+  } else if (s.endsWith(QLatin1String("em"), Qt::CaseInsensitive)) {
+    scale = QFontMetrics(f).height();
+    hasSuffix = true;
+  } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+    hasSuffix = true;
+  }
+
+  if (hasSuffix) s.chop(2);
+  number = s.toDouble();
+
+  // this is what Qt Stylesheets code does. if i change it, i run the risk of
+  // having inconsistent border thickness
+  // https://codebrowser.dev/qt5/qtbase/src/gui/text/qcssparser.cpp.html#432
+  // raised lower limit due to the implementation of qRound()
+  return qRound(qBound(double(INT_MIN) + 0.1, scale * number, double(INT_MAX)));
+}
+
 #if defined(Q_OS_WINDOWS)
 void customizeNativeTitleBar(WId w) noexcept {
   if (QOperatingSystemVersion::current() >=
