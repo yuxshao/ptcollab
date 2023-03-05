@@ -82,7 +82,9 @@ void VolumeMeterBars::resetPeaks() {
   for (auto &p : m_peaks) p = -INFINITY;
 }
 
-QSize VolumeMeterBars::minimumSizeHint() const { return QSize(0, 13); }
+QSize VolumeMeterBars::minimumSizeHint() const {
+  return QSize(0, ((13 * this->logicalDpiY()) / 96));
+}
 
 VolumeMeterLabels::VolumeMeterLabels(VolumeMeterBars *bars, QWidget *parent)
     : QWidget(parent),
