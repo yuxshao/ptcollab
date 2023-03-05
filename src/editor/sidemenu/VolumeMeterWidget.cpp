@@ -99,6 +99,13 @@ constexpr int SMALL_TICK_HEIGHT = 2;
 
 QFont label_font() { return QFont(StyleEditor::config.font.MeterFont, 6); }
 
+int VolumeMeterLabels::dbToX(int db) {
+  // The volume meter bars are in a QFrame which may have some padding.
+  // In order to line up with the [x] values in the bars, we need to map to
+  // shared coordinates.
+  return mapFromGlobal(m_bars->mapToGlobal(QPoint(m_bars->dbToX(db), 0))).x();
+}
+
 void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   QPainter p(this);
   p.setFont(label_font());
@@ -106,19 +113,15 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
              (Qt::AlignRight | Qt::AlignBottom), "dB");
-  auto dbToX = [this](int db) {
-    // The volume meter bars are in a QFrame which may have some padding.
-    // In order to line up with the [x] values in the bars, we need to map.
-    return mapFromParent(m_bars->mapToParent(QPoint(m_bars->dbToX(db), 0))).x();
-  };
   for (int db = MIN_DB + 6; db < MAX_DB; db += 6) {
-    p.drawText(QRect(dbToX(db) - 20, 0, 40, height() - TICK_HEIGHT),
+    int x = dbToX(db);
+    p.drawText(QRect(x - 20, 0, 40, height() - TICK_HEIGHT),
                (Qt::AlignHCenter | Qt::AlignBottom), QString("%1").arg(db));
   }
   for (int db = MIN_DB; db < MAX_DB; db += 1) {
+    int x = dbToX(db);
     int h = (db % 6 == 0 ? TICK_HEIGHT : SMALL_TICK_HEIGHT);
-    p.fillRect(dbToX(db), height() - h, 1, h,
-               StyleEditor::config.color.MeterTick);
+    p.fillRect(x, height() - h, 1, h, StyleEditor::config.color.MeterTick);
   }
   QWidget::paintEvent(e);
 }
@@ -129,15 +132,14 @@ QSize VolumeMeterLabels::minimumSizeHint() const {
                       : TICK_HEIGHT);
 }
 
-VolumeMeterWidget::VolumeMeterWidget(VolumeMeterBars *bars, QWidget *parent)
+VolumeMeterWidget::VolumeMeterWidget(VolumeMeterBars *meter, QWidget *parent)
     : QWidget(parent),
-      m_bars(bars),
-      m_labels(new VolumeMeterLabels(bars, this)) {
+      m_bars(meter),
+      m_labels(new VolumeMeterLabels(meter, this)) {
   QVBoxLayout *layout = new QVBoxLayout;
   layout->setMargin(0);
   layout->setSpacing(0);
   setLayout(layout);
-
   layout->addWidget(m_labels);
 
   QFrame *frame = new QFrame(this);
@@ -145,14 +147,14 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterBars *bars, QWidget *parent)
   frame->setLayout(frame_layout);
   frame_layout->setMargin(0);
   frame_layout->setSpacing(0);
-  frame_layout->addWidget(bars);
+  frame_layout->addWidget(meter);
   layout->addWidget(frame);
 
   frame->setSizePolicy(
       QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-  bars->setSizePolicy(
+  meter->setSizePolicy(
       QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-  bars->setParent(frame);
+  meter->setParent(frame);
 }
 
 void VolumeMeterWidget::mousePressEvent(QMouseEvent *) { m_bars->resetPeaks(); }

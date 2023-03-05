@@ -35,9 +35,9 @@ class VolumeMeterLabels : public QWidget {
  private:
   void paintEvent(QPaintEvent *event) override;
   QSize minimumSizeHint() const override;
+  int dbToX(int db);
   VolumeMeterBars *m_bars;
   bool m_show_text;
-
  signals:
 };
 
