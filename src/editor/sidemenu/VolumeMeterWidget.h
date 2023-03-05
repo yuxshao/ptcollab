@@ -38,6 +38,7 @@ class VolumeMeterLabels : public QWidget {
   int dbToX(int db);
   VolumeMeterBars *m_bars;
   bool m_show_text;
+
  signals:
 };
 
