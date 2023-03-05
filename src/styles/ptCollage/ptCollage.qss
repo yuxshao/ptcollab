@@ -379,3 +379,8 @@ QScrollBar::down-arrow:hover,
 QScrollBar::down-arrow:pressed {
   image: url("image/scrollbar-down-down.png");
 }
+
+VolumeMeterWidget QFrame {
+    border: 1px;
+    border-image: url("image/generic-frame.png") 0px 1px 0px 1px fill, stretch stretch;
+}

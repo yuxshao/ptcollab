@@ -18,7 +18,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    NewWoiceDialog* new_woice_dialog,
                    NewWoiceDialog* change_woice_dialog,
-                   VolumeMeterFrame* volume_meter_frame, QWidget* parent)
+                   VolumeMeterBars* volume_meter_frame, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_unit_dialog(add_unit_dialog),
