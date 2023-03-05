@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QFontMetrics>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QVBoxLayout>
@@ -99,9 +100,11 @@ void VolumeMeterLabels::refreshShowText() {
 constexpr int TICK_HEIGHT = 4;
 constexpr int SMALL_TICK_HEIGHT = 2;
 
+QFont label_font() { return QFont(StyleEditor::config.font.MeterFont, 6); }
+
 void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
   QPainter p(this);
-  p.setFont(QFont(StyleEditor::config.font.MeterFont, 6));
+  p.setFont(label_font());
   p.setPen(StyleEditor::config.color.MeterLabel);
 
   p.drawText(QRect(0, 0, width() - 2, height() - TICK_HEIGHT),
@@ -120,7 +123,9 @@ void VolumeMeterLabels::paintEvent(QPaintEvent *e) {
 }
 
 QSize VolumeMeterLabels::minimumSizeHint() const {
-  return QSize(0, m_show_text ? TICK_HEIGHT + 12 : TICK_HEIGHT);
+  return QSize(0, m_show_text
+                      ? TICK_HEIGHT + QFontMetrics(label_font()).height()
+                      : TICK_HEIGHT);
 }
 
 VolumeMeterWidget::VolumeMeterWidget(VolumeMeterFrame *meter, QWidget *parent)
