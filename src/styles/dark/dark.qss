@@ -465,3 +465,7 @@ QComboBox::item:selected {
 QComboBox::up-arrow {
 	background-color: blue;
 }
+
+VolumeMeterWidget QFrame {
+    border: 0.1em solid palette(button);
+}
