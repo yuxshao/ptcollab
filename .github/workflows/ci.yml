@@ -105,7 +105,7 @@ jobs:
           # Building
           sudo apt install libogg-dev libvorbis-dev librtmidi-dev
           # Packaging
-          sudo apt install libgstreamer-plugins-base1.0-0
+          sudo apt install libgstreamer-plugins-base1.0-0 libfuse2
 
           wget -c -nv \
             "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
