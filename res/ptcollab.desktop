@@ -5,5 +5,5 @@ Comment=pxtone collab: multiplayer music editor
 Exec=ptcollab %f
 Icon=ptcollab
 Categories=Audio;AudioVideo;AudioVideoEditing;
-Keywords=music;chiptune;pxtone;
+Keywords=ptcollab;music;chiptune;pxtone;
 Terminal=false
