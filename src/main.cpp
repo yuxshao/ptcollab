@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QSettings>
 
 #include "editor/EditorWindow.h"
 #include "editor/Settings.h"
@@ -54,6 +53,13 @@ int main(int argc, char *argv[]) {
   a->setOrganizationDomain("ptweb.me");
   a->setApplicationName("ptcollab");
   a->setApplicationVersion(Settings::Version::string());
+
+  // Remove "?" button on dialogs; this is a Windows-only feature and
+  // goes unused in ptcollab. It shouldn't be the default...
+  a->setAttribute(Qt::AA_DisableWindowContextHelpButton);
+
+  StyleEditor::EventFilter f;
+  a->installEventFilter(&f);
 
   QCommandLineParser parser;
   parser.setApplicationDescription("A collaborative pxtone editor");
@@ -113,7 +119,7 @@ int main(int argc, char *argv[]) {
   parser.process(*a);
 
   if (parser.isSet(clearSettingsOption)) {
-    QSettings().clear();
+    Settings::clear();
     qWarning("Settings have been cleared.");
     return 0;
   }
@@ -154,8 +160,8 @@ int main(int argc, char *argv[]) {
 
   QString username = parser.value(usernameOption);
   if (parser.value(usernameOption) != "")
-    QSettings().setValue(DISPLAY_NAME_KEY, username);
-  username = QSettings().value(DISPLAY_NAME_KEY).toString();
+    Settings::setValue(DISPLAY_NAME_KEY, username);
+  username = Settings::value(DISPLAY_NAME_KEY, "").toString();
 
   QString logFile = parser.value(logFileOption);
   if (logFile != "") {

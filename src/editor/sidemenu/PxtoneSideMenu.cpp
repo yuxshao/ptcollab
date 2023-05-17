@@ -21,7 +21,7 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
                new DelayEffectModel(client, parent),
                new OverdriveEffectModel(client, parent), new_woice_dialog,
                change_woice_dialog,
-               new VolumeMeterFrame(
+               new VolumeMeterBars(
                    client,
                    nullptr)),  // VolumeMeterWidget gets reparented which causes
                                // some weird lifetime issues with its children
@@ -169,9 +169,9 @@ PxtoneSideMenu::PxtoneSideMenu(PxtoneClient *client, MooClock *moo_clock,
   connect(m_client->clipboard(), &Clipboard::copyKindsSet, this,
           &PxtoneSideMenu::refreshCopyCheckbox);
   connect(this, &SideMenu::addOverdrive,
-          [this]() { m_client->sendAction(Overdrive::Add{}); });
+          [this]() { m_client->sendAction(OverdriveEffect::Add{}); });
   connect(this, &SideMenu::removeOverdrive, [this](int ovdrv_no) {
-    m_client->sendAction(Overdrive::Remove{ovdrv_no});
+    m_client->sendAction(OverdriveEffect::Remove{ovdrv_no});
   });
   connect(this, &SideMenu::moveUnit, [this](bool up) {
     m_client->sendAction(MoveUnit{m_client->editState().m_current_unit_id, up});

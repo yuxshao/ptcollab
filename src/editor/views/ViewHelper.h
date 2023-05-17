@@ -38,39 +38,8 @@ T distance_to_range(T x, T lo, T hi) {
 }
 
 extern int lerp(double r, int a, int b);
+extern double lerp_f(double r, double a, double b);
 
-constexpr int EVENTMAX_VELOCITY = 128;
-struct Brush {
-  int hue;
-  int muted_saturation;
-  int base_saturation;
-  int muted_brightness;
-  int base_brightness;
-  int on_brightness;
-
-  Brush(int hue, int muted_saturation = 48, int base_saturation = 255,
-        int muted_brightness = 96, int base_brightness = 204,
-        int on_brightness = 255)
-      : hue(hue),
-        muted_saturation(muted_saturation),
-        base_saturation(base_saturation),
-        muted_brightness(muted_brightness),
-        base_brightness(base_brightness),
-        on_brightness(on_brightness) {}
-  Brush(double hue) : Brush(int(hue * 360)){};
-
-  QColor toQColor(int velocity, bool on, int alpha) const {
-    int brightness =
-        lerp(double(velocity) / EVENTMAX_VELOCITY, muted_brightness,
-             on ? on_brightness : base_brightness);
-    int saturation = lerp(double(velocity) / EVENTMAX_VELOCITY,
-                          muted_saturation, base_saturation);
-    return QColor::fromHsl(hue, saturation, brightness, alpha);
-  }
-};
-
-extern const Brush brushes[];
-extern const int NUM_BRUSHES;
 extern int nonnegative_modulo(int x, int m);
 extern int one_over_last_clock(pxtnService const *pxtn);
 extern void drawSelection(QPainter &painter, const Interval &interval,
@@ -86,7 +55,6 @@ extern void drawUnitBullet(QPainter &painter, int thisX, int y, int w);
 extern void drawNumAlignTopRight(QPainter *painter, int x, int y, int num);
 extern void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y,
                                          int num, int height, bool a);
-extern const int LEFT_LEGEND_WIDTH;
 extern QTransform worldTransform();
 
 #endif  // VIEWHELPER_H

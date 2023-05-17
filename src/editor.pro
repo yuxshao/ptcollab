@@ -7,8 +7,12 @@ DESTDIR=../build
 # meta makefile generator breaks .qmake.conf sourcing in actual target makefiles
 CONFIG -= debug_and_release
 
+# On my local build top_srcdir is empty for some reason, so set it manually
+equals(top_srcdir, "") { top_srcdir="$$PWD/.." }
+message("top_srcdir: $${top_srcdir}")
 VERSION = "$$cat($${top_srcdir}/version)"
-DEFINES += "PTCOLLAB_VERSION=$${VERSION}"
+message("Version: $${VERSION}")
+!equals(VERSION, "") { DEFINES += "PTCOLLAB_VERSION=$${VERSION}" }
 
 # Including /usr/include/rtmidi since in some dists RtMidi.h is in root dir and
 # others it's in a subdir
@@ -26,6 +30,7 @@ win32 {
     }
     LIBS += -L"$$PWD/../deps/lib/$${libdeps_dir}" -L"$$PWD/deps/lib/$${libdeps_dir}"
 }
+
 macx:LIBS += -L/usr/local/lib
 
 pkgconfig_required = false
@@ -131,6 +136,7 @@ HEADERS += \
            editor/audio/NotePreview.h \
            editor/views/MeasureView.h \
            editor/views/MooClock.h \
+           editor/views/NoteBrush.h \
            editor/views/ParamView.h \
            editor/PxtoneClient.h \
            editor/PxtoneController.h \
@@ -223,6 +229,7 @@ SOURCES += main.cpp \
            editor/audio/NotePreview.cpp \
            editor/views/MeasureView.cpp \
            editor/views/MooClock.cpp \
+           editor/views/NoteBrush.cpp \
            editor/views/ParamView.cpp \
            editor/PxtoneClient.cpp \
            editor/PxtoneController.cpp \
@@ -264,6 +271,9 @@ SOURCES += main.cpp \
            pxtone/pxtnWoicePTV.cpp \
            pxtone/pxtoneNoise.cpp \
            network/BroadcastServer.cpp
+
+macx:LIBS += -framework Cocoa
+macx:OBJECTIVE_SOURCES += editor/MacOsStyleEditor.mm
 
 # Rules for deployment.
 isEmpty(PREFIX) {

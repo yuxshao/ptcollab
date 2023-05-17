@@ -69,7 +69,7 @@ bool OverdriveEffectModel::setData(const QModelIndex &index,
       amp = value.toReal(&ok);
       break;
   }
-  if (ok) m_client->sendAction(Overdrive::Set{index.row(), cut, amp, group});
+  if (ok) m_client->sendAction(OverdriveEffect::Set{index.row(), cut, amp, group});
   return ok;
 }
 

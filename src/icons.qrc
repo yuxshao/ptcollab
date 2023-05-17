@@ -2,7 +2,7 @@
     <qresource prefix="/icons/neutral">
         <file alias="audio-on">icons/neutral/audio-on.svg</file>
         <file alias="add">icons/neutral/add.svg</file>
-		<file alias="remove">icons/neutral/remove.svg</file>
+        <file alias="remove">icons/neutral/remove.svg</file>
         <file alias="visible">icons/neutral/view-visible.svg</file>
         <file alias="select">icons/neutral/edit-select.svg</file>
         <file alias="loop">icons/neutral/media-playlist-repeat.svg</file>
@@ -15,6 +15,7 @@
     <qresource prefix="/images">
         <file alias="images">images.png</file>
         <file alias="icon">big-icon.png</file>
+        <file>default_note_colours.png</file>
     </qresource>
     <qresource prefix="/icons/color">
         <file alias="play">icons/color/play-icon.svg</file>

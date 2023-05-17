@@ -124,7 +124,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QTableView" name="woiceList">
+        <widget class="TableView" name="woiceList">
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
@@ -477,6 +477,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="titleCommentBtn">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Edit title &amp;&amp; comment</string>
          </property>

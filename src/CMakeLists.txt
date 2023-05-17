@@ -70,6 +70,7 @@ set (PTCOLLAB_SOURCES
 	editor/audio/NotePreview.cpp
 	editor/views/MeasureView.cpp
 	editor/views/MooClock.cpp
+        editor/views/NoteBrush.cpp
 	editor/views/ParamView.cpp
 	editor/PxtoneClient.cpp
 	editor/PxtoneController.cpp
@@ -147,12 +148,23 @@ if (APPLE)
 		PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
 	)
 	list (APPEND PTCOLLAB_SOURCES ${MACOSX_ICNS})
+
+        list (APPEND PTCOLLAB_SOURCES editor/MacOsStyleEditor.mm)
+        # Title bar customization :)
 endif()
 
 add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE
-	${PTCOLLAB_SOURCES}
-	${PTCOLLAB_FORMS}
+        ${PTCOLLAB_SOURCES}
+        ${PTCOLLAB_FORMS}
 )
+
+if(APPLE) # ugh
+    find_library(COCOA Cocoa REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${COCOA})
+    # Necessary Cocoa libraries for title bar customization
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${PTCOLLAB_INCLUDEPATHS})
 

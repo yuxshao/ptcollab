@@ -63,11 +63,11 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 
 QSize ParamView::sizeHint() const {
   return worldTransform()
-      .mapRect(
-          QRect(0, 0,
-                LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
-                                        m_client->editState().scale.clockPerPx,
-                0x20))
+      .mapRect(QRect(0, 0,
+                     Settings::LeftPianoWidth::get() +
+                         one_over_last_clock(m_client->pxtn()) /
+                             m_client->editState().scale.clockPerPx,
+                     0x20))
       .size();
 }
 
@@ -75,9 +75,10 @@ constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;
 static qreal paramToY(int param, EVENTKIND current_kind, int height) {
   switch (current_kind) {
     case EVENTKIND_TUNING: {
-      double tuning = log2(*((float *)&param));
+      float tuning;
+      memcpy(&tuning, &param, sizeof(tuning));
       return height -
-             (tuning - min_tuning) / (max_tuning - min_tuning) * height;
+             (log2(tuning) - min_tuning) / (max_tuning - min_tuning) * height;
     }
     case EVENTKIND_GROUPNO:
       return height - param * height / (pxtnMAX_TUNEGROUPNUM - 1);
@@ -98,7 +99,9 @@ static qreal paramOfY(int y, EVENTKIND current_kind, int height, bool snap) {
         proportion =
             int(0x10 - (y * 0x10 + height / 2) / height) / (0x10 + 0.0);
       float tuning = exp2(proportion * (max_tuning - min_tuning) + min_tuning);
-      return *((int32_t *)&tuning);
+      int32_t param;
+      memcpy(&param, &tuning, sizeof(param));
+      return param;
     }
     case EVENTKIND_GROUPNO:
       return int((pxtnMAX_TUNEGROUPNUM - 1) * (1 - (y + 0.0) / height) + 0.5);
@@ -181,6 +184,7 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
                                  const Event &last, const Event &curr,
                                  qreal clockPerPx, const QColor &onColor,
                                  const pxtnService *pxtn) {
+  if (last.clock < 0) return;  // Don't render the dummy default event
   int32_t lastX = last.clock / clockPerPx;
   QPainterPath path;
   constexpr int s = 4;
@@ -261,12 +265,14 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         y = std::min(lastY, height) - lineHeight / 2 - 1 - height;
         alignment = Qt::AlignBottom;
       }
-      float tuning = *((float *)&last.value);
+      float tuning;
+      memcpy(&tuning, &last.value, sizeof(tuning));
       int cents = log2(tuning) * 100 * 12;
-      painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
-                       QString("%1 (%2c)")
-                           .arg(tuning, 0, 'f', 3)
-                           .arg(format_with_sign(cents)));
+      if (last.clock >= 0)  // Block the text from the default dummy event
+        painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
+                         QString("%1 (%2c)")
+                             .arg(tuning, 0, 'f', 3)
+                             .arg(format_with_sign(cents)));
     }
   } else {
     // EVENTKIND_TAIL bullet
@@ -289,24 +295,27 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
   QColor c = StyleEditor::config.color.ParamBrightGreen;
   switch (state.type) {
     case MouseEditState::Type::SetOn:
-      if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
-          std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
-        if (current_kind == EVENTKIND_VELOCITY &&
-            state.type == MouseEditState::Type::SetOn) {
-          c.setAlpha(alphaMultiplier * 255);
-          int velocity = impliedVelocity(state, pitchPerPx);
-          int y = paramToY(velocity, current_kind, height);
-          Interval interval = state.clock_int(quantizeClock);
-          painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
-                           std::max(1.0, interval.length() / clockPerPx),
-                           lineHeight, c);
-        }
-      }
-      // explicitly don't break;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
+      if (state.type == MouseEditState::Type::SetOn) {
+        // Draw a velocity hint when there's a note being placed in one of the
+        // other views
+        if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
+            std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+          if (current_kind == EVENTKIND_VELOCITY &&
+              state.type == MouseEditState::Type::SetOn) {
+            c.setAlpha(alphaMultiplier * 255);
+            int velocity = impliedVelocity(state, pitchPerPx);
+            int y = paramToY(velocity, current_kind, height);
+            Interval interval = state.clock_int(quantizeClock);
+            painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
+                             std::max(1.0, interval.length() / clockPerPx),
+                             lineHeight, c);
+          }
+        }
+      }
       if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
@@ -400,12 +409,12 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   std::vector<Event> lastEvents;
   colors.reserve(m_client->pxtn()->Unit_Num());
   lastEvents.reserve(m_client->pxtn()->Unit_Num());
-  int first_clock = first_beat * master->get_beat_clock();
+  int default_event_clock = std::min(first_beat * master->get_beat_clock(), -1);
   for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-    lastEvents.emplace_back(Event{first_clock, DefaultKindValue(current_kind)});
+    lastEvents.emplace_back(
+        Event{default_event_clock, DefaultKindValue(current_kind)});
     int unit_id = m_client->unitIdMap().noToId(i);
-    colors.push_back(brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(
-        108, false, 255));
+    colors.push_back(StyleEditor::noteBrush(unit_id)->toQColor(108, 1, 255));
     int h, s, l, a;
     colors.rbegin()->getHsl(&h, &s, &l, &a);
     if (m_client->editState().m_current_unit_id != unit_id) {
@@ -512,8 +521,8 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
       int unit_id = state.m_current_unit_id;
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
-                                                        false, 128);
+        color = StyleEditor::noteBrush(unit_id)->toQColor(EVENTMAX_VELOCITY, 0,
+                                                          128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid, current_kind,

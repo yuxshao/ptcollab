@@ -12,7 +12,6 @@
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
-#include "editor/audio/PxtoneUnitIODevice.h"
 
 void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
   // TODO: dedup from pxtoneClient. maybe
@@ -25,7 +24,7 @@ void LocalEditState::update(const pxtnService *pxtn, const EditState &s) {
 QSize KeyboardView::sizeHint() const {
   return worldTransform()
       .mapRect(
-          QRect(QPoint(-LEFT_LEGEND_WIDTH, 0),
+          QRect(QPoint(-Settings::LeftPianoWidth::get(), 0),
                 QPoint(one_over_last_clock(m_client->pxtn()) /
                            m_client->editState().scale.clockPerPx,
                        m_client->editState().scale.pitchToY(EVENTMIN_KEY))))
@@ -88,12 +87,14 @@ KeyboardView::KeyboardView(PxtoneClient *client, MooClock *moo_clock,
 void KeyboardView::ensurePlayheadFollowed() {
   bool follow_exactly =
       m_client->editState().m_follow_playhead == FollowPlayhead::Follow;
-  double x = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  double logicalX = m_moo_clock->now() / m_client->editState().scale.clockPerPx;
+  double x = worldTransform().map(QPointF(logicalX, 0)).x();
   emit ensureVisibleX(x, follow_exactly);
 }
 
-void KeyboardView::setFocusedUnit(std::optional<int> unit_no) {
-  m_focused_unit_no = unit_no;
+void KeyboardView::setFocusState(
+    const std::optional<KeyboardFocus::State> &state) {
+  m_focus_state = state;
 }
 
 void KeyboardView::setSelectUnitEnabled(bool b) {
@@ -117,14 +118,17 @@ struct LastEvent {
   }
 };
 
+#undef DrawState  // Windows GDI thing
 struct DrawState {
   LastEvent pitch;
   LastEvent velocity;
+  LastEvent voice_no;
   std::optional<Interval> ongoingOnEvent;
 
   DrawState()
       : pitch(EVENTDEFAULT_KEY),
         velocity(EVENTDEFAULT_VELOCITY),
+        voice_no(EVENTDEFAULT_VOICENO),
         ongoingOnEvent(std::nullopt) {}
 };
 
@@ -175,11 +179,11 @@ static void paintHighlight(int pitch, int clock, QPainter &painter,
 static qint32 arbitrarily_tall = 512;
 
 void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
-                    const Brush &brush, const Scale &scale, qint32 alpha,
+                    const NoteBrush &brush, const Scale &scale, qint32 alpha,
                     int displayEdo) {
   if (alpha == 0) return;
   qint32 draw_vel = (EVENTMAX_VELOCITY + vel) / 2;
-  painter.setPen(brush.toQColor(draw_vel, true, alpha));
+  painter.setPen(brush.toQColor(draw_vel, 1, alpha));
   painter.setFont(
       QFont(StyleEditor::config.font.EditorFont, Settings::TextSize::get()));
   painter.drawText(
@@ -191,21 +195,20 @@ void drawVelTooltip(QPainter &painter, qint32 vel, qint32 clock, qint32 pitch,
 }
 
 void drawGhostOnNote(QPainter &painter, const Interval &interval,
-                     const Scale &scale, int width, const Brush &brush,
+                     const Scale &scale, int width, const NoteBrush &brush,
                      int velocity, int alpha, double alphaMultiplier,
                      bool rowHighlight, bool noteHighlight, int pitch,
                      int displayEdo) {
   if (rowHighlight)
-    paintBlock(
-        pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
-        brush.toQColor(128, false, 48 * velocity / 128 * alphaMultiplier),
-        scale, displayEdo);
+    paintBlock(pitch, Interval{0, int(scale.clockPerPx * width)}, painter,
+               brush.toQColor(128, 0, 48 * velocity / 128 * alphaMultiplier),
+               scale, displayEdo);
   paintBlock(pitch, interval, painter,
-             brush.toQColor(velocity, false, alpha * alphaMultiplier), scale,
+             brush.toQColor(velocity, 0, alpha * alphaMultiplier), scale,
              displayEdo);
   if (noteHighlight)
     paintHighlight(pitch, std::min(interval.start, interval.end), painter,
-                   brush.toQColor(128, true, alpha * alphaMultiplier), scale,
+                   brush.toQColor(128, 1, alpha * alphaMultiplier), scale,
                    displayEdo);
 }
 
@@ -247,8 +250,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
                        std::optional<int> nowNoWrap, const pxtnMaster *master,
                        double alphaMultiplier, double selectionAlphaMultiplier,
                        int displayEdo) {
-  const Brush &brush =
-      brushes[nonnegative_modulo(state.m_current_unit_id, NUM_BRUSHES)];
+  const NoteBrush &brush = *StyleEditor::noteBrush(state.m_current_unit_id);
   const MouseEditState &mouse_edit_state = state.mouse_edit_state;
 
   switch (mouse_edit_state.type) {
@@ -317,7 +319,7 @@ void drawOngoingAction(const EditState &state, const LocalEditState &localState,
   if (nowNoWrap.has_value()) {
     for (const auto &[unit_id, v] : state.m_input_state.notes_by_id) {
       for (const Interval &interval : v.clock_ints(nowNoWrap.value(), master)) {
-        const Brush &brush = brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)];
+        const NoteBrush &brush = *StyleEditor::noteBrush(unit_id);
         drawGhostOnNote(painter, interval, state.scale, width, brush,
                         v.on.vel(), 255, alphaMultiplier, true, true, v.on.key,
                         displayEdo);
@@ -342,9 +344,10 @@ static void drawCursor(const EditState &state, QPainter &painter,
 
 void drawLeftPiano(QPainter &painter, int y, int h, const QBrush &b,
                    QBrush *bInner) {
-  painter.fillRect(0, y, LEFT_LEGEND_WIDTH, h, b);
-  painter.fillRect(LEFT_LEGEND_WIDTH, y + 1, 1, h - 2, b);
-  if (bInner) painter.fillRect(0, y, LEFT_LEGEND_WIDTH * 2 / 3, h, *bInner);
+  painter.fillRect(0, y, Settings::LeftPianoWidth::get(), h, b);
+  painter.fillRect(Settings::LeftPianoWidth::get(), y + 1, 1, h - 2, b);
+  if (bInner)
+    painter.fillRect(0, y, Settings::LeftPianoWidth::get() * 2 / 3, h, *bInner);
 }
 
 double smoothDistance(double dy, double dx) {
@@ -368,18 +371,19 @@ struct LeftPianoNote {
 
 struct NoteSegment {
   Interval interval;
-  bool playing;
+  double on_strength;
   int pitch;
   int velocity;
   Interval on;
+  int alpha;
+  int aux_alpha;
+  bool draw_left_highlight;
 };
 
 struct UnitDrawParam {
-  const Brush *brush;
-  bool matchingUnit;
-  bool hoveredUnit;
+  std::shared_ptr<const NoteBrush> brush;
+  bool isCurrentUnit;
   bool visible;
-  int alpha;
   bool muted;
   bool selected;
 };
@@ -388,7 +392,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
                      const NoteSegment &note, const Scale &scale,
                      int displayEdo, const std::optional<Interval> &selection) {
   QColor color = param.brush->toQColor(
-      note.velocity, note.playing && !param.muted, param.alpha);
+      note.velocity, (param.muted ? 0.0 : note.on_strength), note.alpha);
   if (param.muted)
     color.setHsl(0, color.saturation() * 0.3, color.lightness(), color.alpha());
 
@@ -396,9 +400,9 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
   paintBlock(note.pitch, note.interval, painter, color, scale, displayEdo);
 
   // draw highlight at front
-  if (note.interval.start == note.on.start) {
+  if (note.interval.start == note.on.start && note.draw_left_highlight) {
     paintHighlight(note.pitch, note.interval.start, painter,
-                   param.brush->toQColor(255, true, param.alpha), scale,
+                   param.brush->toQColor(255, 1, color.alpha()), scale,
                    displayEdo);
   }
 
@@ -408,7 +412,7 @@ void drawNoteSegment(QPainter &painter, const UnitDrawParam &param,
         interval_intersect(selection.value(), note.interval);
     if (!selection_segment.empty()) {
       painter.setPen(
-          param.brush->toQColor(EVENTDEFAULT_VELOCITY, true, param.alpha));
+          param.brush->toQColor(EVENTDEFAULT_VELOCITY, 1, note.aux_alpha));
       drawBlock(note.pitch, selection_segment, painter, scale, displayEdo);
     }
   }
@@ -437,7 +441,7 @@ void maybeDrawNoteVelTooltip(QPainter &painter, const NoteSegment &note,
   else if (selection.has_value() && selection.value().contains(note.on.start))
     alphaMultiplier += 0.3;
   drawVelTooltip(painter, note.velocity, note.on.start, note.pitch,
-                 *param.brush, scale, param.alpha * alphaMultiplier,
+                 *param.brush, scale, note.aux_alpha * alphaMultiplier,
                  displayEdo);
 }
 
@@ -545,7 +549,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   }
 
   for (const BackgroundKeyRow &r : background_key_rows) {
-    QBrush *brush;
+    // Initialize it to start to suppress uninitialized warning
+    QBrush *brush = &whiteNoteBrush;
     switch (r.color) {
       case BackgroundKeyRow::Root:
         brush = &rootNoteBrush;
@@ -582,7 +587,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   std::optional<Interval> selection = std::nullopt;
   std::set<int> selected_unit_nos = m_client->selectedUnitNos();
   if (m_dark)
-    painter.setCompositionMode(QPainter::CompositionMode_Plus);
+    painter.setCompositionMode(QPainter::CompositionMode_Screen);
   else
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
@@ -596,40 +601,25 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
   std::vector<LeftPianoNote> left_piano_notes;
   std::vector<UnitDrawParam> unit_draw_params;
-  UnitDrawParam current_unit_draw_param, hover_unit_draw_param;
-  std::vector<NoteSegment> current_unit_notes, hover_unit_notes;
+  UnitDrawParam current_unit_draw_param;
+  std::vector<NoteSegment> current_unit_notes;
+  std::vector<std::pair<const UnitDrawParam *, NoteSegment>> focused_notes;
+
   for (int unit_no = 0; unit_no < m_pxtn->Unit_Num(); ++unit_no) {
     qint32 unit_id = m_client->unitIdMap().noToId(unit_no);
-    const Brush *brush = &brushes[unit_id % NUM_BRUSHES];
-    bool matchingUnit = (unit_id == m_client->editState().m_current_unit_id);
-    bool hoveredUnit =
-        unit_no == m_focused_unit_no || unit_no == m_hovered_unit_no;
+    std::shared_ptr<const NoteBrush> brush = StyleEditor::noteBrush(unit_id);
+    bool isCurrentUnit = (unit_id == m_client->editState().m_current_unit_id);
     bool selected = selected_unit_nos.find(unit_no) != selected_unit_nos.end();
     bool visible = m_pxtn->Unit_Get(unit_no)->get_visible();
-    int alpha;
-    if (hoveredUnit) {
-      if (matchingUnit)
-        alpha = 255;
-      else
-        alpha = 192;
-    } else {
-      if (matchingUnit)
-        alpha = 255;
-      else if (visible)
-        alpha = 64;
-      else
-        alpha = 0;
-      if (m_focused_unit_no.has_value() || m_hovered_unit_no.has_value())
-        alpha /= 2;
-    }
     bool muted = !m_pxtn->Unit_Get(unit_no)->get_played();
-    UnitDrawParam param{brush, matchingUnit, hoveredUnit, visible,
-                        alpha, muted,        selected};
+    UnitDrawParam param{brush, isCurrentUnit, visible, muted, selected};
     unit_draw_params.push_back(param);
-    if (matchingUnit) current_unit_draw_param = param;
-    if (hoveredUnit) hover_unit_draw_param = param;
+    if (isCurrentUnit) current_unit_draw_param = param;
   }
 
+  double seconds_per_clock = 60 / m_client->pxtn()->master->get_beat_tempo() /
+                             m_client->pxtn()->master->get_beat_clock();
+  double decay_length = 0.25 / seconds_per_clock;
   auto handleNoteSegment = [&](int unit_no, const DrawState &state, int end) {
     Interval segment{state.pitch.clock, end};
     const MouseEditState &mouse = m_client->editState().mouse_edit_state;
@@ -649,29 +639,89 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       }
     }
 
-    bool playing = m_client->isPlaying() && on.contains(clock);
+    double on_strength = 0;
+    if (m_client->isPlaying()) {
+      if (clock >= on.start) {
+        if (!m_dark)
+          on_strength = clock < on.end ? 1 : 0;
+        else {
+          if (clock < on.end) {
+            double seconds_in_block = (clock - on.start) * seconds_per_clock;
+            on_strength = lerp_f(seconds_in_block / 0.25, 1, 0.6);
+          } else if (clock < on.end + decay_length) {
+            on_strength = lerp_f((clock - on.end) / decay_length, 0.5, 0.0);
+          }
+        }
+      }
+    }
     int pitch = state.pitch.value;
     int velocity = state.velocity.value;
-    NoteSegment note{interval, playing, pitch, velocity, on};
+
+    int base_alpha;
+    bool is_focused = false;
+    bool something_is_focused = false;
+    if (m_focus_state.has_value()) {
+      something_is_focused = true;
+      if (const KeyboardFocus::UnitFocused *focused_unit =
+              std::get_if<KeyboardFocus::UnitFocused>(&m_focus_state.value())) {
+        if (unit_no == focused_unit->unit_no) is_focused = true;
+      }
+      if (const KeyboardFocus::WoiceFocused *focused_woice =
+              std::get_if<KeyboardFocus::WoiceFocused>(
+                  &m_focus_state.value())) {
+        if (state.voice_no.value == focused_woice->woice_no) is_focused = true;
+      }
+
+    } else {
+      if (m_hovered_unit_no.has_value()) {
+        something_is_focused = true;
+        if (m_hovered_unit_no == unit_no) is_focused = true;
+      }
+    }
+    if (!param.visible && !is_focused && !param.isCurrentUnit)
+      base_alpha = 0;
+    else if (something_is_focused) {
+      if (is_focused)
+        base_alpha = 216;
+      else
+        base_alpha = (m_dark ? 108 : 48);
+    } else {
+      if (param.isCurrentUnit)
+        base_alpha = 255;
+      else
+        base_alpha = (m_dark ? 216 : 96);
+    }
+
+    int note_alpha = base_alpha;
+    if (m_dark)
+      note_alpha = base_alpha * state.velocity.value / EVENTMAX_VELOCITY;
+
+    bool draw_left_highlight = is_focused || param.isCurrentUnit;
+    NoteSegment note{interval, on_strength, pitch,      velocity,
+                     on,       note_alpha,  base_alpha, draw_left_highlight};
 
     // draw background highlight & record left piano note
-    if (note.playing && interval.start == on.start && !param.muted &&
-        param.alpha > 0) {
-      QColor c = param.brush->toQColor(
-          128, false, 16 * note.velocity / 128 * (param.alpha / 2 + 128) / 256);
+    if (note.on_strength > 0 && interval.start == on.start && !param.muted &&
+        note.alpha > 0) {
+      int alpha;
+      double velocity_strength = double(note.velocity) / EVENTMAX_VELOCITY;
+      if (!m_dark)
+        alpha = 32 * velocity_strength * (base_alpha / 2 + 128) / 256;
+      else
+        alpha = lerp(velocity_strength * base_alpha / 256, 32, 72);
+      QColor c = param.brush->toQColor(128, 0, alpha * note.on_strength);
       paintBlock(state.pitch.value,
                  Interval{0, int(scale.clockPerPx * width())}, painter, c,
                  scale, displayEdo);
-      c.setAlpha((64 + c.alpha() * 2 / 3) *
-                 (1 - std::min(0.5, (clock - note.on.start) / 1200.0)));
+      c.setAlpha((128 + c.alpha() / 2) * note.on_strength);
       left_piano_notes.push_back({state.pitch.value, c});
     }
 
     if (interval_intersect(interval, clockBounds).empty()) return;
-    if (param.matchingUnit)
+    if (param.isCurrentUnit)
       current_unit_notes.push_back(note);
-    else if (param.hoveredUnit)
-      hover_unit_notes.push_back(note);
+    else if (is_focused)
+      focused_notes.push_back({&param, note});
     else
       drawNoteSegment(painter, param, note, scale, displayEdo, selection);
   };
@@ -688,6 +738,9 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
         if (state.ongoingOnEvent.has_value())
           handleNoteSegment(unit_no, state, e->clock);
         state.ongoingOnEvent.emplace(Interval{e->clock, e->value + e->clock});
+        break;
+      case EVENTKIND_VOICENO:
+        state.voice_no.set(e);
         break;
       case EVENTKIND_VELOCITY:
         state.velocity.set(e);
@@ -723,9 +776,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     maybeDrawNoteVelTooltip(painter, note, current_unit_draw_param, mouse,
                             scale, displayEdo, selection);
   }
-  for (const NoteSegment &note : hover_unit_notes)
-    drawNoteSegment(painter, hover_unit_draw_param, note, scale, displayEdo,
-                    selection);
+  for (const auto &[draw_param, note] : focused_notes)
+    drawNoteSegment(painter, *draw_param, note, scale, displayEdo, selection);
 
   if (min_segment_distance_to_mouse < DISTANCE_THRESHOLD_SQ &&
       min_segment_unit_no >= 0)
@@ -777,7 +829,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     // we use event_rect_f in case e->rect has some rounding from scaling up
     painter.setTransform(QTransform::fromTranslate(event_rect_f.left(), 0),
                          true);
-    QBrush *leftBrush, *leftInnerBrush;
+    QBrush *leftBrush = nullptr, *leftInnerBrush = nullptr;
     for (const BackgroundKeyRow &r : background_key_rows) {
       switch (r.color) {
         case BackgroundKeyRow::Root:
@@ -790,7 +842,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
           leftInnerBrush = &blackLeftInnerBrush;
           break;
       }
-      painter.fillRect(0, r.y - 1, LEFT_LEGEND_WIDTH, 1, blackLeftInnerBrush);
+      painter.fillRect(0, r.y - 1, Settings::LeftPianoWidth::get(), 1,
+                       blackLeftInnerBrush);
       drawLeftPiano(painter, r.y, r.h, *leftBrush, leftInnerBrush);
       int pitch_offset = 0;
       if (!octave_display_a) pitch_offset = PITCH_PER_OCTAVE / 4;
@@ -808,10 +861,10 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
     // Highlights from MIDI pitches
     for (auto &[pitch, vel] : m_midi_notes) {
-      const Brush &brush =
-          brushes[m_client->editState().m_current_unit_id % NUM_BRUSHES];
+      const NoteBrush &brush =
+          *StyleEditor::noteBrush(m_client->editState().m_current_unit_id);
       drawLeftPianoNoteHighlight(painter, pitch, m_client->editState().scale,
-                                 displayEdo, brush.toQColor(vel, true, 200));
+                                 displayEdo, brush.toQColor(vel, 1, 200));
     }
 
     // Highlight from clicked note
@@ -849,8 +902,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       // Draw cursor
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
-                                                        false, 128);
+        color = StyleEditor::noteBrush(unit_id)->toQColor(EVENTMAX_VELOCITY, 0,
+                                                          128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid);
@@ -917,10 +970,10 @@ void KeyboardView::updateStatePositions(EditState &edit_state,
   int current_pitch = edit_state.scale.pitchOfY(mouse_pos.y());
   int left_keyboard_current_vel =
       int(EVENTMAX_VELOCITY * (mouse_pos.x() - viewport_pos.x()) /
-          LEFT_LEGEND_WIDTH);
+          Settings::LeftPianoWidth::get());
   std::variant<MouseLeftKeyboard, MouseMainKeyboard> kind;
 
-  if (mouse_pos.x() < viewport_pos.x() + LEFT_LEGEND_WIDTH &&
+  if (mouse_pos.x() < viewport_pos.x() + Settings::LeftPianoWidth::get() &&
       state.type == MouseEditState::Type::Nothing)
     kind = MouseLeftKeyboard{left_keyboard_current_vel};
   else
@@ -1013,14 +1066,18 @@ void KeyboardView::mousePressEvent(QMouseEvent *event) {
             qint32 vel =
                 m_pxtn->evels->get_Value(clock, unit_no, EVENTKIND_VELOCITY);
             s.mouse_edit_state.base_velocity = vel;
-            if (const auto *left_kb_state =
-                    std::get_if<MouseLeftKeyboard>(&mouse_keyboard_state.kind))
+            bool chord_preview;
+            if (const auto *left_kb_state = std::get_if<MouseLeftKeyboard>(
+                    &mouse_keyboard_state.kind)) {
               vel = left_kb_state->start_vel;
+              chord_preview = false;
+            } else
+              chord_preview =
+                  Settings::ChordPreview::get() && !m_client->isPlaying();
 
             m_audio_note_preview = std::make_unique<NotePreview>(
                 m_pxtn, &m_client->moo()->params, unit_no, clock, pitch, vel,
-                m_client->audioState()->bufferSize(),
-                Settings::ChordPreview::get() && !m_client->isPlaying(), this);
+                m_client->audioState()->bufferSize(), chord_preview, this);
           }
         }
       },

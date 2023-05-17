@@ -18,7 +18,7 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
                    DelayEffectModel* delays, OverdriveEffectModel* ovdrvs,
                    NewWoiceDialog* new_woice_dialog,
                    NewWoiceDialog* change_woice_dialog,
-                   VolumeMeterFrame* volume_meter_frame, QWidget* parent)
+                   VolumeMeterBars* volume_meter_frame, QWidget* parent)
     : QWidget(parent),
       ui(new Ui::SideMenu),
       m_add_unit_dialog(add_unit_dialog),
@@ -51,9 +51,11 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   ui->unitList->setItemDelegate(m_unit_list_delegate);
   connect(ui->unitList, &TableView::hoveredRowChanged, this,
           &SideMenu::hoveredUnitChanged);
+  connect(ui->woiceList, &TableView::hoveredRowChanged, this,
+          &SideMenu::hoveredWoiceChanged);
   setPlay(false);
-  for (auto* list : {(QTableView*)ui->unitList, ui->woiceList, ui->delayList,
-                     ui->overdriveList, ui->usersList}) {
+  for (auto* list : {(QTableView*)ui->unitList, (QTableView*)ui->woiceList,
+                     ui->delayList, ui->overdriveList, ui->usersList}) {
     list->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     list->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
@@ -188,26 +190,24 @@ SideMenu::SideMenu(UnitListModel* units, WoiceListModel* woices,
   {
     bool ok;
     int v;
-    v = QSettings().value(VOLUME_KEY).toInt(&ok);
+    v = Settings::value(VOLUME_KEY, QVariant()).toInt(&ok);
     if (ok) ui->volumeSlider->setValue(v);
   }
   connect(ui->volumeSlider, &QSlider::valueChanged, [this](int v) {
-    QSettings().setValue(VOLUME_KEY, v);
+    Settings::setValue(VOLUME_KEY, v);
     emit volumeChanged(v);
   });
   {
     bool ok;
     double v;
-    v = QSettings()
-            .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
-            .toDouble(&ok);
+    v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH).toDouble(&ok);
     if (ok) ui->bufferLength->setText(QString("%1").arg(v, 0, 'f', 2));
   }
   connect(ui->bufferLength, &QLineEdit::editingFinished, [this]() {
     bool ok;
     double length = ui->bufferLength->text().toDouble(&ok);
     if (ok) {
-      QSettings().setValue(BUFFER_LENGTH_KEY, length);
+      Settings::setValue(BUFFER_LENGTH_KEY, length);
       ui->bufferLength->clearFocus();
       emit bufferLengthChanged(length);
     }
