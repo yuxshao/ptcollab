@@ -220,6 +220,14 @@ jobs:
             tar -cvf- "${PACKAGE}" | gzip -9c > "${artifact_name}"
           fi
 
+
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ${{ steps.package.outputs.artifact-name }}
+
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
         uses: svenstaro/upload-release-action@v2
