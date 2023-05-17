@@ -92,16 +92,8 @@ class pxtnEvelist {
 
   const EVERECORD *get_Records() const;
 
-  class Hint {
-   private:
-    EVERECORD *eve;
-    friend class pxtnEvelist;
-  };
-
-  Hint get_StartHint() const;
-
-  bool Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind, int32_t value,
-                    Hint *hint);
+  bool Record_Add_i(int32_t clock, uint8_t unit_no, uint8_t kind,
+                    int32_t value);
   bool Record_Add_f(int32_t clock, uint8_t unit_no, uint8_t kind,
                     float value_f);
 
@@ -117,12 +109,12 @@ class pxtnEvelist {
   int32_t Record_Value_Set(int32_t clock1, int32_t clock2, uint8_t unit_no,
                            uint8_t kind, int32_t value);
   int32_t Record_Value_Change(int32_t clock1, int32_t clock2, uint8_t unit_no,
-                              uint8_t kind, int32_t value, Hint *hint);
+                              uint8_t kind, int32_t value);
   int32_t Record_Value_Omit(uint8_t kind, int32_t value);
   int32_t Record_Value_Replace(uint8_t kind, int32_t old_value,
                                int32_t new_value);
   int32_t Record_Delete(int32_t clock1, int32_t clock2, uint8_t unit_no,
-                        uint8_t kind, Hint *hint);
+                        uint8_t kind);
   int32_t Record_Delete(int32_t clock1, int32_t clock2, uint8_t unit_no);
 
   int32_t Record_UnitNo_Miss(uint8_t unit_no);  // delete event has the unit-no

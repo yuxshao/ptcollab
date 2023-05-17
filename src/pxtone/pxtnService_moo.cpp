@@ -1,5 +1,7 @@
 
 #include "../editor/audio/VolumeMeter.h"
+#include "./pxtn.h"
+#include "./pxtnMem.h"
 #include "./pxtnService.h"
 
 mooParams::mooParams() {
@@ -93,12 +95,9 @@ void mooParams::processNonOnEvent(pxtnUnitTone* p_u, EVENTKIND kind,
     case EVENTKIND_GROUPNO:
       p_u->Tone_GroupNo(value);
       break;
-    case EVENTKIND_TUNING: {
-      float tuning;
-      memcpy(&tuning, &value, sizeof(tuning));
-      p_u->Tone_Tuning(tuning);
+    case EVENTKIND_TUNING:
+      p_u->Tone_Tuning(*((float*)(&value)));
       break;
-    }
     case EVENTKIND_ON: {
       // A bit hacky but interpret EVENTKIND_ON value as how much time is left
       std::shared_ptr<const pxtnWoice> p_wc;

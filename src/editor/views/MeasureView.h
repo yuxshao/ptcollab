@@ -17,11 +17,9 @@ class MeasureView : public QWidget {
   Scale m_last_scale;
   MooClock *m_moo_clock;
   QFont m_label_font;
-  QFontMetrics m_label_font_metrics;
   std::unique_ptr<NotePreview> m_audio_note_preview;
   std::optional<int> m_focused_unit_no;
   std::optional<int> m_hovered_unit_no;
-  std::vector<std::optional<std::pair<QString, QPixmap>>> m_pinned_unit_labels;
   bool m_selection_mode;
   bool m_jump_to_unit_enabled;
 

@@ -23,18 +23,14 @@
 #include "InputEvent.h"
 #include "Settings.h"
 #include "WelcomeDialog.h"
-#include "editor/StyleEditor.h"
 #include "pxtone/pxtnDescriptor.h"
 #include "ui_EditorWindow.h"
 #include "views/MeasureView.h"
 #include "views/MooClock.h"
 #include "views/ParamView.h"
-#include "views/ViewHelper.h"
 
 // TODO: Maybe we could not hard-code this and change the engine to be dynamic
 // w/ smart pointers.
-
-#undef EVENT_MAX  // winuser.h conflict -- warns without
 static constexpr int EVENT_MAX = 1000000;
 
 static constexpr int AUTOSAVE_CHECK_INTERVAL_MS = 1 * 1000;
@@ -127,12 +123,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_scroll_area, &EditorScrollArea::viewportChanged,
           [this](const QRect &viewport) {
             m_client->changeEditState(
-                [&](EditState &e) {
-                  // Logical coords of just the roll area w/o the left piano
-                  e.viewport = worldTransform().inverted().mapRect(viewport);
-                  e.viewport.adjust(Settings::LeftPianoWidth::get(), 0, 0, 0);
-                },
-                true);
+                [&](EditState &e) { e.viewport = viewport; }, true);
           });
   connect(m_client, &PxtoneClient::followActivity, [this](const EditState &r) {
     m_client->changeEditState(
@@ -150,14 +141,10 @@ EditorWindow::EditorWindow(QWidget *parent)
           // disable follow playhead b/c otherwise it could compete with follow
           // user for adjusting scrollbars.
           e.m_follow_playhead = FollowPlayhead::None;
-          // Logical coords of roll area with left piano
-          QPointF logical_pos{
-              startClock / e.scale.clockPerPx - Settings::LeftPianoWidth::get(),
-              startPitch / e.scale.pitchPerPx};
-          // Scroll coords of roll area with left piano
-          QPointF scroll_pos = worldTransform().map(logical_pos);
-          m_scroll_area->horizontalScrollBar()->setValue(scroll_pos.x());
-          m_scroll_area->verticalScrollBar()->setValue(scroll_pos.y());
+          m_scroll_area->horizontalScrollBar()->setValue(startClock /
+                                                         e.scale.clockPerPx);
+          m_scroll_area->verticalScrollBar()->setValue(startPitch /
+                                                       e.scale.pitchPerPx);
         },
         true);
   });
@@ -207,23 +194,11 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
   connect(m_side_menu, &SideMenu::hoveredUnitChanged, m_keyboard_view,
-          [&](std::optional<int> no) {
-            m_keyboard_view->setFocusState(
-                (no.has_value()
-                     ? std::optional(KeyboardFocus::UnitFocused{no.value()})
-                     : std::nullopt));
-          });
-  connect(m_side_menu, &SideMenu::hoveredWoiceChanged, m_keyboard_view,
-          [&](std::optional<int> no) {
-            m_keyboard_view->setFocusState(
-                (no.has_value()
-                     ? std::optional(KeyboardFocus::WoiceFocused{no.value()})
-                     : std::nullopt));
-          });
+          &KeyboardView::setFocusedUnit);
   // Below is just so that if you change units with W/S while hovered, the
   // highlighted unit isn't hijacked by your current mouse position.
   connect(m_side_menu, &SideMenu::currentUnitChanged, m_keyboard_view,
-          [this](int) { m_keyboard_view->setFocusState(std::nullopt); });
+          [this](int) { m_keyboard_view->setFocusedUnit(std::nullopt); });
 
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_side_menu,
           [this](std::optional<int> unit_no, bool) {
@@ -231,10 +206,8 @@ EditorWindow::EditorWindow(QWidget *parent)
           });
   connect(m_measure_view, &MeasureView::hoverUnitNoChanged, m_keyboard_view,
           [this](std::optional<int> unit_no, bool selecting_unit) {
-            m_keyboard_view->setFocusState(
-                selecting_unit && unit_no.has_value()
-                    ? std::optional(KeyboardFocus::UnitFocused{unit_no.value()})
-                    : std::nullopt);
+            m_keyboard_view->setFocusedUnit(selecting_unit ? unit_no
+                                                           : std::nullopt);
           });
   connect(m_keyboard_view, &KeyboardView::hoverUnitNoChanged, m_measure_view,
           &MeasureView::setFocusedUnit);
@@ -275,7 +248,7 @@ EditorWindow::EditorWindow(QWidget *parent)
     if (QMessageBox::question(this, tr("Clear settings"),
                               tr("Are you sure you want to clear your app "
                                  "settings?")))
-      Settings::clear();
+      QSettings().clear();
   });
   connect(ui->actionDecrease_font_size, &QAction::triggered,
           &Settings::TextSize::decrease);
@@ -520,14 +493,7 @@ void EditorWindow::keyPressEvent(QKeyEvent *event) {
       break;
     case Qt::Key::Key_R:
       if (event->modifiers() & Qt::ControlModifier && !event->isAutoRepeat()) {
-#ifdef QT_DEBUG
-        if (event->modifiers() & Qt::ShiftModifier)
-          StyleEditor::tryLoadStyle(Settings::StyleName::get());
-        else
-          Settings::RecordMidi::set(!Settings::RecordMidi::get());
-#else
         Settings::RecordMidi::set(!Settings::RecordMidi::get());
-#endif
       } else {
         rKeyStateChanged(true);
       }
@@ -1066,6 +1032,7 @@ bool EditorWindow::saveToFile(QString filename, bool warnOnError) {
 }
 
 bool EditorWindow::save(bool forceSelectFilename) {
+  QSettings settings;
   QString filename;
   if (m_filename.has_value() && !forceSelectFilename)
     filename = m_filename.value();
@@ -1140,19 +1107,10 @@ void EditorWindow::render() {
       QString unit_name = shift_jis_codec->toUnicode(
           m_pxtn.Unit_Get(unit_no)->get_name_buf_jis(nullptr));
       unit_name.remove(forbidden_filename_character_matcher);
-
-      QString unit = unit_name;
-      static const QString illegal = "\\/<>:\"|?*";
-      for (auto it : unit)
-        if (illegal.contains(it)) unit.replace(it, "_");
-      // mr clean magic eraser
-
       QString filename = QString("%1/%2_%3.wav")
                              .arg(dir.absoluteFilePath())
                              .arg(unit_no)
-                             .arg(unit)
-                             .trimmed();  // smile
-
+                             .arg(unit_name);
       filenames_and_units.push_back({filename, unit_no});
     }
   }

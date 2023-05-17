@@ -30,7 +30,7 @@ class SideMenu : public QWidget {
                     DelayEffectModel *delays, OverdriveEffectModel *ovdrvs,
                     NewWoiceDialog *new_woice_dialog,
                     NewWoiceDialog *change_woice_dialog,
-                    VolumeMeterBars *volume_meter_widget,
+                    VolumeMeterFrame *volume_meter_widget,
                     QWidget *parent = nullptr);
   void setEditWidgetsEnabled(bool);
   void setTab(int index);
@@ -57,7 +57,6 @@ class SideMenu : public QWidget {
   void selectedUnitsChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
   void hoveredUnitChanged(std::optional<int>);
-  void hoveredWoiceChanged(std::optional<int>);
   void beatsChanged(int tempo);
   void tempoChanged(int beats);
   void followPlayheadClicked(FollowPlayhead);

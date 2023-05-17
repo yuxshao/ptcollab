@@ -88,11 +88,6 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
           &PxtoneClient::processRemoteAction);
 }
 
-PxtoneClient::~PxtoneClient() {
-  m_audio->stop();
-  m_pxtn_device->setPlaying(false);
-}
-
 void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   // An empty desc is interpreted as an empty file so we don't error.
   m_controller->loadDescriptor(desc);
@@ -110,12 +105,13 @@ void PxtoneClient::loadDescriptor(pxtnDescriptor &desc) {
   m_pxtn_device->open(QIODevice::ReadOnly);
   {
     bool ok;
-    int v = Settings::value(VOLUME_KEY, QVariant()).toInt(&ok);
+    int v = QSettings().value(VOLUME_KEY).toInt(&ok);
     if (ok) setVolume(v);
   }
   {
     bool ok;
-    double v = Settings::value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
+    double v = QSettings()
+                   .value(BUFFER_LENGTH_KEY, DEFAULT_BUFFER_LENGTH)
                    .toDouble(&ok);
     if (ok) setBufferSize(v);
   }
@@ -356,16 +352,16 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                     [this, uid](const SetLastMeas &s) {
                       m_controller->applySetLastMeas(s, uid);
                     },
-                    [this, uid](const OverdriveEffect::Add &s) {
+                    [this, uid](const Overdrive::Add &s) {
                       m_controller->applyAddOverdrive(s, uid);
                     },
-                    [this, uid](const OverdriveEffect::Set &s) {
+                    [this, uid](const Overdrive::Set &s) {
                       m_controller->applySetOverdrive(s, uid);
                     },
-                    [this, uid](const OverdriveEffect::Remove &s) {
+                    [this, uid](const Overdrive::Remove &s) {
                       m_controller->applyRemoveOverdrive(s, uid);
                     },
-                    [this, uid](const DelayEffect::Set &s) {
+                    [this, uid](const Delay::Set &s) {
                       m_controller->applySetDelay(s, uid);
                     },
                     [this, uid](const AddWoice &s) {

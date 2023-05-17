@@ -25,18 +25,6 @@ struct LocalEditState {
   void update(const pxtnService *pxtn, const EditState &s);
 };
 
-namespace KeyboardFocus {
-struct UnitFocused {
-  int unit_no;
-};
-
-struct WoiceFocused {
-  int woice_no;
-};
-
-using State = std::variant<UnitFocused, WoiceFocused>;
-}  // namespace KeyboardFocus
-
 class KeyboardView : public QWidget {
   Q_OBJECT
  public:
@@ -46,7 +34,7 @@ class KeyboardView : public QWidget {
   void setCurrentUnitNo(int unit_no, bool preserve_follow);
 
   void ensurePlayheadFollowed();
-  void setFocusState(const std::optional<KeyboardFocus::State> &state);
+  void setFocusedUnit(std::optional<int> unit_no);
   void setSelectUnitEnabled(bool);
   std::map<int, int> &currentMidiNotes();
 
@@ -80,7 +68,7 @@ class KeyboardView : public QWidget {
   std::set<int> selectedUnitNos();
   void setHoveredUnitNo(std::optional<int>);
   void updateHoverSelect(QMouseEvent *event);
-  void updateStatePositions(EditState &, const QMouseEvent *);
+  void updateStatePositions(EditState &, const QMouseEvent *, int leftPos);
   QScrollArea *m_scrollarea;
   const pxtnService *m_pxtn;
   QElapsedTimer *m_timer;
@@ -91,7 +79,7 @@ class KeyboardView : public QWidget {
   Animation *m_anim;
   PxtoneClient *m_client;
   MooClock *m_moo_clock;
-  std::optional<KeyboardFocus::State> m_focus_state;
+  std::optional<int> m_focused_unit_no;
   std::optional<int> m_hovered_unit_no;
   std::map<int, int> m_midi_notes;
   // m_select_unit_enabled should prob be folded into edit state. Right now it's

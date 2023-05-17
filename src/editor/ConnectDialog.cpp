@@ -18,17 +18,19 @@ const static QString DEFAULT_ADDRESS =
     QString("%1:%2").arg("localhost").arg(DEFAULT_PORT);
 
 int ConnectDialog::exec() {
+  QSettings settings;
   ui->addressInput->setText(
-      Settings::value(CONNECT_SERVER_KEY, DEFAULT_ADDRESS).toString());
+      settings.value(CONNECT_SERVER_KEY, DEFAULT_ADDRESS).toString());
   ui->usernameInput->setText(
-      Settings::value(DISPLAY_NAME_KEY, "Anonymous").toString());
+      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
 
   return QDialog::exec();
 }
 
 void ConnectDialog::persistSettings() {
-  Settings::setValue(DISPLAY_NAME_KEY, username());
-  Settings::setValue(CONNECT_SERVER_KEY, address());
+  QSettings settings;
+  settings.setValue(DISPLAY_NAME_KEY, username());
+  settings.setValue(CONNECT_SERVER_KEY, address());
 }
 
 ConnectDialog::~ConnectDialog() { delete ui; }

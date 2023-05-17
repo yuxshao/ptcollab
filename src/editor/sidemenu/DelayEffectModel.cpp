@@ -63,8 +63,8 @@ bool DelayEffectModel::setData(const QModelIndex &index, const QVariant &value,
   bool ok;
 
   const pxtnDelay *delay = m_client->pxtn()->Delay_Get(index.row());
-  DelayEffect::Set action{index.row(), delay->get_unit(), delay->get_freq(),
-                          delay->get_rate(), delay->get_group()};
+  Delay::Set action{index.row(), delay->get_unit(), delay->get_freq(),
+                    delay->get_rate(), delay->get_group()};
   switch (DelayEffectColumn(index.column())) {
     case DelayEffectColumn::Group:
       action.group = value.toInt(&ok);

@@ -6,11 +6,11 @@
 #include "editor/PxtoneClient.h"
 #include "editor/views/Animation.h"
 
-class VolumeMeterBars : public QWidget {
+class VolumeMeterFrame : public QFrame {
   Q_OBJECT
  public:
-  explicit VolumeMeterBars(const PxtoneClient *client,
-                           QWidget *parent = nullptr);
+  explicit VolumeMeterFrame(const PxtoneClient *client,
+                            QWidget *parent = nullptr);
   int dbToX(double db);
   void resetPeaks();
 
@@ -29,14 +29,14 @@ class VolumeMeterLabels : public QWidget {
   Q_OBJECT
 
  public:
-  explicit VolumeMeterLabels(VolumeMeterBars *frame, QWidget *parent = nullptr);
+  explicit VolumeMeterLabels(VolumeMeterFrame *frame,
+                             QWidget *parent = nullptr);
   void refreshShowText();
 
  private:
   void paintEvent(QPaintEvent *event) override;
   QSize minimumSizeHint() const override;
-  int dbToX(int db);
-  VolumeMeterBars *m_bars;
+  VolumeMeterFrame *m_frame;
   bool m_show_text;
 
  signals:
@@ -44,11 +44,12 @@ class VolumeMeterLabels : public QWidget {
 
 class VolumeMeterWidget : public QWidget {
   Q_OBJECT
-  VolumeMeterBars *m_bars;
+  VolumeMeterFrame *m_frame;
   VolumeMeterLabels *m_labels;
 
  public:
-  explicit VolumeMeterWidget(VolumeMeterBars *bars, QWidget *parent = nullptr);
+  explicit VolumeMeterWidget(VolumeMeterFrame *meter,
+                             QWidget *parent = nullptr);
   void mousePressEvent(QMouseEvent *event) override;
   void mouseDoubleClickEvent(QMouseEvent *event) override;
   void refreshShowText();

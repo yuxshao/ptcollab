@@ -17,8 +17,7 @@ QTextEdit {
 
 QLabel,
 QPushButton,
-QCheckBox,
-QRadioButton {
+QCheckBox {
   color: #D2CA9C;
 }
 
@@ -35,8 +34,7 @@ QMenu {
   border-image: url("image/menu-border.png") 1px fill;
 }
 
-QCheckBox,
-QRadioButton {
+QCheckBox {
   spacing: 5px;
 }
 
@@ -58,8 +56,7 @@ QTextEdit {
 
 QLabel:disabled,
 QPushButton:disabled,
-QCheckBox:disabled,
-QRadioButton:disabled {
+QCheckBox:disabled {
   color: #837E78;
 }
 
@@ -200,20 +197,17 @@ QComboBox QAbstractItemView {
 
 QCheckBox::indicator,
 QGroupBox::indicator,
-QRadioButton::indicator,
 QTableView::indicator {
   border: 2px transparent;
 }
 
 QCheckBox::indicator:unchecked,
 QGroupBox::indicator:unchecked,
-QRadioButton::indicator:unchecked,
 QTableView::indicator:unchecked {
   border-image: url("image/checkbox-border-off.png"), 2px 2px 2px 2px fill, stretch stretch;
 }
 
 QCheckBox::indicator:checked,
-QRadioButton::indicator:checked,
 QGroupBox::indicator:checked,
 QTableView::indicator:checked {
   border-image: url("image/checkbox-border-on.png"), 2px 2px 2px 2px fill, stretch stretch;
@@ -221,19 +215,6 @@ QTableView::indicator:checked {
 
 QFrame {
   background-color: #4E4B61;
-}
-
-QFrame[frameShape="4"] {
-	max-height: 0;
-	height: 0;
-	border: 1px;
-	border-image: url("image/generic-frame.png") 0px 1px 0px 1px fill, stretch stretch;
-}
-QFrame[frameShape="5"] {
-	max-width: 0;
-	width: 0;
-	border: 1px;
-	border-image: url("image/generic-frame.png") 1px 0px 1px 0px fill, stretch stretch;
 }
 
 QLineEdit,
@@ -378,9 +359,4 @@ QScrollBar::up-arrow:pressed {
 QScrollBar::down-arrow:hover,
 QScrollBar::down-arrow:pressed {
   image: url("image/scrollbar-down-down.png");
-}
-
-VolumeMeterWidget QFrame {
-    border: 1px;
-    border-image: url("image/generic-frame.png") 0px 1px 0px 1px fill, stretch stretch;
 }

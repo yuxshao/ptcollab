@@ -7,53 +7,12 @@
 #include <QPixmap>
 #include <QStringList>
 
-#include "views/NoteBrush.h"
-#include <QWindow>
-#include <QOperatingSystemVersion>
-#include <QString>
-#include <QLayout>
-
-#if defined(Q_OS_WINDOWS)
-#define NOMINMAX
-#include <Windows.h>
-#endif
-
-#if defined(Q_OS_WINDOWS) || defined(Q_OS_MACOS)
-void customizeNativeTitleBar(WId w) noexcept;
-// On Windows, defined in StyleEditor.cpp
-// On macOS, defined in MacOsStyleEditor.mm
-#endif
+#include "Settings.h"
 
 namespace StyleEditor {
 void initializeStyleDir();
-void setTitleBar(QWidget *w) noexcept;
 bool tryLoadStyle(const QString &styleName);
 const std::shared_ptr<QPixmap> measureImages();
-std::shared_ptr<NoteBrush const> noteBrush(int i);
-
-class EventFilter : public QObject {
-  Q_OBJECT
- public:
-  bool eventFilter(QObject *watched, QEvent *event) {
-    switch (event->type()) {
-      case QEvent::Show:
-        // https://doc.qt.io/qt-5/qshowevent.html
-        // Spontaneous QShowEvents are sent by the window system after the
-        // window is shown, as well as when it's reshown after being iconified.
-        // We only want this to trigger when Qt sends it, which is right before
-        // it becomes visible.
-        if (!event->spontaneous()) {
-          QWidget *w = qobject_cast<QWidget *>(watched);
-          if (w) setTitleBar(w);
-        }
-
-        return false;
-      default:
-        return false;
-    }
-  }
-};
-
 struct Config {
  private:
   Config() {}
@@ -99,20 +58,12 @@ struct Config {
     QColor Playhead;
     QColor PlayheadRecording;
     QColor Cursor;
-
-    QColor WindowCaption;
-    QColor WindowText;
-    QColor WindowBorder;
   } color;
 
   struct font {
     QString EditorFont;
     QString MeterFont;
   } font;
-
-  struct other {
-    bool Win10BorderDark = false; //bool
-  } other;
 
   static Config empty() { return {}; }
 };

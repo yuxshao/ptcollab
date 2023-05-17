@@ -34,9 +34,9 @@ HostDialog::HostDialog(QWidget *parent)
     ui->saveRecordingFile->setEnabled(on);
   });
   connect(ui->saveRecordingBtn, &QPushButton::pressed, [this]() {
+    QSettings settings;
     QString filename = QFileDialog::getSaveFileName(
-        this, "Save file",
-        Settings::value(PTREC_SAVE_FILE_KEY, "").toString(),
+        this, "Save file", settings.value(PTREC_SAVE_FILE_KEY).toString(),
         "ptcollab recordings (*.ptrec)");
     if (filename.isEmpty()) return;
 
@@ -48,17 +48,19 @@ HostDialog::HostDialog(QWidget *parent)
     ui->portInput->setEnabled(on);
     ui->usernameInput->setEnabled(on);
   });
+
+  QSettings settings;
   ui->usernameInput->setText(
-      Settings::value(DISPLAY_NAME_KEY, "Anonymous").toString());
+      settings.value(DISPLAY_NAME_KEY, "Anonymous").toString());
   ui->saveRecordingFile->setText(
-      Settings::value(PTREC_SAVE_FILE_KEY, "").toString());
+      settings.value(PTREC_SAVE_FILE_KEY, "").toString());
   ui->portInput->setText(
-      Settings::value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
+      settings.value(HOST_SERVER_PORT_KEY, DEFAULT_PORT).toString());
   ui->portInput->setValidator(new QIntValidator(0, 65535, this));
   ui->saveRecordingGroup->setChecked(
-      Settings::value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
+      settings.value(SAVE_RECORDING_ENABLED_KEY, false).toBool());
   ui->hostGroup->setChecked(
-      Settings::value(HOSTING_ENABLED_KEY, false).toBool());
+      settings.value(HOSTING_ENABLED_KEY, false).toBool());
 }
 
 bool HostDialog::selectProjectFile() {
@@ -114,6 +116,8 @@ int HostDialog::start(bool open_file) {
 }
 
 void HostDialog::persistSettings() {
+  QSettings settings;
+
   std::optional<QString> filename = projectName();
   if (filename.has_value())
     Settings::OpenProjectLastSelection::set(
@@ -121,17 +125,17 @@ void HostDialog::persistSettings() {
 
   filename = recordingName();
   if (filename.has_value())
-    Settings::setValue(PTREC_SAVE_FILE_KEY,
-                               QFileInfo(filename.value()).absoluteFilePath());
+    settings.setValue(PTREC_SAVE_FILE_KEY,
+                      QFileInfo(filename.value()).absoluteFilePath());
 
   if (port().has_value()) {
     bool ok;
     int p = port().value().toInt(&ok);
-    if (ok) Settings::setValue(HOST_SERVER_PORT_KEY, p);
+    if (ok) settings.setValue(HOST_SERVER_PORT_KEY, p);
   }
 
-  Settings::setValue(SAVE_RECORDING_ENABLED_KEY,
-                             ui->saveRecordingGroup->isChecked());
-  Settings::setValue(HOSTING_ENABLED_KEY, ui->hostGroup->isChecked());
-  Settings::setValue(DISPLAY_NAME_KEY, username());
+  settings.setValue(SAVE_RECORDING_ENABLED_KEY,
+                    ui->saveRecordingGroup->isChecked());
+  settings.setValue(HOSTING_ENABLED_KEY, ui->hostGroup->isChecked());
+  settings.setValue(DISPLAY_NAME_KEY, username());
 }

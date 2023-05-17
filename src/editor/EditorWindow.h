@@ -27,13 +27,13 @@
 #include "sidemenu/UnitListModel.h"
 #include "views/KeyboardView.h"
 #include "views/MeasureView.h"
-#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;
 }
 QT_END_NAMESPACE
+
 enum struct HostSetting { LoadFile, NewFile, SkipFile };
 
 class EditorWindow : public QMainWindow {

@@ -5,6 +5,7 @@
 #include "editor/ComboOptions.h"
 #include "editor/Settings.h"
 #include "editor/StyleEditor.h"
+#include "pxtone/pxtnEvelist.h"
 
 int pixelsPerVelocity = 3;
 static double slack = 50;
@@ -135,11 +136,10 @@ int lerp(double r, int a, int b) {
   return a + r * (b - a);
 }
 
-double lerp_f(double r, double a, double b) {
-  if (r > 1) r = 1;
-  if (r < 0) r = 0;
-  return a + r * (b - a);
-}
+const Brush brushes[] = {
+    0.0 / 7, 3.0 / 7, 6.0 / 7, 2.0 / 7, 5.0 / 7, 1.0 / 7, 4.0 / 7,
+};
+const int NUM_BRUSHES = sizeof(brushes) / sizeof(Brush);
 
 int nonnegative_modulo(int x, int m) {
   if (m == 0) return 0;
@@ -225,8 +225,7 @@ static int num_digits(int num) {
 void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                                   int height, bool a) {
   QPixmap &images = *StyleEditor::measureImages();
-  int left_piano_width = Settings::LeftPianoWidth::get();
-  if (height > 10 && left_piano_width >= 26) {
+  if (height > 10) {
     bool big = height > 13;
     int num_width = (big ? 9 : 8);
     int num_height = (big ? 9 : 6);
@@ -237,16 +236,14 @@ void drawOctaveNumAlignBottomLeft(QPainter *painter, int x, int y, int num,
                         num_height);
     drawNum(painter, x + (1 + num_digits(num)) * num_width, y - num_height, num,
             num_width, num_height, num_offset_x, num_offset_y);
-  } else if (height >= 7 && left_piano_width >= 9)
+  } else if (height >= 7)
     painter->drawPixmap(x - 2, y - (height + 1) / 2, 6, 6, images, 96, 48, 6,
                         6);
 }
 
+const int LEFT_LEGEND_WIDTH = 40;
 QTransform worldTransform() {
-  int scale = Settings::DisplayScale::get();
-  return QTransform()
-      .scale(scale, scale)
-      .translate(Settings::LeftPianoWidth::get(), 0);
+  return QTransform().translate(LEFT_LEGEND_WIDTH, 0);
 }
 
 const int WINDOW_BOUND_SLACK = 32;

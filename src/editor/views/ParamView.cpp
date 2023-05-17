@@ -62,23 +62,18 @@ ParamView::ParamView(PxtoneClient *client, MooClock *moo_clock, QWidget *parent)
 }
 
 QSize ParamView::sizeHint() const {
-  return worldTransform()
-      .mapRect(QRect(0, 0,
-                     Settings::LeftPianoWidth::get() +
-                         one_over_last_clock(m_client->pxtn()) /
-                             m_client->editState().scale.clockPerPx,
-                     0x20))
-      .size();
+  return QSize(LEFT_LEGEND_WIDTH + one_over_last_clock(m_client->pxtn()) /
+                                       m_client->editState().scale.clockPerPx,
+               0x20);
 }
 
 constexpr double min_tuning = -1.0 / 24, max_tuning = 1.0 / 24;
 static qreal paramToY(int param, EVENTKIND current_kind, int height) {
   switch (current_kind) {
     case EVENTKIND_TUNING: {
-      float tuning;
-      memcpy(&tuning, &param, sizeof(tuning));
+      double tuning = log2(*((float *)&param));
       return height -
-             (log2(tuning) - min_tuning) / (max_tuning - min_tuning) * height;
+             (tuning - min_tuning) / (max_tuning - min_tuning) * height;
     }
     case EVENTKIND_GROUPNO:
       return height - param * height / (pxtnMAX_TUNEGROUPNUM - 1);
@@ -99,9 +94,7 @@ static qreal paramOfY(int y, EVENTKIND current_kind, int height, bool snap) {
         proportion =
             int(0x10 - (y * 0x10 + height / 2) / height) / (0x10 + 0.0);
       float tuning = exp2(proportion * (max_tuning - min_tuning) + min_tuning);
-      int32_t param;
-      memcpy(&param, &tuning, sizeof(param));
-      return param;
+      return *((int32_t *)&tuning);
     }
     case EVENTKIND_GROUPNO:
       return int((pxtnMAX_TUNEGROUPNUM - 1) * (1 - (y + 0.0) / height) + 0.5);
@@ -184,7 +177,6 @@ static void drawLastVoiceNoEvent(QPainter &painter, int height,
                                  const Event &last, const Event &curr,
                                  qreal clockPerPx, const QColor &onColor,
                                  const pxtnService *pxtn) {
-  if (last.clock < 0) return;  // Don't render the dummy default event
   int32_t lastX = last.clock / clockPerPx;
   QPainterPath path;
   constexpr int s = 4;
@@ -249,7 +241,6 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
       }
     }
     if (current_kind == EVENTKIND_TUNING) {
-      // Add tuning annotation
       QColor font = StyleEditor::config.color.ParamFont;
       font.setAlpha(onColor.alpha());
       painter.setPen(font);
@@ -265,17 +256,14 @@ static void drawLastEvent(QPainter &painter, EVENTKIND current_kind, int height,
         y = std::min(lastY, height) - lineHeight / 2 - 1 - height;
         alignment = Qt::AlignBottom;
       }
-      float tuning;
-      memcpy(&tuning, &last.value, sizeof(tuning));
+      float tuning = *((float *)&last.value);
       int cents = log2(tuning) * 100 * 12;
-      if (last.clock >= 0)  // Block the text from the default dummy event
-        painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
-                         QString("%1 (%2c)")
-                             .arg(tuning, 0, 'f', 3)
-                             .arg(format_with_sign(cents)));
+      painter.drawText(lastX + s, y, thisX - lastX - s, height, alignment,
+                       QString("%1 (%2c)")
+                           .arg(tuning, 0, 'f', 3)
+                           .arg(format_with_sign(cents)));
     }
   } else {
-    // EVENTKIND_TAIL bullet
     int32_t w = curr.value / clockPerPx;
     int num_layer = 1;
     for (int i = -num_layer; i <= num_layer; ++i) {
@@ -295,27 +283,24 @@ static void drawOngoingEdit(QPainter &painter, const MouseEditState &state,
   QColor c = StyleEditor::config.color.ParamBrightGreen;
   switch (state.type) {
     case MouseEditState::Type::SetOn:
+      if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
+          std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
+        if (current_kind == EVENTKIND_VELOCITY &&
+            state.type == MouseEditState::Type::SetOn) {
+          c.setAlpha(alphaMultiplier * 255);
+          int velocity = impliedVelocity(state, pitchPerPx);
+          int y = paramToY(velocity, current_kind, height);
+          Interval interval = state.clock_int(quantizeClock);
+          painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
+                           std::max(1.0, interval.length() / clockPerPx),
+                           lineHeight, c);
+        }
+      }
+      // explicitly don't break;
     case MouseEditState::Type::Nothing:
     case MouseEditState::Type::DeleteOn:
     case MouseEditState::Type::SetNote:
     case MouseEditState::Type::DeleteNote: {
-      if (state.type == MouseEditState::Type::SetOn) {
-        // Draw a velocity hint when there's a note being placed in one of the
-        // other views
-        if (std::holds_alternative<MouseMeasureEdit>(state.kind) ||
-            std::holds_alternative<MouseKeyboardEdit>(state.kind)) {
-          if (current_kind == EVENTKIND_VELOCITY &&
-              state.type == MouseEditState::Type::SetOn) {
-            c.setAlpha(alphaMultiplier * 255);
-            int velocity = impliedVelocity(state, pitchPerPx);
-            int y = paramToY(velocity, current_kind, height);
-            Interval interval = state.clock_int(quantizeClock);
-            painter.fillRect(interval.start / clockPerPx, y - lineHeight / 2,
-                             std::max(1.0, interval.length() / clockPerPx),
-                             lineHeight, c);
-          }
-        }
-      }
       if (!std::holds_alternative<MouseParamEdit>(state.kind)) break;
       c.setAlpha(alphaMultiplier *
                  (state.type == MouseEditState::Nothing ? 128 : 255));
@@ -364,7 +349,6 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   painter.setTransform(worldTransform());
   QPaintEvent e(worldTransform().inverted().mapRect(raw_event->rect()));
   QPaintEvent *event = &e;
-  int height = worldTransform().inverted().map(QPoint(0, size().height())).y();
   Interval clockBounds = {
       qint32(event->rect().left() * m_client->editState().scale.clockPerPx) -
           WINDOW_BOUND_SLACK,
@@ -385,14 +369,14 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     int x = master->get_beat_clock() * beat /
             m_client->editState().scale.clockPerPx;
     if (x > event->rect().right()) break;
-    painter.fillRect(x, 0, 1, height,
+    painter.fillRect(x, 0, 1, size().height(),
                      (isMeasureLine ? measureBrush : beatBrush));
   }
 
   // Draw param background
   for (int i = 0; i < NUM_BACKGROUND_GAPS - 1; ++i) {
-    int this_y = BACKGROUND_GAPS[i] * height / 0x80;
-    int next_y = BACKGROUND_GAPS[i + 1] * height / 0x80;
+    int this_y = BACKGROUND_GAPS[i] * size().height() / 0x80;
+    int next_y = BACKGROUND_GAPS[i + 1] * size().height() / 0x80;
     painter.fillRect(event->rect().left(), this_y + 1, event->rect().width(),
                      std::max(1, next_y - this_y - 2), *GAP_COLORS[i]);
   }
@@ -400,113 +384,113 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
   EVENTKIND current_kind =
       paramOptions()[m_client->editState().current_param_kind_idx()].second;
 
+  QPixmap thisUnit(event->rect().size());
+  thisUnit.fill(Qt::transparent);
   int current_unit_no = 0;
   qreal clockPerPx = m_client->editState().scale.clockPerPx;
   qreal pitchPerPx = m_client->editState().scale.pitchPerPx;
+  QPainter thisUnitPainter(&thisUnit);
+  {
+    thisUnitPainter.translate(-event->rect().topLeft());
+    std::vector<QColor> colors;
+    std::vector<Event> lastEvents;
+    std::vector<QPainter *> painters;
+    colors.reserve(m_client->pxtn()->Unit_Num());
+    painters.reserve(m_client->pxtn()->Unit_Num());
+    lastEvents.reserve(m_client->pxtn()->Unit_Num());
+    int first_clock = first_beat * master->get_beat_clock();
+    for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
+      lastEvents.emplace_back(
+          Event{first_clock, DefaultKindValue(current_kind)});
+      int unit_id = m_client->unitIdMap().noToId(i);
+      colors.push_back(
+          brushes[nonnegative_modulo(unit_id, NUM_BRUSHES)].toQColor(108, false,
+                                                                     255));
+      int h, s, l, a;
+      colors.rbegin()->getHsl(&h, &s, &l, &a);
+      if (m_client->editState().m_current_unit_id != unit_id) {
+        if (m_client->pxtn()->Unit_Get(i)->get_visible())
+          a *= 0.3;
+        else
+          a *= 0;
+        painters.push_back(&painter);
+      } else {
+        painters.push_back(&thisUnitPainter);
+        current_unit_no = i;
+      }
+      colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
+    }
 
-  // Draw events
-  std::vector<QColor> colors;
-  std::vector<Event> lastEvents;
-  colors.reserve(m_client->pxtn()->Unit_Num());
-  lastEvents.reserve(m_client->pxtn()->Unit_Num());
-  int default_event_clock = std::min(first_beat * master->get_beat_clock(), -1);
-  for (int i = 0; i < m_client->pxtn()->Unit_Num(); ++i) {
-    lastEvents.emplace_back(
-        Event{default_event_clock, DefaultKindValue(current_kind)});
-    int unit_id = m_client->unitIdMap().noToId(i);
-    colors.push_back(StyleEditor::noteBrush(unit_id)->toQColor(108, 1, 255));
-    int h, s, l, a;
-    colors.rbegin()->getHsl(&h, &s, &l, &a);
-    if (m_client->editState().m_current_unit_id != unit_id) {
-      if (m_client->pxtn()->Unit_Get(i)->get_visible())
-        a *= 0.3;
-      else
-        a *= 0;
-    } else
-      current_unit_no = i;
+    for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
+         e = e->next) {
+      if (e->clock > clockBounds.end) break;
+      if (e->kind != current_kind) continue;
+      int unit_no = e->unit_no;
 
-    colors.rbegin()->setHsl(h, s, l * 3 / 4, a);
-  }
-
-  auto handleLastEvent = [&](const Event &last, const Event &curr,
-                             int unit_no) {
-    if (current_kind != EVENTKIND_VOICENO)
-      drawLastEvent(painter, current_kind, height, last, curr, clockPerPx,
-                    colors[unit_no], unit_no - current_unit_no,
-                    m_client->pxtn()->Unit_Num());
-    else if (unit_no == current_unit_no)
-      drawLastVoiceNoEvent(painter, height, last, curr, clockPerPx,
-                           colors[unit_no], m_client->pxtn());
-  };
-
-  std::vector<Event> current_unit_events;
-  for (const EVERECORD *e = pxtn->evels->get_Records(); e != nullptr;
-       e = e->next) {
-    if (e->clock > clockBounds.end) break;
-    if (e->kind != current_kind) continue;
-    int unit_no = e->unit_no;
-
-    Event curr{e->clock, e->value};
-    if (unit_no == current_unit_no)
-      current_unit_events.push_back(lastEvents[unit_no]);
-    else
-      handleLastEvent(lastEvents[unit_no], curr, unit_no);
-    lastEvents[unit_no] = curr;
-  }
-  for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
-    Event curr = lastEvents[unit_no];
-    curr.clock = (width() + 50) * clockPerPx;
-    if (unit_no == current_unit_no) {
-      current_unit_events.push_back(lastEvents[unit_no]);
-      current_unit_events.push_back(curr);
-    } else
-      handleLastEvent(lastEvents[unit_no], curr, unit_no);
+      Event curr{e->clock, e->value};
+      if (current_kind != EVENTKIND_VOICENO)
+        drawLastEvent(*painters[unit_no], current_kind, height(),
+                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
+                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
+      else if (unit_no == current_unit_no)
+        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
+                             curr, clockPerPx, colors[unit_no],
+                             m_client->pxtn());
+      lastEvents[unit_no] = curr;
+    }
+    for (int unit_no = 0; unit_no < m_client->pxtn()->Unit_Num(); ++unit_no) {
+      Event curr = lastEvents[unit_no];
+      curr.clock = (width() + 50) * clockPerPx;
+      if (current_kind != EVENTKIND_VOICENO)
+        drawLastEvent(*painters[unit_no], current_kind, height(),
+                      lastEvents[unit_no], curr, clockPerPx, colors[unit_no],
+                      unit_no - current_unit_no, m_client->pxtn()->Unit_Num());
+      else if (unit_no == current_unit_no)
+        drawLastVoiceNoEvent(*painters[unit_no], height(), lastEvents[unit_no],
+                             curr, clockPerPx, colors[unit_no],
+                             m_client->pxtn());
+    }
   }
 
   // draw ongoing edit
-  auto handleOngoingEdit = [&](const EditState &state, double alphaMultiplier,
-                               double selectionAlphaMultiplier) {
-    int unit_no = m_client->unitIdMap()
-                      .idToNo(state.m_current_unit_id)
-                      .value_or(current_unit_no);
-    // TODO: be able to see others' param selections too.
-    drawOngoingEdit(painter, state.mouse_edit_state, current_kind,
-                    m_client->quantizeClock(
-                        quantizeXOptions()[state.m_quantize_clock_idx].second),
-                    clockPerPx, pitchPerPx, height, alphaMultiplier,
-                    selectionAlphaMultiplier, unit_no - current_unit_no);
-  };
-
-  std::vector<const EditState *> current_unit_states;
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
     if (uid == m_client->following_uid() || uid == m_client->uid()) continue;
-    if (!remote_state.state.has_value()) continue;
-    const EditState &state = remote_state.state.value();
-    if (state.current_param_kind_idx() !=
-        m_client->editState().current_param_kind_idx())
-      continue;
-    if (state.m_current_unit_id != m_client->editState().m_current_unit_id)
-      handleOngoingEdit(state, 0.3, 0.3);
-    else
-      current_unit_states.push_back(&state);
+    if (remote_state.state.has_value()) {
+      const EditState &state = remote_state.state.value();
+      if (state.current_param_kind_idx() !=
+          m_client->editState().current_param_kind_idx())
+        continue;
+      QPainter *this_painter = &thisUnitPainter;
+      double alphaMultiplier = 0.7, selectionAlphaMultiplier = 0.5;
+      if (state.m_current_unit_id != m_client->editState().m_current_unit_id) {
+        alphaMultiplier = 0.3;
+        selectionAlphaMultiplier = 0.3;
+        this_painter = &painter;
+      }
+      int unit_no = m_client->unitIdMap()
+                        .idToNo(state.m_current_unit_id)
+                        .value_or(current_unit_no);
+      // TODO: be able to see others' param selections too.
+      drawOngoingEdit(
+          *this_painter, state.mouse_edit_state, current_kind,
+          m_client->quantizeClock(
+              quantizeXOptions()[state.m_quantize_clock_idx].second),
+          clockPerPx, pitchPerPx, height(), alphaMultiplier,
+          selectionAlphaMultiplier, unit_no - current_unit_no);
+    }
   }
-
-  for (unsigned int i = 0; i + 1 < current_unit_events.size(); ++i)
-    handleLastEvent(current_unit_events[i], current_unit_events[i + 1],
-                    current_unit_no);
-  for (unsigned int i = 0; i < current_unit_states.size(); ++i)
-    handleOngoingEdit(*current_unit_states[i], 0.7, 0.5);
+  painter.drawPixmap(event->rect(), thisUnit, thisUnit.rect());
 
   if (m_client->clipboard()->kindIsCopied(current_kind))
     drawExistingSelection(painter, m_client->editState().mouse_edit_state,
-                          clockPerPx, height, 1);
+                          clockPerPx, size().height(), 1);
   drawOngoingEdit(painter, m_client->editState().mouse_edit_state, current_kind,
-                  m_client->quantizeClock(), clockPerPx, pitchPerPx, height, 1,
-                  1, 0);
+                  m_client->quantizeClock(), clockPerPx, pitchPerPx, height(),
+                  1, 1, 0);
 
-  drawLastSeek(painter, m_client, height, false);
-  drawCurrentPlayerPosition(painter, m_moo_clock, height, clockPerPx, false);
-  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height);
+  drawLastSeek(painter, m_client, height(), false);
+  drawCurrentPlayerPosition(painter, m_moo_clock, height(), clockPerPx, false);
+  drawRepeatAndEndBars(painter, m_moo_clock, clockPerPx, height());
 
   // Draw cursors
   for (const auto &[uid, remote_state] : m_client->remoteEditStates()) {
@@ -521,12 +505,12 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
       int unit_id = state.m_current_unit_id;
       QColor color;
       if (unit_id != m_client->editState().m_current_unit_id)
-        color = StyleEditor::noteBrush(unit_id)->toQColor(EVENTMAX_VELOCITY, 0,
-                                                          128);
+        color = brushes[unit_id % NUM_BRUSHES].toQColor(EVENTMAX_VELOCITY,
+                                                        false, 128);
       else
         color = StyleEditor::config.color.Cursor;
       drawCursor(state, painter, color, remote_state.user, uid, current_kind,
-                 height);
+                 height());
     }
   }
   {
@@ -534,17 +518,16 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     auto it = m_client->remoteEditStates().find(m_client->following_uid());
     if (it != m_client->remoteEditStates().end()) my_username = it->second.user;
     drawCursor(m_client->editState(), painter, StyleEditor::config.color.Cursor,
-               my_username, m_client->following_uid(), current_kind, height);
+               my_username, m_client->following_uid(), current_kind, height());
   }
 }
 
 // TODO: DEDUP
 static void updateStatePositions(EditState &edit_state,
                                  const QMouseEvent *event,
-                                 EVENTKIND current_kind, const QSize &size) {
+                                 EVENTKIND current_kind, int height) {
   MouseEditState &state = edit_state.mouse_edit_state;
   QPointF mouse_pos = worldTransform().inverted().map(event->localPos());
-  int height = worldTransform().inverted().map(QPoint(0, size.height())).y();
   state.current_clock =
       std::max(0., mouse_pos.x() * edit_state.scale.clockPerPx);
   bool snap = event->modifiers() & Qt::ControlModifier;
@@ -728,7 +711,7 @@ void ParamView::mouseReleaseEvent(QMouseEvent *event) {
           }
         }
         s.mouse_edit_state.type = MouseEditState::Type::Nothing;
-        updateStatePositions(s, event, kind, size());
+        updateStatePositions(s, event, kind, height());
       },
       false);
 }
@@ -743,7 +726,9 @@ void ParamView::mouseMoveEvent(QMouseEvent *event) {
       paramOptions()[m_client->editState().current_param_kind_idx()].second;
   if (!m_client->isFollowing())
     m_client->changeEditState(
-        [&](auto &s) { updateStatePositions(s, event, current_kind, size()); },
+        [&](auto &s) {
+          updateStatePositions(s, event, current_kind, height());
+        },
         true);
   event->ignore();
 }

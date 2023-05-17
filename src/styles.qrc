@@ -36,21 +36,5 @@
         <file>styles/ptCollage/images.png</file>
         <file>styles/ptCollage/ptCollage.qss</file>
         <file>styles/README.md</file>
-        <file>styles/ptCollage/note_colours.png</file>
-        <file>styles/dark/image/badge.svg</file>
-        <file>styles/dark/image/checkbox.svg</file>
-        <file>styles/dark/image/down.svg</file>
-        <file>styles/dark/image/left.svg</file>
-        <file>styles/dark/image/right.svg</file>
-        <file>styles/dark/image/table-backdrop-disabled.png</file>
-        <file>styles/dark/image/table-backdrop.png</file>
-        <file>styles/dark/image/up.svg</file>
-        <file>styles/dark/config.ini</file>
-        <file>styles/dark/dark.qss</file>
-        <file>styles/dark/font.ttf</file>
-        <file>styles/dark/images.png</file>
-        <file>styles/dark/info.txt</file>
-        <file>styles/dark/note_colours.png</file>
-        <file>styles/dark/OFL.txt</file>
     </qresource>
 </RCC>

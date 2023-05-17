@@ -59,7 +59,6 @@ class PxtoneClient : public QObject {
   PxtoneClient(pxtnService *pxtn, ConnectionStatusLabel *connection_status,
 
                QObject *parent = nullptr);
-  ~PxtoneClient();
   void applyAction(const std::list<Action::Primitive> &);
   void sendAction(const ClientAction &);
   void removeCurrentUnit();

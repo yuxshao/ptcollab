@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QString>
 
+#include "pxtone/pxtnEvelist.h"
+
 const extern QString BUFFER_LENGTH_KEY;
 const extern double DEFAULT_BUFFER_LENGTH;
 const extern QString VOLUME_KEY;
@@ -20,10 +22,6 @@ const extern QString HOSTING_ENABLED_KEY;
 const extern QString CONNECT_SERVER_KEY;
 
 namespace Settings {
-void clear();
-void setValue(const QString &key, const QVariant &value);
-QVariant value(const QString &key, const QVariant &default_);
-
 namespace TextSize {
 int get();
 void increase();
@@ -214,15 +212,6 @@ bool get();
 void set(bool);
 }  // namespace VelocitySensitivity
 
-namespace DisplayScale {
-int get();
-void set(int);
-}  // namespace DisplayScale
-
-namespace LeftPianoWidth {
-int get();
-void set(int);
-}  // namespace LeftPianoWidth
 }  // namespace Settings
 
 #endif  // SETTINGS_H

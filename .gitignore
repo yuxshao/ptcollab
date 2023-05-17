@@ -41,11 +41,8 @@ qmake/config.tests/*/test
 
 # qtcreator generated files
 *.pro.user*
-CMakeLists.txt.user
 /.qtc-clangd/
 /.qtc_clangd/
-*.qtc_clangd/
-*.qtc-clangd/
 
 # xemacs temporary files
 *.flc
@@ -84,6 +81,3 @@ CMakeLists.txt.user
 /bin/
 /build/
 /build32/
-
-# vscode
-.vscode
