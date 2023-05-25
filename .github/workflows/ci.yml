@@ -21,7 +21,7 @@ jobs:
         config:
           - { name: "Windows", os: windows-latest, make: nmake, qt_arch: win64_msvc2019_64, target_arch: amd64 }
           - { name: "Windows 32-bit", os: windows-latest, make: nmake, qt_arch: win32_msvc2019, target_arch: x86 }
-          - { name: "macOS", os: macos-latest, make: "make -j2", qt_arch: clang_64 }
+          - { name: "macOS", os: macos-latest, make: "make -C build -j2", qt_arch: clang_64 }
           - { name: "Ubuntu", os: ubuntu-20.04, make: "make -j2", qt_arch: gcc_64 }
       fail-fast: false
 
@@ -60,6 +60,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Install Qt5
         uses: jurplel/install-qt-action@v2
@@ -90,14 +92,6 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         run: powershell -Command "./nsis-install.exe /S"
 
-      - name: Install Dependencies [macOS]
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          export HOMEBREW_NO_INSTALL_CLEANUP=1
-          brew update
-          brew install libvorbis rtmidi
-          brew upgrade libogg
-
       - name: Install Dependencies [Linux]
         if: ${{ runner.os == 'Linux' }}
         run: |
@@ -111,7 +105,8 @@ jobs:
             "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod +x linuxdeployqt-continuous-x86_64.AppImage
 
-      - name: Configure
+      - name: Configure via QMake [non-macOS]
+        if: ${{ runner.os != 'macOS' }}
         run: |
           if [ "${{ runner.os }}" == "Linux" ]; then
             # Needed for appimage building
@@ -131,12 +126,47 @@ jobs:
 
           ${{ matrix.config.make }} qmake_all
 
+      - name: Configure via CMake [macOS]
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            # Needed for appimage building
+            export BUILD_PREFIX=/usr
+          else
+            export BUILD_PREFIX="${PWD}/target"
+          fi
+
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            export BUILD_ARGS=(
+              # TODO this seems like something the CMake script should handle? This worked fine when using QMake.
+              # Because we later deploy this into an app bundle, make sure it can find the bundled Frameworks
+              "-DCMAKE_INSTALL_RPATH=@executable_path/../Frameworks"
+
+              # Need to set the minimum version to support, used by macOS tooling
+              # current lowest-supported version for Qt 5.15 is 10.13 (on x86_64, but we don't do a universal2 build)
+              # https://doc.qt.io/qt-5/supported-platforms.html#macos
+              "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
+
+              # We cannot ship libraries from Homebrew, because they target a higher macOS version than Qt, which produces a borked build
+              "-DENABLE_SYSTEM_LIBS=OFF"
+            )
+          else
+            export BUILD_ARGS=()
+          fi
+
+          cmake -B build \
+            -DCMAKE_INSTALL_PREFIX=${BUILD_PREFIX} \
+            -DCMAKE_BUILD_TYPE=Release \
+            "${BUILD_ARGS[@]}"
+
       - name: Build
         run: |
           ${{ matrix.config.make }}
 
       - name: Install
         run: |
+          # TODO when migrating Linux to CMake, export DESTDIR envvar instead
+          # https://cmake.org/cmake/help/latest/envvar/DESTDIR.html
           if [ "${{ runner.os }}" == "Linux" ]; then
             export INSTALL_ARGS="INSTALL_ROOT=${PWD}/target/appdir"
           else
@@ -214,7 +244,7 @@ jobs:
             rmdir bin
 
             mv -v share/ptcollab/* ./
-            mv -v share/doc/pxtone/LICENSE-pxtone ./LICENSE-pxtone
+            mv -v share/doc/ptcollab/LICENSE-pxtone ./LICENSE-pxtone
             mv -v share/doc/ptcollab/LICENSE ./LICENSE-ptcollab
 
             rm -v -rf share/
