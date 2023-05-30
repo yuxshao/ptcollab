@@ -36,43 +36,44 @@ jobs:
             refs/tags/* )
               TAG=${GITHUB_REF#refs/tags/}
               echo "Release ${TAG}"
-              echo "::set-output name=build-tag::${TAG}"
-              echo "::set-output name=release::true"
+              echo "build-tag=${TAG}" >> $GITHUB_OUTPUT
+              echo "release=true" >> $GITHUB_OUTPUT
               ;;
             refs/pull/*)
               PR=$(echo ${GITHUB_REF} | cut -d/ -f3)
               echo "Test PR #${PR}"
-              echo "::set-output name=build-tag::pr-${PR}-${GITHUB_SHA}"
-              echo "::set-output name=release::false"
+              echo "build-tag=pr-${PR}-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+              echo "release=false" >> $GITHUB_OUTPUT
               ;;
             refs/heads/* )
               BRANCH=${GITHUB_REF#refs/heads/}
               echo "Test ${BRANCH}"
-              echo "::set-output name=build-tag::${BRANCH}-${GITHUB_SHA}"
-              echo "::set-output name=release::false"
+              echo "build-tag=${BRANCH}-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+              echo "release=false" >> $GITHUB_OUTPUT
               ;;
             * )
               echo "Test (unknown)"
-              echo "::set-output name=build-tag::unknown-${GITHUB_SHA}"
-              echo "::set-output name=release::false"
+              echo "build-tag=unknown-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+              echo "release=false" >> $GITHUB_OUTPUT
               ;;
           esac
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
       - name: Install Qt5
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.config.qt_arch }}
-          modules: 'qttools qtmultimedia'
+          cache: true
 
       - name: Setup MSVC Toolchain [Windows]
         if: ${{ runner.os == 'Windows' }}
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        #uses: seanmiddleditch/gha-setup-vsdevenv@v4
+        uses: vadz/gha-setup-vsdevenv@avoid-deprecation-warnings # https://github.com/seanmiddleditch/gha-setup-vsdevenv/pull/15
         with:
           arch: ${{ matrix.config.target_arch }}
 
@@ -224,8 +225,8 @@ jobs:
           export PACKAGE="ptcollab-${VERSION}-${ARCH}"
           export artifact_dir="${PACKAGE}"
           export artifact_name="ptcollab-${PLATFORM_ABBR}.${PACKAGE_EXT}"
-          echo "::set-output name=artifact-dir::${artifact_dir}"
-          echo "::set-output name=artifact-name::${artifact_name}"
+          echo "artifact-dir=${artifact_dir}" >> $GITHUB_OUTPUT
+          echo "artifact-name=${artifact_name}" >> $GITHUB_OUTPUT
 
           # Deployment of binary
           pushd target
@@ -286,7 +287,7 @@ jobs:
           if [ "${{ matrix.config.target_arch }}" == "x86" ]; then
             export PLATFORM_ABBR="${PLATFORM_ABBR}-x86"
           fi
-          echo "::set-output name=artifact-name::ptcollab-install-${PLATFORM_ABBR}.exe"
+          echo "artifact-name=ptcollab-install-${PLATFORM_ABBR}.exe" >> $GITHUB_OUTPUT
 
       - name: Release
         if: steps.identify-build.outputs.release == 'true'
