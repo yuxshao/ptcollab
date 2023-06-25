@@ -1,0 +1,103 @@
+
+    cob pxtone voice collection                                      2023-06
+
+----------------------------------------------------------  I. Information  ----
+
+    This is a collection of pxtone voices that I've made for my music over
+    the years, now cleaned up & categorized for general use.
+
+    The instrument names are, at best, just suggestions. Experiment and use
+    them however you want!
+
+        pxtone official site    https://pxtone.org/
+        pxtone collab           https://yuxshao.github.io/ptcollab/
+        pxtone web player       https://www.ptweb.me/
+
+    Special thanks to jaxcheese, damifortune, & sidedishes for providing
+    feedback, and to Zlonice for the Japanese translation of this file!
+
+------------------------------------------------------  II. Example tracks  ----
+
+    Example songs using these voices are included in the _EXAMPLE_ folder.
+
+        "Bucket Under Molten Sky" by cob
+        "The Voice of Cob" by jaxcheese
+        "redrawn conclusions" by Hunter Van Brocklin (damifortune)
+
+--------------------------------------------------  III. Voice instruments  ----
+
+    GROUP 0X: Simple waveforms (with subtle texture)
+        00_Sine     Sine wave
+        01_Tri      Triangle wave
+        02_Tri8     Triangle wave, 1/8 quantized
+        03_Tri4     Triangle wave, 1/4 quantized
+        04_Saw      Sawtooth wave
+        05_Saw4     Sawtooth wave, 1/4 quantized
+        06_Saw3     Sawtooth wave, 1/3 quantized
+        07_Rect     Rectangle wave
+        08_Rect3    Rectangle wave, 1/3 duty
+        09_Rect6    Rectangle wave, 1/6 duty
+
+    GROUP 1X: Wind & brass instruments
+        10_Flute    Flute
+        11_Picco    Piccolo
+        12_Recrdr   Recorder
+        13_Clarnt   Clarinet
+        14_Oboe     Oboe
+        15_Choir    Choir
+        16_Saxo     Saxophone
+        17_Trumpt   Trumpet
+        18_Trombn   Trombone
+        19_Tuba     Tuba
+
+    GROUP 2X: String instruments
+        20_Harp     Harp
+        21_Violpz   Violin, plucked
+        22_Violin   Violin, drawn
+        23_Cello    Cello
+        24_Acougt   Acoustic guitar
+        25_Uklele   Ukulele
+        26_Mandol   Mandolin
+        27_Elecgt   Electric guitar
+        28_Bassgt   Bass guitar
+        29_Slap     Slap bass
+
+    GROUP 3X: Keyboard instruments
+        30_Piano    Piano
+        31_Casio    Casio keyboard
+        32_Rhodes   Rhodes keyboard
+        33_Eleckb   Electric keyboard
+        34_Stylo    Stylophone
+        35_Accrdn   Accordion
+        36_Organ    Organ
+        37_Marimb   Marimba
+        38_Celest   Celesta
+        39_Musbox   Music box
+
+---------------------------------------------------  IV. Noise instruments  ----
+
+    GROUP 4X: Standard drums, two flavours
+        40_KickA    Kick drum A
+        41_KickB    Kick drum B
+        42_SnareA   Snare drum A
+        43_SnareB   Snare drum B
+        44_TomA     Tom drum A
+        45_TomB     Tom drum B
+        46_HatcA    Closed hihat A
+        47_HatcB    Closed hihat B
+        48_HatopA   Open hihat A
+        49_HatopB   Open hihat B
+
+    GROUP 5X: Extra percussion
+        50_Rim      Rim click
+        51_Crash    Cymbal crash
+        52_Trimu    Triangle, muted
+        53_Trifr    Triangle, free
+        54_Jingle   Jingle bells
+        55_Shaker   Shaker
+        56_Castnt   Castanet
+        57_Wood     Wood block
+        58_Cowbel   Cowbell
+        59_Chuck    Guitar chuck
+
+--------------------------------------------------------------------------------

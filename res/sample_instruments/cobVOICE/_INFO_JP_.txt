@@ -1,0 +1,103 @@
+
+    ptvoice用音源ファイル by cob                                     2023-06
+
+-----------------------------------------------------------------  I. 情報  ----
+
+    これは私cobが何年もかけて作ってきた、ptvoiceファイル集です。
+    普段使いができるように調整し、カテゴリ分けを行っています。
+
+    楽器名は、せいぜい「多分こう」程度に過ぎません。
+    やりたいように体験して、使ってみてください！
+
+        ピスコラ公式サイト      https://pxtone.org/
+        pxtone collab           https://yuxshao.github.io/ptcollab/
+        pxtone web              https://www.ptweb.me/
+
+    フィードバックを提供してくださったjaxcheese、damifortune、sidedishes、
+    それから邦訳してくださったZloniceに感謝します！
+
+----------------------------------------------------------  II. デモソング  ----
+
+    当該音源を用いたデモソングは「_EXAMPLE_」フォルダーに格納されています。
+
+        "Bucket Under Molten Sky" by cob
+        "The Voice of Cob" by jaxcheese
+        "redrawn conclusions" by Hunter Van Brocklin (damifortune)
+
+---------------------------------------------------------------  III. 音源  ----
+
+    GROUP 0X: 基本的波形 (軽く味付けをしてあります)
+        00_Sine     サイン波
+        01_Tri      三角波
+        02_Tri8     三角波 (12%)
+        03_Tri4     三角波 (25%)
+        04_Saw      鋸歯状波
+        05_Saw4     鋸歯状波 (25%)
+        06_Saw3     鋸歯状波 (33%)
+        07_Rect     矩形波
+        08_Rect3    矩形波 (33%)
+        09_Rect6    矩形波 (16%)
+
+    GROUP 1X: 吹奏楽器
+        10_Flute    フルート
+        11_Picco    ピッコロ
+        12_Recrdr   リコーダー
+        13_Clarnt   クラリネット
+        14_Oboe     オーボー
+        15_Choir    コーラス
+        16_Saxo     サクソフォン
+        17_Trumpt   トランペット
+        18_Trombn   トロンボーン
+        19_Tuba     チューバ
+
+    GROUP 2X: 弦楽器
+        20_Harp     ハープ
+        21_Violpz   ヴァイオリン(pizz)
+        22_Violin   ヴァイオリン(arco)
+        23_Cello    チェロ
+        24_Acougt   アコギ
+        25_Uklele   ウクレレ
+        26_Mandol   マンドリン
+        27_Elecgt   エレキギター
+        28_Bassgt   ベース
+        29_Slap     スラップベース
+
+    GROUP 3X: 鍵盤系
+        30_Piano    ピアノ
+        31_Casio    カシオトーン(初期MT系)ピアノ
+        32_Rhodes   ローズエレピ
+        33_Eleckb   エレピ
+        34_Stylo    スタイロフォン
+        35_Accrdn   アコーディオン
+        36_Organ    オルガン
+        37_Marimb   マリンバ
+        38_Celest   チェレスタ
+        39_Musbox   オルゴール
+
+------------------------------------------------------------  IV. ノイズ系  ----
+
+    GROUP 4X: 通常のドラム。A/Bの2種
+        40_KickA    バスドラム A
+        41_KickB    バスドラム B
+        42_SnareA   スネアドラム A
+        43_SnareB   スネアドラム B
+        44_TomA     タム A
+        45_TomB     タム B
+        46_HatcA    クローズドハイハット A
+        47_HatcB    クローズドハイハット B
+        48_HatopA   ハイハットオープン A
+        49_HatopB   ハイハットオープン B
+
+    GROUP 5X: その他打楽器
+        50_Rim      リムショット
+        51_Crash    クラッシュシンバル
+        52_Trimu    トライアングル(ミュート)
+        53_Trifr    トライアングル(オープン)
+        54_Jingle   ジングルベル
+        55_Shaker   シェイカー
+        56_Castnt   カスタネット
+        57_Wood     ウッドブロック
+        58_Cowbel   カウベル
+        59_Chuck    ギターノイズ
+
+--------------------------------------------------------------------------------
