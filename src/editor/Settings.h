@@ -223,6 +223,11 @@ namespace LeftPianoWidth {
 int get();
 void set(int);
 }  // namespace LeftPianoWidth
+
+namespace Language {
+QString get();
+void set(QString);
+}  // namespace Language
 }  // namespace Settings
 
 #endif  // SETTINGS_H

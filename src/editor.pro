@@ -81,8 +81,11 @@ if (equals(pkgconfig_required, "true")) {
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
-TRANSLATIONS = ./translations/translation.ts
-CONFIG += c++17
+CONFIG += c++17 lrelease
+TRANSLATIONS = $$PWD/translations/en.ts $$PWD/translations/ko.ts
+QM_FILES_INSTALL_PATH = $$PWD/../res/translations/
+message("Translations" + $$TRANSLATIONS)
+message("Install to" + $$QM_FILES_INSTALL_PATH)
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -292,8 +295,7 @@ macx:ICON = icon.icns
 DISTFILES +=
 
 RESOURCES += icons.qrc \
-	styles.qrc \
-	translations.qrc
+	styles.qrc
 
 unix {
   desktopfile.files = $$PWD/../res/ptcollab.desktop
@@ -314,7 +316,7 @@ unix {
   INSTALLS += svgicon
 }
 
-distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs
+distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs $$PWD/../res/translations
 unix:distfiles.path = $$PREFIX/share/ptcollab/
 win32:distfiles.path = $$PREFIX
 INSTALLS += distfiles

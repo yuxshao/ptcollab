@@ -55,10 +55,12 @@ int main(int argc, char *argv[]) {
   a->setApplicationName("ptcollab");
   a->setApplicationVersion(Settings::Version::string());
   QTranslator translator;
-  if (QFileInfo("./translation.qm").exists())
-    translator.load("./translation.qm");
+  QString language = Settings::Language::get();
+  if (language == "default")
+    translator.load(QLocale::system(), "", "",
+                    qApp->applicationDirPath() + "/translations", ".qm");
   else
-    translator.load(":/translation.qm");
+    translator.load(qApp->applicationDirPath() + "/translations/" + language);
   a->installTranslator(&translator);
 
   // Remove "?" button on dialogs; this is a Windows-only feature and
