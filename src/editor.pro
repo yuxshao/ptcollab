@@ -81,9 +81,8 @@ if (equals(pkgconfig_required, "true")) {
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
-QM_FILES_INSTALL_PATH = ./translations
-TRANSLATIONS = $$PWD/translations/en.ts $$PWD/translations/ko.ts
-CONFIG += c++17 lrelease
+TRANSLATIONS = $$PWD/translations/*.ts
+CONFIG += c++17 lrelease embed_translations
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

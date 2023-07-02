@@ -116,7 +116,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
 
   // Identify languages similarly
   ui->languageCombo->clear();
-  QString languages_dir = qApp->applicationDirPath() + "/translations";
+  QString languages_dir = ":/i18n/";
   qDebug() << "Searching for languages in: " << languages_dir;
   QDirIterator dir(languages_dir,
                    QDir::Files | QDir::NoDotAndDotDot | QDir::Readable,
