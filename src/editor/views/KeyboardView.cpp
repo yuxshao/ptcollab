@@ -550,7 +550,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
 
   for (const BackgroundKeyRow &r : background_key_rows) {
     // Initialize it to start to suppress uninitialized warning
-    QBrush *brush = &whiteNoteBrush;
+    QBrush *brush;
     switch (r.color) {
       case BackgroundKeyRow::Root:
         brush = &rootNoteBrush;
@@ -726,6 +726,8 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
       drawNoteSegment(painter, param, note, scale, displayEdo, selection);
   };
 
+  std::vector<std::pair<int, int>> currentUnitNoteChanges(
+      {{0, EVENTDEFAULT_KEY}});
   for (const EVERECORD *e = m_pxtn->evels->get_Records(); e != nullptr;
        e = e->next) {
     // if (e->clock > clockBounds.end) break;
@@ -752,6 +754,9 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
           if (e->clock > state.ongoingOnEvent.value().end)
             state.ongoingOnEvent.reset();
         }
+        if (unit_draw_params[e->unit_no].isCurrentUnit) {
+          currentUnitNoteChanges.push_back({e->clock, e->value});
+        }
         state.pitch.set(e);
         break;
       default:
@@ -768,6 +773,30 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
     }
   }
 
+  // Draw the note changes on the active unit
+  if (current_unit_draw_param.brush) {
+    int32_t lineHeight = std::min(3, background_key_floor_h / 2 - 1);
+    constexpr int32_t lineWidth = 2;
+    currentUnitNoteChanges.push_back(
+        {clockBounds.end + scale.clockPerPx * lineWidth,
+         currentUnitNoteChanges.back().first});
+    QBrush brush = current_unit_draw_param.brush->toQColor(1, 1, 255);
+    for (int i = 1; i < currentUnitNoteChanges.size(); ++i) {
+      const auto &[clock, pitch] = currentUnitNoteChanges[i];
+      const auto &[last_clock, last_pitch] = currentUnitNoteChanges[i - 1];
+      int32_t thisX = clock / scale.clockPerPx;
+      int32_t thisY = scale.pitchToY(pitch);
+      int32_t lastX = last_clock / scale.clockPerPx;
+      int32_t lastY = scale.pitchToY(last_pitch);
+      // Horizontal line to thisX
+      painter.fillRect(lastX + lineWidth, lastY - lineHeight / 2,
+                       thisX - lastX - lineWidth, lineHeight, brush);
+      // Vertical line to thisY
+      painter.fillRect(
+          thisX, std::min(lastY, thisY) - lineHeight / 2, lineWidth,
+          std::max(lastY, thisY) - std::min(lastY, thisY) + lineHeight, brush);
+    }
+  }
   // Draw the active and hover units
   const auto &mouse = m_client->editState().mouse_edit_state;
   for (const NoteSegment &note : current_unit_notes) {
