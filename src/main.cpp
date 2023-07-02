@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   QString language = Settings::Language::get();
   if (language == "default") {
     if (!translator.load(qApp->applicationDirPath() + "/translation.qm"))
-      translator.load(QLocale::system(), "", "", ":/i18n", ".qm");
+      translator.load(QLocale::system(), "", "", ":/i18n");
   } else
     translator.load(":/i18n/" + language);
   a->installTranslator(&translator);

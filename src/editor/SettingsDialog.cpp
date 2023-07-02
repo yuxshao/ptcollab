@@ -116,17 +116,9 @@ void SettingsDialog::showEvent(QShowEvent *) {
 
   // Identify languages similarly
   ui->languageCombo->clear();
-  QString languages_dir = ":/i18n/";
-  qDebug() << "Searching for languages in: " << languages_dir;
-  QDirIterator dir(languages_dir,
-                   QDir::Files | QDir::NoDotAndDotDot | QDir::Readable,
-                   QDirIterator::NoIteratorFlags);
   ui->languageCombo->addItem("Default");
-  while (dir.hasNext()) {
-    dir.next();
-    if (dir.fileName().endsWith(".qm"))
-      ui->languageCombo->addItem(dir.fileName());
-  }
+  ui->languageCombo->addItems(QDir(":/i18n/").entryList(
+      QDir::Files | QDir::NoDotAndDotDot | QDir::Readable));
   ui->languageCombo->setCurrentText(Settings::Language::get());
 
   // Identify MIDI ports
