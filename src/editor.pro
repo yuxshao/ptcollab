@@ -313,7 +313,7 @@ unix {
   INSTALLS += svgicon
 }
 
-distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs $$PWD/../res/translations
+distfiles.files = $$PWD/../res/sample_instruments $$PWD/../res/sample_songs
 unix:distfiles.path = $$PREFIX/share/ptcollab/
 win32:distfiles.path = $$PREFIX
 INSTALLS += distfiles
