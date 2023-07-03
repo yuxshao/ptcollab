@@ -28,7 +28,19 @@ if (QT_VERSION EQUAL 6)
 	# https://www.qt.io/blog/porting-from-qt-5-to-qt-6-using-qt5compat-library
 	# list (APPEND QT_COMPONENTS Core5Compat)
 endif (QT_VERSION EQUAL 6)
-find_package ("Qt${QT_VERSION}" COMPONENTS ${QT_COMPONENTS} REQUIRED)
+find_package ("Qt${QT_VERSION}" COMPONENTS ${QT_COMPONENTS} REQUIRED LinguistTools)
+
+FILE(GLOB TS_FILES translations/*.ts)
+qt5_add_translation(qmFiles ${TS_FILES})
+
+# Unfortunately in Qt5 we have to generate the qrc ourselves.
+set(TRANSLATIONS_FILE ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc)
+file(WRITE ${TRANSLATIONS_FILE} "<?xml version=\"1.0\" encoding=\"UTF-8\"?><RCC><qresource prefix='/i18n'>")
+foreach(FILE_PATH ${qmFiles})
+    get_filename_component(FILE_NAME ${FILE_PATH} NAME)
+    file(APPEND ${TRANSLATIONS_FILE} "<file alias=\"${FILE_NAME}\">${FILE_PATH}</file>")
+endforeach()
+file (APPEND ${TRANSLATIONS_FILE} "</qresource></RCC>")
 
 # C/C++ & qrc Qt Resource files
 set (PTCOLLAB_SOURCES
@@ -112,9 +124,10 @@ set (PTCOLLAB_SOURCES
 	pxtone/pxtnWoicePTV.cpp
 	pxtone/pxtoneNoise.cpp
 	network/BroadcastServer.cpp
-
-	icons.qrc
-	styles.qrc
+        icons.qrc
+        styles.qrc
+        ${qmFiles}
+        ${TRANSLATIONS_FILE}
 )
 
 # UI forms

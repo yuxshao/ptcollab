@@ -4,7 +4,6 @@
 #include <QUrl>
 #include <QtDebug>
 
-#include "ComboOptions.h"
 #include "Settings.h"
 #include "StyleEditor.h"
 #include "ui_SettingsDialog.h"
@@ -24,6 +23,7 @@ SettingsDialog::SettingsDialog(const MidiWrapper *midi_wrapper, QWidget *parent)
 
 void SettingsDialog::apply() {
   Settings::StyleName::set(ui->styleCombo->currentText());
+  Settings::Language::set(ui->languageCombo->currentText());
   Settings::ChordPreview::set(ui->chordPreviewCheck->isChecked());
   Settings::SpacebarStop::set(ui->pauseReseekCheck->isChecked());
   Settings::VelocityDrag::set(ui->velocityDragCheck->isChecked());
@@ -109,11 +109,17 @@ void SettingsDialog::showEvent(QShowEvent *) {
   for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");
   ui->rowDisplayEdit->setText(rowDisplay);
 
-  // Identify Styles
-  // then add those names to a list for usage in the Combo Box
+  // Identify Styles then add those names to a list for usage in the Combo Box
   ui->styleCombo->clear();
   ui->styleCombo->addItems(StyleEditor::getStyles());
   ui->styleCombo->setCurrentText(Settings::StyleName::get());
+
+  // Identify languages similarly
+  ui->languageCombo->clear();
+  ui->languageCombo->addItem("Default");
+  ui->languageCombo->addItems(QDir(":/i18n/").entryList(
+      QDir::Files | QDir::NoDotAndDotDot | QDir::Readable));
+  ui->languageCombo->setCurrentText(Settings::Language::get());
 
   // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();

@@ -176,6 +176,16 @@
         </layout>
        </item>
        <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Language</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="languageCombo"/>
+       </item>
+       <item>
         <widget class="QCheckBox" name="showWelcomeDialogCheck">
          <property name="text">
           <string>Show welcome dialog on startup</string>
