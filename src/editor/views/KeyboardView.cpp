@@ -774,7 +774,7 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
   }
 
   // Draw the note changes on the active unit
-  if (current_unit_draw_param.brush) {
+  if (current_unit_draw_param.brush && !m_dark) {
     int32_t lineHeight = std::min(3, background_key_floor_h / 2 - 1);
     constexpr int32_t lineWidth = 2;
     currentUnitNoteChanges.push_back(
