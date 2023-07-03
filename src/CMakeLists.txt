@@ -31,7 +31,6 @@ endif (QT_VERSION EQUAL 6)
 find_package ("Qt${QT_VERSION}" COMPONENTS ${QT_COMPONENTS} REQUIRED LinguistTools)
 
 FILE(GLOB TS_FILES translations/*.ts)
-set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "i18n")
 qt5_add_translation(qmFiles ${TS_FILES})
 
 # Unfortunately in Qt5 we have to generate the qrc ourselves.
