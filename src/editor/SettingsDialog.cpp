@@ -123,7 +123,8 @@ void SettingsDialog::showEvent(QShowEvent *) {
 
   // Identify MIDI ports
   QStringList ports = m_midi_wrapper->ports();
-  ports.push_front(m_midi_wrapper->portDropdownMessage());
+	const std::string midiPortMessage = m_midi_wrapper->portDropdownMessage();
+  ports.push_front(QCoreApplication::translate("MidiWrapper", midiPortMessage.c_str()));
   ui->midiInputPortCombo->clear();
   ui->midiInputPortCombo->addItems(ports);
 

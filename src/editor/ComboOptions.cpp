@@ -1,5 +1,7 @@
 #include "ComboOptions.h"
 
+#include <QCoreApplication>
+
 const std::vector<std::pair<QString, int>> &quantizeXOptions() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, int>>{
@@ -9,18 +11,21 @@ const std::vector<std::pair<QString, int>> &quantizeXOptions() {
   return v;
 }
 
+const char* quantizeOptionNoneName = QT_TRANSLATE_NOOP("ComboOptions", "None");
+
 const std::vector<std::pair<QString, int>> &quantizeYOptionsSimple() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, int>>{
-        {"1", 12}, {"1/2", 24}, {"1/3", 36}, {"None", 3072}};
+        {"1", 12}, {"1/2", 24}, {"1/3", 36}, {QCoreApplication::translate("ComboOptions", quantizeOptionNoneName), 3072}};
   })();
   return v;
 }
+
 const std::vector<std::pair<QString, int>> &quantizeYOptionsAdvanced() {
   static auto v = ([]() {
     std::vector<std::pair<QString, int>> v;
     for (int i = 7; i <= 36; ++i) v.push_back({QString("1/%1").arg(i), i});
-    v.push_back({"None", 3072});
+    v.push_back({QCoreApplication::translate("ComboOptions", quantizeOptionNoneName), 3072});
     return v;
   })();
   return v;
@@ -36,17 +41,28 @@ const std::vector<std::pair<QString, int>> &keyboardDisplayOptions() {
   return v;
 }
 
+const std::vector<char*> paramOptionNames = std::vector<char*> {
+  QT_TRANSLATE_NOOP("ComboOptions", "Velocity"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Pan (Volume)"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Pan (Time)"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Volume"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Portamento"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Fine-tune"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Voice"),
+  QT_TRANSLATE_NOOP("ComboOptions", "Group"),
+};
+
 const std::vector<std::pair<QString, EVENTKIND>> &paramOptions() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, EVENTKIND>>{
-        {"Velocity", EVENTKIND_VELOCITY},
-        {"Pan (Volume)", EVENTKIND_PAN_VOLUME},
-        {"Pan (Time)", EVENTKIND_PAN_TIME},
-        {"Volume", EVENTKIND_VOLUME},
-        {"Portamento", EVENTKIND_PORTAMENT},
-        {"Fine-tune", EVENTKIND_TUNING},
-        {"Voice", EVENTKIND_VOICENO},
-        {"Group", EVENTKIND_GROUPNO}};
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[0]), EVENTKIND_VELOCITY},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[1]), EVENTKIND_PAN_VOLUME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[2]), EVENTKIND_PAN_TIME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[3]), EVENTKIND_VOLUME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[4]), EVENTKIND_PORTAMENT},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[5]), EVENTKIND_TUNING},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[6]), EVENTKIND_VOICENO},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[7]), EVENTKIND_GROUPNO}};
   })();
   return v;
 }
