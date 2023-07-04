@@ -25,47 +25,47 @@
 <context>
     <name>ComboOptions</name>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="12"/>
+        <location filename="../editor/ComboOptions.cpp" line="14"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="43"/>
+        <location filename="../editor/ComboOptions.cpp" line="45"/>
         <source>Velocity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="44"/>
+        <location filename="../editor/ComboOptions.cpp" line="46"/>
         <source>Pan (Volume)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="45"/>
+        <location filename="../editor/ComboOptions.cpp" line="47"/>
         <source>Pan (Time)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="46"/>
+        <location filename="../editor/ComboOptions.cpp" line="48"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="47"/>
+        <location filename="../editor/ComboOptions.cpp" line="49"/>
         <source>Portamento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="48"/>
+        <location filename="../editor/ComboOptions.cpp" line="50"/>
         <source>Fine-tune</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="49"/>
+        <location filename="../editor/ComboOptions.cpp" line="51"/>
         <source>Voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/ComboOptions.cpp" line="50"/>
+        <location filename="../editor/ComboOptions.cpp" line="52"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
@@ -340,11 +340,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/EditorWindow.ui" line="195"/>
-        <source>Clear Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../editor/EditorWindow.ui" line="200"/>
         <location filename="../editor/EditorWindow.cpp" line="328"/>
         <source>Clean units / voices</source>
@@ -371,6 +366,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../editor/EditorWindow.ui" line="195"/>
         <location filename="../editor/EditorWindow.cpp" line="275"/>
         <source>Clear settings</source>
         <translation type="unfinished"></translation>
@@ -409,7 +405,7 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/EditorWindow.cpp" line="920"/>
-        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpxectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1). </source>
+        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -750,18 +746,18 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="396"/>
-        <source>Could not add remove voice with ID %1</source>
+        <source>Could not remove voice with ID %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/PxtoneClient.cpp" line="408"/>
+        <source>Could not change voice with ID %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="407"/>
         <location filename="../editor/PxtoneClient.cpp" line="417"/>
         <source>Could not change voice</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/PxtoneClient.cpp" line="408"/>
-        <source>Could not add change voice with ID %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

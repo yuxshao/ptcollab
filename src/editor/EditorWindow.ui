@@ -192,7 +192,7 @@
   </action>
   <action name="actionClear_Settings">
    <property name="text">
-    <string>Clear Settings</string>
+    <string>Clear settings</string>
    </property>
   </action>
   <action name="actionClean">
