@@ -156,7 +156,7 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
         case UnitListColumn::Pinned:
           break;
         case UnitListColumn::Name:
-          return "Name";
+          return tr("Name");
       }
     }
     if (role == Qt::DecorationRole) {

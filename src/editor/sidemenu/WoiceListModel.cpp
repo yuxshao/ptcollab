@@ -146,9 +146,9 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
         case WoiceListColumn::BeatFit:
           break;
         case WoiceListColumn::Key:
-          return "Key";
+          return tr("Key");
         case WoiceListColumn::Name:
-          return "Name";
+          return tr("Name");
       }
     }
     if (role == Qt::DecorationRole) {

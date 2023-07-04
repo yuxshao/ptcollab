@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QLibraryInfo>
 #include <QTranslator>
 
 #include "editor/EditorWindow.h"
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]) {
   a->setOrganizationDomain("ptweb.me");
   a->setApplicationName("ptcollab");
   a->setApplicationVersion(Settings::Version::string());
-  QTranslator translator;
+  QTranslator translator, /*qtTranslator,*/ baseTranslator;
   QString language = Settings::Language::get();
   if (language == "default") {
     if (!translator.load(qApp->applicationDirPath() + "/translation.qm"))
@@ -62,6 +63,16 @@ int main(int argc, char *argv[]) {
   } else
     translator.load(":/i18n/" + language);
   a->installTranslator(&translator);
+
+  // adapted from https://stackoverflow.com/a/31557808/16570148
+  //  if (qtTranslator.load(translator.language(), "qt", "_",
+  //                        QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+  //    a->installTranslator(&qtTranslator);
+  // Doesn't seem to do anything? Leaving this here in case there are issues
+  if (baseTranslator.load(
+          "qtbase_" + language,
+          QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    a->installTranslator(&baseTranslator);
 
   // Remove "?" button on dialogs; this is a Windows-only feature and
   // goes unused in ptcollab. It shouldn't be the default...
