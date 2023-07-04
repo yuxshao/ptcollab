@@ -41,7 +41,7 @@ const std::vector<std::pair<QString, int>> &keyboardDisplayOptions() {
   return v;
 }
 
-const std::vector<char*> paramOptionNames = std::vector<char*> {
+const std::vector<std::string> paramOptionNames = std::vector<std::string> {
   QT_TRANSLATE_NOOP("ComboOptions", "Velocity"),
   QT_TRANSLATE_NOOP("ComboOptions", "Pan (Volume)"),
   QT_TRANSLATE_NOOP("ComboOptions", "Pan (Time)"),
@@ -55,14 +55,14 @@ const std::vector<char*> paramOptionNames = std::vector<char*> {
 const std::vector<std::pair<QString, EVENTKIND>> &paramOptions() {
   static auto v = ([]() {
     return std::vector<std::pair<QString, EVENTKIND>>{
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[0]), EVENTKIND_VELOCITY},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[1]), EVENTKIND_PAN_VOLUME},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[2]), EVENTKIND_PAN_TIME},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[3]), EVENTKIND_VOLUME},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[4]), EVENTKIND_PORTAMENT},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[5]), EVENTKIND_TUNING},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[6]), EVENTKIND_VOICENO},
-        {QCoreApplication::translate("ComboOptions", paramOptionNames[7]), EVENTKIND_GROUPNO}};
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[0].c_str()), EVENTKIND_VELOCITY},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[1].c_str()), EVENTKIND_PAN_VOLUME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[2].c_str()), EVENTKIND_PAN_TIME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[3].c_str()), EVENTKIND_VOLUME},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[4].c_str()), EVENTKIND_PORTAMENT},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[5].c_str()), EVENTKIND_TUNING},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[6].c_str()), EVENTKIND_VOICENO},
+        {QCoreApplication::translate("ComboOptions", paramOptionNames[7].c_str()), EVENTKIND_GROUPNO}};
   })();
   return v;
 }
