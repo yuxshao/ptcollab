@@ -23,6 +23,54 @@
     </message>
 </context>
 <context>
+    <name>ComboOptions</name>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="14"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="45"/>
+        <source>Velocity</source>
+        <translation type="unfinished">벨로시티</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="46"/>
+        <source>Pan (Volume)</source>
+        <translation type="unfinished">좌우 밸런스</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="47"/>
+        <source>Pan (Time)</source>
+        <translation type="unfinished">스테레오 이미징</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="48"/>
+        <source>Volume</source>
+        <translation type="unfinished">음량</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="49"/>
+        <source>Portamento</source>
+        <translation type="unfinished">포르타멘토</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="50"/>
+        <source>Fine-tune</source>
+        <translation type="unfinished">음정 미세조절</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="51"/>
+        <source>Voice</source>
+        <translation type="unfinished">샘플</translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="52"/>
+        <source>Group</source>
+        <translation type="unfinished">그룹</translation>
+    </message>
+</context>
+<context>
     <name>ConnectDialog</name>
     <message>
         <location filename="../editor/ConnectDialog.ui" line="14"/>
@@ -119,9 +167,20 @@
         <translation>그룹</translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="116"/>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="128"/>
         <source>Unit</source>
         <translation>트랙</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="114"/>
+        <source>G</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="118"/>
+        <source>Freq.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="130"/>
@@ -129,6 +188,7 @@
         <translation>주파수</translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="120"/>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="132"/>
         <source>Ratio</source>
         <translation>비율</translation>
@@ -279,11 +339,6 @@
         <translation>wav 파일로 추출</translation>
     </message>
     <message>
-        <location filename="../editor/EditorWindow.ui" line="195"/>
-        <source>Clear Settings</source>
-        <translation>설정 초기화</translation>
-    </message>
-    <message>
         <location filename="../editor/EditorWindow.ui" line="200"/>
         <location filename="../editor/EditorWindow.cpp" line="328"/>
         <source>Clean units / voices</source>
@@ -310,6 +365,7 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../editor/EditorWindow.ui" line="195"/>
         <location filename="../editor/EditorWindow.cpp" line="275"/>
         <source>Clear settings</source>
         <translation>설정 초기화</translation>
@@ -352,7 +408,7 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/EditorWindow.cpp" line="920"/>
-        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpxectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1). </source>
+        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1).</source>
         <translation>오래된 백업 파일이 발견되었습니다. 이전 세션이 예상치 못 하게 종료되었을 경우에 발생하곤 합니다. 백업 폴더를 엽니다.
 (%1) 폴더의 모든 파일을 삭제 시 이 메시지를 보지 않을 수 있습니다.</translation>
     </message>
@@ -533,6 +589,34 @@ Version: %1</source>
     </message>
 </context>
 <context>
+    <name>MidiWrapper</name>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="76"/>
+        <source>Could not open MIDI port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="77"/>
+        <source>Error opening MIDI port: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="91"/>
+        <source>Select a port...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="93"/>
+        <source>No ports found...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="108"/>
+        <source>Binary not built with MIDI support...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NewWoiceDialog</name>
     <message>
         <location filename="../editor/NewWoiceDialog.ui" line="14"/>
@@ -620,9 +704,20 @@ Version: %1</source>
         <translation>그룹</translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="102"/>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="112"/>
         <source>Cut</source>
         <translation>자르기</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="100"/>
+        <source>G</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="104"/>
+        <source>Amp.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="114"/>
@@ -654,19 +749,19 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="396"/>
-        <source>Could not add remove voice with ID %1</source>
+        <source>Could not remove voice with ID %1</source>
         <translation>삭제된 샘플(%1)을 추가할 수 없었습니다</translation>
+    </message>
+    <message>
+        <location filename="../editor/PxtoneClient.cpp" line="408"/>
+        <source>Could not change voice with ID %1</source>
+        <translation>변경된 샘플(%1)을 추가할 수 없었습니다</translation>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="407"/>
         <location filename="../editor/PxtoneClient.cpp" line="417"/>
         <source>Could not change voice</source>
         <translation>샘플을 변경할 수 없습니다</translation>
-    </message>
-    <message>
-        <location filename="../editor/PxtoneClient.cpp" line="408"/>
-        <source>Could not add change voice with ID %1</source>
-        <translation>변경된 샘플(%1)을 추가할 수 없었습니다</translation>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="418"/>
@@ -880,81 +975,86 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/SettingsDialog.ui" line="181"/>
+        <source>Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/SettingsDialog.ui" line="191"/>
         <source>Show welcome dialog on startup</source>
         <translation>시작 시 환영 메시지 표시</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="188"/>
+        <location filename="../editor/SettingsDialog.ui" line="198"/>
         <source>Show peak meter numbers</source>
         <translation>볼륨 미터기에 수치 표시</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="195"/>
+        <location filename="../editor/SettingsDialog.ui" line="205"/>
         <source>Display pinned unit name labels</source>
         <translation>고정한 샘플의 이름을 상단에 시각화</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="223"/>
+        <location filename="../editor/SettingsDialog.ui" line="233"/>
         <source>Editor pixel zoom</source>
         <translation>타임라인 범위 확대</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="232"/>
+        <location filename="../editor/SettingsDialog.ui" line="242"/>
         <source>Keyboard</source>
         <translation>피아노 롤</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="264"/>
+        <location filename="../editor/SettingsDialog.ui" line="274"/>
         <source>Left piano width</source>
         <translation>좌측 피아노 롤 길이</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="273"/>
+        <location filename="../editor/SettingsDialog.ui" line="283"/>
         <source>Display octave markers on A</source>
         <translation>A음에 옥타브 마커를 표시</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="280"/>
+        <location filename="../editor/SettingsDialog.ui" line="290"/>
         <source>Show alternate tuning systems (beta)</source>
         <translation>피아노 롤 미분음 커스텀 (베타)</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="305"/>
+        <location filename="../editor/SettingsDialog.ui" line="315"/>
         <source>Background piano pattern (?)</source>
         <translation>배경 피아노 패턴 (W, B)</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="332"/>
+        <location filename="../editor/SettingsDialog.ui" line="342"/>
         <source>MIDI</source>
         <translation>미디</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="338"/>
+        <location filename="../editor/SettingsDialog.ui" line="348"/>
         <source>Input port</source>
         <translation>입력 포트</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="348"/>
+        <location filename="../editor/SettingsDialog.ui" line="358"/>
         <source>Connect to last MIDI device on startup</source>
         <translation>시작 시 가장 최근 사용한 MIDI 장치에 연결</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="355"/>
+        <location filename="../editor/SettingsDialog.ui" line="365"/>
         <source>Auto-step on note input (Ctrl+L)</source>
         <translation>MIDI 입력에 맞춰 자동으로 노트 입력 (Ctrl+L)</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="362"/>
+        <location filename="../editor/SettingsDialog.ui" line="372"/>
         <source>Polyphonic note preview</source>
         <translation>다중입력된 음 미리듣기</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="369"/>
+        <location filename="../editor/SettingsDialog.ui" line="379"/>
         <source>Record (instead of preview) (Ctrl+R)</source>
         <translation>미리듣기 대신 녹음하기 (Ctrl+R)</translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="376"/>
+        <location filename="../editor/SettingsDialog.ui" line="386"/>
         <source>Velocity sensitivity</source>
         <translation>벨로시티 적용</translation>
     </message>
@@ -1718,62 +1818,62 @@ Version: %1</source>
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.cpp" line="79"/>
+        <location filename="../main.cpp" line="81"/>
         <source>Fix the server port to &lt;port&gt;.</source>
         <translation>서버 포트를 &lt;port&gt;로 변경해주세요.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="80"/>
+        <location filename="../main.cpp" line="82"/>
         <source>port</source>
         <translation>포트</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="87"/>
+        <location filename="../main.cpp" line="89"/>
         <source>Listen on this address (use 127.0.0.1 for private, 0.0.0.0 for public).</source>
         <translation>이 서버에서 듣기 (비공개 서버 시 127.0.0.1, 공개 서버 시 0.0.0.0)</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="90"/>
+        <location filename="../main.cpp" line="92"/>
         <source>host</source>
         <translation>호스트</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="96"/>
+        <location filename="../main.cpp" line="98"/>
         <source>Record the session to this file.</source>
         <translation>세션을 이 파일에 녹화합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="97"/>
+        <location filename="../main.cpp" line="99"/>
         <source>record</source>
         <translation>녹화</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="102"/>
+        <location filename="../main.cpp" line="104"/>
         <source>Just run a server with no editor.</source>
         <translation>편집기 없이 서버를 시작합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="107"/>
+        <location filename="../main.cpp" line="109"/>
         <source>Load this file when starting.</source>
         <translation>시작 시 이 파일을 로드합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="113"/>
+        <location filename="../main.cpp" line="115"/>
         <source>Join with this username.</source>
         <translation>이 닉네임으로 참여합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="118"/>
+        <location filename="../main.cpp" line="120"/>
         <source>Write log messages to this file.</source>
         <translation>로그 메시지를 이 파일에 작성해주세요.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="119"/>
+        <location filename="../main.cpp" line="121"/>
         <source>file</source>
         <translation>파일</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="124"/>
+        <location filename="../main.cpp" line="126"/>
         <source>Clear application settings.</source>
         <translation>프로그램 설정을 초기화합니다.</translation>
     </message>

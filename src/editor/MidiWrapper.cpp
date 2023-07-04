@@ -73,8 +73,8 @@ bool MidiWrapper::usePort(int port,
   try {
     m_in->openPort(port);
   } catch (RtMidiError &error) {
-    QMessageBox::warning(nullptr, QString("Could not open MIDI port"),
-                         QString("Error opening MIDI port: %1")
+    QMessageBox::warning(nullptr, QString(QT_TRANSLATE_NOOP("MidiWrapper", "Could not open MIDI port")),
+                         QString(QT_TRANSLATE_NOOP("MidiWrapper", "Error opening MIDI port: %1"))
                              .arg(QString::fromStdString(error.getMessage())));
   }
 
@@ -86,11 +86,11 @@ bool MidiWrapper::usePort(int port,
   return true;
 }
 
-QString MidiWrapper::portDropdownMessage() const {
+std::string MidiWrapper::portDropdownMessage() const {
   if (m_in && m_in->getPortCount() > 0)
-    return "Select a port...";
+    return QT_TRANSLATE_NOOP("MidiWrapper", "Select a port...");
   else
-    return "No ports found...";
+    return QT_TRANSLATE_NOOP("MidiWrapper", "No ports found...");
 }
 #else
 
@@ -104,7 +104,7 @@ bool MidiWrapper::usePort(int,
                           const std::function<void(Input::Event::Event)> &) {
   return false;
 }
-QString MidiWrapper::portDropdownMessage() const {
-  return "Binary not built with MIDI support...";
+std::string MidiWrapper::portDropdownMessage() const {
+  return QT_TRANSLATE_NOOP("MidiWrapper", "Binary not built with MIDI support...");
 }
 #endif

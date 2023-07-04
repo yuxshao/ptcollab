@@ -21,7 +21,7 @@ class MidiWrapper {
   QStringList ports() const;
 
   std::optional<int> currentPort() const;
-  QString portDropdownMessage() const;
+  std::string portDropdownMessage() const;
   bool usePort(int port, const std::function<void(Input::Event::Event)> &cb);
 };
 

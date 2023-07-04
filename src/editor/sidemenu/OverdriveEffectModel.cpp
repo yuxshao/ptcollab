@@ -97,11 +97,11 @@ QVariant OverdriveEffectModel::headerData(int section,
     if (role == Qt::DisplayRole) {
       switch (OverdriveEffectColumn(section)) {
         case OverdriveEffectColumn::Group:
-          return "G";
+          return tr("G");
         case OverdriveEffectColumn::Cut:
-          return "Cut";
+          return tr("Cut");
         case OverdriveEffectColumn::Amp:
-          return "Amp.";
+          return tr("Amp.");
       }
     }
     if (role == Qt::ToolTipRole) {

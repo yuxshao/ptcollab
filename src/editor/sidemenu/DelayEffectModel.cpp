@@ -111,13 +111,13 @@ QVariant DelayEffectModel::headerData(int section, Qt::Orientation orientation,
     if (role == Qt::DisplayRole) {
       switch (DelayEffectColumn(section)) {
         case DelayEffectColumn::Group:
-          return "G";
+          return tr("G");
         case DelayEffectColumn::Unit:
-          return "Unit";
+          return tr("Unit");
         case DelayEffectColumn::Frequency:
-          return "Freq.";
+          return tr("Freq.");
         case DelayEffectColumn::Rate:
-          return "Ratio";
+          return tr("Ratio");
       }
     }
     if (role == Qt::ToolTipRole) {
