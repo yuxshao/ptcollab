@@ -30,6 +30,7 @@ moc_*.cpp
 moc_predefs.h
 ui_*.h
 qrc_*.cpp
+qmake_qmake_qm_files.qrc
 Thumbs.db
 *.res
 *.rc
