@@ -918,9 +918,9 @@ void EditorWindow::checkForOldAutoSaves() {
       auto result = QMessageBox::information(
           this, tr("Found backup files from previous run"),
           tr("Old backup save files found. This usually happens if a "
-             "previous ptcollab session quit unexpxectedly. Opening backup "
+             "previous ptcollab session quit unexpectedly. Opening backup "
              "folder. If you want to stop seeing this message, simply "
-             "remove all the files from the folder (%1). ")
+             "remove all the files from the folder (%1).")
               .arg(autoSaveDir()));
       if (result == QMessageBox::Ok) {
         if (!QDesktopServices::openUrl(autoSaveDir()))

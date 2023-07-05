@@ -393,7 +393,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             nullptr, tr("Could not remove voice"),
-                            tr("Could not add remove voice with ID %1")
+                            tr("Could not remove voice with ID %1")
                                 .arg(s.woice_id));
                       else
                         // Refresh units using the woice.
@@ -405,7 +405,7 @@ void PxtoneClient::processRemoteAction(const ServerAction &a) {
                       if (!success && uid == m_controller->uid())
                         QMessageBox::warning(
                             nullptr, tr("Could not change voice"),
-                            tr("Could not add change voice with ID %1")
+                            tr("Could not change voice with ID %1")
                                 .arg(s.remove.woice_id));
                       else
                         m_controller->refreshMoo();

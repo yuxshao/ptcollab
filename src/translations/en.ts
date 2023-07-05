@@ -23,6 +23,54 @@
     </message>
 </context>
 <context>
+    <name>ComboOptions</name>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="14"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="45"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="46"/>
+        <source>Pan (Volume)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="47"/>
+        <source>Pan (Time)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="48"/>
+        <source>Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="49"/>
+        <source>Portamento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="50"/>
+        <source>Fine-tune</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="51"/>
+        <source>Voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/ComboOptions.cpp" line="52"/>
+        <source>Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ConnectDialog</name>
     <message>
         <location filename="../editor/ConnectDialog.ui" line="14"/>
@@ -119,8 +167,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="116"/>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="128"/>
         <source>Unit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="114"/>
+        <source>G</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="118"/>
+        <source>Freq.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -129,6 +188,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="120"/>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="132"/>
         <source>Ratio</source>
         <translation type="unfinished"></translation>
@@ -280,11 +340,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/EditorWindow.ui" line="195"/>
-        <source>Clear Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../editor/EditorWindow.ui" line="200"/>
         <location filename="../editor/EditorWindow.cpp" line="328"/>
         <source>Clean units / voices</source>
@@ -311,6 +366,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../editor/EditorWindow.ui" line="195"/>
         <location filename="../editor/EditorWindow.cpp" line="275"/>
         <source>Clear settings</source>
         <translation type="unfinished"></translation>
@@ -349,7 +405,7 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/EditorWindow.cpp" line="920"/>
-        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpxectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1). </source>
+        <source>Old backup save files found. This usually happens if a previous ptcollab session quit unexpectedly. Opening backup folder. If you want to stop seeing this message, simply remove all the files from the folder (%1).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -530,6 +586,34 @@ Version: %1</source>
     </message>
 </context>
 <context>
+    <name>MidiWrapper</name>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="76"/>
+        <source>Could not open MIDI port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="77"/>
+        <source>Error opening MIDI port: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="91"/>
+        <source>Select a port...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="93"/>
+        <source>No ports found...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/MidiWrapper.cpp" line="108"/>
+        <source>Binary not built with MIDI support...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NewWoiceDialog</name>
     <message>
         <location filename="../editor/NewWoiceDialog.ui" line="14"/>
@@ -617,8 +701,19 @@ Version: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="102"/>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="112"/>
         <source>Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="100"/>
+        <source>G</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="104"/>
+        <source>Amp.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -651,18 +746,18 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="396"/>
-        <source>Could not add remove voice with ID %1</source>
+        <source>Could not remove voice with ID %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/PxtoneClient.cpp" line="408"/>
+        <source>Could not change voice with ID %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/PxtoneClient.cpp" line="407"/>
         <location filename="../editor/PxtoneClient.cpp" line="417"/>
         <source>Could not change voice</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/PxtoneClient.cpp" line="408"/>
-        <source>Could not add change voice with ID %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -877,81 +972,86 @@ Version: %1</source>
     </message>
     <message>
         <location filename="../editor/SettingsDialog.ui" line="181"/>
+        <source>Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/SettingsDialog.ui" line="191"/>
         <source>Show welcome dialog on startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="188"/>
+        <location filename="../editor/SettingsDialog.ui" line="198"/>
         <source>Show peak meter numbers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="195"/>
+        <location filename="../editor/SettingsDialog.ui" line="205"/>
         <source>Display pinned unit name labels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="223"/>
+        <location filename="../editor/SettingsDialog.ui" line="233"/>
         <source>Editor pixel zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="232"/>
+        <location filename="../editor/SettingsDialog.ui" line="242"/>
         <source>Keyboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="264"/>
+        <location filename="../editor/SettingsDialog.ui" line="274"/>
         <source>Left piano width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="273"/>
+        <location filename="../editor/SettingsDialog.ui" line="283"/>
         <source>Display octave markers on A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="280"/>
+        <location filename="../editor/SettingsDialog.ui" line="290"/>
         <source>Show alternate tuning systems (beta)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="305"/>
+        <location filename="../editor/SettingsDialog.ui" line="315"/>
         <source>Background piano pattern (?)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="332"/>
+        <location filename="../editor/SettingsDialog.ui" line="342"/>
         <source>MIDI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="338"/>
+        <location filename="../editor/SettingsDialog.ui" line="348"/>
         <source>Input port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="348"/>
+        <location filename="../editor/SettingsDialog.ui" line="358"/>
         <source>Connect to last MIDI device on startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="355"/>
+        <location filename="../editor/SettingsDialog.ui" line="365"/>
         <source>Auto-step on note input (Ctrl+L)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="362"/>
+        <location filename="../editor/SettingsDialog.ui" line="372"/>
         <source>Polyphonic note preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="369"/>
+        <location filename="../editor/SettingsDialog.ui" line="379"/>
         <source>Record (instead of preview) (Ctrl+R)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/SettingsDialog.ui" line="376"/>
+        <location filename="../editor/SettingsDialog.ui" line="386"/>
         <source>Velocity sensitivity</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1713,62 +1813,62 @@ Version: %1</source>
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.cpp" line="79"/>
+        <location filename="../main.cpp" line="81"/>
         <source>Fix the server port to &lt;port&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="80"/>
+        <location filename="../main.cpp" line="82"/>
         <source>port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="87"/>
+        <location filename="../main.cpp" line="89"/>
         <source>Listen on this address (use 127.0.0.1 for private, 0.0.0.0 for public).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="90"/>
+        <location filename="../main.cpp" line="92"/>
         <source>host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="96"/>
+        <location filename="../main.cpp" line="98"/>
         <source>Record the session to this file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="97"/>
+        <location filename="../main.cpp" line="99"/>
         <source>record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="102"/>
+        <location filename="../main.cpp" line="104"/>
         <source>Just run a server with no editor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="107"/>
+        <location filename="../main.cpp" line="109"/>
         <source>Load this file when starting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="113"/>
+        <location filename="../main.cpp" line="115"/>
         <source>Join with this username.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="118"/>
+        <location filename="../main.cpp" line="120"/>
         <source>Write log messages to this file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="119"/>
+        <location filename="../main.cpp" line="121"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="124"/>
+        <location filename="../main.cpp" line="126"/>
         <source>Clear application settings.</source>
         <translation type="unfinished"></translation>
     </message>
