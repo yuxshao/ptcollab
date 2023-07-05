@@ -57,17 +57,18 @@ int main(int argc, char *argv[]) {
   a->setApplicationVersion(Settings::Version::string());
   QTranslator translator, baseTranslator;
   QString language = Settings::Language::get();
-  if (language == "default") {
-    if (!translator.load(qApp->applicationDirPath() + "/translation.qm"))
+  if (language == "Default") {
+    if (!translator.load(qApp->applicationDirPath() + "/translation.qm")) {
       translator.load(QLocale::system(), "", "", ":/i18n");
-  } else
+    }
+  } else {
     translator.load(":/i18n/" + language);
-  a->installTranslator(&translator);
+  }
 
-  if (baseTranslator.load(
-          "qtbase_" + language,
-          QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
-    a->installTranslator(&baseTranslator);
+  baseTranslator.load("qtbase_" + translator.language() + ".qm",
+                      QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  a->installTranslator(&baseTranslator);
+  a->installTranslator(&translator);
 
   // adapted from https://stackoverflow.com/a/31557808/16570148
   //  QTranslator qtTranslator;
