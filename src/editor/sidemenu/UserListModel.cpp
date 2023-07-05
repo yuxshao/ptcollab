@@ -42,7 +42,7 @@ QVariant UserListModel::data(const QModelIndex &index, int role) const {
         if (user->second.last_ping.has_value()) {
           int ping = static_cast<int>(user->second.last_ping.value());
           if (ping > 1000) return QString("%1s").arg(ping / 1000);
-          return ping + tr("ms");
+          return QString("%1ms").arg(ping);
         }
         return "";
       case UserListModel::Column::Name:

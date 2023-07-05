@@ -156,7 +156,8 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
         case UnitListColumn::Pinned:
           break;
         case UnitListColumn::Name:
-          return tr("Name");
+          return tr("Name",
+                    "Name (abbreviated if necessary, shown in table header)");
       }
     }
     if (role == Qt::DecorationRole) {
@@ -180,7 +181,7 @@ QVariant UnitListModel::headerData(int section, Qt::Orientation orientation,
         case UnitListColumn::Pinned:
           return tr("Pinned");
         case UnitListColumn::Name:
-          return tr("Name");
+          return tr("Name", "Name (full word, shown in tooltip)");
       }
     }
   }
