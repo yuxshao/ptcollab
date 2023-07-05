@@ -146,9 +146,11 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
         case WoiceListColumn::BeatFit:
           break;
         case WoiceListColumn::Key:
-          return "Key";
+          return tr("Key",
+                    "Key (abbreviated if necessary, shown in table header)");
         case WoiceListColumn::Name:
-          return "Name";
+          return tr("Name",
+                    "Name (abbreviated if necessary, shown in table header)");
       }
     }
     if (role == Qt::DecorationRole) {
@@ -169,9 +171,9 @@ QVariant WoiceListModel::headerData(int section, Qt::Orientation orientation,
         case WoiceListColumn::BeatFit:
           return tr("Beat fit");
         case WoiceListColumn::Key:
-          return tr("Key");
+          return tr("Key", "Key (full word, shown in tooltip)");
         case WoiceListColumn::Name:
-          return tr("Name");
+          return tr("Name", "Name (full word, shown in tooltip)");
       }
     }
   }

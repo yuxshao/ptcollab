@@ -97,21 +97,26 @@ QVariant OverdriveEffectModel::headerData(int section,
     if (role == Qt::DisplayRole) {
       switch (OverdriveEffectColumn(section)) {
         case OverdriveEffectColumn::Group:
-          return tr("G");
+          return tr("G",
+                    "Group (abbreviated if necessary, shown in table header)");
         case OverdriveEffectColumn::Cut:
-          return tr("Cut");
+          return tr("Cut",
+                    "Cut (abbreviated if necessary, shown in table header)");
         case OverdriveEffectColumn::Amp:
-          return tr("Amp.");
+          return tr("Amp.",
+                    "Amplification (abbreviated if necessary, shown in table "
+                    "header)");
       }
     }
     if (role == Qt::ToolTipRole) {
       switch (OverdriveEffectColumn(section)) {
         case OverdriveEffectColumn::Group:
-          return tr("Group");
+          return tr("Group", "Group (full word, shown in tooltip)");
         case OverdriveEffectColumn::Cut:
-          return tr("Cut");
+          return tr("Cut", "Cut (full word, shown in tooltip)");
         case OverdriveEffectColumn::Amp:
-          return tr("Amplification");
+          return tr("Amplification",
+                    "Amplification (full word, shown in tooltip)");
       }
     }
   }

@@ -111,25 +111,30 @@ QVariant DelayEffectModel::headerData(int section, Qt::Orientation orientation,
     if (role == Qt::DisplayRole) {
       switch (DelayEffectColumn(section)) {
         case DelayEffectColumn::Group:
-          return tr("G");
+          return tr("G",
+                    "Group (abbreviated if necessary, shown in table header)");
         case DelayEffectColumn::Unit:
-          return tr("Unit");
+          return tr("Unit",
+                    "Unit (abbreviated if necessary, shown in table header)");
         case DelayEffectColumn::Frequency:
-          return tr("Freq.");
+          return tr(
+              "Freq.",
+              "Frequency (abbreviated if necessary, shown in table header)");
         case DelayEffectColumn::Rate:
-          return tr("Ratio");
+          return tr("Ratio",
+                    "Ratio (abbreviated if necessary, shown in table header)");
       }
     }
     if (role == Qt::ToolTipRole) {
       switch (DelayEffectColumn(section)) {
         case DelayEffectColumn::Group:
-          return tr("Group");
+          return tr("Group", "Group (full word, shown in tooltip)");
         case DelayEffectColumn::Unit:
-          return tr("Unit");
+          return tr("Unit", "Unit (full word, shown in tooltip)");
         case DelayEffectColumn::Frequency:
-          return tr("Frequency");
+          return tr("Frequency", "Frequency (full word, shown in tooltip)");
         case DelayEffectColumn::Rate:
-          return tr("Ratio");
+          return tr("Ratio", "Ratio (full word, shown in tooltip)");
       }
     }
   }

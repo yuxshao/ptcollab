@@ -40,7 +40,7 @@ QVariant UserListModel::data(const QModelIndex &index, int role) const {
         return user->first;
       case UserListModel::Column::Ping:
         if (user->second.last_ping.has_value()) {
-          int ping = user->second.last_ping.value();
+          int ping = static_cast<int>(user->second.last_ping.value());
           if (ping > 1000) return QString("%1s").arg(ping / 1000);
           return QString("%1ms").arg(ping);
         }
@@ -62,7 +62,7 @@ QVariant UserListModel::headerData(int section, Qt::Orientation orientation,
         case UserListModel::Column::Ping:
           return QVariant();
         case UserListModel::Column::Name:
-          return "Name";
+          return tr("Name");
       }
     }
   }
