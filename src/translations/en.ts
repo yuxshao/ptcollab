@@ -162,35 +162,51 @@
 <context>
     <name>DelayEffectModel</name>
     <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="126"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="116"/>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="128"/>
-        <source>Unit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="114"/>
         <source>G</source>
+        <comment>Group (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="118"/>
-        <source>Freq.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="130"/>
-        <source>Frequency</source>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="117"/>
+        <source>Unit</source>
+        <comment>Unit (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="120"/>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="132"/>
+        <source>Freq.</source>
+        <comment>Frequency (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="124"/>
         <source>Ratio</source>
+        <comment>Ratio (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="131"/>
+        <source>Group</source>
+        <comment>Group (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="133"/>
+        <source>Unit</source>
+        <comment>Unit (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="135"/>
+        <source>Frequency</source>
+        <comment>Frequency (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="137"/>
+        <source>Ratio</source>
+        <comment>Ratio (full word, shown in tooltip)</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -696,29 +712,39 @@ Version: %1</source>
 <context>
     <name>OverdriveEffectModel</name>
     <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="110"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="102"/>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="112"/>
-        <source>Cut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="100"/>
         <source>G</source>
+        <comment>Group (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="104"/>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="103"/>
+        <source>Cut</source>
+        <comment>Cut (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="106"/>
         <source>Amp.</source>
+        <comment>Amplification (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="114"/>
+        <source>Group</source>
+        <comment>Group (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="116"/>
+        <source>Cut</source>
+        <comment>Cut (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="118"/>
         <source>Amplification</source>
+        <comment>Amplification (full word, shown in tooltip)</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1709,22 +1735,37 @@ Version: %1</source>
 <context>
     <name>UnitListModel</name>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="177"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="159"/>
+        <source>Name</source>
+        <comment>Name (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="178"/>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="179"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="180"/>
         <source>Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="181"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="182"/>
         <source>Pinned</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="183"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="184"/>
+        <source>Name</source>
+        <comment>Name (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UserListModel</name>
+    <message>
+        <location filename="../editor/sidemenu/UserListModel.cpp" line="65"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1790,85 +1831,99 @@ Version: %1</source>
 <context>
     <name>WoiceListModel</name>
     <message>
-        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="168"/>
-        <source>Loop</source>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="149"/>
+        <source>Key</source>
+        <comment>Key (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="152"/>
+        <source>Name</source>
+        <comment>Name (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/WoiceListModel.cpp" line="170"/>
-        <source>Beat fit</source>
+        <source>Loop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/WoiceListModel.cpp" line="172"/>
-        <source>Key</source>
+        <source>Beat fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/WoiceListModel.cpp" line="174"/>
+        <source>Key</source>
+        <comment>Key (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="176"/>
         <source>Name</source>
+        <comment>Name (full word, shown in tooltip)</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.cpp" line="81"/>
+        <location filename="../main.cpp" line="94"/>
         <source>Fix the server port to &lt;port&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="82"/>
+        <location filename="../main.cpp" line="95"/>
         <source>port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="89"/>
+        <location filename="../main.cpp" line="102"/>
         <source>Listen on this address (use 127.0.0.1 for private, 0.0.0.0 for public).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="92"/>
+        <location filename="../main.cpp" line="105"/>
         <source>host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="98"/>
+        <location filename="../main.cpp" line="111"/>
         <source>Record the session to this file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="99"/>
+        <location filename="../main.cpp" line="112"/>
         <source>record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="104"/>
+        <location filename="../main.cpp" line="117"/>
         <source>Just run a server with no editor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="109"/>
+        <location filename="../main.cpp" line="122"/>
         <source>Load this file when starting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="115"/>
+        <location filename="../main.cpp" line="128"/>
         <source>Join with this username.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="120"/>
+        <location filename="../main.cpp" line="133"/>
         <source>Write log messages to this file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="121"/>
+        <location filename="../main.cpp" line="134"/>
         <source>file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="126"/>
+        <location filename="../main.cpp" line="139"/>
         <source>Clear application settings.</source>
         <translation type="unfinished"></translation>
     </message>

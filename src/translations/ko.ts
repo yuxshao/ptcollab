@@ -162,36 +162,68 @@
 <context>
     <name>DelayEffectModel</name>
     <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="126"/>
         <source>Group</source>
-        <translation>그룹</translation>
+        <translation type="vanished">그룹</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="116"/>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="128"/>
         <source>Unit</source>
-        <translation>트랙</translation>
+        <translation type="vanished">트랙</translation>
+    </message>
+    <message>
+        <source>Frequency</source>
+        <translation type="vanished">주파수</translation>
+    </message>
+    <message>
+        <source>Ratio</source>
+        <translation type="vanished">비율</translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="114"/>
         <source>G</source>
+        <comment>Group (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="118"/>
-        <source>Freq.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="130"/>
-        <source>Frequency</source>
-        <translation>주파수</translation>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="117"/>
+        <source>Unit</source>
+        <comment>Unit (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished">트랙</translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="120"/>
-        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="132"/>
+        <source>Freq.</source>
+        <comment>Frequency (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="124"/>
         <source>Ratio</source>
-        <translation>비율</translation>
+        <comment>Ratio (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished">비율</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="131"/>
+        <source>Group</source>
+        <comment>Group (full word, shown in tooltip)</comment>
+        <translation type="unfinished">그룹</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="133"/>
+        <source>Unit</source>
+        <comment>Unit (full word, shown in tooltip)</comment>
+        <translation type="unfinished">트랙</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="135"/>
+        <source>Frequency</source>
+        <comment>Frequency (full word, shown in tooltip)</comment>
+        <translation type="unfinished">주파수</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/DelayEffectModel.cpp" line="137"/>
+        <source>Ratio</source>
+        <comment>Ratio (full word, shown in tooltip)</comment>
+        <translation type="unfinished">비율</translation>
     </message>
 </context>
 <context>
@@ -699,30 +731,52 @@ Version: %1</source>
 <context>
     <name>OverdriveEffectModel</name>
     <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="110"/>
         <source>Group</source>
-        <translation>그룹</translation>
+        <translation type="vanished">그룹</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="102"/>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="112"/>
         <source>Cut</source>
-        <translation>자르기</translation>
+        <translation type="vanished">자르기</translation>
+    </message>
+    <message>
+        <source>Amplification</source>
+        <translation type="vanished">앰프값</translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="100"/>
         <source>G</source>
+        <comment>Group (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="104"/>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="103"/>
+        <source>Cut</source>
+        <comment>Cut (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished">자르기</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="106"/>
         <source>Amp.</source>
+        <comment>Amplification (abbreviated if necessary, shown in table header)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="114"/>
+        <source>Group</source>
+        <comment>Group (full word, shown in tooltip)</comment>
+        <translation type="unfinished">그룹</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="116"/>
+        <source>Cut</source>
+        <comment>Cut (full word, shown in tooltip)</comment>
+        <translation type="unfinished">자르기</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/OverdriveEffectModel.cpp" line="118"/>
         <source>Amplification</source>
-        <translation>앰프값</translation>
+        <comment>Amplification (full word, shown in tooltip)</comment>
+        <translation type="unfinished">앰프값</translation>
     </message>
 </context>
 <context>
@@ -1714,24 +1768,43 @@ Version: %1</source>
 <context>
     <name>UnitListModel</name>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="177"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="159"/>
+        <source>Name</source>
+        <comment>Name (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished">이름</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="178"/>
         <source>Visible</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="179"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="180"/>
         <source>Played</source>
         <translation>재생</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="181"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="182"/>
         <source>Pinned</source>
         <translation>고정</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/UnitListModel.cpp" line="183"/>
+        <location filename="../editor/sidemenu/UnitListModel.cpp" line="184"/>
         <source>Name</source>
-        <translation>이름</translation>
+        <comment>Name (full word, shown in tooltip)</comment>
+        <translation type="unfinished">이름</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="vanished">이름</translation>
+    </message>
+</context>
+<context>
+    <name>UserListModel</name>
+    <message>
+        <location filename="../editor/sidemenu/UserListModel.cpp" line="65"/>
+        <source>Name</source>
+        <translation type="unfinished">이름</translation>
     </message>
 </context>
 <context>
@@ -1795,85 +1868,107 @@ Version: %1</source>
 <context>
     <name>WoiceListModel</name>
     <message>
-        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="168"/>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="149"/>
+        <source>Key</source>
+        <comment>Key (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="152"/>
+        <source>Name</source>
+        <comment>Name (abbreviated if necessary, shown in table header)</comment>
+        <translation type="unfinished">이름</translation>
+    </message>
+    <message>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="170"/>
         <source>Loop</source>
         <translation>반복</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="170"/>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="172"/>
         <source>Beat fit</source>
         <translation>박자에 맞게 조정</translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="172"/>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="174"/>
         <source>Key</source>
-        <translation>키</translation>
+        <comment>Key (full word, shown in tooltip)</comment>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="174"/>
+        <location filename="../editor/sidemenu/WoiceListModel.cpp" line="176"/>
         <source>Name</source>
-        <translation>이름</translation>
+        <comment>Name (full word, shown in tooltip)</comment>
+        <translation type="unfinished">이름</translation>
+    </message>
+    <message>
+        <source>Key</source>
+        <translation type="vanished">키</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="vanished">이름</translation>
     </message>
 </context>
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.cpp" line="81"/>
+        <location filename="../main.cpp" line="94"/>
         <source>Fix the server port to &lt;port&gt;.</source>
         <translation>서버 포트를 &lt;port&gt;로 변경해주세요.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="82"/>
+        <location filename="../main.cpp" line="95"/>
         <source>port</source>
         <translation>포트</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="89"/>
+        <location filename="../main.cpp" line="102"/>
         <source>Listen on this address (use 127.0.0.1 for private, 0.0.0.0 for public).</source>
         <translation>이 서버에서 듣기 (비공개 서버 시 127.0.0.1, 공개 서버 시 0.0.0.0)</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="92"/>
+        <location filename="../main.cpp" line="105"/>
         <source>host</source>
         <translation>호스트</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="98"/>
+        <location filename="../main.cpp" line="111"/>
         <source>Record the session to this file.</source>
         <translation>세션을 이 파일에 녹화합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="99"/>
+        <location filename="../main.cpp" line="112"/>
         <source>record</source>
         <translation>녹화</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="104"/>
+        <location filename="../main.cpp" line="117"/>
         <source>Just run a server with no editor.</source>
         <translation>편집기 없이 서버를 시작합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="109"/>
+        <location filename="../main.cpp" line="122"/>
         <source>Load this file when starting.</source>
         <translation>시작 시 이 파일을 로드합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="115"/>
+        <location filename="../main.cpp" line="128"/>
         <source>Join with this username.</source>
         <translation>이 닉네임으로 참여합니다.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="120"/>
+        <location filename="../main.cpp" line="133"/>
         <source>Write log messages to this file.</source>
         <translation>로그 메시지를 이 파일에 작성해주세요.</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="121"/>
+        <location filename="../main.cpp" line="134"/>
         <source>file</source>
         <translation>파일</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="126"/>
+        <location filename="../main.cpp" line="139"/>
         <source>Clear application settings.</source>
         <translation>프로그램 설정을 초기화합니다.</translation>
     </message>
