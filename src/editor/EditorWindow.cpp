@@ -284,7 +284,7 @@ EditorWindow::EditorWindow(QWidget *parent)
   connect(ui->actionShortcuts, &QAction::triggered, m_shortcuts_dialog,
           &QDialog::exec);
   connect(ui->actionExit, &QAction::triggered,
-          []() { QApplication::instance()->quit(); });
+          []() { QApplication::closeAllWindows(); });
   connect(ui->actionAbout, &QAction::triggered, [=]() {
     QMessageBox::about(this, "About",
                        tr("Multiplayer pxtone music editor. Special "
