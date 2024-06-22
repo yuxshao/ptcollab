@@ -21,6 +21,8 @@ class pxtnPulse_PCM {
   bool _Convert_BitPerSample(int32_t new_bps);
   bool _Convert_SamplePerSecond(int32_t new_sps);
 
+  void _removeDcOffset();
+
  public:
   pxtnPulse_PCM();
   ~pxtnPulse_PCM();

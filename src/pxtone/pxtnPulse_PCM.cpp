@@ -198,6 +198,8 @@ pxtnERR pxtnPulse_PCM::read(pxtnDescriptor *doc, uint32_t *basic_key) {
                              (repeat_data_end - repeat_data_start) +
                          repeat_data_start];
   }
+
+  _removeDcOffset();
 term:
 
   if (res != pxtnOK && _p_smp) {
@@ -206,6 +208,70 @@ term:
   }
 
   return res;
+}
+
+void pxtnPulse_PCM::_removeDcOffset() {
+  int64_t total_offset[2] = {0, 0};
+  int16_t min[2] = {0, 0};
+  int16_t max[2] = {0, 0};
+
+  // Determine average, min, and max dc offset of sample
+  for (uint32_t i = 0; i < _smp_body; ++i) {
+    for (uint32_t ch = 0; ch < _ch; ++ch) {
+      int16_t pcm = 0;
+      uint32_t pos = (i * _ch + ch) * (_bps / 8);
+      switch (_bps) {
+        case 8:
+          pcm = _p_smp[pos];
+          break;
+        case 16:
+          pcm = *((int16_t *)(&_p_smp[pos]));
+          break;
+      }
+      total_offset[ch] += pcm;
+      if (pcm < min[ch]) min[ch] = pcm;
+      if (pcm > max[ch]) max[ch] = pcm;
+    }
+  }
+
+  int16_t min_bound, max_bound;
+  switch (_bps) {
+    case 8:
+      min_bound = 0;
+      max_bound = 255;
+      break;
+    case 16:
+      min_bound = -32768;
+      max_bound = 32767;
+      break;
+  }
+
+  // Determine adjustment. It ought to be the average value, but we clamp it if
+  // it would cause the min or max value to be out of bounds
+  // (Maybe we can do some kind of lerping instead since if we clamp it we
+  //  technically wouldn't be removing all of the DC offset)
+  int16_t adjustment[2];
+  for (uint32_t ch = 0; ch < _ch; ++ch) {
+    int64_t adj = -total_offset[ch] / _smp_body;
+    if (min[ch] + adj < min_bound) adj = min_bound - min[ch];
+    if (max[ch] + adj > max_bound) adj = max_bound - max[ch];
+    adjustment[ch] = adj;
+  }
+
+  // Apply offset
+  for (uint32_t i = 0; i < _smp_body; ++i) {
+    for (uint32_t ch = 0; ch < _ch; ++ch) {
+      uint32_t pos = (i * _ch + ch) * (_bps / 8);
+      switch (_bps) {
+        case 8:
+          _p_smp[pos] += adjustment[ch];
+          break;
+        case 16:
+          *((int16_t *)(&_p_smp[pos])) += adjustment[ch];
+          break;
+      }
+    }
+  }
 }
 
 bool pxtnPulse_PCM::write(pxtnDescriptor *doc, const char *pstrLIST) const {
