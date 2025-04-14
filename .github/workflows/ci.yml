@@ -148,6 +148,9 @@ jobs:
               # https://doc.qt.io/qt-5/supported-platforms.html#macos
               "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
 
+              # CI Builder now defaults to arm64, tell it to explicitly only build x86_64 (Rosetta 2 should still allow running on aarch64)
+              "-DCMAKE_OSX_ARCHITECTURES=x86_64"
+
               # We cannot ship libraries from Homebrew, because they target a higher macOS version than Qt, which produces a borked build
               "-DENABLE_SYSTEM_LIBS=OFF"
             )
