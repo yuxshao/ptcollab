@@ -64,7 +64,7 @@ jobs:
           submodules: recursive
 
       - name: Install Qt5
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.config.qt_arch }}
@@ -147,6 +147,8 @@ jobs:
               # current lowest-supported version for Qt 5.15 is 10.13 (on x86_64, but we don't do a universal2 build)
               # https://doc.qt.io/qt-5/supported-platforms.html#macos
               "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
+
+              "-DCMAKE_OSX_ARCHITECTURES=arm64"
 
               # We cannot ship libraries from Homebrew, because they target a higher macOS version than Qt, which produces a borked build
               "-DENABLE_SYSTEM_LIBS=OFF"
