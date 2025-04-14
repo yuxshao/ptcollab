@@ -148,7 +148,7 @@ jobs:
               # https://doc.qt.io/qt-5/supported-platforms.html#macos
               "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
 
-              -DCMAKE_OSX_ARCHITECTURES="arm64"
+              "-DCMAKE_OSX_ARCHITECTURES=arm64"
 
               # We cannot ship libraries from Homebrew, because they target a higher macOS version than Qt, which produces a borked build
               "-DENABLE_SYSTEM_LIBS=OFF"
