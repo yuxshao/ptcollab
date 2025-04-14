@@ -64,7 +64,7 @@ jobs:
           submodules: recursive
 
       - name: Install Qt5
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           arch: ${{ matrix.config.qt_arch }}
