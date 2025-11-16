@@ -446,6 +446,10 @@ void ParamView::paintEvent(QPaintEvent *raw_event) {
     if (e->kind != current_kind) continue;
     int unit_no = e->unit_no;
 
+    if (unit_no >= lastEvents.size()) {
+      continue;
+    }
+
     Event curr{e->clock, e->value};
     if (unit_no == current_unit_no)
       current_unit_events.push_back(lastEvents[unit_no]);
