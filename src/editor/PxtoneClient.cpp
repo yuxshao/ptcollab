@@ -4,6 +4,10 @@
 #include <QSettings>
 #include <QTimer>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+# include <QMediaDevices>
+#endif
+
 #include "ComboOptions.h"
 #include "Settings.h"
 #include "audio/AudioFormat.h"
@@ -29,14 +33,22 @@ PxtoneClient::PxtoneClient(pxtnService *pxtn,
       m_ping_timer(new QTimer(this)),
       m_last_seek(0),
       m_clipboard(new Clipboard(this)) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
   if (!info.isFormatSupported(pxtoneAudioFormat())) {
+#else
+  if (!QMediaDevices::defaultAudioOutput().isFormatSupported(pxtoneAudioFormat())) {
+#endif
     qWarning()
         << "Raw audio format not supported by backend, cannot play audio.";
     return;
   }
   m_pxtn_device = new PxtoneIODevice(this, m_controller->pxtn(), &m_moo_state);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   m_audio = new QAudioOutput(pxtoneAudioFormat(), this);
+#else
+  m_audio = new QAudioSink(pxtoneAudioFormat(), this);
+#endif
 
   // Apparently this reduces latency in pulseaudio, but also makes
   // some sounds choppier

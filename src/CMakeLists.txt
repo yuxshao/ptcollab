@@ -7,31 +7,29 @@ set (CMAKE_AUTORCC ON)
 set (CMAKE_AUTOUIC ON)
 
 # Identify Qt version we're using
-#message (STATUS "Attempting to identify Qt version.")
-#find_package (Qt6 COMPONENTS Core)
-#if (Qt6_FOUND)
-#	set (QT_VERSION 6)
-#else()
-	find_package (Qt5 COMPONENTS Core)
-	if (Qt5_FOUND)
-		set (QT_VERSION 5)
-	else()
-#		message (FATAL_ERROR "Unable to locate either Qt5 or Qt6!")
-		message (FATAL_ERROR "Unable to locate Qt5!")
-	endif()
-#endif()
+message (STATUS "Attempting to identify Qt version.")
+find_package (Qt6 COMPONENTS Core)
+if (Qt6_FOUND)
+    set (QT_VERSION 6)
+else()
+    find_package (Qt5 COMPONENTS Core)
+    if (Qt5_FOUND)
+        set (QT_VERSION 5)
+    else()
+        message (FATAL_ERROR "Unable to locate either Qt5 or Qt6!")
+    endif()
+endif()
 message(STATUS "Found Qt${QT_VERSION}")
 
 set (QT_COMPONENTS Core Gui Multimedia Widgets)
 if (QT_VERSION EQUAL 6)
-	# TODO check if needed when adding Qt6 support
-	# https://www.qt.io/blog/porting-from-qt-5-to-qt-6-using-qt5compat-library
-	# list (APPEND QT_COMPONENTS Core5Compat)
+    # https://www.qt.io/blog/porting-from-qt-5-to-qt-6-using-qt5compat-library
+    list (APPEND QT_COMPONENTS Core5Compat)
 endif (QT_VERSION EQUAL 6)
 find_package ("Qt${QT_VERSION}" COMPONENTS ${QT_COMPONENTS} REQUIRED LinguistTools)
 
 FILE(GLOB TS_FILES translations/*.ts)
-qt5_add_translation(qmFiles ${TS_FILES})
+qt_add_translation(qmFiles ${TS_FILES})
 
 # Unfortunately in Qt5 we have to generate the qrc ourselves.
 set(TRANSLATIONS_FILE ${CMAKE_CURRENT_BINARY_DIR}/translations.qrc)

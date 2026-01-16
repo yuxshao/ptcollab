@@ -260,7 +260,7 @@ void tryLoadNoteColours(const QString &filename) {
 
 bool tryLoadStyle(const QString &basedir, const QString &styleName) {
   // A stylesheet needs to exist for any part of the style to be loaded.
-  QFile styleSheet = styleSheetPath(basedir, styleName);
+  QFile styleSheet (styleSheetPath(basedir, styleName));
   if (!styleSheet.open(QFile::ReadOnly)) {
     qWarning() << "The selected style is not available: " << styleName << " ("
                << styleSheet.fileName() << ")";

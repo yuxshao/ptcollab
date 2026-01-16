@@ -139,7 +139,7 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterBars *meter, QWidget *parent)
       m_bars(meter),
       m_labels(new VolumeMeterLabels(meter, this)) {
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->setMargin(0);
+  layout->setContentsMargins(0, 0, 0, 0);
   layout->setSpacing(0);
   setLayout(layout);
   layout->addWidget(m_labels);
@@ -147,7 +147,7 @@ VolumeMeterWidget::VolumeMeterWidget(VolumeMeterBars *meter, QWidget *parent)
   QFrame *frame = new QFrame(this);
   QVBoxLayout *frame_layout = new QVBoxLayout;
   frame->setLayout(frame_layout);
-  frame_layout->setMargin(0);
+  frame_layout->setContentsMargins(0, 0, 0, 0);
   frame_layout->setSpacing(0);
   frame_layout->addWidget(meter);
   layout->addWidget(frame);

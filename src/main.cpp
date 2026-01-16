@@ -79,7 +79,10 @@ int main(int argc, char *argv[]) {
 
   // Remove "?" button on dialogs; this is a Windows-only feature and
   // goes unused in ptcollab. It shouldn't be the default...
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   a->setAttribute(Qt::AA_DisableWindowContextHelpButton);
+#endif
 
   StyleEditor::EventFilter f;
   a->installEventFilter(&f);

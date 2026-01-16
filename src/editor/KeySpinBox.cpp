@@ -1,6 +1,7 @@
 #include "KeySpinBox.h"
 
 #include <QDebug>
+#include <QRegExp>
 
 #include "editor/EditState.h"
 #include "pxtone/pxtnService.h"
