@@ -732,6 +732,9 @@ void KeyboardView::paintEvent(QPaintEvent *raw_event) {
        e = e->next) {
     // if (e->clock > clockBounds.end) break;
     int unit_no = e->unit_no;
+    if (unit_no >= drawStates.size()) {
+      continue;
+    }
     DrawState &state = drawStates[unit_no];
     switch (e->kind) {
       case EVENTKIND_ON:
