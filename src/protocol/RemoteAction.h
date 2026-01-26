@@ -495,6 +495,8 @@ inline bool clientActionShouldBeRecorded(const ClientAction &a) {
   return ret;
 }
 
+QDebug operator<<(QDebug debug, const ClientAction &a);
+
 struct NewSession {
   QString username;
 };
@@ -545,5 +547,7 @@ inline QTextStream &operator<<(QTextStream &out, const ServerAction &a) {
   out << "ServerAction(u" << a.uid << ", " << a.action << ")";
   return out;
 }
+
+QDebug operator<<(QDebug debug, const ServerAction &a);
 
 #endif  // REMOTEACTION_H

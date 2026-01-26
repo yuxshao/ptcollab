@@ -21,12 +21,11 @@ template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
 template <typename T>
-inline QDebug &operator<<(QDebug &out, const T &a) {
+inline QString to_string(const T &a) {
   QString s;
   QTextStream ts(&s);
   ts << a;
-  out << s;
-  return out;
+  return s;
 }
 
 template <typename T>

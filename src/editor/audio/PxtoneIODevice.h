@@ -27,9 +27,11 @@ class PxtoneIODevice : public QIODevice {
   mooState *moo_state;
   bool m_playing;
   std::vector<InterpolatedVolumeMeter> m_volume_meters;
+  int32_t m_bytes_per_sec;
 
-  qint64 readData(char *data, qint64 maxlen);
-  qint64 writeData(const char *data, qint64 len);
+  qint64 readData(char *data, qint64 maxlen) override;
+  qint64 writeData(const char *data, qint64 len) override;
+  qint64 bytesAvailable() const override;
 };
 
 #endif  // PXTONEIODEVICE_H

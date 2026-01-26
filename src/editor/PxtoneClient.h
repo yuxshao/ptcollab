@@ -1,9 +1,14 @@
 #ifndef PXTONECLIENT_H
 #define PXTONECLIENT_H
 
-#include <QAudioOutput>
 #include <QLabel>
 #include <QObject>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+# include <QAudioOutput>
+#else
+# include <QAudioSink>
+#endif
 
 #include "Clipboard.h"
 #include "ConnectionStatusLabel.h"
@@ -34,7 +39,11 @@ class PxtoneClient : public QObject {
   std::optional<qint64> m_following_user;
   mooState m_moo_state;
   EditState m_edit_state;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QAudioOutput *m_audio;
+#else
+  QAudioSink *m_audio;
+#endif
   PxtoneIODevice *m_pxtn_device;
   std::optional<quint64> m_last_ping;
   QTimer *m_ping_timer;
@@ -78,7 +87,11 @@ class PxtoneClient : public QObject {
   const pxtnService *pxtn() const { return m_controller->pxtn(); }
   const EditState &editState() const { return m_edit_state; }
   const mooState *moo() const { return m_controller->moo(); }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   const QAudioOutput *audioState() const { return m_audio; }
+#else
+  const QAudioSink *audioState() const { return m_audio; }
+#endif
 
   const NoIdMap &unitIdMap() const { return m_controller->unitIdMap(); }
   const std::map<qint64, RemoteEditState> &remoteEditStates() {

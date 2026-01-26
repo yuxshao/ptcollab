@@ -565,7 +565,7 @@ bool PxtoneController::applyWoiceSet(const Woice::Set &a, qint64 uid) {
                                 shift_jis_codec->fromUnicode(a.name);
                             woice->set_name_buf_jis(
                                 name.data(),
-                                std::min(pxtnMAX_TUNEWOICENAME, name.length()));
+                                std::min(pxtnMAX_TUNEWOICENAME, int(name.length())));
                           }},
                a.setting);
   }

@@ -2,7 +2,11 @@
 
 #include <QDebug>
 #include <QDesktopServices>
-#include <QDesktopWidget>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+# include <QDesktopWidget>
+#else
+# include <QScreen>
+#endif
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -15,7 +19,6 @@
 #include <QSplitter>
 #include <QStandardPaths>
 #include <QVBoxLayout>
-#include <QtMultimedia/QAudioDeviceInfo>
 #include <QtMultimedia/QAudioFormat>
 #include <QtMultimedia/QAudioOutput>
 
@@ -77,7 +80,14 @@ EditorWindow::EditorWindow(QWidget *parent)
   int sample_rate = 44100;
   m_pxtn.set_destination_quality(channel_num, sample_rate);
   ui->setupUi(this);
-  resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
+  resize(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QDesktopWidget().availableGeometry(this).size()
+#else
+    QApplication::primaryScreen()->availableGeometry().size()
+#endif
+    * 0.7
+  );
   setAcceptDrops(true);
 
   m_splitter = new QSplitter(Qt::Horizontal, this);

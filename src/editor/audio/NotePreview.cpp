@@ -1,9 +1,14 @@
 #include "NotePreview.h"
 
 #include <QAudioFormat>
-#include <QAudioOutput>
 #include <QDebug>
 #include <QSettings>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+# include <QAudioOutput>
+#else
+# include <QAudioSink>
+#endif
 
 #include "AudioFormat.h"
 #include "NotePreview.h"
@@ -15,7 +20,11 @@
 constexpr int32_t LONG_ON_VALUE = 100000000;
 
 static PxtoneUnitIODevice *device = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 static QAudioOutput *audio = nullptr;
+#else
+static QAudioSink *audio = nullptr;
+#endif
 
 NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
                          int unit_no, int clock,
@@ -90,7 +99,11 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
         m_unit_ids.push_back(device->addUnit(&m_moo_state->units[i]));
 
   if (audio == nullptr) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     audio = new QAudioOutput(pxtoneAudioFormat(), device);
+#else
+    audio = new QAudioSink(pxtoneAudioFormat(), device);
+#endif
     audio->setVolume(1.0);
     audio->setBufferSize(bufferSize);
     audio->start(device);
