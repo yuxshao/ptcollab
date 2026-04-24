@@ -1,4 +1,5 @@
 #include "MooClock.h"
+#include "editor/Settings.h"
 
 MooClock::MooClock(PxtoneClient *client)
     : QObject(client),
@@ -40,7 +41,7 @@ void MooClock::tick() {
   // flicking around occasionally. So, now we only allow nonmonotonic movement
   // if the moo time changed.
 
-  int bytes_per_second = 4 * 44100;  // bytes in sample * bytes per second
+  int bytes_per_second = 4 * Settings::SampleRate::get();  // bytes in sample * bytes per second
   if (m_prev_moo_clock != clock) {
     m_prev_moo_clock = clock;
     timeSinceLastClock.restart();

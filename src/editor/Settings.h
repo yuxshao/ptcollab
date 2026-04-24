@@ -228,6 +228,11 @@ namespace Language {
 QString get();
 void set(QString);
 }  // namespace Language
+
+namespace SampleRate {
+int get();
+void set(int);
+}
 }  // namespace Settings
 
 #endif  // SETTINGS_H

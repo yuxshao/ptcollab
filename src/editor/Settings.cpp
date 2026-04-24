@@ -358,4 +358,10 @@ const char *KEY = "language";
 QString get() { return value(KEY, "").toString(); }
 void set(QString value) { return setValue(KEY, value); }
 }  // namespace Language
+
+namespace SampleRate {
+const char *KEY = "sample_rate";
+int get() { return value(KEY, 44100).toInt(); }
+void set(int value) { return setValue(KEY, value); }
+}  // namespace Language
 }  // namespace Settings

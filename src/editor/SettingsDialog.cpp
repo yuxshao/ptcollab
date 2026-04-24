@@ -50,6 +50,7 @@ void SettingsDialog::apply() {
   Settings::VelocitySensitivity::set(ui->velocitySensitivityCheck->isChecked());
   Settings::DisplayScale::set(ui->displayScaleSpin->value());
   Settings::LeftPianoWidth::set(ui->leftPianoWidthSpin->value());
+  Settings::SampleRate::set(ui->sampleRateSpin->value());
   if (ui->alternateTuningCheck->isChecked()) {
     QList<int> rowDisplayPattern;
     for (char c : ui->rowDisplayEdit->text().toStdString()) {
@@ -104,6 +105,7 @@ void SettingsDialog::showEvent(QShowEvent *) {
   ui->followSeekStrictCheck->setChecked(Settings::StrictFollowSeek::get());
   ui->velocitySensitivityCheck->setChecked(
       Settings::VelocitySensitivity::get());
+  ui->sampleRateSpin->setValue(Settings::SampleRate::get());
 
   QString rowDisplay = "";
   for (auto &b : Settings::DisplayEdo::get()) rowDisplay += (b ? "B" : "W");

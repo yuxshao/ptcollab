@@ -43,7 +43,7 @@ NotePreview::NotePreview(const pxtnService *pxtn, const mooParams *moo_params,
     m_moo_state = std::make_unique<mooState>();
     pxtnVOMITPREPARATION prep{};
     prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
-    prep.start_pos_sample = clock * 60 * 44100 /
+    prep.start_pos_sample = clock * 60 * Settings::SampleRate::get() /
                             m_pxtn->master->get_beat_clock() /
                             m_pxtn->master->get_beat_tempo();
     prep.master_volume = moo_params->master_vol;
