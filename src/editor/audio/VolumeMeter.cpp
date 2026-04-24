@@ -1,4 +1,5 @@
 #include "VolumeMeter.h"
+#include "editor/Settings.h"
 
 #include <QDebug>
 #include <cmath>
@@ -50,7 +51,7 @@ void RunningMax::insert(double x) {
 double RunningMax::max() const { return std::max(stackMax(s1), stackMax(s2)); }
 
 void InterpolatedVolumeMeter::commit() const {
-  int samples_to_commit = m_batch_timer.nsecsElapsed() * 44100 / 1e9;
+  int samples_to_commit = m_batch_timer.nsecsElapsed() * Settings::SampleRate::get() / 1e9;
   m_batch_timer.restart();
   for (int i = 0; i < samples_to_commit && m_pending_samples.size() > 0; ++i) {
     m_meter.insert(m_pending_samples.front());

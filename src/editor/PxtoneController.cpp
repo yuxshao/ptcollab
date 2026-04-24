@@ -1,4 +1,5 @@
 #include "PxtoneController.h"
+#include "editor/Settings.h"
 
 #include <QDebug>
 #include <QDialog>
@@ -384,7 +385,7 @@ void PxtoneController::applySetDelay(const DelayEffect::Set &a, qint64 uid) {
 void PxtoneController::seekMoo(int64_t clock) {
   pxtnVOMITPREPARATION prep{};
   prep.flags |= pxtnVOMITPREPFLAG_loop | pxtnVOMITPREPFLAG_unit_mute;
-  prep.start_pos_sample = clock * 60 * 44100 /
+  prep.start_pos_sample = clock * 60 * Settings::SampleRate::get() /
                           m_pxtn->master->get_beat_clock() /
                           m_pxtn->master->get_beat_tempo();
   prep.master_volume = m_moo_state->params.master_vol;
