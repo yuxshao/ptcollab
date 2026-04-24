@@ -90,7 +90,7 @@
        <item>
         <widget class="Line" name="line_2">
          <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -99,7 +99,7 @@
          <item>
           <widget class="QSpinBox" name="defaultVolumeSpin">
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            <enum>QAbstractSpinBox::NoButtons</enum>
            </property>
            <property name="maximum">
             <number>127</number>
@@ -126,7 +126,7 @@
          <item>
           <widget class="QSpinBox" name="sampleRateSpin">
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            <enum>QAbstractSpinBox::NoButtons</enum>
            </property>
            <property name="minimum">
             <number>11025</number>
@@ -151,7 +151,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Sample rate</string>
+            <string>Sample rate (Must restart)</string>
            </property>
           </widget>
          </item>
@@ -160,7 +160,7 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -247,7 +247,7 @@
          <item>
           <widget class="QSpinBox" name="displayScaleSpin">
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            <enum>QAbstractSpinBox::NoButtons</enum>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -282,7 +282,7 @@
        <item>
         <widget class="Line" name="line">
          <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -291,7 +291,7 @@
          <item>
           <widget class="QSpinBox" name="leftPianoWidthSpin">
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            <enum>QAbstractSpinBox::NoButtons</enum>
            </property>
            <property name="maximum">
             <number>240</number>
@@ -361,7 +361,7 @@
        <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -426,7 +426,7 @@
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -443,10 +443,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
