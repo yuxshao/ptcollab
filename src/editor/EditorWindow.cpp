@@ -74,7 +74,7 @@ EditorWindow::EditorWindow(QWidget *parent)
       ui(new Ui::EditorWindow) {
   m_pxtn.init_collage(EVENT_MAX);
   int channel_num = 2;
-  int sample_rate = 44100;
+  int sample_rate = Settings::SampleRate::get();
   m_pxtn.set_destination_quality(channel_num, sample_rate);
   ui->setupUi(this);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.7);
